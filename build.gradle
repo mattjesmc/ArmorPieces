@@ -65,6 +65,14 @@ jar {
     }
 }
 
+// The sources jar is a distributable in its own right, and the one that hands over every file the
+// licence governs, so it carries the terms too - renamed like the jar's for the same reason.
+tasks.named('sourcesJar') {
+    from('LICENSE') {
+        rename { "${it}_${project.archives_base_name}" }
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Standalone pack zips.
 //
@@ -112,12 +120,19 @@ def packMeta(String taskName, String format, String description) {
 def datapackMeta = packMeta('datapackMeta', project.datapack_format, packDescription)
 def resourcepackMeta = packMeta('resourcepackMeta', project.resourcepack_format, packDescription)
 
+// LICENSE rides in each zip, at the root beside pack.mcmeta. These two are the easiest thing this
+// project ships to re-host - a pack zip is already the shape a modpack wants, and unlike the jar it
+// carries no metadata naming its terms - so they are the artifacts that most need the terms inside
+// them. Not renamed the way the jar's copy is: that rename exists because jars get nested and
+// merged and two LICENSE entries would collide, which cannot happen to a pack. The game ignores
+// unknown files at a pack's root.
 tasks.register('datapackZip', Zip) {
     group = 'build'
     description = "Bundles the mod's data/ tree as a standalone datapack."
     archiveBaseName = project.archives_base_name
     archiveClassifier = 'datapack'
     from datapackMeta
+    from 'LICENSE'
     from('src/main/resources/data') { into 'data' }
 }
 
@@ -127,6 +142,7 @@ tasks.register('resourcepackZip', Zip) {
     archiveBaseName = project.archives_base_name
     archiveClassifier = 'resourcepack'
     from resourcepackMeta
+    from 'LICENSE'
     from('src/main/resources/assets') { into 'assets' }
 }
 
