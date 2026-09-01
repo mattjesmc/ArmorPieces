@@ -2,7 +2,7 @@ name: Armor Pieces
 slug: armor-pieces
 tagline: Decorative parts for armor — applied at a smithing table like trims, coloured by the same trim materials.
 authors: [mattjes]
-license: MIT
+license: All Rights Reserved
 
 assets:
   dir: docs/assets

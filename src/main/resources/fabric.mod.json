@@ -5,7 +5,7 @@
   "name": "Armor Pieces",
   "description": "Decorative parts for armor, applied at a smithing table like trims and coloured by the same trim materials. Every part is data: add your own with a datapack and a resource pack.",
   "authors": ["mattjes"],
-  "license": "MIT",
+  "license": "All Rights Reserved",
   "environment": "*",
   "entrypoints": {
     "main": [
