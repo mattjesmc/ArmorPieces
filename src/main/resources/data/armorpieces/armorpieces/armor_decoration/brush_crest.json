@@ -1,0 +1,9 @@
+{
+  "asset_id": "armorpieces:brush_crest",
+  "description": {
+    "translate": "decoration.armorpieces.brush_crest"
+  },
+  "anchors": [
+    "crest"
+  ]
+}

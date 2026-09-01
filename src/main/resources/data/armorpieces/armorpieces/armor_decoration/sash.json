@@ -1,0 +1,9 @@
+{
+  "asset_id": "armorpieces:sash",
+  "description": {
+    "translate": "decoration.armorpieces.sash"
+  },
+  "anchors": [
+    "belt"
+  ]
+}

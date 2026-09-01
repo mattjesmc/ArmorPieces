@@ -1,0 +1,7 @@
+{
+  "type": "armorpieces:smithing_decoration",
+  "template": "armorpieces:tassets_template",
+  "base": "#minecraft:leg_armor",
+  "addition": "#minecraft:trim_materials",
+  "anchor": "tassets"
+}

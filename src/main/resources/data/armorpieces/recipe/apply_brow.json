@@ -1,0 +1,7 @@
+{
+  "type": "armorpieces:smithing_decoration",
+  "template": "armorpieces:brow_template",
+  "base": "#minecraft:head_armor",
+  "addition": "#minecraft:trim_materials",
+  "anchor": "brow"
+}

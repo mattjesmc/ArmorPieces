@@ -1,0 +1,9 @@
+{
+  "asset_id": "armorpieces:spaulders",
+  "description": {
+    "translate": "decoration.armorpieces.spaulders"
+  },
+  "anchors": [
+    "pauldrons"
+  ]
+}

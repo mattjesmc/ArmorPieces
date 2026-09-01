@@ -1,0 +1,100 @@
+plugins {
+    id 'net.fabricmc.fabric-loom' version '1.17-SNAPSHOT'
+    id 'maven-publish'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+// Minecraft 26.2 requires Java 25.
+def javaRelease = 25
+
+repositories {
+    mavenCentral()
+    maven {
+        name = 'Fabric'
+        url = 'https://maven.fabricmc.net/'
+    }
+    // The optional dev bridge's group ONLY (see the bottom of this file). An unfiltered
+    // mavenLocal() lets a stale locally-installed copy of any dependency shadow the real one,
+    // which is a quiet way to build against the wrong thing.
+    mavenLocal {
+        content { includeGroup 'com.mattmc.mcptoolkit' }
+    }
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(javaRelease)
+    }
+    withSourcesJar()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = javaRelease
+    it.options.encoding = 'UTF-8'
+}
+
+dependencies {
+    // Minecraft 26.1+ ships unobfuscated: no `mappings` dependency at all, and no remapping, so
+    // plain `implementation` rather than the old `modImplementation`.
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+    // This mod genuinely needs Fabric API: DynamicRegistries (the decoration registry),
+    // ResourceManagerHelper (the geometry loader) and LivingEntityRenderLayerRegistrationCallback
+    // (the render layer) are all Fabric API.
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+}
+
+// fabric.mod.json carries ${version}; expand it from the mod's own version.
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') {
+        expand version: project.version
+    }
+}
+
+jar {
+    from('LICENSE') {
+        rename { "${it}_${project.archives_base_name}" }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// The optional mcp-toolkit dev bridge.
+//
+// A local-only development tool: it is not published to any repository, so for anyone but its
+// author it is simply absent, and an absent toolkit is a valid state - it means a plain vanilla
+// dev run. Nothing in the mod compiles against it and nothing ships with it.
+//
+// Gradle has no "resolve only if present", so an optional dependency must be PROBED for before it
+// is declared; otherwise an absent artifact fails resolution instead of degrading. Set
+// `mcmod.toolkit=false` in gradle.properties to skip the probe entirely.
+// ---------------------------------------------------------------------------
+def toolkitVersion = project.findProperty('mcptoolkit_version') ?: '0.85.0'
+def m2Root = file(System.getProperty('maven.repo.local')
+    ?: "${System.getProperty('user.home')}/.m2/repository")
+def toolkitJar = new File(m2Root,
+    "com/mattmc/mcptoolkit/mcp-toolkit/${toolkitVersion}/mcp-toolkit-${toolkitVersion}.jar")
+def wantsToolkit = (project.findProperty('mcmod.toolkit') ?: 'true').toString() != 'false'
+
+if (wantsToolkit && toolkitJar.exists()) {
+    dependencies {
+        // `implementation`, not `compileOnly`: it also puts the bridge on the dev RUNTIME
+        // classpath, which is how a dev run here gets a driveable game at all.
+        implementation "com.mattmc.mcptoolkit:mcp-toolkit:${toolkitVersion}"
+    }
+    // configureEach rather than naming client/server, so a run configuration added later still
+    // gets the flag.
+    loom.runs.configureEach { run ->
+        // The bridge's hotswap self-attaches a java agent to obtain Instrumentation; the JVM
+        // refuses self-attach without this flag. It is the difference between editing a method
+        // body and restarting the client to see the change.
+        run.vmArg '-Djdk.attach.allowAttachSelf=true'
+    }
+}

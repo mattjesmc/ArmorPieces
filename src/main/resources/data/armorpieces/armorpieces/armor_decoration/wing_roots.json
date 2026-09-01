@@ -1,0 +1,9 @@
+{
+  "asset_id": "armorpieces:wing_roots",
+  "description": {
+    "translate": "decoration.armorpieces.wing_roots"
+  },
+  "anchors": [
+    "back"
+  ]
+}

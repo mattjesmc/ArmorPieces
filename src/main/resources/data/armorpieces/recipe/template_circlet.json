@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:gold_ingot"
+  },
+  "result": {
+    "id": "armorpieces:brow_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces:circlet"
+    }
+  }
+}

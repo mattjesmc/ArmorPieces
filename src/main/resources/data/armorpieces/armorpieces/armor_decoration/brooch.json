@@ -1,0 +1,9 @@
+{
+  "asset_id": "armorpieces:brooch",
+  "description": {
+    "translate": "decoration.armorpieces.brooch"
+  },
+  "anchors": [
+    "collar"
+  ]
+}

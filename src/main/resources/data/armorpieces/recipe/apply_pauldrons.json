@@ -1,0 +1,7 @@
+{
+  "type": "armorpieces:smithing_decoration",
+  "template": "armorpieces:pauldrons_template",
+  "base": "#minecraft:chest_armor",
+  "addition": "#minecraft:trim_materials",
+  "anchor": "pauldrons"
+}

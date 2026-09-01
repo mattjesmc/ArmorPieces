@@ -1,0 +1,9 @@
+{
+  "asset_id": "armorpieces:heel_wings",
+  "description": {
+    "translate": "decoration.armorpieces.heel_wings"
+  },
+  "anchors": [
+    "spurs"
+  ]
+}

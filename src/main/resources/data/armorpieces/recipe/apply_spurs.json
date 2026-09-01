@@ -1,0 +1,7 @@
+{
+  "type": "armorpieces:smithing_decoration",
+  "template": "armorpieces:spurs_template",
+  "base": "#minecraft:foot_armor",
+  "addition": "#minecraft:trim_materials",
+  "anchor": "spurs"
+}

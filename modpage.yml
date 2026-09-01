@@ -1,0 +1,268 @@
+name: Armor Pieces
+slug: armor-pieces
+tagline: Decorative parts for armor — applied at a smithing table like trims, coloured by the same trim materials.
+authors: [mattjes]
+license: MIT
+
+assets:
+  dir: docs/assets
+  base_url: https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/
+
+links:
+  github: https://github.com/mattjesmc/ArmorPieces
+  issues: https://github.com/mattjesmc/ArmorPieces/issues
+
+minecraft:
+  versions: ["26.2"]
+  loaders: [Fabric]
+  environment: Client & Server
+
+badges:
+  style: for-the-badge
+  color: 5b21b6
+  show: [github, loaders, versions, license]
+
+sections:
+  about: |
+    Vanilla trims are *paint*: a texture layer drawn onto the armor model, which is why no trim ever
+    sticks out from the armor. Armor Pieces adds the other half — **parts**, real geometry hung on the
+    body. A plume on the helmet, spaulders on the shoulders, a sash on the belt, spurs on the heels.
+
+    Parts are applied at a smithing table exactly the way trims are, and coloured by the same vanilla
+    trim materials. A piece carries its trim and its parts at once; neither erases the other.
+
+    Nineteen parts ship across twelve sockets. Every one of them is data — a datapack and a resource
+    pack, no Java — and so is every part you add.
+
+  features:
+    items:
+      - title: Twelve sockets, one part each
+        description: >-
+          `crest`, `brow`, `horns`, `pauldrons`, `back`, `collar`, `vambraces`, `belt`, `tassets`,
+          `knees`, `spurs`, `greaves`. A mirrored pair is one socket, so spaulders means both shoulders.
+      - title: Coloured by vanilla trim materials
+        description: >-
+          One grayscale master per part is mapped onto each material's own palette at load time.
+          A new trim material costs a part no new art at all.
+      - title: One smithing recipe per socket, forever
+        description: >-
+          The part rides on the template item as a component, so a pack hands out a template and needs
+          no recipe of its own.
+      - title: Optional behaviour
+        description: >-
+          A part may carry effects — attributes, mob effects, a projectile dodge, gliding — configured
+          in the same JSON file. `pinions` is a cut-down elytra that actually flies.
+      - title: /armorpieces stage
+        description: >-
+          Places a grid of armor stands wearing every part in every material, read from the registries,
+          so a datapack's parts show up on it too.
+
+  gallery:
+    images:
+      - src: gallery/parts.png
+        caption: Every socket filled, on iron armor — gold, diamond, netherite, amethyst
+      - src: gallery/materials.png
+        caption: The same parts in six trim materials; the horns keep their ivory through all of them
+      - src: gallery/back.png
+        caption: The back socket — pinions, banner, wing roots
+
+  recipes:
+    columns: 3
+    scale: 3
+    summary: "Every recipe in the mod"
+    # Shields and banners are rendered from a 3D model in game, so they have no flat item texture
+    # to look up and drew as the missing-texture checkerboard. Stand-ins, from
+    # tools/gen_recipe_icons.py. Paths are relative to assets.dir.
+    icons:
+      "minecraft:shield": icons/shield.png
+      "minecraft:white_banner": icons/white_banner.png
+    custom_types:
+      # The mod computes the decorated armor in code, so there is no `result`
+      # in the JSON -- show the base armor as the outcome instead.
+      "armorpieces:smithing_decoration":
+        layout: smithing
+        result: base
+
+  dependencies:
+    required:
+      - name: Fabric API
+        url: https://modrinth.com/mod/fabric-api
+        note: Dynamic registries, resource reload, render layers
+
+  incompatibilities:
+    known: []
+
+  installation: |
+    1. Install [Fabric Loader](https://fabricmc.net/use/) 0.19.3+ on Minecraft 26.2 (Java 25).
+    2. Drop this mod and Fabric API into `mods/`.
+    3. Install it on both sides — the client draws the parts, the server owns their behaviour.
+
+  faq:
+    items:
+      - q: Does a part replace the armor trim?
+        a: No. A piece carries its trim and its parts at once.
+      - q: Can two parts share a socket?
+        a: >-
+          No — applying a new crest replaces the crest. Several parts may be *available* for one socket
+          (`horns` and `helm_wings` both fit `horns`); the choice is the expressive act.
+      - q: Do I need the mod to add parts?
+        a: >-
+          You need the mod installed, but adding a part takes no Java — a datapack and a resource pack.
+          Only a brand-new *effect* type needs code.
+
+custom_sections:
+  - id: adding-a-part
+    title: Adding a part
+    after: installation
+    body: |
+      Three files and a PNG, none of them code. Namespace them however you like; every namespace is
+      scanned.
+
+      **1. The part** — `data/<ns>/armorpieces/armor_decoration/dragon_crest.json`
+
+      ```json
+      {
+        "asset_id": "<ns>:dragon_crest",
+        "description": { "translate": "decoration.<ns>.dragon_crest" },
+        "anchors": ["crest"]
+      }
+      ```
+
+      `anchors` lists every socket the part may occupy; a smithing attempt anywhere else will not craft.
+      The sockets are a closed list — they are places on the humanoid model, not data:
+
+      | Piece | Anchors |
+      | --- | --- |
+      | Helmet | `crest`, `brow`, `horns` |
+      | Chestplate | `pauldrons`, `back`, `collar`, `vambraces` |
+      | Leggings | `belt`, `tassets`, `knees` |
+      | Boots | `spurs`, `greaves` |
+
+      **2. The shape** — `assets/<ns>/armorpieces/decoration/dragon_crest.json`
+
+      Bones and cubes in Blockbench's vocabulary, baked through vanilla's own `MeshDefinition` path, so
+      UVs, per-bone pivots and rotations and cube inflation all behave as they do for any entity model.
+      Coordinates are entity-model units (1/16 block) and **+Y points down**, which is why something
+      standing on top of a head has a negative Y origin.
+
+      ```json
+      {
+        "texture_width": 64,
+        "texture_height": 32,
+        "bones": [
+          {
+            "name": "spine",
+            "pivot": [0, 0, 0],
+            "cubes": [ { "origin": [-1, -6, -4], "size": [2, 6, 8], "uv": [0, 0] } ],
+            "children": []
+          }
+        ]
+      }
+      ```
+
+      **3. The texture** — `assets/<ns>/textures/entity/decoration/dragon_crest.png`
+
+      One grayscale master: **value is shading, alpha is the silhouette**. The game maps it onto each
+      trim material's own palette at load time, so every material — including ones a pack adds
+      tomorrow — is free.
+
+      Not everything is metal. An optional RGBA companion named `dragon_crest_static.png` keeps its own
+      colour instead of taking the material's, so a horn stays ivory and a sash stays cloth while the
+      hardware still turns gold. The master remains the single source of truth for the silhouette. If a
+      part needs bespoke art in one material, `dragon_crest_<suffix>.png` beside the master wins.
+
+      **4. Handing it out.** There is no recipe to write. The mod ships one smithing recipe per socket
+      and the part travels on the *template stack*, so a pack only has to give out a template carrying
+      the `armorpieces:decoration` component:
+
+      ```json
+      {
+        "type": "minecraft:crafting_shaped",
+        "pattern": [" # ", "#F#", " # "],
+        "key": { "#": "minecraft:paper", "F": "minecraft:dragon_breath" },
+        "result": {
+          "id": "armorpieces:crest_template",
+          "components": { "armorpieces:decoration": "<ns>:dragon_crest" }
+        }
+      }
+      ```
+
+      A loot table with `minecraft:set_components` does the same, and so does nothing at all: the
+      creative tab is built by walking the registry, so a new part appears there the moment the pack
+      loads. The twelve template items are `<socket>_template` — `crest_template`, `brow_template`, and
+      so on.
+
+      **Overriding what this mod ships.** Same ids, your pack. A resource pack can restyle any part's
+      geometry or texture and a datapack can change where it may be worn.
+
+  - id: effects
+    title: Giving a part behaviour
+    after: adding-a-part
+    body: |
+      Parts are cosmetic by default. A part that should do something while it is worn carries `effects`
+      — one more field on the file you were already writing:
+
+      ```json
+      "effects": [
+        { "type": "armorpieces:blink", "chance": 0.2, "damage_types": "minecraft:is_projectile" }
+      ]
+      ```
+
+      Four built-ins cover every hook from JSON alone:
+
+      | `type` | Hooks | Fields |
+      | --- | --- | --- |
+      | `armorpieces:attribute` | Attributes | `id`, `attribute`, `amount`, `operation` |
+      | `armorpieces:mob_effect` | Ticking | `effect`, `amplifier`, `ambient`, `show_particles`, `show_icon` |
+      | `armorpieces:blink` | Damage | `chance`, `radius`, `damage_types`, `attempts` |
+      | `armorpieces:glide` | Gliding + Ticking | `sink`, `wear_interval` |
+
+      The five hooks are `Ticking` (every server tick worn), `Damage` (a veto — `allowDamage` false
+      cancels the hit outright), `Attributes` (equip/unequip), `Gliding` (vanilla's own `canGlide`
+      check) and `Lifecycle`. A part has no durability of its own, so an effect that costs something
+      spends the *decorated piece's* durability — `pinions` wears the chestplate it is bolted to.
+
+      **A new effect type is the one thing that needs Java**, because behaviour is code. Implement a
+      hook, register the codec, and add nothing else:
+
+      ```java
+      public record BlinkAway(float chance) implements DecorationEffect.Damage {
+          public static final MapCodec<BlinkAway> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+              Codec.FLOAT.fieldOf("chance").forGetter(BlinkAway::chance)
+          ).apply(i, BlinkAway::new));
+
+          public MapCodec<? extends DecorationEffect> codec() { return CODEC; }
+
+          public boolean allowDamage(DecorationEffectContext ctx, DamageSource src, float amount) { ... }
+      }
+
+      // in onInitialize
+      DecorationEffects.register(Identifier.fromNamespaceAndPath("examplemod", "blink_away"), BlinkAway.CODEC);
+      ```
+
+      From then on `"type": "examplemod:blink_away"` works on any part in anybody's datapack. The
+      context carries the whole entry, so an effect can scale with the material it was applied in.
+      Effects are synced to the client, because `canGlide` runs on both sides.
+
+  - id: working-on-it
+    title: Working on it
+    after: effects
+    body: |
+      `./gradlew build`, `./gradlew runClient`, `./gradlew runServer`.
+
+      `/armorpieces stage` (permission level 2) is how a part is judged against the others:
+      `parts [<part>]` puts one stand per part × material, `bases [<armor item>]` repeats that for every
+      base armor set, `full` dresses complete sets with every socket filled, and `clear` removes them.
+
+      | Where | What |
+      | --- | --- |
+      | `decoration/` | anchors, the datapack registry entry, the item component, the effect hooks |
+      | `client/` | the render layer, the geometry loader and bake cache, the per-material palette |
+      | `recipe/`, `item/`, `registry/`, `command/` | smithing, the twelve templates, the creative tab, `/armorpieces stage` |
+      | `tools/` | Blockbench rigs (`bb_rig.py`), `.bbmodel` ↔ geometry (`bb_geo.py`), master painting and install (`paint_<part>_master.py`, `sync_decoration_masters.py`), template icons, `trace_geometry.py` for measuring a part against the body |
+      | `tools/decoration_masters/` | the grayscale masters — the source of truth for every part's art |
+
+      Authoring a part starts from a rig: each one holds the vanilla body and all four armor layers at
+      their real inflate, with an empty group sitting exactly where the layer will draw.
+
+footer: "Every part in this mod is the same four files a pack of your own would write."

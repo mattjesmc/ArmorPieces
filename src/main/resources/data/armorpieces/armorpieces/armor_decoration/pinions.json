@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces:pinions",
+  "description": {
+    "translate": "decoration.armorpieces.pinions"
+  },
+  "anchors": [
+    "back"
+  ],
+  "effects": [
+    {
+      "type": "armorpieces:glide",
+      "sink": 0.03,
+      "wear_interval": 4
+    }
+  ]
+}

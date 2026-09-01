@@ -1,0 +1,9 @@
+{
+  "asset_id": "armorpieces:gorget",
+  "description": {
+    "translate": "decoration.armorpieces.gorget"
+  },
+  "anchors": [
+    "collar"
+  ]
+}

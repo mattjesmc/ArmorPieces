@@ -1,0 +1,9 @@
+{
+  "asset_id": "armorpieces:vambraces",
+  "description": {
+    "translate": "decoration.armorpieces.vambraces"
+  },
+  "anchors": [
+    "vambraces"
+  ]
+}

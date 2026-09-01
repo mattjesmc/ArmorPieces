@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:shield"
+  },
+  "result": {
+    "id": "armorpieces:pauldrons_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces:spaulders"
+    }
+  }
+}

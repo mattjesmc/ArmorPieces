@@ -1,0 +1,9 @@
+{
+  "asset_id": "armorpieces:visor",
+  "description": {
+    "translate": "decoration.armorpieces.visor"
+  },
+  "anchors": [
+    "brow"
+  ]
+}

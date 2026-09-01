@@ -1,0 +1,9 @@
+{
+  "asset_id": "armorpieces:helm_wings",
+  "description": {
+    "translate": "decoration.armorpieces.helm_wings"
+  },
+  "anchors": [
+    "horns"
+  ]
+}

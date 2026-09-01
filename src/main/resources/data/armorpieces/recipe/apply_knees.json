@@ -1,0 +1,7 @@
+{
+  "type": "armorpieces:smithing_decoration",
+  "template": "armorpieces:knees_template",
+  "base": "#minecraft:leg_armor",
+  "addition": "#minecraft:trim_materials",
+  "anchor": "knees"
+}

@@ -1,0 +1,9 @@
+{
+  "asset_id": "armorpieces:greaves",
+  "description": {
+    "translate": "decoration.armorpieces.greaves"
+  },
+  "anchors": [
+    "greaves"
+  ]
+}

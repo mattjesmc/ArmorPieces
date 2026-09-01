@@ -1,0 +1,47 @@
+# Gradle. Both paths are anchored: an unanchored `build/` would also swallow a Java package named
+# build/ inside src/, silently keeping source out of git.
+.gradle/
+/build/
+
+# Game working directories (worlds, logs, downloaded assets, generated server files).
+run/
+
+# Loom's decompiled/remapped Minecraft and its caches.
+.loom-cache/
+remappedSrc/
+
+# Generated textures are NOT ignored: they are the shipped assets, and regenerating them must
+# produce a reviewable diff rather than a silent change. Their grayscale masters in
+# tools/decoration_masters/ are the source of truth and are tracked too.
+
+# Claude Code. Both files are local-machine wiring, not project configuration: .mcp.json points at
+# a dev bridge and a Blockbench instance by absolute path on this machine, and settings.local.json
+# is the local approval of those servers plus personal permission grants. Neither means anything in
+# a clone, and the paths in the first are somebody's home directory.
+.mcp.json
+.claude/settings.local.json
+
+# modpage's texture cache. Regenerable, and its contents are verbatim vanilla item/block PNGs
+# extracted from the game - not ours to redistribute. The rendered recipe images under
+# docs/assets/recipes/ ARE tracked: the store pages link to them by raw.githubusercontent URL, so
+# they have to exist in the repo.
+.modpage/
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.classpath
+.project
+.settings/
+bin/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python bytecode from tools/
+__pycache__/
+*.pyc

@@ -1,0 +1,9 @@
+{
+  "asset_id": "armorpieces:banner",
+  "description": {
+    "translate": "decoration.armorpieces.banner"
+  },
+  "anchors": [
+    "back"
+  ]
+}

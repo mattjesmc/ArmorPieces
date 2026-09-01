@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "armorpieces",
+  "version": "${version}",
+  "name": "Armor Pieces",
+  "description": "Decorative parts for armor, applied at a smithing table like trims and coloured by the same trim materials. Every part is data: add your own with a datapack and a resource pack.",
+  "authors": ["mattjes"],
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.mattjesmc.armorpieces.ArmorPieces"
+    ],
+    "client": [
+      "com.mattjesmc.armorpieces.client.ArmorPiecesClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "~26.2",
+    "java": ">=25",
+    "fabric-api": "*"
+  }
+}

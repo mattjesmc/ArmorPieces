@@ -1,0 +1,9 @@
+{
+  "asset_id": "armorpieces:circlet",
+  "description": {
+    "translate": "decoration.armorpieces.circlet"
+  },
+  "anchors": [
+    "brow"
+  ]
+}
