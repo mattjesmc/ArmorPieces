@@ -6,7 +6,7 @@
   <a href="https://github.com/mattjesmc/ArmorPieces/releases/latest"><img alt="GitHub release" src="https://img.shields.io/github/v/release/mattjesmc/ArmorPieces?style=for-the-badge&logo=github&logoColor=white&label=Release&color=5b21b6"></a>
   <img alt="Loaders" src="https://img.shields.io/badge/Loader-Fabric-5b21b6?style=for-the-badge">
   <img alt="Minecraft versions" src="https://img.shields.io/badge/Minecraft-26.2-5b21b6?style=for-the-badge">
-  <img alt="License" src="https://img.shields.io/badge/License-All%20Rights%20Reserved-5b21b6?style=for-the-badge">
+  <a href="https://github.com/mattjesmc/ArmorPieces/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/badge/License-All_Rights_Reserved-5b21b6?style=for-the-badge"></a>
 </p>
 
 <p align="center">
@@ -319,7 +319,16 @@ You need the mod installed, but adding a part takes no Java — a datapack and a
 
 ## License
 
-Released under the **All Rights Reserved** license. You may use and modify Armor Pieces freely; redistributing it — re-uploading it, or bundling it in a modpack — needs written permission first. See [LICENSE](https://github.com/mattjesmc/ArmorPieces/blob/main/LICENSE).
+Released under a custom license — see
+[LICENSE](https://github.com/mattjesmc/ArmorPieces/blob/main/LICENSE).
+
+Use it, play with it, and modify it for yourself: no permission needed, no fee. **Redistribution
+needs written permission first.** That covers re-uploading the jar or the pack zips, mirroring
+them, and bundling the mod in a modpack, server pack or launcher — paid or not — as well as
+publishing a fork. Linking to an official download page never needs permission.
+
+Ask on the [issue tracker](https://github.com/mattjesmc/ArmorPieces/issues); permission is given
+in writing and covers the distribution it describes.
 
 ---
 

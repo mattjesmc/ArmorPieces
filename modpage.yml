@@ -11,6 +11,8 @@ assets:
 links:
   github: https://github.com/mattjesmc/ArmorPieces
   issues: https://github.com/mattjesmc/ArmorPieces/issues
+  # Not a header link - modpage uses this one only as the License badge's target.
+  license: https://github.com/mattjesmc/ArmorPieces/blob/main/LICENSE
 
 minecraft:
   versions: ["26.2"]
@@ -109,6 +111,20 @@ sections:
         a: >-
           You need the mod installed, but adding a part takes no Java — a datapack and a resource pack.
           Only a brand-new *effect* type needs code.
+
+  # Without a body here modpage renders "Released under the **All Rights Reserved** license.",
+  # which names the license without saying the one thing a reader of this section wants to know.
+  license: |
+    Released under a custom license — see
+    [LICENSE](https://github.com/mattjesmc/ArmorPieces/blob/main/LICENSE).
+
+    Use it, play with it, and modify it for yourself: no permission needed, no fee. **Redistribution
+    needs written permission first.** That covers re-uploading the jar or the pack zips, mirroring
+    them, and bundling the mod in a modpack, server pack or launcher — paid or not — as well as
+    publishing a fork. Linking to an official download page never needs permission.
+
+    Ask on the [issue tracker](https://github.com/mattjesmc/ArmorPieces/issues); permission is given
+    in writing and covers the distribution it describes.
 
 custom_sections:
   - id: adding-a-part
