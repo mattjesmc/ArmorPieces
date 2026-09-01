@@ -51,12 +51,14 @@ rule that cuts the broad faces.
 
 from __future__ import annotations
 
+import json
 import random
 from pathlib import Path
 
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
+GEO = ROOT / "src" / "main" / "resources" / "assets" / "armorpieces" / "armorpieces" / "decoration" / "heel_wings.json"
 OUT = ROOT / "tools" / "decoration_masters" / "heel_wings.png"
 
 TEX_W, TEX_H = 64, 32
@@ -191,14 +193,79 @@ def paint_clasp(img) -> None:
         put(img, x0 + i, y0 + 1, WEST + RIVET + random.randint(-3, 3))
 
 
+FACES = ("up", "down", "east", "north", "west", "south")
+
+
+def check_geometry() -> None:
+    """CUBES must be the cube list of the shipped geometry, in order.
+
+    Painting a texture for a shape the model no longer has is invisible to every other check in this
+    pipeline: `bb_geo roundtrip` checks the model against itself and check_layout() checks the master
+    against itself, and both keep passing while the rectangles slide off the faces they were drawn
+    for. Four parts had drifted that way before this check existed on any of them."""
+    doc = json.loads(GEO.read_text(encoding="utf-8"))
+    found = []
+
+    def walk(bone):
+        for c in bone.get("cubes", []):
+            found.append((tuple(c["size"]), tuple(c["uv"])))
+        for child in bone.get("children", []):
+            walk(child)
+
+    for bone in doc["bones"]:
+        walk(bone)
+
+    assert (doc["texture_width"], doc["texture_height"]) == (TEX_W, TEX_H),         f"{GEO.name} is {doc['texture_width']}x{doc['texture_height']}, this master is {TEX_W}x{TEX_H}"
+    assert found == list(CUBES.values()),         f"CUBES disagrees with {GEO.name}: {found} vs {list(CUBES.values())}"
+
+
+def check_layout() -> dict:
+    """Every face rectangle must sit inside the texture and no two may overlap - a silent overlap
+    would paint one cube's shading onto another's face and only show up on a model in game."""
+    claimed = {}
+    for name, (size, uv) in CUBES.items():
+        for face, (x, y, w, h) in faces(size, uv).items():
+            assert 0 <= x and x + w <= TEX_W, f"{name}.{face} runs off the texture in u"
+            assert 0 <= y and y + h <= TEX_H, f"{name}.{face} runs off the texture in v"
+            for py in range(y, y + h):
+                for px in range(x, x + w):
+                    prev = claimed.get((px, py))
+                    assert prev is None, f"{name}.{face} overlaps {prev} at {(px, py)}"
+                    claimed[(px, py)] = f"{name}.{face}"
+    return claimed
+
+
+def check_paint(img, claimed: dict) -> None:
+    """This master rakes alpha, so it may not be checked against the net pixel for pixel the way an
+    all-opaque one is - but the two failures either side of the rake still can be.
+
+    A pixel painted outside the net is paint the model never samples. A face left with no opaque
+    pixel is worse: the rake is meant to cut a corner off a vane, and a face it empties renders as a
+    hole straight through the part."""
+    opaque = {(x, y) for y in range(TEX_H) for x in range(TEX_W) if img.getpixel((x, y))[1]}
+    stray = opaque - set(claimed)
+    assert not stray, f"{len(stray)} painted pixel(s) lie outside every face rectangle: {sorted(stray)[:8]}"
+    painted = {claimed[p] for p in opaque}
+    for name in CUBES:
+        for face in FACES:
+            assert f"{name}.{face}" in painted, f"{name}.{face} has no opaque pixel - it will render as a hole"
+
+
 def main() -> None:
+    check_geometry()
+    claimed = check_layout()
     img = Image.new("LA", (TEX_W, TEX_H), (0, 0))
     paint_clasp(img)
     paint_vane(img, "vane_upper")
     paint_vane(img, "vane_lower")
+    check_paint(img, claimed)
+
     OUT.parent.mkdir(parents=True, exist_ok=True)
     img.save(OUT)
-    print(f"wrote {OUT}")
+    opaque = {(x, y) for y in range(TEX_H) for x in range(TEX_W) if img.getpixel((x, y))[1]}
+    lums = [img.getpixel(p)[0] for p in sorted(opaque)]
+    print(f"wrote {OUT} ({len(opaque)} opaque px of {len(claimed)} net, "
+          f"values {min(lums)}-{max(lums)})")
 
 
 if __name__ == "__main__":

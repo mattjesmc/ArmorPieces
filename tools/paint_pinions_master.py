@@ -43,32 +43,37 @@ Geometry, checked against the body with tools/trace_geometry.py before it was pa
     is true of every back part in the mod and of a vanilla cape.
 
 The vanes are 1 unit thick, which makes their two broad faces the box's `north` and `south` - the
-4-wide-by-6-tall rectangles. `bb = (-geo_x, 24 - geo_y, geo_z)`, so `south` is the geo +z face, the
+5-wide-by-6-tall rectangles. `bb = (-geo_x, 24 - geo_y, geo_z)`, so `south` is the geo +z face, the
 one pointing away from the wearer's back and the only one a player normally sees, and `west` is the
 geo +x face, which is the outboard edge on the left vane and the inboard edge on the right one.
 """
 
 from __future__ import annotations
 
+import json
 import random
 from pathlib import Path
 
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
+GEO = ROOT / "src" / "main" / "resources" / "assets" / "armorpieces" / "armorpieces" / "decoration" / "pinions.json"
 MASTER_OUT = ROOT / "tools" / "decoration_masters" / "pinions.png"
 STATIC_OUT = ROOT / "tools" / "decoration_masters" / "pinions_static.png"
 
 TEX_W, TEX_H = 64, 32
 
-# size (w, h, d) and uv (u, v), mirroring pinions.json.
+# size (w, h, d) and uv (u, v), mirroring pinions.json - in its order, which is each vane followed
+# by its own tip, because that is the bone chain.
 CUBES = {
     "bracket": ((3, 6, 3), (0, 0)),    # the standoff, straddling the chestplate's back wall
-    "vane_l":  ((4, 6, 1), (12, 0)),   # the shell, 18 deg outboard and 10 deg swept back
-    "vane_r":  ((4, 6, 1), (22, 0)),
-    "tip_l":   ((3, 3, 1), (32, 0)),   # the raked continuation, another 14 deg out
-    "tip_r":   ((3, 3, 1), (40, 0)),
+    "vane_l":  ((5, 6, 1), (12, 0)),   # the shell, 18 deg outboard and 10 deg swept back
+    "tip_l":   ((3, 4, 1), (24, 0)),   # the raked continuation, another 14 deg out
+    "vane_r":  ((5, 6, 1), (32, 0)),
+    "tip_r":   ((3, 4, 1), (44, 0)),
 }
+
+FACES = ("up", "down", "east", "north", "west", "south")
 
 # Which geo-x end of a vane is its outboard edge. The left vane grows toward +x and the right one is
 # its mirror, so every column rule below is written against the INNER end and one rule serves both.
@@ -217,12 +222,71 @@ def paint_bracket(img) -> None:
         put(img, x0 + 1, y0 + row, SOUTH + RIVET + random.randint(-3, 3))
 
 
+def check_geometry() -> None:
+    """CUBES must be the cube list of the shipped geometry, in order.
+
+    Painting a texture for a shape the model no longer has is invisible to every other check here:
+    both halves stay internally consistent while the rectangles slide off the faces they were drawn
+    for. That is exactly how this file came to paint 4x6 vanes and 3x3 tips for a model carrying 5x6
+    and 3x4 ones, at UVs that had moved to make room - which left three of tip_r's faces with no
+    texture at all and put sixteen painted pixels where the model has no face."""
+    doc = json.loads(GEO.read_text(encoding="utf-8"))
+    found = []
+
+    def walk(bone):
+        for c in bone.get("cubes", []):
+            found.append((tuple(c["size"]), tuple(c["uv"])))
+        for child in bone.get("children", []):
+            walk(child)
+
+    for bone in doc["bones"]:
+        walk(bone)
+
+    assert (doc["texture_width"], doc["texture_height"]) == (TEX_W, TEX_H),         f"{GEO.name} is {doc['texture_width']}x{doc['texture_height']}, this master is {TEX_W}x{TEX_H}"
+    assert found == list(CUBES.values()),         f"CUBES disagrees with {GEO.name}: {found} vs {list(CUBES.values())}"
+
+
+def check_layout() -> dict:
+    """Every face rectangle must sit inside the texture and no two may overlap - a silent overlap
+    would paint one cube's shading onto another's face and only show up on a model in game."""
+    claimed = {}
+    for name, (size, uv) in CUBES.items():
+        for face, (x, y, w, h) in faces(size, uv).items():
+            assert 0 <= x and x + w <= TEX_W, f"{name}.{face} runs off the texture in u"
+            assert 0 <= y and y + h <= TEX_H, f"{name}.{face} runs off the texture in v"
+            for py in range(y, y + h):
+                for px in range(x, x + w):
+                    prev = claimed.get((px, py))
+                    assert prev is None, f"{name}.{face} overlaps {prev} at {(px, py)}"
+                    claimed[(px, py)] = f"{name}.{face}"
+    return claimed
+
+
+def check_paint(img, claimed: dict) -> None:
+    """This master carves alpha, so it may not be checked against the net pixel for pixel the way an
+    all-opaque one is - but the two failures either side of the rake still can be.
+
+    A pixel painted outside the net is paint the model never samples. A face left with no opaque
+    pixel at all is worse: the rake is meant to cut a corner off a wing, and a face it empties is a
+    face that renders as a hole straight through the part."""
+    opaque = {(x, y) for y in range(TEX_H) for x in range(TEX_W) if img.getpixel((x, y))[1]}
+    stray = opaque - set(claimed)
+    assert not stray, f"{len(stray)} painted pixel(s) lie outside every face rectangle: {sorted(stray)[:8]}"
+    painted = {claimed[p] for p in opaque}
+    for name in CUBES:
+        for face in FACES:
+            assert f"{name}.{face}" in painted, f"{name}.{face} has no opaque pixel - it will render as a hole"
+
+
 def main() -> None:
+    check_geometry()
+    claimed = check_layout()
     img = Image.new("LA", (TEX_W, TEX_H), (0, 0))
     statics = Image.new("RGBA", (TEX_W, TEX_H), (0, 0, 0, 0))
     paint_bracket(img)
     for name in ("vane_l", "vane_r", "tip_l", "tip_r"):
         paint_vane(img, statics, name)
+    check_paint(img, claimed)
     MASTER_OUT.parent.mkdir(parents=True, exist_ok=True)
     img.save(MASTER_OUT)
     statics.save(STATIC_OUT)

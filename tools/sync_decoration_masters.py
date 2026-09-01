@@ -13,6 +13,13 @@ that they are shaped the way the loader expects:
     tools/decoration_masters/<part>.png         greyscale + alpha, the shape and its shading
     tools/decoration_masters/<part>_static.png  optional RGBA, the parts that are not metal
 
+It also checks the master against the part's geometry, which is the one defect no painter could
+catch on its own before every paint_<part>_master.py grew a check_geometry(): a master painted for a
+cube list the model no longer has stays perfectly self-consistent while its rectangles slide off the
+faces they were drawn for. Four parts had drifted that way. The two symptoms are a face of the model
+with no opaque pixel behind it - which renders as a hole straight through the part - and a painted
+pixel outside every face rectangle, which is paint the model never samples.
+
 The master's value channel is what gets mapped onto a material's ramp, and its alpha is the
 silhouette. The static layer's opaque pixels keep their own colour instead of taking the material's,
 shaded by the master's value - so a horn stays keratin and a sash stays cloth while the hardware
@@ -26,6 +33,8 @@ Usage:
 
 from __future__ import annotations
 
+import json
+import math
 import shutil
 import sys
 from pathlib import Path
@@ -34,9 +43,11 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
 MASTERS = ROOT / "tools" / "decoration_masters"
+GEO = ROOT / "src" / "main" / "resources" / "assets" / "armorpieces" / "armorpieces" / "decoration"
 OUT = ROOT / "src" / "main" / "resources" / "assets" / "armorpieces" / "textures" / "entity" / "decoration"
 
 STATIC_SUFFIX = "_static"
+FACES = ("up", "down", "east", "north", "west", "south")
 
 
 def check_master(path: Path) -> tuple[Image.Image, list[str]]:
@@ -58,6 +69,82 @@ def check_master(path: Path) -> tuple[Image.Image, list[str]]:
             f"shading, so put colour in {path.stem}{STATIC_SUFFIX}.png instead"
         )
     return image, warnings
+
+
+def net(size):
+    """A cube's box-UV net in whole pixels. Rounds up, the way Blockbench does - the sash's knot is
+    4.9 units tall on purpose and unwraps to 5 rows."""
+    return tuple(int(math.ceil(v - 1e-9)) for v in size)
+
+
+def face_rects(size, uv):
+    """Per-face pixel rectangles (x, y, w, h) for one box-UV cube. Row one (v .. v+d) holds up then
+    down, each w wide, starting at u+d; row two (v+d .. v+d+h) holds east, north, west, south with
+    widths d, w, d, w - the two thin d-wide faces FIRST and THIRD."""
+    w, h, d = net(size)
+    u, v = uv
+    return {
+        "up":    (u + d, v, w, d),
+        "down":  (u + d + w, v, w, d),
+        "east":  (u, v + d, d, h),
+        "north": (u + d, v + d, w, h),
+        "west":  (u + d + w, v + d, d, h),
+        "south": (u + d + w + d, v + d, w, h),
+    }
+
+
+def check_geometry(name: str, master: Image.Image) -> list[str]:
+    """Report a master that no longer covers the faces of the geometry it is painted for.
+
+    An empty face is not always a defect - the feathering cuts three of its own on purpose, each the
+    buried half of a coincident pair, because a transparent pixel writes no depth and that is the
+    cheapest way to keep two coplanar faces from z-fighting. So this names what it finds and leaves
+    the judgement to the painter, which knows which of its faces are cut and asserts it."""
+    path = GEO / f"{name}.json"
+    if not path.is_file():
+        return [f"no geometry at {path.relative_to(ROOT)} - nothing to check the net against"]
+
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    warnings: list[str] = []
+    if (doc["texture_width"], doc["texture_height"]) != master.size:
+        warnings.append(f"{path.name} is {doc['texture_width']}x{doc['texture_height']}, "
+                        f"the master is {master.size[0]}x{master.size[1]}")
+        return warnings
+
+    cubes = []
+
+    def walk(bone):
+        cubes.extend(bone.get("cubes", []))
+        for child in bone.get("children", []):
+            walk(child)
+
+    for bone in doc["bones"]:
+        walk(bone)
+
+    px = master.convert("RGBA").load()
+    width, height = master.size
+    covered = set()
+    empty = []
+    for index, cube in enumerate(cubes):
+        for face, (x, y, w, h) in face_rects(cube["size"], cube["uv"]).items():
+            seen = 0
+            for py in range(y, y + h):
+                for pxl in range(x, x + w):
+                    if 0 <= pxl < width and 0 <= py < height:
+                        covered.add((pxl, py))
+                        seen += px[pxl, py][3] > 0
+            if not seen:
+                empty.append(f"cube {index}.{face}")
+
+    outside = sum(1 for y in range(height) for x in range(width)
+                  if px[x, y][3] and (x, y) not in covered)
+    if empty:
+        warnings.append(f"{len(empty)} face(s) of {path.name} have no opaque pixel and will render "
+                        f"as holes unless they are cut on purpose: {', '.join(empty)}")
+    if outside:
+        warnings.append(f"{outside} opaque pixel(s) lie outside every face rectangle of "
+                        f"{path.name} - the master and the model disagree about the shape")
+    return warnings
 
 
 def check_static(path: Path, master: Image.Image) -> list[str]:
@@ -84,6 +171,8 @@ def check_static(path: Path, master: Image.Image) -> list[str]:
 def install(master_path: Path) -> None:
     name = master_path.stem
     master, warnings = check_master(master_path)
+
+    warnings += check_geometry(name, master)
 
     static_path = MASTERS / f"{name}{STATIC_SUFFIX}.png"
     has_static = static_path.is_file()

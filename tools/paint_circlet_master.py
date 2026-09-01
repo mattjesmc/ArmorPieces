@@ -24,12 +24,14 @@ reading twice when a face lands one pixel off.
 
 from __future__ import annotations
 
+import json
 import random
 from pathlib import Path
 
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
+GEO = ROOT / "src" / "main" / "resources" / "assets" / "armorpieces" / "armorpieces" / "decoration" / "circlet.json"
 OUT = ROOT / "tools" / "decoration_masters" / "circlet.png"
 
 TEX_W, TEX_H = 64, 32
@@ -150,7 +152,51 @@ def paint_stone(img) -> None:
                 put(img, x0 + i, y0 + j, base[j] + lean + random.randint(-3, 3))
 
 
+def check_geometry() -> None:
+    """CUBES must be the cube list of the shipped geometry, in order.
+
+    Painting a texture for a shape the model no longer has is invisible to every other check in this
+    pipeline: `bb_geo roundtrip` checks the model against itself and check_layout() checks the master
+    against itself, and both keep passing while the rectangles slide off the faces they were drawn
+    for. Four parts had drifted that way before this check existed on any of them."""
+
+    doc = json.loads(GEO.read_text(encoding="utf-8"))
+    found = []
+
+    def walk(bone):
+        for c in bone.get("cubes", []):
+            found.append((tuple(c["size"]), tuple(c["uv"])))
+        for child in bone.get("children", []):
+            walk(child)
+
+    for bone in doc["bones"]:
+        walk(bone)
+
+    assert (doc["texture_width"], doc["texture_height"]) == (TEX_W, TEX_H),         f"{GEO.name} is {doc['texture_width']}x{doc['texture_height']}, this master is {TEX_W}x{TEX_H}"
+    want = list(CUBES.values())
+    assert found == want, f"CUBES disagrees with {GEO.name}: {found} vs {want}"
+
+
+def check_layout() -> dict:
+    """Every face rectangle must sit inside the texture and no two may overlap - a silent overlap
+    would paint one cube's shading onto another's face and only show up on a model in game."""
+    claimed = {}
+    for name, entry in CUBES.items():
+        size, uv = entry[0], entry[1]
+        for face, (x, y, w, h) in faces(size, uv).items():
+            assert 0 <= x and x + w <= TEX_W, f"{name}.{face} runs off the texture in u"
+            assert 0 <= y and y + h <= TEX_H, f"{name}.{face} runs off the texture in v"
+            for py in range(y, y + h):
+                for px in range(x, x + w):
+                    prev = claimed.get((px, py))
+                    assert prev is None, f"{name}.{face} overlaps {prev} at {(px, py)}"
+                    claimed[(px, py)] = f"{name}.{face}"
+    return claimed
+
+
 def main() -> None:
+    check_geometry()
+    claimed = check_layout()
     img = Image.new("LA", (TEX_W, TEX_H), (0, 0))
     # `outward` names the faces a player can actually see; the rest sit inside the helmet shell.
     # The brow bar owns the ring's two front corners, so its end faces are outward; the temples' end
@@ -160,9 +206,16 @@ def main() -> None:
     paint_band(img, "temple_r", ("east", "west"))
     paint_band(img, "back", ("south",))
     paint_stone(img)
+
+    # This master is 100% opaque, so the painted set must be exactly the net: a pixel short is a
+    # face the model shows and the texture does not.
+    opaque = {(x, y) for y in range(TEX_H) for x in range(TEX_W) if img.getpixel((x, y))[1]}
+    assert opaque == set(claimed), "painted pixels do not match the UV rectangles"
+
     OUT.parent.mkdir(parents=True, exist_ok=True)
     img.save(OUT)
-    print(f"wrote {OUT}")
+    lums = [img.getpixel(p)[0] for p in sorted(opaque)]
+    print(f"wrote {OUT} ({len(opaque)} opaque px, values {min(lums)}-{max(lums)})")
 
 
 if __name__ == "__main__":

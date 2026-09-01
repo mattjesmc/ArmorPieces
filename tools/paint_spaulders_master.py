@@ -19,11 +19,15 @@ What this part needs that the horns did not:
     one. The geometry gives two 15-degree angular breaks; what actually makes a lame read as a lame
     is the pair of rows at its free lower edge - a shadowed row where it tucks under the plate above
     and a bright rim row along the edge that hangs free. Those two rows are the whole idiom, and
-    they are applied identically to lame1 and lame2 so the pair reads as a repeating course.
+    they are applied by the same code to both lames so the course reads as a repeating one.
 
   * Every plate has one unit of itself buried inside the plate above (that is what closes the
     rotated joints), so the top row of every lame's side faces is never seen. Those rows are painted
     at INNER anyway, the way the horns' buried faces were, in case PAULDRONS moves in pass B.
+
+    lame1 is 2 units tall, so that buried unit leaves it exactly one visible row and there is no
+    room in it for the shadow/rim pair - the free edge is all there is, and it takes the rim. Only
+    lame2, at 3, gets both rows and therefore the rivets that sit on the lapped one.
 
 The face rectangles come from paint_circlet_master.faces(), copied verbatim: row one (v .. v+d)
 holds up then down, each w wide, starting at u+d; row two (v+d .. v+d+h) holds east, north, west,
@@ -51,12 +55,14 @@ outboard, so lit-outboard / shadowed-inboard survives the mirror and the pair re
 
 from __future__ import annotations
 
+import json
 import random
 from pathlib import Path
 
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
+GEO = ROOT / "src" / "main" / "resources" / "assets" / "armorpieces" / "armorpieces" / "decoration" / "spaulders.json"
 OUT = ROOT / "tools" / "decoration_masters" / "spaulders.png"
 
 TEX_W, TEX_H = 64, 32
@@ -65,9 +71,9 @@ TEX_W, TEX_H = 64, 32
 # lame1 and lame2 are the two flaring plates below it, each rotated a further 16 / 14 degrees
 # outboard and each burying its top unit in the plate above.
 CUBES = {
-    "cap":   ((5, 2, 5), (0, 0)),
-    "lame1": ((2, 3, 5), (20, 0)),
-    "lame2": ((2, 3, 5), (34, 0)),
+    "cap":   ((4, 1, 7), (0, 0)),
+    "lame1": ((2, 2, 5), (22, 0)),
+    "lame2": ((2, 3, 4), (36, 0)),
 }
 
 random.seed(53)  # deterministic output - regenerating must not churn the PNG
@@ -129,7 +135,9 @@ def ramp(i: int, n: int) -> float:
 def paint_cap(img) -> None:
     """The plate over the shoulder. Its `up` face is the one a player sees from any angle at all,
     so it carries the full front-to-back and inboard-to-outboard gradient and the mounting studs;
-    the four side faces are 2 rows tall, of which only the upper one clears the sleeve."""
+    the plate is a single unit thick, so its four side faces are one row each and that row is the
+    one clearing the sleeve. The `else` arms below are what a second, sleeve-buried row would take,
+    and are kept because this cap has been one unit tall and two."""
     size, uv = CUBES["cap"]
     w, h, d = size
     f = faces(size, uv)
@@ -177,7 +185,8 @@ def paint_cap(img) -> None:
 
 def paint_lame(img, name: str, step: int, bottom: bool) -> None:
     """One of the two flaring plates. Row 0 of every side face is the unit buried in the plate
-    above; row 1 is the band that tucks under it, and the last row is the free lower edge."""
+    above and the last row is the free lower edge; any row between the two is the band that tucks
+    under the plate above. lame1 has no such band - see the module docstring."""
     size, uv = CUBES[name]
     w, h, d = size
     f = faces(size, uv)
@@ -202,10 +211,14 @@ def paint_lame(img, name: str, step: int, bottom: bool) -> None:
                 base = WEST + gain + (RIM if j == h - 1 else -PLATE_SHADOW)
                 lum = base - round(Z_FALL * ramp(i, fw))
             put(img, x0 + i, y0 + j, lum + random.randint(-3, 3))
-    # Rivets along the shadowed band, two per lame, where the plate laps the one above it.
-    for i in (1, 3):
-        put(img, x0 + i, y0 + 1,
-            WEST + gain - PLATE_SHADOW - round(Z_FALL * ramp(i, fw)) + RIVET + random.randint(-3, 3))
+    # Rivets along the shadowed band, two per lame, where the plate laps the one above it. A lame
+    # only 2 units tall has no such band - row 1 is already its free edge, and a rivet there would
+    # read as a nick in the silhouette rather than as a fastening.
+    if h > 2:
+        for i in (1, 3):
+            put(img, x0 + i, y0 + 1,
+                WEST + gain - PLATE_SHADOW - round(Z_FALL * ramp(i, fw)) + RIVET
+                + random.randint(-3, 3))
 
     x0, y0, fw, fh = f["north"]               # front edge of the plate
     for j in range(fh):
@@ -235,14 +248,62 @@ def paint_lame(img, name: str, step: int, bottom: bool) -> None:
             put(img, x0 + i, y0 + j, lum + random.randint(-3, 3))
 
 
+def check_geometry() -> None:
+    """CUBES must be the cube list of the shipped geometry, in order.
+
+    Painting a texture for a shape the model no longer has is invisible to every other check here:
+    both halves stay internally consistent while the rectangles slide off the faces they were drawn
+    for. That is exactly how this file came to paint a 5x2x5 cap for a model carrying a 4x1x7 one,
+    leaving three of the cap's four side faces with no texture at all."""
+    doc = json.loads(GEO.read_text(encoding="utf-8"))
+    found = []
+
+    def walk(bone):
+        for c in bone.get("cubes", []):
+            found.append((tuple(c["size"]), tuple(c["uv"])))
+        for child in bone.get("children", []):
+            walk(child)
+
+    for bone in doc["bones"]:
+        walk(bone)
+
+    assert (doc["texture_width"], doc["texture_height"]) == (TEX_W, TEX_H),         f"{GEO.name} is {doc['texture_width']}x{doc['texture_height']}, this master is {TEX_W}x{TEX_H}"
+    assert found == list(CUBES.values()),         f"CUBES disagrees with {GEO.name}: {found} vs {list(CUBES.values())}"
+
+
+def check_layout() -> dict:
+    """Every face rectangle must sit inside the texture and no two may overlap - a silent overlap
+    would paint one cube's shading onto another's face and only show up on a model in game."""
+    claimed = {}
+    for name, (size, uv) in CUBES.items():
+        for face, (x, y, w, h) in faces(size, uv).items():
+            assert 0 <= x and x + w <= TEX_W, f"{name}.{face} runs off the texture in u"
+            assert 0 <= y and y + h <= TEX_H, f"{name}.{face} runs off the texture in v"
+            for py in range(y, y + h):
+                for px in range(x, x + w):
+                    prev = claimed.get((px, py))
+                    assert prev is None, f"{name}.{face} overlaps {prev} at {(px, py)}"
+                    claimed[(px, py)] = f"{name}.{face}"
+    return claimed
+
+
 def main() -> None:
+    check_geometry()
+    claimed = check_layout()
     img = Image.new("LA", (TEX_W, TEX_H), (0, 0))
     paint_cap(img)
     paint_lame(img, "lame1", 0, bottom=False)
     paint_lame(img, "lame2", 1, bottom=True)
+
+    # This master is 100% opaque, so the painted set must be exactly the net: a pixel short is a
+    # face the model shows and the texture does not.
+    opaque = {(x, y) for y in range(TEX_H) for x in range(TEX_W) if img.getpixel((x, y))[1]}
+    assert opaque == set(claimed), "painted pixels do not match the UV rectangles"
+
     OUT.parent.mkdir(parents=True, exist_ok=True)
     img.save(OUT)
-    print(f"wrote {OUT}")
+    lums = [img.getpixel(p)[0] for p in sorted(opaque)]
+    print(f"wrote {OUT} ({len(opaque)} opaque px, values {min(lums)}-{max(lums)})")
 
 
 if __name__ == "__main__":

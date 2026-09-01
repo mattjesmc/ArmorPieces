@@ -66,6 +66,76 @@ jar {
 }
 
 // ---------------------------------------------------------------------------
+// Standalone pack zips.
+//
+// Every part this mod ships is data: data/ is a datapack, assets/ is a resource pack, and both are
+// already inside the jar above. These zips are those same two trees on their own, for the "same
+// ids, your pack" case - someone restyling a part's geometry or moving where it may be worn edits
+// a copy of the pack instead of unzipping a jar. They are an addition to the jar and not a
+// substitute for it: nothing renders without the Java.
+//
+// Zips, not jars, so they land in build/distributions/ rather than build/libs/.
+// ---------------------------------------------------------------------------
+def packDescription = "Armor Pieces ${project.version} - the mod's own content. Requires the mod."
+
+// pack.mcmeta has to be generated rather than committed, because it carries the version. Wired as
+// a task (not a doFirst on the Zip) so the format and description are declared inputs and the zip
+// rebuilds when either changes.
+//
+// min_format/max_format rather than the familiar pack_format: past PackFormat.lastPreMinorVersion
+// (64 for resources, 81 for data) the game REJECTS a bare pack_format - "Pack missing field, must
+// declare both min_format and max_format" - and falls back to a metadata type that keeps only the
+// description, which shows the pack up as incompatible. Both formats here are well past that.
+// A bare int reads as .0 in min_format and as .MAX in max_format (PackFormat.BOTTOM_CODEC is
+// fullCodec(0), TOP_CODEC is fullCodec(Integer.MAX_VALUE)), so major..major spans every minor of
+// the one format the pack was built against.
+def packMeta(String taskName, String format, String description) {
+    tasks.register(taskName) {
+        def mcmeta = layout.buildDirectory.file("packMeta/${taskName}/pack.mcmeta")
+        inputs.property 'format', format
+        inputs.property 'description', description
+        outputs.file mcmeta
+        doLast {
+            def out = mcmeta.get().asFile
+            out.parentFile.mkdirs()
+            // Explicit UTF-8: Groovy's File.text would write the platform default, which on
+            // Windows is not UTF-8 and quietly mangles anything non-ASCII in the description.
+            out.setText(groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(pack: [
+                description: description,
+                min_format: format as int,
+                max_format: format as int,
+            ])), 'UTF-8')
+        }
+    }
+}
+
+def datapackMeta = packMeta('datapackMeta', project.datapack_format, packDescription)
+def resourcepackMeta = packMeta('resourcepackMeta', project.resourcepack_format, packDescription)
+
+tasks.register('datapackZip', Zip) {
+    group = 'build'
+    description = "Bundles the mod's data/ tree as a standalone datapack."
+    archiveBaseName = project.archives_base_name
+    archiveClassifier = 'datapack'
+    from datapackMeta
+    from('src/main/resources/data') { into 'data' }
+}
+
+tasks.register('resourcepackZip', Zip) {
+    group = 'build'
+    description = "Bundles the mod's assets/ tree as a standalone resource pack."
+    archiveBaseName = project.archives_base_name
+    archiveClassifier = 'resourcepack'
+    from resourcepackMeta
+    from('src/main/resources/assets') { into 'assets' }
+}
+
+// So `./gradlew build` produces all three uploadable files, not just the jar.
+tasks.named('assemble') {
+    dependsOn 'datapackZip', 'resourcepackZip'
+}
+
+// ---------------------------------------------------------------------------
 // The optional mcp-toolkit dev bridge.
 //
 // A local-only development tool: it is not published to any repository, so for anyone but its

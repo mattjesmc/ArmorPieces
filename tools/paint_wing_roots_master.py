@@ -63,12 +63,14 @@ and only `side` tells you whether that is the outboard one.
 
 from __future__ import annotations
 
+import json
 import random
 from pathlib import Path
 
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
+GEO = ROOT / "src" / "main" / "resources" / "assets" / "armorpieces" / "armorpieces" / "decoration" / "wing_roots.json"
 OUT = ROOT / "tools" / "decoration_masters" / "wing_roots.png"
 
 TEX_W, TEX_H = 64, 32
@@ -281,6 +283,31 @@ def paint_tube(img, name: str, side: int) -> None:
     fill(img, f["north"], INNER)              # the far end, inside the torso
 
 
+def check_geometry() -> None:
+    """CUBES must be the cube list of the shipped geometry, in order.
+
+    Painting a texture for a shape the model no longer has is invisible to every other check in this
+    pipeline: `bb_geo roundtrip` checks the model against itself and check_layout() checks the master
+    against itself, and both keep passing while the rectangles slide off the faces they were drawn
+    for. Four parts had drifted that way before this check existed on any of them."""
+
+    doc = json.loads(GEO.read_text(encoding="utf-8"))
+    found = []
+
+    def walk(bone):
+        for c in bone.get("cubes", []):
+            found.append((tuple(c["size"]), tuple(c["uv"])))
+        for child in bone.get("children", []):
+            walk(child)
+
+    for bone in doc["bones"]:
+        walk(bone)
+
+    assert (doc["texture_width"], doc["texture_height"]) == (TEX_W, TEX_H),         f"{GEO.name} is {doc['texture_width']}x{doc['texture_height']}, this master is {TEX_W}x{TEX_H}"
+    want = list(CUBES.values())
+    assert found == want, f"CUBES disagrees with {GEO.name}: {found} vs {want}"
+
+
 def check_layout() -> None:
     """Every face rectangle must sit inside the texture and no two may overlap - a silent overlap
     would paint one cube's shading onto another's face and only show up on a model in game."""
@@ -298,6 +325,7 @@ def check_layout() -> None:
 
 
 def main() -> None:
+    check_geometry()
     claimed = check_layout()
     img = Image.new("LA", (TEX_W, TEX_H), (0, 0))
     paint_bar(img)

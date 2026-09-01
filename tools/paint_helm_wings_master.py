@@ -46,12 +46,14 @@ thin d-wide faces come FIRST and THIRD.
 
 from __future__ import annotations
 
+import json
 import random
 from pathlib import Path
 
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
+GEO = ROOT / "src" / "main" / "resources" / "assets" / "armorpieces" / "armorpieces" / "decoration" / "helm_wings.json"
 OUT = ROOT / "tools" / "decoration_masters" / "helm_wings.png"
 
 TEX_W, TEX_H = 64, 32
@@ -63,8 +65,8 @@ TEX_W, TEX_H = 64, 32
 # what keeps the rotated joints closed, so the axial spans overlap by one.
 CUBES = {
     "boss":  ((3, 3, 4), (0, 0), 3),     # the socket, straddling the helmet wall - 1 unit buried
-    "horn1": ((2, 4, 3), (14, 0), 6),    # first segment, 13 deg outboard and 16 deg back
-    "horn2": ((2, 4, 2), (24, 0), 9),    # second, cumulative 20 / 38
+    "horn1": ((1, 4, 3), (15, 0), 6),    # first segment, 13 deg outboard and 16 deg back
+    "horn2": ((1, 4, 2), (25, 0), 9),    # second, cumulative 20 / 38
     "horn3": ((1, 4, 2), (32, 0), 12),   # the tip, cumulative 25 / 64
 }
 
@@ -153,6 +155,46 @@ def paint_segment(img, name: str, inner_east: bool = False) -> None:
     paint_side(img, f["south"], SOUTH, top)
 
 
+def check_geometry() -> None:
+    """CUBES must be the cube list of the shipped geometry, in order.
+
+    Painting a texture for a shape the model no longer has is invisible to every other check here:
+    both halves stay internally consistent while the rectangles slide off the faces they were drawn
+    for. That is exactly how this file's horn1 and horn2 came to be painted a unit wider than the
+    model's, leaving a strip of every face unpainted on a chain that had since been slimmed."""
+    doc = json.loads(GEO.read_text(encoding="utf-8"))
+    found = []
+
+    def walk(bone):
+        for c in bone.get("cubes", []):
+            found.append((tuple(c["size"]), tuple(c["uv"])))
+        for child in bone.get("children", []):
+            walk(child)
+
+    for bone in doc["bones"]:
+        walk(bone)
+
+    assert (doc["texture_width"], doc["texture_height"]) == (TEX_W, TEX_H),         f"{GEO.name} is {doc['texture_width']}x{doc['texture_height']}, this master is {TEX_W}x{TEX_H}"
+    want = [(size, uv) for size, uv, _ in CUBES.values()]
+    assert found == want, f"CUBES disagrees with {GEO.name}: {found} vs {want}"
+
+
+def check_layout() -> dict:
+    """Every face rectangle must sit inside the texture and no two may overlap - a silent overlap
+    would paint one cube's shading onto another's face and only show up on a model in game."""
+    claimed = {}
+    for name, (size, uv, _) in CUBES.items():
+        for face, (x, y, w, h) in faces(size, uv).items():
+            assert 0 <= x and x + w <= TEX_W, f"{name}.{face} runs off the texture in u"
+            assert 0 <= y and y + h <= TEX_H, f"{name}.{face} runs off the texture in v"
+            for py in range(y, y + h):
+                for px in range(x, x + w):
+                    prev = claimed.get((px, py))
+                    assert prev is None, f"{name}.{face} overlaps {prev} at {(px, py)}"
+                    claimed[(px, py)] = f"{name}.{face}"
+    return claimed
+
+
 def paint_boss_rivet(img) -> None:
     """A stud on the boss's outward face, so the socket reads as hardware bolted through the helmet
     rather than as the horn simply growing thicker. One stud, centred: the face is 4 wide by 3 tall,
@@ -166,6 +208,8 @@ def paint_boss_rivet(img) -> None:
 
 
 def main() -> None:
+    check_geometry()
+    claimed = check_layout()
     img = Image.new("LA", (TEX_W, TEX_H), (0, 0))
     # The boss's inward face is inside the head box, a unit behind the helmet wall; the three horn
     # segments' inward faces clear the helmet and are seen head-on from the front.
@@ -174,9 +218,16 @@ def main() -> None:
     paint_segment(img, "horn1")
     paint_segment(img, "horn2")
     paint_segment(img, "horn3")
+
+    # This master is 100% opaque, so the painted set must be exactly the net: a pixel short is a
+    # face the model shows and the texture does not.
+    opaque = {(x, y) for y in range(TEX_H) for x in range(TEX_W) if img.getpixel((x, y))[1]}
+    assert opaque == set(claimed), "painted pixels do not match the UV rectangles"
+
     OUT.parent.mkdir(parents=True, exist_ok=True)
     img.save(OUT)
-    print(f"wrote {OUT}")
+    lums = [img.getpixel(p)[0] for p in sorted(opaque)]
+    print(f"wrote {OUT} ({len(opaque)} opaque px, values {min(lums)}-{max(lums)})")
 
 
 if __name__ == "__main__":
