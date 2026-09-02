@@ -70,6 +70,16 @@ public interface Fitting {
     Component description();
 
     /**
+     * What fills it, for the "Ingredients:" line of the template that names this fitting: "Gems",
+     * "Any Dye", "A Banner". A fitting file may say it outright with an {@code ingredients} text;
+     * otherwise the type answers for the kind of item it reads. The default here is the bare
+     * template's own line, for a type from another mod that has not said.
+     */
+    default Component ingredients() {
+        return Component.translatable("item.armorpieces.fitting_template.ingredients");
+    }
+
+    /**
      * Reads and writes the value this fitting stores on an item. Looked up by the entry through the
      * fitting the value belongs to, which is what lets values be of any shape - see
      * {@link FittingValue}.

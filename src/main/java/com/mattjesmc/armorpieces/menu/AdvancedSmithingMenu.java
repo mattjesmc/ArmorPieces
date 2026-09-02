@@ -375,14 +375,20 @@ public class AdvancedSmithingMenu extends AbstractContainerMenu {
         return stillValid(this.access, player, ModBlocks.advancedSmithingTable());
     }
 
+    /**
+     * Hands everything back. Guarded on the side, not on the block: vanilla routes this through the
+     * level access, which is nothing when the menu was opened by {@code /armorpieces table} rather
+     * than a block, and "nothing" there means the stacks in the display and input slots are lost
+     * on close. The preview is dropped first, since it was never the player's.
+     */
     @Override
     public void removed(final Player player) {
         super.removed(player);
         this.preview.removeItemNoUpdate(0);
-        this.access.execute((level, pos) -> {
+        if (!this.level.isClientSide()) {
             this.clearContainer(player, this.display);
             this.clearContainer(player, this.inputs);
-        });
+        }
     }
 
     /**

@@ -39,14 +39,25 @@ import net.minecraft.world.item.equipment.trim.TrimMaterial;
  * palette, resolved against the armor exactly as the part's first material is, so a gold guard on a
  * gold helmet darkens the way gold trim on gold armor does.
  */
-public record MaterialFitting(Component description, HolderSet<TrimMaterial> materials) implements Fitting.Masked {
+public record MaterialFitting(
+    Component description,
+    HolderSet<TrimMaterial> materials,
+    Optional<Component> customIngredients
+) implements Fitting.Masked {
     public static final MapCodec<MaterialFitting> CODEC = RecordCodecBuilder.mapCodec(
         i -> i.group(
                 ComponentSerialization.CODEC.fieldOf("description").forGetter(MaterialFitting::description),
-                RegistryCodecs.homogeneousList(Registries.TRIM_MATERIAL).fieldOf("materials").forGetter(MaterialFitting::materials)
+                RegistryCodecs.homogeneousList(Registries.TRIM_MATERIAL).fieldOf("materials").forGetter(MaterialFitting::materials),
+                ComponentSerialization.CODEC.optionalFieldOf("ingredients").forGetter(MaterialFitting::customIngredients)
             )
             .apply(i, MaterialFitting::new)
     );
+
+    /** The file's own text, else "Trim Materials" - a tag has no name a player could read. */
+    @Override
+    public Component ingredients() {
+        return this.customIngredients.orElseGet(() -> Component.translatable("item.armorpieces.template.trim_materials"));
+    }
 
     /** The second material, as vanilla's own holder - see {@code DecorationEntry} for why not a type of ours. */
     public record Value(Holder<TrimMaterial> material) implements FittingValue {

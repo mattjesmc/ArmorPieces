@@ -3,6 +3,7 @@ package com.mattjesmc.armorpieces.registry;
 import com.mattjesmc.armorpieces.ArmorPieces;
 import com.mattjesmc.armorpieces.decoration.ArmorDecoration;
 import com.mattjesmc.armorpieces.decoration.DecorationAnchor;
+import com.mattjesmc.armorpieces.decoration.fitting.Fitting;
 import com.mattjesmc.armorpieces.item.DecorationTemplateItem;
 import com.mattjesmc.armorpieces.item.FittingTemplateItem;
 import java.util.EnumMap;
@@ -59,6 +60,16 @@ public final class ModItems {
     /** The template that sets a second material into a part already on the armor. */
     public static FittingTemplateItem fittingTemplate() {
         return fittingTemplate;
+    }
+
+    /**
+     * A fitting template naming one fitting - the stack a recipe with the component in its result
+     * produces. The one place it is built, so the creative tab and a command agree.
+     */
+    public static ItemStack fittingTemplateFor(final Holder<Fitting> fitting) {
+        final ItemStack stack = new ItemStack(fittingTemplate);
+        stack.set(ModDataComponents.FITTING, fitting);
+        return stack;
     }
 
     /** The template item for a socket. Never null - every anchor has one by construction. */

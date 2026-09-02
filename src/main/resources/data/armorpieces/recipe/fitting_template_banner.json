@@ -8,9 +8,12 @@
   ],
   "key": {
     "#": "minecraft:paper",
-    "F": "minecraft:amethyst_shard"
+    "F": "minecraft:loom"
   },
   "result": {
-    "id": "armorpieces:fitting_template"
+    "id": "armorpieces:fitting_template",
+    "components": {
+      "armorpieces:fitting": "armorpieces:banner"
+    }
   }
 }

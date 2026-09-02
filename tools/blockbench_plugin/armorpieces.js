@@ -2249,6 +2249,18 @@
 				description: 'Shown in tooltips; written to the language file.',
 			},
 			type: { label: 'Type', type: 'select', options: FITTING_TYPES, value: 'material' },
+			ingredients: {
+				label: 'Takes, in words', type: 'text', value: '', placeholder: 'Gems',
+				description: 'The "Ingredients:" line of the fitting\'s template. Blank for the type\'s own: Trim Materials, Any Dye, A Banner.',
+			},
+			recipe_focus: {
+				label: 'Recipe centre', type: 'text', value: '', placeholder: 'minecraft:amethyst_block',
+				description: 'The item in the middle of the template recipe. Blank writes no recipe.',
+			},
+			recipe_ring: {
+				label: 'Recipe ring', type: 'text', value: 'minecraft:paper',
+				description: 'The four items around it.',
+			},
 			materials: {
 				label: 'Takes', type: 'select', options: tagOptions, value: CUSTOM_SET,
 				condition: isMaterial,
@@ -2321,9 +2333,32 @@
 					definition.sheet = result.sheet;
 					definition.front = result.front;
 				}
+				const ingredients = (result.ingredients || '').trim();
+				if (ingredients) {
+					definition.ingredients = { translate: 'fitting.' + namespace + '.' + name + '.ingredients' };
+				}
 				writeJson(file, definition);
 				writeLang(piece.pack, namespace, 'fitting.' + namespace + '.' + name,
 					(result.label || '').trim() || titleCase(name));
+				if (ingredients) {
+					writeLang(piece.pack, namespace, 'fitting.' + namespace + '.' + name + '.ingredients', ingredients);
+				}
+				// The fitting's own template: the bare fitting template carrying this fitting as
+				// armorpieces:fitting, in the same ring shape as a part's template recipe.
+				const focus = (result.recipe_focus || '').trim();
+				const ring = (result.recipe_ring || '').trim() || 'minecraft:paper';
+				if (focus) {
+					writeJson(path.join(piece.pack, 'data', namespace, 'recipe', 'fitting_template_' + name + '.json'), {
+						type: 'minecraft:crafting_shaped',
+						category: 'equipment',
+						pattern: RING_PATTERN,
+						key: { '#': ring, F: focus },
+						result: {
+							id: 'armorpieces:fitting_template',
+							components: { 'armorpieces:fitting': namespace + ':' + name },
+						},
+					});
+				}
 				this.hide();
 
 				// Listed the way every other fitting is: resolved by Python from the file just written.

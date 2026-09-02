@@ -49,8 +49,13 @@ public final class ModCreativeTabs {
                                 .filter(decoration -> decoration.value().fits(anchor))
                                 .forEach(decoration -> output.accept(ModItems.templateFor(anchor, decoration)));
                         }
-                        // Last, after every part: the one template that fits gems, metals, dyes and
-                        // banners into whatever the piece already wears.
+                        // Last, after every part: a fitting template per fitting in the registry -
+                        // gemstone, guard, inlay, banner, and any a pack adds - then the bare one that
+                        // fits anything into whatever the piece already wears.
+                        parameters.holders()
+                            .lookup(ArmorPiecesRegistries.FITTING)
+                            .ifPresent(fittings -> fittings.listElements()
+                                .forEach(fitting -> output.accept(ModItems.fittingTemplateFor(fitting))));
                         output.accept(new ItemStack(ModItems.fittingTemplate()));
                     }))
                 .build());

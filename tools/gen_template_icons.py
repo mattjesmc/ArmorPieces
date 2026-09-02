@@ -38,6 +38,10 @@ PALETTE = {
     "*": (0xFF, 0xCE, 0x4B, 0xFF),  # socket accent
     "g": (0x1E, 0x8A, 0x4C, 0xFF),  # gem, shadow
     "G": (0x5C, 0xE0, 0x8C, 0xFF),  # gem, lit
+    "d": (0x8E, 0x1E, 0x3A, 0xFF),  # dye drop, shadow
+    "D": (0xE0, 0x3C, 0x66, 0xFF),  # dye drop, lit
+    "b": (0x3A, 0x5B, 0xA8, 0xFF),  # banner field, pattern
+    "B": (0xE8, 0xE4, 0xD8, 0xFF),  # banner cloth
 }
 
 # The card. Its 10x10 recess (rows 3-12, cols 3-12) is where the armor art goes.
@@ -206,9 +210,10 @@ INLAY = {
         ".aaa..aaa.",
         "..........",
     ],
-    # Not a socket: the fitting template, which sets a second material into a part already worn.
-    # No armor silhouette, because it goes on any of them - a cut gem in an amber setting instead,
-    # the one fitting every player will meet first.
+    # Not a socket: the fitting templates, which set a second material into a part already worn.
+    # No armor silhouette, because they go on any of them. The bare one, which fits anything, is a
+    # cut gem in an amber setting; the four named ones each show the thing that fills them - the
+    # gem alone, a metal ring, a dye drop, a banner on its pole - inside the same card.
     "fitting": [
         "..........",
         "....**....",
@@ -219,6 +224,54 @@ INLAY = {
         "..*gggg*..",
         "...*gg*...",
         "....**....",
+        "..........",
+    ],
+    "fitting_gemstone": [
+        "..........",
+        "..........",
+        "....GG....",
+        "...GGGG...",
+        "..GGGgGG..",
+        "..GGgggG..",
+        "...gggg...",
+        "....gg....",
+        "..........",
+        "..........",
+    ],
+    "fitting_guard": [
+        "..........",
+        "...AAAA...",
+        "..AA..AA..",
+        ".AA....AA.",
+        ".A......A.",
+        ".a......a.",
+        ".aa....aa.",
+        "..aa..aa..",
+        "...aaaa...",
+        "..........",
+    ],
+    "fitting_inlay": [
+        "..........",
+        "....D.....",
+        "....DD....",
+        "...DDDD...",
+        "...DDDD...",
+        "..DDDDDD..",
+        "..DDdddD..",
+        "..DddddD..",
+        "...dddd...",
+        "..........",
+    ],
+    "fitting_banner": [
+        "..........",
+        ".*BBBBBB..",
+        ".*BBBBBB..",
+        ".*BbbbbB..",
+        ".*BbbbbB..",
+        ".*BBBBBB..",
+        ".*BB..BB..",
+        ".*........",
+        ".*........",
         "..........",
     ],
 }
@@ -243,7 +296,11 @@ def main() -> None:
     images = {}
     for anchor in INLAY:
         img = render(anchor)
-        img.save(OUT / f"{anchor}_template.png")
+        # crest -> crest_template.png; fitting_gemstone -> fitting_template_gemstone.png, the name
+        # the item model's select case points at.
+        name = (f"fitting_template_{anchor[len('fitting_'):]}" if anchor.startswith("fitting_")
+                else f"{anchor}_template")
+        img.save(OUT / f"{name}.png")
         images[anchor] = img
     print(f"wrote {len(images)} icons to {OUT}")
 

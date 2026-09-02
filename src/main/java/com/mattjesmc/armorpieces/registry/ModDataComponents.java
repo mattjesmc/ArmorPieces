@@ -3,6 +3,7 @@ package com.mattjesmc.armorpieces.registry;
 import com.mattjesmc.armorpieces.ArmorPieces;
 import com.mattjesmc.armorpieces.decoration.ArmorDecoration;
 import com.mattjesmc.armorpieces.decoration.ArmorDecorations;
+import com.mattjesmc.armorpieces.decoration.fitting.Fitting;
 import net.fabricmc.fabric.api.item.v1.ItemComponentTooltipProviderRegistry;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
@@ -36,6 +37,14 @@ public final class ModDataComponents {
      */
     public static DataComponentType<Holder<ArmorDecoration>> DECORATION;
 
+    /**
+     * The fitting a fitting template is for, carried on the TEMPLATE stack - the same trade as
+     * {@link #DECORATION}, made for the same reason: fittings are data, so a template per fitting is
+     * one item and one component, and a pack's new fitting gets its template from a recipe that sets
+     * this. Absent on the bare template, which offers the item to every fitting as it always has.
+     */
+    public static DataComponentType<Holder<Fitting>> FITTING;
+
     private ModDataComponents() {}
 
     public static void register() {
@@ -53,6 +62,14 @@ public final class ModDataComponents {
             DataComponentType.<Holder<ArmorDecoration>>builder()
                 .persistent(ArmorDecoration.CODEC)
                 .networkSynchronized(ArmorDecoration.STREAM_CODEC)
+                .build()
+        );
+        FITTING = Registry.register(
+            BuiltInRegistries.DATA_COMPONENT_TYPE,
+            Identifier.fromNamespaceAndPath(ArmorPieces.MOD_ID, "fitting"),
+            DataComponentType.<Holder<Fitting>>builder()
+                .persistent(Fitting.CODEC)
+                .networkSynchronized(Fitting.STREAM_CODEC)
                 .build()
         );
 

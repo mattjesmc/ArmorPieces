@@ -56,7 +56,9 @@ pack does not have yet: a material fitting over a trim-material tag or over tick
 which are written as a tag in the pack so another pack can add to it; a dye fitting; or a
 banner fitting on one of the part's own bones, with its pattern sheet and front face. The
 definition, its language line and any tag are written the moment the dialog confirms, and
-the fitting joins the part's list. Effects are rows on the same dialog: pick a built-in
+the fitting joins the part's list. The same dialog takes the "Ingredients:" words for the
+fitting's template and the two items of its recipe, and writes
+`recipe/fitting_template_<name>.json` beside the definition when a centre item is given. Effects are rows on the same dialog: pick a built-in
 type and its fields appear, with the ranges, defaults and descriptions read out of the Java
 that defines it, and attribute, mob-effect and damage-tag ids autocompleting from the game.
 Any row can be switched to run *only while* one of the part's fittings holds a chosen
@@ -161,8 +163,13 @@ takes any metal:
 ```json
 { "type": "armorpieces:material",
   "description": { "translate": "fitting.<ns>.pommel" },
-  "materials": "#armorpieces:guard_metals" }
+  "materials": "#armorpieces:guard_metals",
+  "ingredients": { "translate": "fitting.<ns>.pommel.ingredients" } }
 ```
+
+`ingredients` is optional: the "Ingredients:" line of the pommel's own template (see 4 below),
+and without it the type answers — *Trim Materials* for a material fitting, *Any Dye* for a dye
+fitting, *A Banner* for a banner fitting.
 
 A new fitting *type* — one that reads an item the three built-in types cannot, or draws its own
 geometry instead of colouring a mask — is Java, the way a new effect type is: implement
@@ -190,7 +197,15 @@ the `armorpieces:decoration` component:
 A loot table with `minecraft:set_components` does the same, and so does nothing at all: the
 creative tab is built by walking the registry, so a new part appears there the moment the pack
 loads. The twelve socket templates are `<socket>_template` — `crest_template`, `brow_template`,
-and so on — and `fitting_template` is the thirteenth, shared by every fitting.
+and so on — and `fitting_template` is the thirteenth, one item for every fitting the same way:
+the fitting it is for rides on the stack as `armorpieces:fitting`, so a pack's `pommel` gets a
+pommel template from a recipe whose result carries `"armorpieces:fitting": "<ns>:pommel"`, and
+the item model picks its look by the same component — a texture each for the four shipped
+fittings, the plain card for any other. A named template offers the third-slot item to that
+fitting alone on each part; the bare template, with no component, still offers it to every
+fitting in turn, and with an empty third slot empties every fitting where a named one empties
+only its own. The four shipped recipes are `recipe/fitting_template_<fitting>.json`, an amethyst
+block, a copper ingot, any dye and a loom in a ring of paper.
 
 **4b. Found rather than made.** A pack can write a loot table of its own, but it cannot add to a
 vanilla one — only replace it whole, and two packs replacing `chests/ancient_city` cannot both

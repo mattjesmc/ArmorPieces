@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:copper_ingot"
+  },
+  "result": {
+    "id": "armorpieces:fitting_template",
+    "components": {
+      "armorpieces:fitting": "armorpieces:guard"
+    }
+  }
+}

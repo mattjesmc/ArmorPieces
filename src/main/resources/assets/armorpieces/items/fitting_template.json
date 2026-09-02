@@ -1,6 +1,41 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "armorpieces:item/fitting_template"
+    "type": "minecraft:select",
+    "property": "minecraft:component",
+    "component": "armorpieces:fitting",
+    "cases": [
+      {
+        "when": "armorpieces:gemstone",
+        "model": {
+          "type": "minecraft:model",
+          "model": "armorpieces:item/fitting_template_gemstone"
+        }
+      },
+      {
+        "when": "armorpieces:guard",
+        "model": {
+          "type": "minecraft:model",
+          "model": "armorpieces:item/fitting_template_guard"
+        }
+      },
+      {
+        "when": "armorpieces:inlay",
+        "model": {
+          "type": "minecraft:model",
+          "model": "armorpieces:item/fitting_template_inlay"
+        }
+      },
+      {
+        "when": "armorpieces:banner",
+        "model": {
+          "type": "minecraft:model",
+          "model": "armorpieces:item/fitting_template_banner"
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "armorpieces:item/fitting_template"
+    }
   }
 }

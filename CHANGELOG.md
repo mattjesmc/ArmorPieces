@@ -15,6 +15,19 @@ on a piece of armor a table hands out, with a socket, a part, a material and opt
 fittings, so a chest can hold a helmet already wearing a gold circlet with an emerald in it.
 `/armorpieces stage loot <table> [rolls]` rolls a table and counts what the mod put in it.
 
+**One template per fitting.** The fitting template now names the fitting it is for, the way a
+socket template names its part: one item, and an `armorpieces:fitting` component on the stack,
+with its own look and name - *Gemstone Fitting Smithing Template*, made from an amethyst block,
+*Guard* from a copper ingot, *Inlay* from any dye, *Banner* from a loom, each in a ring of paper -
+and a tooltip that says what it goes on and what goes in. A named template offers the third-slot
+item to that fitting alone on each part, so a gemstone template and a ruby fill a circlet's stone
+and do nothing to a sash; with the third slot empty it takes out that fitting and nothing else.
+The bare template, with no fitting named, is unchanged: it still routes anything to the first
+fitting that takes it and empties every fitting at once, so a world holding one keeps working; it
+just has no recipe any more. Because the fitting is a component, a pack's own fitting gets its
+template from a recipe alone, and `ingredients` on a fitting file supplies the tooltip's words,
+with a default per type. The apply and clear recipes stay one file each.
+
 **Disabling recipes.** A recipe type that loads and does nothing, `armorpieces:disabled`. A
 datapack cannot delete a file the mod ships, so it overrides the file with
 `{"type": "armorpieces:disabled"}` instead: the recipe has no fields, matches nothing, and has no
@@ -36,15 +49,19 @@ the base: Apply runs the ordinary smithing recipe lookup and writes the result b
 display slot, so a socket template puts a part on, a fitting template sets a stone, and a vanilla
 trim template trims, while a recipe a pack has turned off stays off - and the stand wears the
 result before Apply is pressed, as the smithing table's stand does. Nothing is kept in the block;
-everything goes back to the player when the menu closes.
+everything goes back to the player when the menu closes, whether it was opened at the block or by
+`/armorpieces table`.
 
 **Tools.** The Blockbench panel gains a *Craftable* switch beside the two recipe items: off, Save
 writes the recipe with its type swapped and the pattern and items kept, so the choices survive
 until it is switched back on, and the summary line says *not craftable*. The Part dialog gains a
 *Loot* group - rows of table, weight and chance, the table id autocompleting from the game jar
 (`vanilla_assets.py --list-loot-tables`) - and the summary line says where the part is found.
-`check_authoring.py` round-trips every part's template recipe, switched on or off, the way it
-does the data files, and checks every loot row is in the shape the dialog writes.
+The New Fitting dialog takes the template's "Ingredients:" words and its two recipe items, and
+writes the fitting's template recipe with the definition. `check_authoring.py` round-trips every
+part's template recipe, switched on or off, the way it does the data files, checks every loot row
+is in the shape the dialog writes, and checks every fitting's template recipe. `gen_template_icons.py`
+draws the four fitting template icons beside the bare one.
 
 ## 0.2.0
 

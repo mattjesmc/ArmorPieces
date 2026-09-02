@@ -3,5 +3,8 @@
   "description": {
     "translate": "fitting.armorpieces.gemstone"
   },
-  "materials": "#armorpieces:gemstones"
+  "materials": "#armorpieces:gemstones",
+  "ingredients": {
+    "translate": "fitting.armorpieces.gemstone.ingredients"
+  }
 }

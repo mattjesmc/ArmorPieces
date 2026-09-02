@@ -3,5 +3,8 @@
   "description": {
     "translate": "fitting.armorpieces.guard"
   },
-  "materials": "#armorpieces:guard_metals"
+  "materials": "#armorpieces:guard_metals",
+  "ingredients": {
+    "translate": "fitting.armorpieces.guard.ingredients"
+  }
 }

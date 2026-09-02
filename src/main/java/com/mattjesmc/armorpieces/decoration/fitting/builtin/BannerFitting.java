@@ -49,16 +49,28 @@ import net.minecraft.world.level.block.entity.BannerPatternLayers;
  * <p>The drawing lives on the client, in {@code BannerFittingRenderer}, registered against this
  * type - this class only says what is stored and which bone is spoken for.
  */
-public record BannerFitting(Component description, String bone, Sheet sheet, Direction front) implements Fitting {
+public record BannerFitting(
+    Component description,
+    String bone,
+    Sheet sheet,
+    Direction front,
+    Optional<Component> customIngredients
+) implements Fitting {
     public static final MapCodec<BannerFitting> CODEC = RecordCodecBuilder.mapCodec(
         i -> i.group(
                 ComponentSerialization.CODEC.fieldOf("description").forGetter(BannerFitting::description),
                 Codec.STRING.optionalFieldOf("bone", "banner").forGetter(BannerFitting::bone),
                 Sheet.CODEC.optionalFieldOf("sheet", Sheet.BANNER).forGetter(BannerFitting::sheet),
-                Direction.CODEC.optionalFieldOf("front", Direction.SOUTH).forGetter(BannerFitting::front)
+                Direction.CODEC.optionalFieldOf("front", Direction.SOUTH).forGetter(BannerFitting::front),
+                ComponentSerialization.CODEC.optionalFieldOf("ingredients").forGetter(BannerFitting::customIngredients)
             )
             .apply(i, BannerFitting::new)
     );
+
+    @Override
+    public Component ingredients() {
+        return this.customIngredients.orElseGet(() -> Component.translatable("fitting.armorpieces.ingredients.banner"));
+    }
 
     /** Which of vanilla's two pattern sprite sets the cloth samples. */
     public enum Sheet implements StringRepresentable {

@@ -138,6 +138,49 @@ def check_recipes(pack: Path, data_files: list[Path]) -> list[str]:
     return failures
 
 
+def check_fitting_recipes(pack: Path) -> list[str]:
+    """Every fitting's template recipe, `recipe/fitting_template_<fitting>.json`, in the shape the
+    New Fitting dialog writes: the ring, the bare fitting template as the result, and the fitting
+    as its `armorpieces:fitting` component. Hand-made ones are left alone like a part's."""
+    failures: list[str] = []
+    for recipe_file in sorted(pack.glob("data/*/recipe/fitting_template_*.json")):
+        namespace = recipe_file.parents[1].name
+        fitting = recipe_file.stem[len("fitting_template_"):]
+        text = recipe_file.read_text(encoding="utf8")
+        try:
+            recipe = json.loads(text)
+        except ValueError:
+            failures.append(f"recipe {recipe_file.name}: not valid JSON")
+            continue
+        if recipe.get("type") != "minecraft:crafting_shaped" or recipe.get("pattern") != RING_PATTERN:
+            print(f"recipe {recipe_file.name}: hand-made, left alone")
+            continue
+        key = recipe.get("key") or {}
+        focus, ring = _ingredient_id(key.get("F")), _ingredient_id(key.get("#"))
+        if not focus or not ring:
+            print(f"recipe {recipe_file.name}: hand-made, left alone")
+            continue
+        rewrite = dict(recipe)
+        rewrite.update({
+            "type": "minecraft:crafting_shaped",
+            "category": "equipment",
+            "pattern": RING_PATTERN,
+            "key": {"#": ring, "F": focus},
+            "result": {
+                "id": "armorpieces:fitting_template",
+                "components": {"armorpieces:fitting": f"{namespace}:{fitting}"},
+            },
+        })
+        if json.dumps(rewrite, indent=2) + "\n" != text:
+            failures.append(f"recipe {recipe_file.name}: would be rewritten by a save")
+            continue
+        if not (pack / "data" / namespace / "armorpieces" / "fitting" / f"{fitting}.json").exists():
+            failures.append(f"recipe {recipe_file.name}: no fitting {namespace}:{fitting} in this pack")
+            continue
+        print(f"recipe {recipe_file.name}: ok")
+    return failures
+
+
 def check_pack(pack: Path) -> list[str]:
     failures: list[str] = []
     data_files = sorted(pack.glob("data/*/armorpieces/armor_decoration/*.json"))
@@ -167,6 +210,7 @@ def check_pack(pack: Path) -> list[str]:
                 failures.append(f"data {data.name}: loot row {index} would be rewritten by a save")
         print(f"data {data.name}: ok")
     failures.extend(check_recipes(pack, data_files))
+    failures.extend(check_fitting_recipes(pack))
     return failures
 
 

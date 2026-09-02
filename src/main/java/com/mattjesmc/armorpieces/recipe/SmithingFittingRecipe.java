@@ -25,6 +25,7 @@ import net.minecraft.world.item.crafting.display.RecipeDisplay;
 import net.minecraft.world.item.crafting.display.SlotDisplay;
 import net.minecraft.world.item.crafting.display.SmithingRecipeDisplay;
 import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Sets a second material into the parts an armor piece already wears - the second smithing step,
@@ -37,10 +38,19 @@ import net.minecraft.world.level.Level;
  * both take gems both get the one gem, which is the coherent answer for a single smithing step and
  * the reason the template does not have to name a socket.
  *
- * <p>ONE recipe file covers every fitting there will ever be, for the same reason one apply recipe
- * per socket covers every part: nothing about a fitting is named here. The {@code addition}
- * ingredient in the file only narrows what the table lights up for; the routing is the fittings'
- * own {@link Fitting#accept}.
+ * <p>The template may name a FITTING, though, as {@code armorpieces:fitting} on its stack, and then
+ * the question is narrower: only that fitting on each part is offered the item. That is a component
+ * and not four items for the reason the part is a component on a socket template - fittings are
+ * data in a registry a pack adds to, and a pack's {@code plume} fitting gets its own template from
+ * a recipe alone. The bare template, with no fitting named, still routes everything, so a world
+ * made before there were named templates keeps working with the one it has. See
+ * {@link com.mattjesmc.armorpieces.item.FittingTemplateItem}.
+ *
+ * <p>ONE apply recipe file covers every fitting there will ever be, for the same reason one apply
+ * recipe per socket covers every part: nothing about a fitting is named here, and a template
+ * ingredient matches the item whatever component it carries. The {@code addition} ingredient in the
+ * file only narrows what the table lights up for; the routing is the fittings' own
+ * {@link Fitting#accept}, and the template's component.
  *
  * <p>Matches nothing when nothing would change - the same gem into the same stone - so the
  * ingredients are not consumed for no effect, exactly as vanilla trimming refuses to re-apply an
@@ -48,10 +58,12 @@ import net.minecraft.world.level.Level;
  *
  * <p>The same rule, run backwards, is how a fitting is taken out again: the item decides where it
  * goes, and NO item decides nothing goes anywhere. A second recipe file names the template and the
- * armor and leaves {@code addition} out, and the table then empties every fitting on the piece - the
- * gem comes out of the stone, the banner off the back. That costs the template, as vanilla charges a
- * template for every smithing step. It is the one way a fitting is ever emptied: putting the part on
- * again through its socket template carries what was set over, see {@link SmithingDecorationRecipe}.
+ * armor and leaves {@code addition} out, and the table then empties the fittings on the piece -
+ * every one under the bare template, the named one alone under a named template - so the gem comes
+ * out of the stone, or the banner off the back, and nothing else. That costs the template, as
+ * vanilla charges a template for every smithing step. It is the one way a fitting is ever emptied:
+ * putting the part on again through its socket template carries what was set over, see
+ * {@link SmithingDecorationRecipe}.
  */
 public class SmithingFittingRecipe extends SimpleSmithingRecipe {
     public static final MapCodec<SmithingFittingRecipe> MAP_CODEC = RecordCodecBuilder.mapCodec(
@@ -98,32 +110,39 @@ public class SmithingFittingRecipe extends SimpleSmithingRecipe {
      */
     @Override
     public boolean matches(final SmithingRecipeInput input, final Level level) {
-        return super.matches(input, level) && !applyFitting(input.base(), input.addition()).isEmpty();
+        return super.matches(input, level) && !assemble(input).isEmpty();
     }
 
     @Override
     public ItemStack assemble(final SmithingRecipeInput input) {
-        return applyFitting(input.base(), input.addition());
+        return applyFitting(input.base(), input.addition(), input.template().get(ModDataComponents.FITTING));
     }
 
     /**
      * The application itself, static and public so a command or a loot function fits a piece through
      * the same rules the table does.
      *
+     * <p>{@code only} is the fitting the template names, or null for the bare template. Named, it is
+     * the one fitting on each part that is offered the item, or emptied; null, every fitting is, in
+     * the part's order, as it always was.
+     *
      * <p>Returns {@link ItemStack#EMPTY} when the item fits nothing on the piece, or when everything
-     * it fits already holds it. With no item at all - an empty {@code additionItem} - every fitting
-     * on the piece is emptied instead, and the result is again {@link ItemStack#EMPTY} if none held
-     * anything.
+     * it fits already holds it. With no item at all - an empty {@code additionItem} - the fittings
+     * are emptied instead, and the result is again {@link ItemStack#EMPTY} if none held anything.
      */
-    public static ItemStack applyFitting(final ItemStack baseItem, final ItemStack additionItem) {
+    public static ItemStack applyFitting(
+        final ItemStack baseItem,
+        final ItemStack additionItem,
+        final @Nullable Holder<Fitting> only
+    ) {
         final ArmorDecorations existing = baseItem.get(ModDataComponents.DECORATIONS);
         if (existing == null || existing.isEmpty()) {
             return ItemStack.EMPTY;
         }
 
         final ArmorDecorations result = additionItem.isEmpty()
-            ? clearFittings(existing)
-            : setFitting(existing, additionItem);
+            ? clearFittings(existing, only)
+            : setFitting(existing, additionItem, only);
         if (result == existing) {
             return ItemStack.EMPTY;
         }
@@ -133,15 +152,33 @@ public class SmithingFittingRecipe extends SimpleSmithingRecipe {
         return fitted;
     }
 
+    /** The bare template's routing: every fitting on every part is asked. */
+    public static ItemStack applyFitting(final ItemStack baseItem, final ItemStack additionItem) {
+        return applyFitting(baseItem, additionItem, null);
+    }
+
+    /** Whether the template's choice, if it made one, lets this fitting be touched. */
+    private static boolean offered(final Holder<Fitting> fitting, final @Nullable Holder<Fitting> only) {
+        return only == null || only.equals(fitting);
+    }
+
     /** {@code existing} with {@code additionItem} set into every part that takes it; {@code existing} itself if none does. */
-    private static ArmorDecorations setFitting(final ArmorDecorations existing, final ItemStack additionItem) {
+    private static ArmorDecorations setFitting(
+        final ArmorDecorations existing,
+        final ItemStack additionItem,
+        final @Nullable Holder<Fitting> only
+    ) {
         ArmorDecorations result = existing;
         for (final var mapping : existing.entries().entrySet()) {
             final DecorationAnchor anchor = mapping.getKey();
             final DecorationEntry entry = mapping.getValue();
             // The part's own order decides which fitting is offered the item first, and the first to
-            // accept it is the only one on that part that gets it.
+            // accept it is the only one on that part that gets it. A named template offers it to its
+            // own fitting alone, so the order only matters for the bare one.
             for (final Holder<Fitting> fitting : entry.decoration().value().fittings()) {
+                if (!offered(fitting, only)) {
+                    continue;
+                }
                 final Optional<FittingValue> value = fitting.value().accept(additionItem);
                 if (value.isEmpty()) {
                     continue;
@@ -156,16 +193,23 @@ public class SmithingFittingRecipe extends SimpleSmithingRecipe {
     }
 
     /**
-     * {@code existing} with every fitting on every part emptied; {@code existing} itself if none held
-     * anything. All of them at once, because with nothing in the third slot there is nothing to route
-     * by - the item is what names a fitting, and its absence names them all.
+     * {@code existing} with the fittings emptied - every one on every part under the bare template,
+     * the named one alone under a named template; {@code existing} itself if none held anything.
+     * Everything at once for the bare template because with nothing in the third slot there is
+     * nothing to route by: the item is what names a fitting, and its absence names them all. A
+     * named template has said which, and takes out only that.
      */
-    private static ArmorDecorations clearFittings(final ArmorDecorations existing) {
+    private static ArmorDecorations clearFittings(final ArmorDecorations existing, final @Nullable Holder<Fitting> only) {
         ArmorDecorations result = existing;
         for (final var mapping : existing.entries().entrySet()) {
             final DecorationEntry entry = mapping.getValue();
-            if (!entry.fittings().isEmpty()) {
+            if (entry.fittings().isEmpty()) {
+                continue;
+            }
+            if (only == null) {
                 result = result.with(mapping.getKey(), new DecorationEntry(entry.material(), entry.decoration()));
+            } else if (entry.fitting(only) != null) {
+                result = result.with(mapping.getKey(), entry.withoutFitting(only));
             }
         }
         return result;

@@ -32,13 +32,19 @@ import net.minecraft.world.item.equipment.EquipmentAsset;
  * <p>Reads the dye colour off the item's {@code minecraft:dye} component rather than testing for a
  * dye item, so anything that vanilla considers a dye - and anything a mod marks as one - fills it.
  */
-public record DyeFitting(Component description) implements Fitting.Masked {
+public record DyeFitting(Component description, Optional<Component> customIngredients) implements Fitting.Masked {
     public static final MapCodec<DyeFitting> CODEC = RecordCodecBuilder.mapCodec(
         i -> i.group(
-                ComponentSerialization.CODEC.fieldOf("description").forGetter(DyeFitting::description)
+                ComponentSerialization.CODEC.fieldOf("description").forGetter(DyeFitting::description),
+                ComponentSerialization.CODEC.optionalFieldOf("ingredients").forGetter(DyeFitting::customIngredients)
             )
             .apply(i, DyeFitting::new)
     );
+
+    @Override
+    public Component ingredients() {
+        return this.customIngredients.orElseGet(() -> Component.translatable("fitting.armorpieces.ingredients.dye"));
+    }
 
     public record Value(DyeColor colour) implements FittingValue {
         public static final Codec<Value> CODEC = DyeColor.CODEC.xmap(Value::new, Value::colour);
