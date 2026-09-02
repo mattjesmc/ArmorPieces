@@ -5,5 +5,17 @@
   },
   "anchors": [
     "back"
+  ],
+  "loot": [
+    {
+      "table": "minecraft:chests/end_city_treasure",
+      "weight": 1,
+      "chance": 0.05
+    },
+    {
+      "table": "minecraft:chests/ancient_city",
+      "weight": 1,
+      "chance": 0.05
+    }
   ]
 }

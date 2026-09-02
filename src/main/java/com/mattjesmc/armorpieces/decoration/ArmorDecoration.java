@@ -52,6 +52,10 @@ import net.minecraft.world.item.equipment.trim.ArmorTrim;
  *                   not so that it has to be. Each entry names a type from
  *                   {@code armorpieces:decoration_effect_type}, a registry any mod may add to; see
  *                   {@link com.mattjesmc.armorpieces.decoration.effect.DecorationEffects}.
+ * @param loot       where the part's template turns up in the world, if anywhere: loot tables the
+ *                   mod adds the part to as they load, each with a chance and a weight. Empty for a
+ *                   part that is only ever crafted, and the field is the part's to fill because a
+ *                   datapack cannot add to a vanilla table by itself - see {@link DecorationLoot}.
  *
  * <p>There is deliberately no "flat overlay" field here, though the shape of the system invites one.
  * Painted-on detail that follows the armor's surface is precisely what a vanilla TRIM PATTERN already
@@ -63,7 +67,8 @@ public record ArmorDecoration(
     Component description,
     Set<DecorationAnchor> anchors,
     List<Holder<Fitting>> fittings,
-    List<DecorationEffect> effects
+    List<DecorationEffect> effects,
+    List<DecorationLoot> loot
 ) {
     public static final Codec<ArmorDecoration> DIRECT_CODEC = RecordCodecBuilder.create(
         i -> i.group(
@@ -73,7 +78,8 @@ public record ArmorDecoration(
                     .xmap(Set::copyOf, List::copyOf)
                     .fieldOf("anchors").forGetter(ArmorDecoration::anchors),
                 Fitting.CODEC.listOf().optionalFieldOf("fittings", List.of()).forGetter(ArmorDecoration::fittings),
-                DecorationEffect.LIST_CODEC.optionalFieldOf("effects", List.of()).forGetter(ArmorDecoration::effects)
+                DecorationEffect.LIST_CODEC.optionalFieldOf("effects", List.of()).forGetter(ArmorDecoration::effects),
+                DecorationLoot.LIST_CODEC.optionalFieldOf("loot", List.of()).forGetter(ArmorDecoration::loot)
             )
             .apply(i, ArmorDecoration::new)
     );
@@ -99,6 +105,10 @@ public record ArmorDecoration(
         ArmorDecoration::fittings,
         ByteBufCodecs.fromCodecWithRegistries(DecorationEffect.LIST_CODEC),
         ArmorDecoration::effects,
+        // Loot is read on the server alone, but it travels too: the client's copy of a part is then
+        // the part, not a subset of it, at the cost of one byte per part for the usual empty list.
+        DecorationLoot.STREAM_CODEC.apply(ByteBufCodecs.list()),
+        ArmorDecoration::loot,
         ArmorDecoration::new
     );
     public static final Codec<Holder<ArmorDecoration>> CODEC =
@@ -110,6 +120,7 @@ public record ArmorDecoration(
         anchors = Set.copyOf(anchors);
         fittings = List.copyOf(fittings);
         effects = List.copyOf(effects);
+        loot = List.copyOf(loot);
     }
 
     /** Whether this part has anywhere for a second material to go. */
@@ -120,6 +131,20 @@ public record ArmorDecoration(
     /** Whether this part may be applied to the given socket. The recipe's guard rail. */
     public boolean fits(final DecorationAnchor anchor) {
         return this.anchors.contains(anchor);
+    }
+
+    /**
+     * The socket whose template stands for this part when one template has to be chosen - in a loot
+     * table, say. The first of the part's sockets in body order, head to toe; for the usual part with
+     * one socket, that socket. The anchor set has no order of its own, so the enum's is used.
+     */
+    public DecorationAnchor primaryAnchor() {
+        for (final DecorationAnchor anchor : DecorationAnchor.values()) {
+            if (this.anchors.contains(anchor)) {
+                return anchor;
+            }
+        }
+        throw new IllegalStateException("A part with no anchors: " + this.assetId);
     }
 
     /**

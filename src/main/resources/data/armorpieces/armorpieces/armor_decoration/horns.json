@@ -5,5 +5,17 @@
   },
   "anchors": [
     "horns"
+  ],
+  "loot": [
+    {
+      "table": "minecraft:chests/bastion_treasure",
+      "weight": 1,
+      "chance": 0.25
+    },
+    {
+      "table": "minecraft:chests/bastion_hoglin_stable",
+      "weight": 1,
+      "chance": 0.1
+    }
   ]
 }

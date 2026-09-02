@@ -5,5 +5,17 @@
   },
   "anchors": [
     "collar"
+  ],
+  "loot": [
+    {
+      "table": "minecraft:chests/stronghold_library",
+      "weight": 1,
+      "chance": 0.15
+    },
+    {
+      "table": "minecraft:chests/underwater_ruin_big",
+      "weight": 1,
+      "chance": 0.15
+    }
   ]
 }

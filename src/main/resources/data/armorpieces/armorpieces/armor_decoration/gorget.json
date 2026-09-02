@@ -5,5 +5,17 @@
   },
   "anchors": [
     "collar"
+  ],
+  "loot": [
+    {
+      "table": "minecraft:chests/stronghold_corridor",
+      "weight": 1,
+      "chance": 0.1
+    },
+    {
+      "table": "minecraft:chests/bastion_other",
+      "weight": 1,
+      "chance": 0.05
+    }
   ]
 }

@@ -11,6 +11,8 @@ the claim that opening a part and saving it unchanged changes nothing:
              dialog's write-back reproduces the file rather than reformatting it
   fittings   every fitting a part lists resolves to a definition the plugin can offer, with a type
              it knows how to show
+  loot       every row of a part's `loot` list is in the shape the Part dialog writes - table,
+             weight, chance, in that order and of those types - so a save reproduces it
   recipes    every data/<ns>/recipe/template_<part>.json in the plugin's shape - the ring pattern,
              switched on or off with `armorpieces:disabled` - re-serialises to its own bytes from
              the two items and the switch the panel reads out of it, so a save reproduces the file
@@ -51,6 +53,18 @@ def _effect_editable(effect, schema) -> bool:
             return False
     definition = schema.get(effect.get("type"))
     return bool(definition) and set(effect) - {"type"} <= {f["name"] for f in definition["fields"]}
+
+
+def _loot_row_ok(row) -> bool:
+    """Whether the Part dialog's Loot group would write this row back as it is: the three keys in
+    the plugin's order, a namespaced table id, a positive integer weight and a chance in 0..1."""
+    if not isinstance(row, dict) or list(row) != ["table", "weight", "chance"]:
+        return False
+    table, weight, chance = row["table"], row["weight"], row["chance"]
+    return (isinstance(table, str) and ":" in table
+            and isinstance(weight, int) and not isinstance(weight, bool) and weight > 0
+            and isinstance(chance, (int, float)) and not isinstance(chance, bool) and 0 <= chance <= 1)
+
 
 ROOT = Path(__file__).resolve().parent.parent
 RESOURCES = ROOT / "src" / "main" / "resources"
@@ -148,6 +162,9 @@ def check_pack(pack: Path) -> list[str]:
             if not _effect_editable(effect, schema):
                 failures.append(f"data {data.name}: effect {effect.get('type') if isinstance(effect, dict) else effect}"
                                 " would show read-only in the editor")
+        for index, row in enumerate(parsed.get("loot", [])):
+            if not _loot_row_ok(row):
+                failures.append(f"data {data.name}: loot row {index} would be rewritten by a save")
         print(f"data {data.name}: ok")
     failures.extend(check_recipes(pack, data_files))
     return failures

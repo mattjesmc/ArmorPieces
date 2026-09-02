@@ -8,5 +8,17 @@
   ],
   "fittings": [
     "armorpieces:banner"
+  ],
+  "loot": [
+    {
+      "table": "minecraft:chests/pillager_outpost",
+      "weight": 2,
+      "chance": 0.15
+    },
+    {
+      "table": "minecraft:chests/woodland_mansion",
+      "weight": 1,
+      "chance": 0.15
+    }
   ]
 }

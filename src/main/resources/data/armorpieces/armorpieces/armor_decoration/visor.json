@@ -5,5 +5,17 @@
   },
   "anchors": [
     "brow"
+  ],
+  "loot": [
+    {
+      "table": "minecraft:chests/desert_pyramid",
+      "weight": 1,
+      "chance": 0.1
+    },
+    {
+      "table": "minecraft:chests/bastion_other",
+      "weight": 1,
+      "chance": 0.05
+    }
   ]
 }

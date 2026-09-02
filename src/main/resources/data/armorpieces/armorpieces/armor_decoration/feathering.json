@@ -5,5 +5,17 @@
   },
   "anchors": [
     "crest"
+  ],
+  "loot": [
+    {
+      "table": "minecraft:chests/jungle_temple",
+      "weight": 1,
+      "chance": 0.15
+    },
+    {
+      "table": "minecraft:chests/shipwreck_treasure",
+      "weight": 1,
+      "chance": 0.1
+    }
   ]
 }

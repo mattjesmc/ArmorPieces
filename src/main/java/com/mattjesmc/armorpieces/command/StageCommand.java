@@ -10,9 +10,11 @@ import com.mattjesmc.armorpieces.decoration.fitting.FittingValue;
 import com.mattjesmc.armorpieces.menu.AdvancedSmithingMenu;
 import com.mattjesmc.armorpieces.registry.ModDataComponents;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -22,6 +24,7 @@ import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.ResourceArgument;
+import net.minecraft.commands.arguments.ResourceOrIdArgument;
 import net.minecraft.commands.arguments.item.ItemArgument;
 import net.minecraft.commands.arguments.item.ItemInput;
 import net.minecraft.core.Direction;
@@ -46,6 +49,10 @@ import net.minecraft.world.item.equipment.EquipmentAssets;
 import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.item.equipment.trim.TrimMaterial;
 import net.minecraft.world.level.entity.EntityTypeTest;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
@@ -109,6 +116,10 @@ public final class StageCommand {
      * worse answer than being told to narrow the query.
      */
     private static final int MAX_STANDS = 4000;
+    /** Rolls of a loot table when no count is given: enough for a chance of 0.05 to show up. */
+    private static final int DEFAULT_ROLLS = 1000;
+    /** Rolling is cheap, but a million rolls of a table with functions is a noticeable pause. */
+    private static final int MAX_ROLLS = 100_000;
 
     /** Humanoid armor slots, head to toe. Excludes {@link ArmorType#BODY} - no anchor names it. */
     private static final List<ArmorType> ARMOR_TYPES =
@@ -140,7 +151,17 @@ public final class StageCommand {
                             ResourceArgument.resource(context, ArmorPiecesRegistries.ARMOR_DECORATION))
                         .executes(ctx -> stageFittings(ctx.getSource(), decorationArgument(ctx)))))
                 .then(Commands.literal("clear")
-                    .executes(ctx -> clear(ctx.getSource()))))
+                    .executes(ctx -> clear(ctx.getSource())))
+                // Not stands but numbers: rolls a loot table and counts what the mod put in it, so
+                // a part's chance and weight can be judged without opening a thousand chests.
+                .then(Commands.literal("loot")
+                    .then(Commands.argument("table", ResourceOrIdArgument.lootTable(context))
+                        .executes(ctx -> stageLoot(ctx.getSource(),
+                            ResourceOrIdArgument.getLootTable(ctx, "table"), DEFAULT_ROLLS))
+                        .then(Commands.argument("rolls", IntegerArgumentType.integer(1, MAX_ROLLS))
+                            .executes(ctx -> stageLoot(ctx.getSource(),
+                                ResourceOrIdArgument.getLootTable(ctx, "table"),
+                                IntegerArgumentType.getInteger(ctx, "rolls")))))))
             // The advanced smithing table without the block: the same menu, opened for the caller
             // wherever they stand. A preview aid in the spirit of `stage` - a set is dressed on the
             // stand and taken apart again without a table being placed - and so behind the same
@@ -702,6 +723,69 @@ public final class StageCommand {
         if (entry != null) {
             piece.set(ModDataComponents.DECORATIONS, existing.with(anchor, entry.withFitting(fitting, value)));
         }
+    }
+
+    // ---- loot -----------------------------------------------------------------------------------
+
+    /**
+     * Rolls {@code table} {@code rolls} times as a chest at the caller's feet and counts what came
+     * out of this mod: templates by the part they carry, decorated armor by its item and parts.
+     * Everything else the table drops is one line, so the part's share of the chest is visible too.
+     *
+     * <p>The chest parameter set, because the shipped parts live in chests and it is the set a
+     * table needs least; a table wanting more (a mob's, say) has its conditions fail and drops
+     * nothing, which the count then shows.
+     */
+    private static int stageLoot(final CommandSourceStack source, final Holder<LootTable> table, final int rolls) {
+        final LootParams params = new LootParams.Builder(source.getLevel())
+            .withParameter(LootContextParams.ORIGIN, source.getPosition())
+            .create(LootContextParamSets.CHEST);
+        final Map<Component, Integer> counts = new LinkedHashMap<>();
+        int fromMod = 0;
+        int other = 0;
+        for (int i = 0; i < rolls; i++) {
+            for (final ItemStack stack : table.value().getRandomItems(params)) {
+                final Component key = lootKey(stack);
+                if (key == null) {
+                    other += stack.getCount();
+                    continue;
+                }
+                counts.merge(key, stack.getCount(), Integer::sum);
+                fromMod += stack.getCount();
+            }
+        }
+
+        final String name = table.unwrapKey().map(key -> key.identifier().toString()).orElse("<inline>");
+        final int total = fromMod;
+        source.sendSuccess(() -> Component.translatable("commands.armorpieces.stage.loot.header", name, rolls, total), false);
+        counts.entrySet().stream()
+            .sorted(Map.Entry.<Component, Integer>comparingByValue(Comparator.reverseOrder()))
+            .forEach(entry -> source.sendSuccess(() -> Component.translatable(
+                "commands.armorpieces.stage.loot.line",
+                entry.getKey(), entry.getValue(), String.format("%.1f", 100.0 * entry.getValue() / rolls)), false));
+        final int rest = other;
+        source.sendSuccess(() -> Component.translatable("commands.armorpieces.stage.loot.other", rest), false);
+        return fromMod;
+    }
+
+    /** What to count a dropped stack as, or null if it is nothing of this mod's. */
+    private static @Nullable Component lootKey(final ItemStack stack) {
+        if (stack.has(ModDataComponents.DECORATION)) {
+            // A template's name already says which part it carries: "Circlet Brow Smithing Template".
+            return stack.getHoverName();
+        }
+        final ArmorDecorations worn = stack.get(ModDataComponents.DECORATIONS);
+        if (worn != null && !worn.isEmpty()) {
+            final Component parts = worn.entries().values().stream()
+                .map(entry -> entry.decoration().value().copyWithStyle(entry.material()))
+                .reduce((a, b) -> Component.empty().append(a).append(Component.literal(", ")).append(b))
+                .orElse(Component.empty());
+            return Component.empty()
+                .append(stack.getHoverName())
+                .append(Component.literal(" wearing "))
+                .append(parts);
+        }
+        return null;
     }
 
     // ---- feedback -------------------------------------------------------------------------------

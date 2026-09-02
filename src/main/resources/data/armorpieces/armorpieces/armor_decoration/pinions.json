@@ -12,5 +12,12 @@
       "sink": 0.03,
       "wear_interval": 4
     }
+  ],
+  "loot": [
+    {
+      "table": "minecraft:chests/end_city_treasure",
+      "weight": 1,
+      "chance": 0.05
+    }
   ]
 }

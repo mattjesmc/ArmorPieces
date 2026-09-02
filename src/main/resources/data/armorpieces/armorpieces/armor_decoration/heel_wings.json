@@ -5,5 +5,12 @@
   },
   "anchors": [
     "spurs"
+  ],
+  "loot": [
+    {
+      "table": "minecraft:chests/end_city_treasure",
+      "weight": 2,
+      "chance": 0.1
+    }
   ]
 }

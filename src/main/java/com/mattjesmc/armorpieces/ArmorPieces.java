@@ -5,10 +5,12 @@ import com.mattjesmc.armorpieces.decoration.ArmorPiecesRegistries;
 import com.mattjesmc.armorpieces.decoration.effect.DecorationEffectDispatcher;
 import com.mattjesmc.armorpieces.decoration.effect.DecorationEffects;
 import com.mattjesmc.armorpieces.decoration.fitting.Fittings;
+import com.mattjesmc.armorpieces.loot.DecorationLootTables;
 import com.mattjesmc.armorpieces.registry.ModBlocks;
 import com.mattjesmc.armorpieces.registry.ModCreativeTabs;
 import com.mattjesmc.armorpieces.registry.ModDataComponents;
 import com.mattjesmc.armorpieces.registry.ModItems;
+import com.mattjesmc.armorpieces.registry.ModLootFunctions;
 import com.mattjesmc.armorpieces.registry.ModMenus;
 import com.mattjesmc.armorpieces.registry.ModRecipeSerializers;
 import net.fabricmc.api.ModInitializer;
@@ -62,6 +64,9 @@ public class ArmorPieces implements ModInitializer {
         ModCreativeTabs.register();   // the tab builds stacks of those items
         ModRecipeSerializers.register();
         ModMenus.register();          // the table's menu; its screen is registered on the client
+        ModLootFunctions.register();  // set_decoration, for tables that hand out decorated armor
+        // Parts that name a loot table are added to it as it loads. See DecorationLootTables.
+        DecorationLootTables.register();
         // A preview of the whole cross product, for judging parts against each other rather than
         // one smithing operation at a time. See StageCommand.
         CommandRegistrationCallback.EVENT.register(

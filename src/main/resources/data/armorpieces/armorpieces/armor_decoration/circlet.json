@@ -8,5 +8,17 @@
   ],
   "fittings": [
     "armorpieces:gemstone"
+  ],
+  "loot": [
+    {
+      "table": "minecraft:chests/ancient_city",
+      "weight": 2,
+      "chance": 0.1
+    },
+    {
+      "table": "minecraft:chests/desert_pyramid",
+      "weight": 1,
+      "chance": 0.1
+    }
   ]
 }

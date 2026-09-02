@@ -1691,6 +1691,7 @@
 	const GATE_TYPE = 'armorpieces:if_fitting';
 	let schemaCache = null;
 	let idsCache = null;
+	let tablesCache = null;
 
 	function effectSchema() {
 		if (!schemaCache) {
@@ -1718,6 +1719,45 @@
 			}
 		}
 		return idsCache;
+	}
+
+	/* Every loot table a part could name, out of the game jar, chests first. */
+	function lootTables() {
+		if (!tablesCache) {
+			try {
+				tablesCache = JSON.parse(tool('vanilla_assets.py', ['--list-loot-tables']));
+			} catch (err) {
+				console.error(err);
+				tablesCache = [];
+			}
+		}
+		return tablesCache;
+	}
+
+	/* A row of the Loot group, from a data-file entry or blank. Chance starts low on purpose: a
+	 * row with chance 1 puts the part in every chest of that table. */
+	function lootRow(entry) {
+		entry = entry || {};
+		return {
+			table: typeof entry.table === 'string' ? entry.table : '',
+			weight: Number.isInteger(entry.weight) ? entry.weight : 1,
+			chance: typeof entry.chance === 'number' ? entry.chance : 0.1,
+		};
+	}
+
+	/* The data-file entry for a row: the three keys in the order check_authoring.py expects. */
+	function lootFromRow(row) {
+		return { table: row.table.trim(), weight: Number(row.weight), chance: Number(row.chance) };
+	}
+
+	function lootProblem(row) {
+		const table = (row.table || '').trim();
+		if (!/^[a-z0-9_.-]+:[a-z0-9_.\/-]+$/.test(table)) return 'A loot table id looks like minecraft:chests/ancient_city';
+		const weight = Number(row.weight);
+		if (!Number.isInteger(weight) || weight < 1) return 'A loot weight is a whole number, 1 or more';
+		const chance = Number(row.chance);
+		if (!(chance >= 0 && chance <= 1)) return 'A loot chance is between 0 and 1';
+		return null;
 	}
 
 	function blankValue(field) {
@@ -1841,10 +1881,12 @@
 		if (!piece || !data) return 'No datapack half.';
 		const fittings = fittingsOf(piece).map(function (f) { return f.label; });
 		const effects = (data.effects || []).map(effectLabel);
+		const loot = (data.loot || []).map(function (l) { return String(l.table || '').replace(/^minecraft:/, ''); });
 		const name = Project[ID + '_name'] || displayName(piece, data).text;
 		return name + '  ·  ' + anchorsOf(piece).join(', ')
 			+ '  ·  ' + (fittings.length ? 'fittings: ' + fittings.join(', ') : 'no fittings')
 			+ (effects.length ? '  ·  effects: ' + effects.join(', ') : '')
+			+ (loot.length ? '  ·  found in: ' + loot.join(', ') : '')
 			+ (state().recipe_craftable === false ? '  ·  not craftable' : '');
 	}
 
@@ -1890,6 +1932,27 @@
 		'			<p class="ap_dim">The smithing table offers an item to the fittings in this order; ',
 		'			the first to accept it wins. A mask is painted in Mask mode; a bone fitting draws on ',
 		'			the bone of that name.</p>',
+		'		</div>',
+		'	</div>',
+		'	<div class="dialog_bar form_bar">',
+		'		<label class="name_space_left">Loot</label>',
+		'		<div class="ap_column">',
+		'			<div class="ap_loot" v-for="(l, i) in loot" :key="i">',
+		'				<input type="text" class="dark_bordered ap_loot_table" v-model="l.table" list="armorpieces_loot_tables"',
+		'					placeholder="minecraft:chests/ancient_city" title="The loot table the part is added to">',
+		'				<label title="Splits the roll between the parts that share this table">w</label>',
+		'				<input type="number" class="dark_bordered ap_loot_num" min="1" step="1" v-model.number="l.weight">',
+		'				<label title="How often the part is offered at all; 1 is every chest">chance</label>',
+		'				<input type="number" class="dark_bordered ap_loot_num" min="0" max="1" step="0.01" v-model.number="l.chance">',
+		'				<i class="material-icons" title="Remove" @click="removeLoot(i)">clear</i>',
+		'			</div>',
+		'			<button type="button" @click="addLoot">Add a loot table...</button>',
+		'			<datalist id="armorpieces_loot_tables">',
+		'				<option v-for="t in tables" :key="t" :value="t"></option>',
+		'			</datalist>',
+		'			<p class="ap_dim">Where the part\'s template is found. The mod adds one roll per table, so a chest ',
+		'			never holds two parts; the chance is the part\'s own, the weight only matters against ',
+		'			other parts naming the same table.</p>',
 		'		</div>',
 		'	</div>',
 		'	<div class="dialog_bar form_bar">',
@@ -1970,6 +2033,12 @@
 		'.armorpieces_part .ap_field > input[type=text], .armorpieces_part .ap_field > input[type=number], .armorpieces_part .ap_field > select { flex: 1; min-width: 0; }',
 		'.armorpieces_part .ap_gate { margin-top: 6px; border-top: 1px solid var(--color-border); padding-top: 4px; }',
 		'.armorpieces_part .ap_gate > label { display: inline-flex; align-items: center; gap: 4px; width: auto; }',
+		'.armorpieces_part .ap_loot { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }',
+		'.armorpieces_part .ap_loot > label { width: auto; padding: 0; color: var(--color-subtle_text); }',
+		'.armorpieces_part .ap_loot .ap_loot_table { flex: 1; min-width: 0; }',
+		'.armorpieces_part .ap_loot .ap_loot_num { width: 64px; }',
+		'.armorpieces_part .ap_loot .material-icons { cursor: pointer; opacity: 0.6; }',
+		'.armorpieces_part .ap_loot .material-icons:hover { opacity: 1; }',
 	].join('\n');
 
 	function editPart() {
@@ -2014,6 +2083,8 @@
 						types: Object.keys(schema).filter(function (id) { return id !== GATE_TYPE; })
 							.map(function (id) { return { id: id, label: schema[id].label, summary: schema[id].summary }; }),
 						ids: registryIds(),
+						loot: (data.loot || []).map(lootRow),
+						tables: lootTables(),
 					};
 				},
 				methods: {
@@ -2022,6 +2093,12 @@
 					},
 					removeEffect: function (i) {
 						this.effects.splice(i, 1);
+					},
+					addLoot: function () {
+						this.loot.push(lootRow());
+					},
+					removeLoot: function (i) {
+						this.loot.splice(i, 1);
 					},
 					addEffect: function (event) {
 						const type = event.target.value;
@@ -2086,10 +2163,18 @@
 						return false;
 					}
 				}
+				for (const row of vue.loot) {
+					const problem = lootProblem(row);
+					if (problem) {
+						Blockbench.showQuickMessage(problem, 2500);
+						return false;
+					}
+				}
 				this.hide();
 				applyPartEdit(piece, data, shown, vue.name, chosen,
 					vue.fittings.map(function (f) { return f.id; }),
-					vue.effects.map(function (row) { return effectFromRow(row, vue.fittings); }));
+					vue.effects.map(function (row) { return effectFromRow(row, vue.fittings); }),
+					vue.loot.map(lootFromRow));
 			},
 		});
 		dialog.show();
@@ -2259,7 +2344,7 @@
 		}).show();
 	}
 
-	function applyPartEdit(piece, data, shown, name, chosen, fittingIds, effects) {
+	function applyPartEdit(piece, data, shown, name, chosen, fittingIds, effects, loot) {
 		const s = state();
 		let changed = false;
 
@@ -2267,6 +2352,15 @@
 		// file said does not count as a change. Absent stays absent while the list is empty.
 		if (effects && canonical(effects) !== canonical(data.effects || [])) {
 			if (effects.length || 'effects' in data) data.effects = effects;
+			markDirty();
+			changed = true;
+		}
+
+		// Loot: the field is the list, and an empty list is no field - a part found nowhere is
+		// written exactly as a part that never had the group.
+		if (loot && JSON.stringify(loot) !== JSON.stringify(data.loot || [])) {
+			if (loot.length) data.loot = loot;
+			else delete data.loot;
 			markDirty();
 			changed = true;
 		}
@@ -2828,10 +2922,10 @@
 				fittings: function () { return fittingsOf(currentPiece()); },
 				availableFittings: function () { return availableFittings(currentPiece()); },
 				editPart: editPart,
-				applyPartEdit: function (name, anchors, fittingIds, effects) {
+				applyPartEdit: function (name, anchors, fittingIds, effects, loot) {
 					const piece = currentPiece();
 					const data = partData();
-					applyPartEdit(piece, data, displayName(piece, data), name, anchors, fittingIds, effects);
+					applyPartEdit(piece, data, displayName(piece, data), name, anchors, fittingIds, effects, loot);
 				},
 				effectSchema: effectSchema,
 				effectRow: effectRow,

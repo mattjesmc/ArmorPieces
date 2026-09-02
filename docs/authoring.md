@@ -61,7 +61,9 @@ type and its fields appear, with the ranges, defaults and descriptions read out 
 that defines it, and attribute, mob-effect and damage-tag ids autocompleting from the game.
 Any row can be switched to run *only while* one of the part's fittings holds a chosen
 material or dye, which is `armorpieces:if_fitting` written for you. An effect the dialog
-cannot show — a type from another mod — is kept as it is and shown read-only.
+cannot show — a type from another mod — is kept as it is and shown read-only. *Loot* is rows
+of table, weight and chance, the table id autocompleting from the game's own list with the
+chests first; the summary line says where the part is found. An empty list is no field.
 
 **Modelling.** Model inside the `part` group; everything else is the locked reference. The
 mod's format is box UV only, so the plugin keeps it that way: a cube added, converted or
@@ -190,6 +192,38 @@ creative tab is built by walking the registry, so a new part appears there the m
 loads. The twelve socket templates are `<socket>_template` — `crest_template`, `brow_template`,
 and so on — and `fitting_template` is the thirteenth, shared by every fitting.
 
+**4b. Found rather than made.** A pack can write a loot table of its own, but it cannot add to a
+vanilla one — only replace it whole, and two packs replacing `chests/ancient_city` cannot both
+win. So the part names its tables and the mod does the adding, as each table loads:
+
+```json
+"loot": [
+  { "table": "minecraft:chests/ancient_city", "weight": 2, "chance": 0.15 },
+  { "table": "minecraft:chests/desert_pyramid", "weight": 1, "chance": 0.1 }
+]
+```
+
+The mod adds one pool per table, rolled once, holding an entry for every part that names it —
+the part's socket template, as the creative tab holds it — so a chest never has two parts and
+the table's own pools are untouched. `chance` is the entry's `random_chance`: how often this part
+is offered at all, and required, because 1 means every chest. `weight` is optional, 1 by default,
+and only matters between parts that share a table. Any table will do, a mob's or a fishing pool's
+as much as a chest's; the shipped parts name chests between one in twenty and one in three.
+Pair it with a disabled recipe (below) for a part that is only ever found.
+
+For decorated armor rather than a template — a helmet already wearing a circlet with an emerald
+in it — a table uses the mod's loot function on an armor entry:
+
+```json
+{ "function": "armorpieces:set_decoration",
+  "socket": "brow", "part": "<ns>:dragon_crest", "material": "minecraft:gold",
+  "fittings": { "armorpieces:gemstone": "minecraft:emerald" } }
+```
+
+The stack has to be armor for the socket's slot and the part has to fit the socket, the same two
+rules the smithing table applies; a mismatch is reported when the table loads, and the armor
+passes through plain. `fittings` is optional and written as it is in `/give`.
+
 **Overriding what this mod ships.** Same ids, your pack. A resource pack can restyle any part's
 geometry or texture and a datapack can change where it may be worn.
 
@@ -272,4 +306,7 @@ the registries, so a pack's parts appear alongside the shipped ones: `parts [<pa
 per part × material, `bases [<armor item>]` repeats that for every base armor set, `full` dresses
 complete sets with every socket filled, `fittings [<part>]` shows every fitting filled with
 everything it takes, one block per fitting with the part's materials down the rows, and `clear`
-removes them.
+removes them. `loot <table> [rolls]` is numbers rather than stands: it rolls the table, a
+thousand times unless told otherwise, and counts what the mod put in it — templates by part,
+decorated armor by what it wears — against everything else the table dropped, so a chance and a
+weight can be judged without opening a thousand chests.

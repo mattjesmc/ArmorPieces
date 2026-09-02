@@ -5,5 +5,17 @@
   },
   "anchors": [
     "vambraces"
+  ],
+  "loot": [
+    {
+      "table": "minecraft:chests/simple_dungeon",
+      "weight": 1,
+      "chance": 0.05
+    },
+    {
+      "table": "minecraft:chests/trial_chambers/reward",
+      "weight": 1,
+      "chance": 0.15
+    }
   ]
 }

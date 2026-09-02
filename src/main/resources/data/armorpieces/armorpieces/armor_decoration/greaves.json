@@ -8,5 +8,17 @@
   ],
   "fittings": [
     "armorpieces:inlay"
+  ],
+  "loot": [
+    {
+      "table": "minecraft:chests/stronghold_crossing",
+      "weight": 1,
+      "chance": 0.15
+    },
+    {
+      "table": "minecraft:chests/trial_chambers/reward_rare",
+      "weight": 1,
+      "chance": 0.15
+    }
   ]
 }

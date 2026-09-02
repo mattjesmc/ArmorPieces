@@ -14,6 +14,7 @@ Usage:
     python tools/vanilla_assets.py --list        # show what would be extracted, and where from
     python tools/vanilla_assets.py --list-items  # print every vanilla item id with its name, as JSON
     python tools/vanilla_assets.py --list-ids    # attribute and mob effect ids, damage-type tags
+    python tools/vanilla_assets.py --list-loot-tables  # every loot table id but the block drops
 """
 
 from __future__ import annotations
@@ -151,6 +152,23 @@ def list_ids(jar_path: Path) -> dict:
     }
 
 
+def list_loot_tables(jar_path: Path) -> list[str]:
+    """Every vanilla loot table id a part could name in its `loot` list, for an editor's
+    autocomplete: read off the jar's `data/minecraft/loot_table/` tree. Block drops are left out -
+    they are four fifths of the tree and a part in a dirt block's drops is nobody's intention - so
+    the list is chests, entities, gameplay tables and the rest. The chest tables come first, since
+    they are the ones a part is nearly always for."""
+    prefix = "data/minecraft/loot_table/"
+    with zipfile.ZipFile(jar_path) as jar:
+        ids = sorted(
+            "minecraft:" + name[len(prefix):-5]
+            for name in jar.namelist()
+            if name.startswith(prefix) and name.endswith(".json")
+            and not name.startswith(prefix + "blocks/"))
+    chests = [i for i in ids if i.startswith("minecraft:chests/")]
+    return chests + [i for i in ids if i not in chests]
+
+
 def extract(jar_path: Path, listing_only: bool = False) -> tuple[int, list[str]]:
     """Copy every wanted entry out of the jar. Returns (count, missing entries).
 
@@ -201,6 +219,9 @@ def main() -> None:
     ap.add_argument("--list-ids", action="store_true",
                     help="print the attribute and mob effect ids with their names, and the "
                          "damage-type tags, as JSON and exit")
+    ap.add_argument("--list-loot-tables", action="store_true",
+                    help="print every vanilla loot table id but the block drops, chests first, "
+                         "as JSON and exit")
     args = ap.parse_args()
 
     version = minecraft_version()
@@ -210,6 +231,9 @@ def main() -> None:
         return
     if args.list_ids:
         print(json.dumps(list_ids(jar_path), indent=1))
+        return
+    if args.list_loot_tables:
+        print(json.dumps(list_loot_tables(jar_path), indent=1))
         return
     print(f"minecraft {version} <- {jar_path}")
 

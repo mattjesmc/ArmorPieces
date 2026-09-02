@@ -5,5 +5,17 @@
   },
   "anchors": [
     "tassets"
+  ],
+  "loot": [
+    {
+      "table": "minecraft:chests/jungle_temple",
+      "weight": 1,
+      "chance": 0.1
+    },
+    {
+      "table": "minecraft:chests/ruined_portal",
+      "weight": 1,
+      "chance": 0.05
+    }
   ]
 }

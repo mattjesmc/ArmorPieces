@@ -9,5 +9,17 @@
   "fittings": [
     "armorpieces:inlay",
     "armorpieces:guard"
+  ],
+  "loot": [
+    {
+      "table": "minecraft:chests/woodland_mansion",
+      "weight": 1,
+      "chance": 0.1
+    },
+    {
+      "table": "minecraft:chests/shipwreck_treasure",
+      "weight": 1,
+      "chance": 0.1
+    }
   ]
 }

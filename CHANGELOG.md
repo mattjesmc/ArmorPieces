@@ -2,6 +2,19 @@
 
 ## 0.3.0
 
+**Found in the world.** A part can name the loot tables it turns up in, and the mod adds it to
+them as they load - the one thing a datapack cannot do for itself, since it can only replace a
+vanilla table whole. The `loot` list on the part's data file is rows of table, weight and chance:
+one pool per table, rolled once, with the part's socket template as the entry, so a chest never
+holds two parts and the table's own pools are untouched. `chance` is the part's own odds of being
+offered and is required, because 1 means every chest; `weight` only splits a table between the
+parts that share it. Every shipped part is now found somewhere that suits it - wings in end
+cities, horns in bastions, the circlet in ancient cities, mittens in igloos - at chances between
+one in twenty and one in three. A second loot function, `armorpieces:set_decoration`, puts a part
+on a piece of armor a table hands out, with a socket, a part, a material and optionally its
+fittings, so a chest can hold a helmet already wearing a gold circlet with an emerald in it.
+`/armorpieces stage loot <table> [rolls]` rolls a table and counts what the mod put in it.
+
 **Disabling recipes.** A recipe type that loads and does nothing, `armorpieces:disabled`. A
 datapack cannot delete a file the mod ships, so it overrides the file with
 `{"type": "armorpieces:disabled"}` instead: the recipe has no fields, matches nothing, and has no
@@ -27,8 +40,11 @@ everything goes back to the player when the menu closes.
 
 **Tools.** The Blockbench panel gains a *Craftable* switch beside the two recipe items: off, Save
 writes the recipe with its type swapped and the pattern and items kept, so the choices survive
-until it is switched back on, and the summary line says *not craftable*. `check_authoring.py`
-round-trips every part's template recipe, switched on or off, the way it does the data files.
+until it is switched back on, and the summary line says *not craftable*. The Part dialog gains a
+*Loot* group - rows of table, weight and chance, the table id autocompleting from the game jar
+(`vanilla_assets.py --list-loot-tables`) - and the summary line says where the part is found.
+`check_authoring.py` round-trips every part's template recipe, switched on or off, the way it
+does the data files, and checks every loot row is in the shape the dialog writes.
 
 ## 0.2.0
 
