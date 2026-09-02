@@ -77,12 +77,14 @@ sections:
 
   gallery:
     images:
-      - src: gallery/parts.png
-        caption: Every socket filled, on iron armor — gold, diamond, netherite, amethyst
-      - src: gallery/materials.png
-        caption: The same parts in six trim materials; the horns keep their ivory through all of them
+      - src: gallery/sets.png
+        caption: Every socket filled — three sets, one per row, in all eleven trim materials
+      - src: gallery/row.png
+        caption: The front row up close; the horns keep their ivory through every material
       - src: gallery/back.png
-        caption: The back socket — pinions, banner, wing roots
+        caption: The same three rows from behind — wing roots, banner and pinions on the back socket
+      - src: gallery/fittings.png
+        caption: One circlet, seven gems — the fitting takes a second material
 
   recipes:
     columns: 3

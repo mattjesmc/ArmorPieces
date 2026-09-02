@@ -1,4 +1,6 @@
-<h1 align="center">Armor Pieces</h1>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/banners/header.png" alt="Armor Pieces">
+</p>
 
 <p align="center"><i>Decorative parts for armor — applied at a smithing table like trims, coloured by the same trim materials.</i></p>
 
@@ -48,18 +50,23 @@ code, and a pack can add its own the same way.
 ## Gallery
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/gallery/parts.png" alt="Every socket filled, on iron armor — gold, diamond, netherite, amethyst">
-  <br><sub><i>Every socket filled, on iron armor — gold, diamond, netherite, amethyst</i></sub>
+  <img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/gallery/sets.png" alt="Every socket filled — three sets, one per row, in all eleven trim materials">
+  <br><sub><i>Every socket filled — three sets, one per row, in all eleven trim materials</i></sub>
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/gallery/materials.png" alt="The same parts in six trim materials; the horns keep their ivory through all of them">
-  <br><sub><i>The same parts in six trim materials; the horns keep their ivory through all of them</i></sub>
+  <img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/gallery/row.png" alt="The front row up close; the horns keep their ivory through every material">
+  <br><sub><i>The front row up close; the horns keep their ivory through every material</i></sub>
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/gallery/back.png" alt="The back socket — pinions, banner, wing roots">
-  <br><sub><i>The back socket — pinions, banner, wing roots</i></sub>
+  <img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/gallery/back.png" alt="The same three rows from behind — wing roots, banner and pinions on the back socket">
+  <br><sub><i>The same three rows from behind — wing roots, banner and pinions on the back socket</i></sub>
+</p>
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/gallery/fittings.png" alt="One circlet, seven gems — the fitting takes a second material">
+  <br><sub><i>One circlet, seven gems — the fitting takes a second material</i></sub>
 </p>
 
 ---
