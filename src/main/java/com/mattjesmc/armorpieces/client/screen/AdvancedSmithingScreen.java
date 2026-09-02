@@ -189,8 +189,13 @@ public class AdvancedSmithingScreen extends AbstractContainerScreen<AdvancedSmit
         this.standPreview.chestEquipment = ItemStack.EMPTY;
         this.standPreview.legsEquipment = ItemStack.EMPTY;
         this.standPreview.feetEquipment = ItemStack.EMPTY;
+        final ItemStack preview = this.menu.previewStack();
         for (int i = 0; i < AdvancedSmithingMenu.DISPLAY_SLOTS.size(); i++) {
-            final ItemStack stack = this.menu.displayStack(i);
+            // The selected piece is shown as Apply would leave it while the two slots hold a
+            // matching recipe, so the part, the stone or the trim is judged before it is paid for.
+            final ItemStack stack = i == this.menu.selected() && !preview.isEmpty()
+                ? preview
+                : this.menu.displayStack(i);
             if (stack.isEmpty()) {
                 continue;
             }

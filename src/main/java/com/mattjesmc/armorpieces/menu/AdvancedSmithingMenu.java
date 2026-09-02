@@ -52,10 +52,12 @@ import org.jspecify.annotations.Nullable;
  * off. A second implementation of "what may be applied" would drift from the first; reusing the
  * lookup means the two tables can never disagree.
  *
- * <p>The client cannot run that lookup - recipes do not travel to it - so the server publishes
- * whether Apply currently has a result through {@link #canApply}, the way the smithing table
- * publishes its recipe error. Selection and removal need no recipe and run on both sides, which is
- * what makes them feel instant; the server's copy is still the one that counts.
+ * <p>The client cannot run that lookup - recipes do not travel to it - so the server publishes the
+ * result itself, in a hidden slot ({@link #PREVIEW_SLOT}) that is synced like any other and never
+ * drawn or clicked: the stand wears it in place of the selected piece, so what Apply would do is
+ * seen before it is done, exactly as the smithing table's stand previews its result slot. Apply is
+ * lit while that slot holds something. Selection and removal need no recipe and run on both sides,
+ * which is what makes them feel instant; the server's copy is still the one that counts.
  *
  * <p>No block entity, no persistence: like every vanilla crafting station, everything in the table
  * goes back to the player when the menu closes.
@@ -73,10 +75,12 @@ public class AdvancedSmithingMenu extends AbstractContainerMenu {
     public static final int DISPLAY_SLOT_START = 0;
     public static final int TEMPLATE_SLOT = 4;
     public static final int MATERIAL_SLOT = 5;
-    private static final int INV_SLOT_START = 6;
-    private static final int INV_SLOT_END = 33;
-    private static final int USE_ROW_SLOT_START = 33;
-    private static final int USE_ROW_SLOT_END = 42;
+    /** What Apply would produce, server-written, never shown as a slot. See the class comment. */
+    public static final int PREVIEW_SLOT = 6;
+    private static final int INV_SLOT_START = 7;
+    private static final int INV_SLOT_END = 34;
+    private static final int USE_ROW_SLOT_START = 34;
+    private static final int USE_ROW_SLOT_END = 43;
 
     /** Slot positions, shared with the screen so the background art and the slots agree. */
     public static final int DISPLAY_X = 8;
@@ -115,10 +119,19 @@ public class AdvancedSmithingMenu extends AbstractContainerMenu {
             AdvancedSmithingMenu.this.slotsChanged(this);
         }
     };
+    /**
+     * Apply's result, kept apart from the two input containers so that writing it does not re-run
+     * the lookup that produced it. Its change hook only wakes the screen.
+     */
+    private final SimpleContainer preview = new SimpleContainer(1) {
+        @Override
+        public void setChanged() {
+            super.setChanged();
+            AdvancedSmithingMenu.this.updateListener.run();
+        }
+    };
     /** Index into {@link #DISPLAY_SLOTS} of the piece being worked on, or -1 for none. */
     private final DataSlot selected = DataSlot.standalone();
-    /** 1 while the template, material and selected piece match a smithing recipe. Server-set. */
-    private final DataSlot canApply = DataSlot.standalone();
     private Runnable updateListener = () -> {};
 
     public AdvancedSmithingMenu(final int containerId, final Inventory inventory) {
@@ -149,10 +162,27 @@ public class AdvancedSmithingMenu extends AbstractContainerMenu {
                 return AdvancedSmithingMenu.this.additionItemTest.test(stack);
             }
         });
+        // Off-screen and inactive: never drawn, never hovered, never a click target - a slot only
+        // so that the vanilla slot sync carries it to the client.
+        this.addSlot(new Slot(this.preview, 0, -1000, -1000) {
+            @Override
+            public boolean mayPlace(final ItemStack stack) {
+                return false;
+            }
+
+            @Override
+            public boolean mayPickup(final Player player) {
+                return false;
+            }
+
+            @Override
+            public boolean isActive() {
+                return false;
+            }
+        });
         this.addStandardInventorySlots(inventory, 8, INVENTORY_Y);
 
         this.addDataSlot(this.selected).set(-1);
-        this.addDataSlot(this.canApply).set(0);
     }
 
     // ---- what the screen reads ------------------------------------------------------------------
@@ -178,7 +208,12 @@ public class AdvancedSmithingMenu extends AbstractContainerMenu {
 
     /** Whether the server found a smithing recipe for the current template, material and piece. */
     public boolean canApply() {
-        return this.canApply.get() > 0;
+        return !this.preview.getItem(0).isEmpty();
+    }
+
+    /** What Apply would make of the selected piece, or empty. The stand wears it while it is there. */
+    public ItemStack previewStack() {
+        return this.preview.getItem(0);
     }
 
     public ItemStack displayStack(final int index) {
@@ -327,7 +362,10 @@ public class AdvancedSmithingMenu extends AbstractContainerMenu {
     /** Re-evaluates Apply on the server and lets the screen know something moved. */
     private void refresh() {
         if (this.level instanceof ServerLevel) {
-            this.canApply.set(this.findResult().isEmpty() ? 0 : 1);
+            final ItemStack result = this.findResult();
+            if (!ItemStack.matches(result, this.preview.getItem(0))) {
+                this.preview.setItem(0, result);
+            }
         }
         this.updateListener.run();
     }
@@ -340,6 +378,7 @@ public class AdvancedSmithingMenu extends AbstractContainerMenu {
     @Override
     public void removed(final Player player) {
         super.removed(player);
+        this.preview.removeItemNoUpdate(0);
         this.access.execute((level, pos) -> {
             this.clearContainer(player, this.display);
             this.clearContainer(player, this.inputs);
@@ -360,6 +399,9 @@ public class AdvancedSmithingMenu extends AbstractContainerMenu {
         }
         final ItemStack stack = slot.getItem();
         moved = stack.copy();
+        if (slotIndex == PREVIEW_SLOT) {
+            return ItemStack.EMPTY;
+        }
         if (slotIndex < INV_SLOT_START) {
             if (!this.moveItemStackTo(stack, INV_SLOT_START, USE_ROW_SLOT_END, true)) {
                 return ItemStack.EMPTY;

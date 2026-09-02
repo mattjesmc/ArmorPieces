@@ -21,7 +21,8 @@ is ever taken off, since the smithing table has no ingredient that means "nothin
 sit the smithing table's own template and material slots with the selected piece standing in for
 the base: Apply runs the ordinary smithing recipe lookup and writes the result back into the
 display slot, so a socket template puts a part on, a fitting template sets a stone, and a vanilla
-trim template trims, while a recipe a pack has turned off stays off. Nothing is kept in the block;
+trim template trims, while a recipe a pack has turned off stays off - and the stand wears the
+result before Apply is pressed, as the smithing table's stand does. Nothing is kept in the block;
 everything goes back to the player when the menu closes.
 
 **Tools.** The Blockbench panel gains a *Craftable* switch beside the two recipe items: off, Save
