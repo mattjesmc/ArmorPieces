@@ -30,7 +30,7 @@ A part is applied at a smithing table the way a trim is, with a template and a t
 takes that material's colour. Trim and parts live on the same piece of armor; neither replaces the
 other.
 
-Nineteen parts ship across twelve sockets. Each is a datapack entry, a model and a texture, no
+Twenty parts ship across twelve sockets. Each is a datapack entry, a model and a texture, no
 code, and a pack can add its own the same way.
 
 ---
@@ -107,20 +107,21 @@ code, and a pack can add its own the same way.
 </tr>
 <tr>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_horns.png" alt="Crafting recipe for Template Horns"><br><sub>Template Horns</sub></td>
+<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_mittens.png" alt="Crafting recipe for Template Mittens"><br><sub>Template Mittens</sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_pinions.png" alt="Crafting recipe for Template Pinions"><br><sub>Template Pinions</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_poleyns.png" alt="Crafting recipe for Template Poleyns"><br><sub>Template Poleyns</sub></td>
 </tr>
 <tr>
+<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_poleyns.png" alt="Crafting recipe for Template Poleyns"><br><sub>Template Poleyns</sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_sash.png" alt="Crafting recipe for Template Sash"><br><sub>Template Sash</sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_spaulders.png" alt="Crafting recipe for Template Spaulders"><br><sub>Template Spaulders</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_spurs.png" alt="Crafting recipe for Template Spurs"><br><sub>Template Spurs</sub></td>
 </tr>
 <tr>
+<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_spurs.png" alt="Crafting recipe for Template Spurs"><br><sub>Template Spurs</sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_tassets.png" alt="Crafting recipe for Template Tassets"><br><sub>Template Tassets</sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_vambraces.png" alt="Crafting recipe for Template Vambraces"><br><sub>Template Vambraces</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_visor.png" alt="Crafting recipe for Template Visor"><br><sub>Template Visor</sub></td>
 </tr>
 <tr>
+<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_visor.png" alt="Crafting recipe for Template Visor"><br><sub>Template Visor</sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_wing_roots.png" alt="Crafting recipe for Template Wing Roots"><br><sub>Template Wing Roots</sub></td>
 </tr>
 </table>
@@ -340,6 +341,7 @@ and Paint modes, the outliner, transform, the UV editor, colour and palette, and
 | Material preview | Shows the part through a trim material's palette. Strokes still land on the sheet being edited, the UV editor keeps showing the greyscale, and the preview follows the brush. |
 | Pose, Phase | The walk or sprint cycle, frozen at any point, without leaving Edit or Paint mode. |
 | Show player, Show armor, Outliner: part only | Hide the reference figure, the armor layers, or everything but the part in the outliner. |
+| Recipe centre, Recipe ring | The template recipe: one item in the middle of a ring of four, paper unless there is a reason. Item ids autocomplete from the game's own list. Written on Save as `data/<ns>/recipe/template_<part>.json`. |
 
 **Modelling.** Model inside the `part` group; everything else is the locked reference. The
 mod's format is box UV only, so the plugin keeps it that way: a cube added, converted or
@@ -347,8 +349,9 @@ resized is laid out in free space on the texture, the paint on its faces moves w
 the texture grows when it is full. All of that lands in the same undo step as the edit.
 
 **Saving.** Save exports the geometry through `bb_geo.py`, writes the master and static layer
-back to their files, and — for a part whose master lives in `tools/decoration_masters/` — runs
-`sync_decoration_masters.py`, which installs the sheets and checks them against the geometry.
+back to their files, writes the template recipe, and — for a part whose master lives in
+`tools/decoration_masters/` — runs `sync_decoration_masters.py`, which installs the sheets and
+checks them against the geometry.
 
 ---
 

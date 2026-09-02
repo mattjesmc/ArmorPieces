@@ -10,13 +10,15 @@ The version comes from gradle.properties, not from an argument, because the rig 
 the Minecraft the mod is compiled against. A Minecraft bump stays "that block and nothing else".
 
 Usage:
-    python tools/vanilla_assets.py            # extract everything the rigs need
-    python tools/vanilla_assets.py --list     # show what would be extracted, and where from
+    python tools/vanilla_assets.py               # extract everything the rigs need
+    python tools/vanilla_assets.py --list        # show what would be extracted, and where from
+    python tools/vanilla_assets.py --list-items  # print every vanilla item id with its name, as JSON
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import shutil
 import sys
@@ -98,7 +100,29 @@ def wanted() -> dict[str, str]:
     for palette in TRIM_PALETTES:
         out[f"{base}/trims/color_palettes/{palette}.png"] = f"palette/{palette}.png"
 
+    # The language file, for the item list below. Not a texture, but the same rule applies: it is
+    # Mojang's, and it is read from the jar rather than copied into the repo.
+    out["assets/minecraft/lang/en_us.json"] = "lang/en_us.json"
+
     return out
+
+
+def list_items(jar_path: Path) -> dict[str, str]:
+    """Every vanilla item id with its English name, for an editor's autocomplete.
+
+    Read from the language file rather than from a registry dump, because the jar has no registry
+    dump and the language file names exactly the things a player can hold: `item.minecraft.<id>`
+    for items, `block.minecraft.<id>` for blocks, most of which are items too. A few blocks are not
+    (a piston head, a fire block) and a recipe naming one would fail to load - the editor treats the
+    list as suggestions, not as proof."""
+    with zipfile.ZipFile(jar_path) as jar:
+        lang = json.loads(jar.read("assets/minecraft/lang/en_us.json"))
+    items: dict[str, str] = {}
+    for prefix in ("item.minecraft.", "block.minecraft."):
+        for key, name in lang.items():
+            if key.startswith(prefix) and key.count(".") == 2:
+                items.setdefault("minecraft:" + key[len(prefix):], name)
+    return dict(sorted(items.items()))
 
 
 def extract(jar_path: Path, listing_only: bool = False) -> tuple[int, list[str]]:
@@ -137,10 +161,15 @@ def main() -> None:
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--list", action="store_true",
                     help="report what would be extracted without writing anything")
+    ap.add_argument("--list-items", action="store_true",
+                    help="print every vanilla item id with its display name as JSON and exit")
     args = ap.parse_args()
 
     version = minecraft_version()
     jar_path = find_jar(version)
+    if args.list_items:
+        print(json.dumps(list_items(jar_path), indent=1))
+        return
     print(f"minecraft {version} <- {jar_path}")
 
     written, missing = extract(jar_path, listing_only=args.list)

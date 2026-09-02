@@ -9,7 +9,11 @@ the walk and sprint poses with a phase slider, and the reference toggles. Painti
 construction - colour on the master folds to grey under the brush, the static layer is created on
 first use, and strokes over a material preview land on the layer being edited. Cubes are box UV by
 construction too: a new or resized cube is laid out in free space on the sheet, its paint moves with
-its faces, and the sheet grows when it is full, all inside the same undo step as the edit.
+its faces, and the sheet grows when it is full, all inside the same undo step as the edit. The
+template recipe is two fields on the same panel, a centre item and a ring item with the game's item
+list as autocomplete, written on Save.
+
+**Mittens.** A twentieth part, on the vambraces socket, and the first made entirely in the plugin.
 
 **Animated rigs.** The reference rigs now carry the vanilla walk and sprint cycles, baked from the
 game's own limb arithmetic, and hang the part under the bone it is attached to so it swings with the

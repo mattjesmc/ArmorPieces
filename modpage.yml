@@ -35,7 +35,7 @@ sections:
     takes that material's colour. Trim and parts live on the same piece of armor; neither replaces the
     other.
 
-    Nineteen parts ship across twelve sockets. Each is a datapack entry, a model and a texture, no
+    Twenty parts ship across twelve sockets. Each is a datapack entry, a model and a texture, no
     code, and a pack can add its own the same way.
 
   features:
@@ -318,6 +318,7 @@ custom_sections:
       | Material preview | Shows the part through a trim material's palette. Strokes still land on the sheet being edited, the UV editor keeps showing the greyscale, and the preview follows the brush. |
       | Pose, Phase | The walk or sprint cycle, frozen at any point, without leaving Edit or Paint mode. |
       | Show player, Show armor, Outliner: part only | Hide the reference figure, the armor layers, or everything but the part in the outliner. |
+      | Recipe centre, Recipe ring | The template recipe: one item in the middle of a ring of four, paper unless there is a reason. Item ids autocomplete from the game's own list. Written on Save as `data/<ns>/recipe/template_<part>.json`. |
 
       **Modelling.** Model inside the `part` group; everything else is the locked reference. The
       mod's format is box UV only, so the plugin keeps it that way: a cube added, converted or
@@ -325,7 +326,8 @@ custom_sections:
       the texture grows when it is full. All of that lands in the same undo step as the edit.
 
       **Saving.** Save exports the geometry through `bb_geo.py`, writes the master and static layer
-      back to their files, and — for a part whose master lives in `tools/decoration_masters/` — runs
-      `sync_decoration_masters.py`, which installs the sheets and checks them against the geometry.
+      back to their files, writes the template recipe, and — for a part whose master lives in
+      `tools/decoration_masters/` — runs `sync_decoration_masters.py`, which installs the sheets and
+      checks them against the geometry.
 
 footer: "Every part in this mod is the same four files a pack of your own would write."

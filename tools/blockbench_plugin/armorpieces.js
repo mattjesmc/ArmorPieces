@@ -71,6 +71,8 @@
 			show_player: true,
 			show_armor: true,
 			part_only: true,
+			recipe_focus: '',
+			recipe_ring: 'minecraft:paper',
 		};
 	}
 
@@ -247,6 +249,128 @@
 		return (data.anchors || []).filter(function (a) { return typeof a === 'string'; });
 	}
 
+	// ---- the template recipe ------------------------------------------------------------------
+
+	/*
+	 * How a player gets a part: a template item for its socket, carrying the part as a component.
+	 * Every shipped part hands its template out the same way - a ring of one item around one centre
+	 * item - so a recipe is two choices, and the file is written from them on Save. The centre item
+	 * is what makes the recipe read as the part's; the ring is paper unless there is a reason.
+	 */
+	const RING_PATTERN = [' # ', '#F#', ' # '];
+	const ITEM_ID = /^[a-z0-9_.-]+:[a-z0-9_\/.-]+$/;
+	let itemCache = null;
+
+	function recipeFileFor(piece) {
+		return path.join(piece.pack, 'data', piece.namespace, 'recipe', 'template_' + piece.name + '.json');
+	}
+
+	/* Every vanilla item id with its name, read out of the game jar by vanilla_assets.py. */
+	function vanillaItems() {
+		if (!itemCache) {
+			try {
+				itemCache = JSON.parse(tool('vanilla_assets.py', ['--list-items']));
+			} catch (err) {
+				console.error(err);
+				itemCache = {};
+			}
+		}
+		return itemCache;
+	}
+
+	function ingredientId(value) {
+		if (typeof value === 'string') return value;
+		if (value && typeof value.item === 'string') return value.item;
+		return '';
+	}
+
+	/* The two choices an existing recipe file was written from, or null if there is no such file
+	 * or it is not shaped the way this plugin writes it (then it is somebody's hand-made recipe and
+	 * is left alone). */
+	function readRecipe(piece) {
+		const file = recipeFileFor(piece);
+		if (!fs.existsSync(file)) return null;
+		try {
+			const recipe = JSON.parse(fs.readFileSync(file, 'utf8'));
+			if (recipe.type !== 'minecraft:crafting_shaped') return null;
+			if (JSON.stringify(recipe.pattern) !== JSON.stringify(RING_PATTERN)) return null;
+			const focus = ingredientId(recipe.key && recipe.key.F);
+			const ring = ingredientId(recipe.key && recipe.key['#']);
+			if (!focus || !ring) return null;
+			return { focus: focus, ring: ring };
+		} catch (err) {
+			return null;
+		}
+	}
+
+	function knownItem(id) {
+		if (!ITEM_ID.test(id)) return false;
+		// Only vanilla ids can be checked; another mod's item is taken on trust.
+		if (!id.startsWith('minecraft:')) return true;
+		return !!vanillaItems()[id];
+	}
+
+	/* Write the recipe for the current choices. Returns what was done, for the Save message. */
+	function writeRecipe(piece) {
+		const s = state();
+		const focus = (s.recipe_focus || '').trim();
+		const ring = (s.recipe_ring || '').trim() || 'minecraft:paper';
+		if (!focus) return 'no recipe (no centre item)';
+		for (const id of [focus, ring]) {
+			if (!knownItem(id)) {
+				Blockbench.showMessageBox({
+					title: 'Unknown item',
+					message: id + ' is not a vanilla item id, so the recipe was not written. Use ' +
+						'namespace:name, e.g. minecraft:feather.',
+				});
+				return 'recipe not written';
+			}
+		}
+		const socket = anchorsOf(piece)[0] || s.anchor;
+		const recipe = {
+			type: 'minecraft:crafting_shaped',
+			category: 'equipment',
+			pattern: RING_PATTERN,
+			key: { '#': ring, F: focus },
+			result: {
+				id: 'armorpieces:' + socket + '_template',
+				components: { 'armorpieces:decoration': piece.key },
+			},
+		};
+		writeJson(recipeFileFor(piece), recipe);
+		return 'recipe: ' + focus + ' in ' + ring;
+	}
+
+	/*
+	 * The autocomplete behind the two item fields. Filled once, on first use rather than when the
+	 * panel is built, because the repository - and so the game jar - is not known until then.
+	 */
+	let itemListFilled = false;
+
+	function fillItemLists() {
+		if (itemListFilled || !panel || !panel.form) return;
+		const items = vanillaItems();
+		const ids = Object.keys(items);
+		if (!ids.length) return;
+		for (const field of ['recipe_focus', 'recipe_ring']) {
+			const element = panel.form.form_data[field];
+			const input = element && element.input;
+			if (!input) continue;
+			// Blockbench 5.1 builds the datalist but never attaches it (it appends `list[0]` of a
+			// plain element), so the input names a list that is not on the page. Make that list.
+			const listId = input.getAttribute('list') || (panel.form.uuid + '_' + field + '_list');
+			input.setAttribute('list', listId);
+			let list = document.getElementById(listId);
+			if (!list) {
+				list = Interface.createElement('datalist', { id: listId });
+				input.parentElement.append(list);
+			}
+			list.innerHTML = '';
+			for (const id of ids) list.append(Interface.createElement('option', { value: id }, items[id]));
+		}
+		itemListFilled = true;
+	}
+
 	// ---- opening ------------------------------------------------------------------------------
 
 	function tempDir() {
@@ -291,6 +415,11 @@
 		Project[ID + '_piece'] = piece;
 		Project[ID + '_texture'] = texture;
 		Project[ID + '_state'] = Object.assign(defaultState(), { anchor: anchor });
+		const recipe = readRecipe(piece);
+		if (recipe) {
+			Project[ID + '_state'].recipe_focus = recipe.focus;
+			Project[ID + '_state'].recipe_ring = recipe.ring;
+		}
 		Project.name = piece.name;
 		// The rig is scratch; saving it would put a rig where the piece should go. Save Piece is the
 		// only correct way out, so the project is left without a save path on purpose.
@@ -385,7 +514,8 @@
 			}
 		}
 
-		Blockbench.showQuickMessage('Saved ' + piece.name + ' to ' + piece.namespace, 2500);
+		const recipe = writeRecipe(piece);
+		Blockbench.showQuickMessage('Saved ' + piece.name + ' to ' + piece.namespace + ' - ' + recipe, 3000);
 	}
 
 	// ---- new piece ----------------------------------------------------------------------------
@@ -1264,6 +1394,16 @@
 			show_player: { label: 'Show player', type: 'checkbox', style: 'toggle_switch', value: true },
 			show_armor: { label: 'Show armor', type: 'checkbox', style: 'toggle_switch', value: true },
 			part_only: { label: 'Outliner: part only', type: 'checkbox', style: 'toggle_switch', value: true },
+			_4: '_',
+			// `list: []` is what makes the form create the datalist node; it is filled on first use.
+			recipe_focus: {
+				label: 'Recipe centre', type: 'text', value: '', placeholder: 'minecraft:feather', list: [],
+				description: 'The item in the middle of the template recipe. Written on Save.',
+			},
+			recipe_ring: {
+				label: 'Recipe ring', type: 'text', value: 'minecraft:paper', list: [],
+				description: 'The four items around it.',
+			},
 		};
 	}
 
@@ -1287,6 +1427,8 @@
 				show_player: s.show_player,
 				show_armor: s.show_armor,
 				part_only: s.part_only,
+				recipe_focus: s.recipe_focus,
+				recipe_ring: s.recipe_ring,
 			});
 		} finally {
 			syncingForm = false;
@@ -1319,6 +1461,8 @@
 		s.show_player = !!result.show_player;
 		s.show_armor = !!result.show_armor;
 		s.part_only = !!result.part_only;
+		s.recipe_focus = result.recipe_focus || '';
+		s.recipe_ring = result.recipe_ring || '';
 
 		if (changed.includes('edit')) {
 			if (s.edit === 'static' && !tex('part_static')) createStaticLayer();
@@ -1379,6 +1523,7 @@
 		if (typeof updateInterfacePanels === 'function') updateInterfacePanels();
 		if (Modes.vue) Modes.vue.$forceUpdate();
 		Outliner.updateNodeDisplayRules();
+		fillItemLists();
 		syncForm();
 		applyTextures();
 		applyPalette();
@@ -1597,6 +1742,9 @@
 				},
 				state: state,
 				isWorkspace: isWorkspace,
+				save: savePiece,
+				readRecipe: readRecipe,
+				refresh: enterWorkspace,
 			};
 		},
 

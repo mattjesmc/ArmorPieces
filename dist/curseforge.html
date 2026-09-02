@@ -22,7 +22,7 @@ sash on the belt, spurs on the heels.</p>
 <p>A part is applied at a smithing table the way a trim is, with a template and a trim material, and
 takes that material&rsquo;s colour. Trim and parts live on the same piece of armor; neither replaces the
 other.</p>
-<p>Nineteen parts ship across twelve sockets. Each is a datapack entry, a model and a texture, no
+<p>Twenty parts ship across twelve sockets. Each is a datapack entry, a model and a texture, no
 code, and a pack can add its own the same way.</p>
 
 <hr>
@@ -90,20 +90,21 @@ code, and a pack can add its own the same way.</p>
 </tr>
 <tr>
 <td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_horns.png" alt="Crafting recipe for Template Horns"><br><sub>Template Horns</sub></td>
+<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_mittens.png" alt="Crafting recipe for Template Mittens"><br><sub>Template Mittens</sub></td>
 <td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_pinions.png" alt="Crafting recipe for Template Pinions"><br><sub>Template Pinions</sub></td>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_poleyns.png" alt="Crafting recipe for Template Poleyns"><br><sub>Template Poleyns</sub></td>
 </tr>
 <tr>
+<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_poleyns.png" alt="Crafting recipe for Template Poleyns"><br><sub>Template Poleyns</sub></td>
 <td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_sash.png" alt="Crafting recipe for Template Sash"><br><sub>Template Sash</sub></td>
 <td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_spaulders.png" alt="Crafting recipe for Template Spaulders"><br><sub>Template Spaulders</sub></td>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_spurs.png" alt="Crafting recipe for Template Spurs"><br><sub>Template Spurs</sub></td>
 </tr>
 <tr>
+<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_spurs.png" alt="Crafting recipe for Template Spurs"><br><sub>Template Spurs</sub></td>
 <td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_tassets.png" alt="Crafting recipe for Template Tassets"><br><sub>Template Tassets</sub></td>
 <td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_vambraces.png" alt="Crafting recipe for Template Vambraces"><br><sub>Template Vambraces</sub></td>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_visor.png" alt="Crafting recipe for Template Visor"><br><sub>Template Visor</sub></td>
 </tr>
 <tr>
+<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_visor.png" alt="Crafting recipe for Template Visor"><br><sub>Template Visor</sub></td>
 <td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_wing_roots.png" alt="Crafting recipe for Template Wing Roots"><br><sub>Template Wing Roots</sub></td>
 </tr>
 </table>
@@ -379,6 +380,10 @@ and Paint modes, the outliner, transform, the UV editor, colour and palette, and
 <td>Show player, Show armor, Outliner: part only</td>
 <td>Hide the reference figure, the armor layers, or everything but the part in the outliner.</td>
 </tr>
+<tr>
+<td>Recipe centre, Recipe ring</td>
+<td>The template recipe: one item in the middle of a ring of four, paper unless there is a reason. Item ids autocomplete from the game&rsquo;s own list. Written on Save as <code>data/&lt;ns&gt;/recipe/template_&lt;part&gt;.json</code>.</td>
+</tr>
 </tbody>
 </table>
 <p><strong>Modelling.</strong> Model inside the <code>part</code> group; everything else is the locked reference. The
@@ -386,8 +391,9 @@ mod&rsquo;s format is box UV only, so the plugin keeps it that way: a cube added
 resized is laid out in free space on the texture, the paint on its faces moves with them, and
 the texture grows when it is full. All of that lands in the same undo step as the edit.</p>
 <p><strong>Saving.</strong> Save exports the geometry through <code>bb_geo.py</code>, writes the master and static layer
-back to their files, and — for a part whose master lives in <code>tools/decoration_masters/</code> — runs
-<code>sync_decoration_masters.py</code>, which installs the sheets and checks them against the geometry.</p>
+back to their files, writes the template recipe, and — for a part whose master lives in
+<code>tools/decoration_masters/</code> — runs <code>sync_decoration_masters.py</code>, which installs the sheets and
+checks them against the geometry.</p>
 
 <hr>
 <h2>FAQ</h2>

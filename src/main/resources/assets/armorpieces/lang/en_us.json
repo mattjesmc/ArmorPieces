@@ -52,5 +52,6 @@
   "commands.armorpieces.stage.cleared": "Cleared %s staged armor stands",
   "commands.armorpieces.stage.variant": "Variant %s",
   "commands.armorpieces.stage.nothing": "Nothing to stage - no decorations, no trim materials or no armor to wear them",
-  "commands.armorpieces.stage.too_many": "That is %s armor stands, past the limit of %s - narrow it with an argument"
+  "commands.armorpieces.stage.too_many": "That is %s armor stands, past the limit of %s - narrow it with an argument",
+  "decoration.armorpieces.mittens": "Mittens"
 }
