@@ -1,6 +1,7 @@
 package com.mattjesmc.armorpieces.client;
 
 import com.mattjesmc.armorpieces.ArmorPieces;
+import com.mattjesmc.armorpieces.client.fitting.FittingRenderers;
 import com.mattjesmc.armorpieces.client.geometry.DecorationGeometryManager;
 import com.mattjesmc.armorpieces.client.texture.DecorationTextureManager;
 import net.fabricmc.api.ClientModInitializer;
@@ -23,6 +24,9 @@ public class ArmorPiecesClient implements ClientModInitializer {
         // reads the trim palettes every pack declares. Colouring itself happens on first use.
         ResourceManagerHelper.get(PackType.CLIENT_RESOURCES)
             .registerReloadListener(DecorationTextureManager.instance());
+
+        // The one fitting type that draws rather than colours. A mod's own goes through the same door.
+        FittingRenderers.registerBuiltins();
 
         // Attach the decoration layer to every renderer that draws a humanoid, rather than to a fixed
         // list of entity types. Players, armor stands, zombies, skeletons, piglins and any modded mob

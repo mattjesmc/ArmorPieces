@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mattjesmc.armorpieces.ArmorPieces;
+import com.mattjesmc.armorpieces.decoration.fitting.FittingColour;
 import com.mojang.blaze3d.platform.NativeImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,7 +28,8 @@ import net.minecraft.util.ARGB;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Resolves the texture a decorative part draws with, colouring it for the material on demand.
+ * Resolves the texture a decorative part draws with, colouring it for the material - and for
+ * whatever is set in its fittings - on demand.
  *
  * <p>A part used to ship one PNG per trim material - sixteen files each, 288 across the mod, and a
  * flat wall for anyone adding a seventeenth material, because the texture path is built from the
@@ -43,11 +45,18 @@ import org.jspecify.annotations.Nullable;
  * last one winning - and so a new material colours every decoration that exists, including ones from
  * mods it has never heard of, with no additional assets at all.
  *
+ * <p>Fittings ride the same machinery. A masked fitting is one more greyscale sheet beside the
+ * master, {@code <part>_<fitting>.png}, and while the fitting is filled its opaque pixels are
+ * coloured through whatever the fitting asked for - a second material's palette, or a dye's colour
+ * through the static ramp - on top of the recoloured master. An empty fitting costs nothing: the
+ * mask is not read and the bake is the one it always was.
+ *
  * <p>Resolution order for a part and a material suffix:
  *
  * <ol>
  *   <li>{@code <part>_<suffix>.png}, if a pack supplies one - the hand-authored override still wins,
- *       so a part that genuinely needs bespoke art per material can have it;</li>
+ *       so a part that genuinely needs bespoke art per material can have it. With fittings filled
+ *       the override serves as the base the masks are laid over;</li>
  *   <li>{@code <part>.png} recoloured through the material's palette - the normal path;</li>
  *   <li>the override path anyway, so a part with neither fails visibly rather than silently.</li>
  * </ol>
@@ -62,6 +71,8 @@ public final class DecorationTextureManager implements SimpleSynchronousResource
      * Reserved: a part's non-metal companion layer. A trim material whose suffix is literally
      * {@code static} would collide with it, which is a trade the two-file split accepts in exchange
      * for never having to guess whether a coloured pixel meant "keep this colour" or "this is art".
+     * A fitting's mask lives at the same kind of name, {@code <part>_<fitting>.png}, and the same
+     * trade applies: a fitting named after a trim material would shadow that material's override.
      */
     private static final String STATIC_SUFFIX = "_static";
 
@@ -92,28 +103,47 @@ public final class DecorationTextureManager implements SimpleSynchronousResource
     }
 
     /**
-     * The texture to draw this part in this material with, baking it on first use.
+     * One filled masked fitting, as the baker needs it: which mask sheet to read, and how to colour
+     * what it covers.
+     *
+     * @param name   the fitting id's path - the mask is {@code <part>_<name>.png}.
+     * @param colour what the fitting asked for, see {@link FittingColour}.
+     */
+    public record Mask(String name, FittingColour colour) {}
+
+    /** The texture for a part in a material with nothing set in its fittings. */
+    public Identifier resolve(final Identifier assetId, final String suffix) {
+        return this.resolve(assetId, suffix, List.of());
+    }
+
+    /**
+     * The texture to draw this part in this material with these fittings, baking it on first use.
      *
      * <p>Called from the render layer, so everything expensive is cached: a bake happens once per
-     * part per material per resource reload, and every later frame is a map lookup.
+     * part per material per combination of filled fittings per resource reload, and every later
+     * frame is a map lookup. The combinations are lazy, so a part with two fittings costs the
+     * combinations actually worn, not the product of everything that could be.
+     *
+     * @param masks in layer order - a later mask paints over an earlier one where they overlap.
      */
-    public Identifier resolve(final Identifier assetId, final String suffix) {
+    public Identifier resolve(final Identifier assetId, final String suffix, final List<Mask> masks) {
         final Identifier override = file(assetId, "_" + suffix);
-        if (this.available.contains(override)) {
+        final boolean hasOverride = this.available.contains(override);
+        if (hasOverride && masks.isEmpty()) {
             return override;
         }
-        if (!this.available.contains(file(assetId, ""))) {
+        if (!hasOverride && !this.available.contains(file(assetId, ""))) {
             // Neither a master nor an override. Return the override path so the failure shows up as
             // the missing-texture checker, which is the honest answer and the one a pack author can
             // actually diagnose.
             return override;
         }
-        final Identifier baked = bakedId(assetId, suffix);
+        final Identifier baked = bakedId(assetId, suffix, masks);
         final Identifier cached = this.resolved.get(baked);
         if (cached != null) {
             return cached;
         }
-        final Identifier result = bake(assetId, suffix, baked) ? baked : override;
+        final Identifier result = bake(assetId, suffix, masks, hasOverride ? override : null, baked) ? baked : override;
         this.resolved.put(baked, result);
         return result;
     }
@@ -134,17 +164,45 @@ public final class DecorationTextureManager implements SimpleSynchronousResource
 
     // ---- baking ---------------------------------------------------------------------------------
 
-    private boolean bake(final Identifier assetId, final String suffix, final Identifier target) {
+    private boolean bake(
+        final Identifier assetId,
+        final String suffix,
+        final List<Mask> masks,
+        final @Nullable Identifier override,
+        final Identifier target
+    ) {
         final ResourceManager manager = Minecraft.getInstance().getResourceManager();
         NativeImage master = null;
         NativeImage statics = null;
+        final List<NativeImage> maskImages = new ArrayList<>(masks.size());
         try {
-            master = readImage(manager, file(assetId, ""));
-            if (master == null) {
-                return false;
+            final NativeImage out;
+            if (override != null) {
+                // Hand-authored art per material is already coloured; the masks lay over it as they
+                // would over a recoloured master.
+                master = readImage(manager, override);
+                if (master == null) {
+                    return false;
+                }
+                out = copy(master);
+            } else {
+                master = readImage(manager, file(assetId, ""));
+                if (master == null) {
+                    return false;
+                }
+                statics = readImage(manager, file(assetId, STATIC_SUFFIX));
+                out = recolour(master, statics, palette(manager, suffix));
             }
-            statics = readImage(manager, file(assetId, STATIC_SUFFIX));
-            final NativeImage out = recolour(master, statics, palette(manager, suffix));
+            for (final Mask mask : masks) {
+                final Identifier sheet = file(assetId, "_" + mask.name());
+                // A fitting the part declares but ships no mask for is a fitting that changes nothing
+                // visible. Legitimate for a pack that only wants the gem's effect, so not an error.
+                final NativeImage image = this.available.contains(sheet) ? readImage(manager, sheet) : null;
+                if (image != null) {
+                    maskImages.add(image);
+                    applyMask(out, master, image, ramp(manager, mask.colour()));
+                }
+            }
             final Minecraft client = Minecraft.getInstance();
             client.getTextureManager().release(target);
             client.getTextureManager().register(target, new DynamicTexture(target::toString, out));
@@ -156,6 +214,7 @@ public final class DecorationTextureManager implements SimpleSynchronousResource
         } finally {
             close(master);
             close(statics);
+            maskImages.forEach(DecorationTextureManager::close);
         }
     }
 
@@ -210,6 +269,53 @@ public final class DecorationTextureManager implements SimpleSynchronousResource
                 out.setPixel(x, y, (alpha << 24) | (rgb & 0x00FFFFFF));
             }
         }
+        return out;
+    }
+
+    /**
+     * Lays one fitting's mask over the image in place. The mask's own value is the shading - it is a
+     * greyscale sheet painted like the master, so a gem can be cut differently from the metal it
+     * replaces - and the master's alpha is still the silhouette: a mask pixel where the master is
+     * transparent is skipped, exactly as a static pixel there would be.
+     *
+     * <p>A null ramp means a palette fitting named a material with no palette; the mask then shows
+     * at its own greys, the same honest answer the master gives for such a material.
+     */
+    private static void applyMask(
+        final NativeImage out,
+        final NativeImage master,
+        final NativeImage mask,
+        final @Nullable DecorationPalette ramp
+    ) {
+        final int width = Math.min(out.getWidth(), mask.getWidth());
+        final int height = Math.min(out.getHeight(), mask.getHeight());
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                final int m = mask.getPixel(x, y);
+                if (ARGB.alpha(m) == 0) {
+                    continue;
+                }
+                final int alpha = ARGB.alpha(master.getPixel(x, y));
+                if (alpha == 0) {
+                    continue;
+                }
+                final int luminance = ARGB.red(m);
+                final int rgb = ramp != null ? ramp.rgb(luminance) : m;
+                out.setPixel(x, y, (alpha << 24) | (rgb & 0x00FFFFFF));
+            }
+        }
+    }
+
+    private @Nullable DecorationPalette ramp(final ResourceManager manager, final FittingColour colour) {
+        return switch (colour) {
+            case FittingColour.Palette p -> palette(manager, p.suffix());
+            case FittingColour.Solid s -> DecorationPalette.ofStaticColour(s.rgb());
+        };
+    }
+
+    private static NativeImage copy(final NativeImage source) {
+        final NativeImage out = new NativeImage(source.getWidth(), source.getHeight(), false);
+        out.copyFrom(source);
         return out;
     }
 
@@ -312,11 +418,21 @@ public final class DecorationTextureManager implements SimpleSynchronousResource
         return spriteId.withPath(path -> "textures/" + path + ".png");
     }
 
-    /** Where a baked texture is registered. Namespaced under this mod so it collides with nothing. */
-    private static Identifier bakedId(final Identifier assetId, final String suffix) {
-        return Identifier.fromNamespaceAndPath(
-            ArmorPieces.MOD_ID,
-            "coloured/" + assetId.getNamespace() + "/" + assetId.getPath() + "_" + suffix);
+    /**
+     * Where a baked texture is registered. Namespaced under this mod so it collides with nothing,
+     * and naming every filled fitting so that each combination is its own texture.
+     */
+    private static Identifier bakedId(final Identifier assetId, final String suffix, final List<Mask> masks) {
+        final StringBuilder path = new StringBuilder("coloured/")
+            .append(assetId.getNamespace()).append('/').append(assetId.getPath()).append('_').append(suffix);
+        for (final Mask mask : masks) {
+            path.append('.').append(mask.name().replace('/', '.')).append('-');
+            switch (mask.colour()) {
+                case FittingColour.Palette p -> path.append(p.suffix());
+                case FittingColour.Solid s -> path.append('x').append(Integer.toHexString(s.rgb() & 0x00FFFFFF));
+            }
+        }
+        return Identifier.fromNamespaceAndPath(ArmorPieces.MOD_ID, path.toString());
     }
 
     /** Parsed by hand rather than through a codec: an atlas value is a bare id, and may omit its namespace. */

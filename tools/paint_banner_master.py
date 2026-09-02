@@ -762,16 +762,29 @@ def check_geometry() -> None:
     doc = json.loads(GEO.read_text(encoding="utf-8"))
     assert (doc["texture_width"], doc["texture_height"]) == (TEX_W, TEX_H), \
         f"{GEO.name} is {doc['texture_width']}x{doc['texture_height']}, this master is {TEX_W}x{TEX_H}"
-    assert len(doc["bones"]) == 1, f"{GEO.name} has {len(doc['bones'])} bones; this master assumes 1"
-    bone = doc["bones"][0]
-    assert not bone.get("children"), f"{GEO.name}'s bone has children; this master assumes it does not"
-    assert tuple(bone.get("pivot", [0, 0, 0])) == (0, 0, 0), \
-        f"{GEO.name}'s bone pivot is {bone.get('pivot')}, not the anchor itself"
-    assert all(r == 0 for r in bone.get("rotation", [0, 0, 0])), \
-        f"{GEO.name}'s bone is rotated; every burial mask here assumes axis-aligned cubes"
-    found = [(tuple(c["size"]), tuple(c["uv"]), tuple(float(v) for v in c["origin"]))
-             for c in bone["cubes"]]
+    # The cloth lives on its own bone, `banner`, under the mount: that is the bone the banner
+    # fitting takes over when a banner is applied, and the game draws the pattern layers on it in
+    # place of the master. Every bone still sits at the anchor unrotated, because every burial mask
+    # and the swallowtail below assume axis-aligned cubes in the one frame.
+    found = []
+
+    def walk(bone):
+        assert tuple(bone.get("pivot", [0, 0, 0])) == (0, 0, 0), \
+            f"{GEO.name}'s bone {bone['name']} pivot is {bone.get('pivot')}, not the anchor itself"
+        assert all(r == 0 for r in bone.get("rotation", [0, 0, 0])), \
+            f"{GEO.name}'s bone {bone['name']} is rotated; every burial mask here assumes axis-aligned cubes"
+        found.extend((tuple(c["size"]), tuple(c["uv"]), tuple(float(v) for v in c["origin"]))
+                     for c in bone.get("cubes", []))
+        for child in bone.get("children", []):
+            walk(child)
+
+    for bone in doc["bones"]:
+        walk(bone)
+    assert any(b["name"] == "banner" for b in doc["bones"][0].get("children", [])), \
+        f"{GEO.name} has no `banner` child bone for the banner fitting to draw on"
     want = [(size, uv, tuple(float(v) for v in origin)) for size, uv, origin in CUBES.values()]
+    found.sort(key=lambda t: t[1])
+    want.sort(key=lambda t: t[1])
     assert found == want, f"CUBES disagrees with {GEO.name}: {found} vs {want}"
     for name, cells in CUT.items():
         w, h, _ = CUBES[name][0]

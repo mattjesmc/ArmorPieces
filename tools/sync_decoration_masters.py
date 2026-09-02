@@ -10,8 +10,10 @@ So there is nothing left to generate. A part is two files at most, and this scri
 copy them from the authoring directory to the one the mod loads from, and to check on the way past
 that they are shaped the way the loader expects:
 
-    tools/decoration_masters/<part>.png         greyscale + alpha, the shape and its shading
-    tools/decoration_masters/<part>_static.png  optional RGBA, the parts that are not metal
+    tools/decoration_masters/<part>.png            greyscale + alpha, the shape and its shading
+    tools/decoration_masters/<part>_static.png     optional RGBA, the parts that are not metal
+    tools/decoration_masters/<part>_<fitting>.png  optional greyscale + alpha, one per fitting the
+                                                   part declares: the region a second material takes
 
 It also checks the master against the part's geometry, which is the one defect no painter could
 catch on its own before every paint_<part>_master.py grew a check_geometry(): a master painted for a
@@ -23,8 +25,13 @@ pixel outside every face rectangle, which is paint the model never samples.
 The master's value channel is what gets mapped onto a material's ramp, and its alpha is the
 silhouette. The static layer's opaque pixels keep their own colour instead of taking the material's,
 shaded by the master's value - so a horn stays keratin and a sash stays cloth while the hardware
-still turns gold. The master stays the single source of truth for the silhouette: a static pixel
-where the master is transparent is not drawn, and is reported here rather than silently ignored.
+still turns gold. A fitting mask is greyscale like the master and, while the fitting is filled, its
+opaque pixels take the mask's own value through the fitting's colour. The master stays the single
+source of truth for the silhouette: a static or mask pixel where the master is transparent is not
+drawn, and is reported here rather than silently ignored.
+
+A companion file is recognised by its name: anything `<part>_<x>.png` where `<part>.png` exists
+beside it. So a part called `helm_wings` is a master, and `helm_wings_static` is its layer.
 
 Usage:
     python tools/sync_decoration_masters.py feathering
@@ -168,24 +175,61 @@ def check_static(path: Path, master: Image.Image) -> list[str]:
     return warnings
 
 
+def check_mask(path: Path, master: Image.Image) -> list[str]:
+    """Report a fitting mask that the loader would read differently than intended."""
+    warnings: list[str] = []
+    mask = Image.open(path)
+    if mask.size != master.size:
+        sys.exit(f"{path.name}: mask is {mask.size}, master is {master.size} - they must match")
+
+    mask_px = mask.convert("RGBA").load()
+    master_px = master.convert("RGBA").load()
+    width, height = master.size
+    orphans = coloured = opaque = 0
+    for y in range(height):
+        for x in range(width):
+            r, g, b, a = mask_px[x, y]
+            if not a:
+                continue
+            opaque += 1
+            if not master_px[x, y][3]:
+                orphans += 1
+            if not (r == g == b):
+                coloured += 1
+    if not opaque:
+        warnings.append(f"{path.name} is entirely transparent - the fitting will change nothing")
+    if orphans:
+        warnings.append(f"{orphans} pixel(s) of {path.name} lie outside the master's silhouette and will not draw")
+    if coloured:
+        warnings.append(f"{coloured} pixel(s) of {path.name} are not grey - a mask is shading, and the "
+                        f"loader reads only its red channel")
+    return warnings
+
+
+def companions(name: str) -> list[Path]:
+    """Every `<name>_<x>.png` beside the master: the static layer and the fitting masks."""
+    return sorted(p for p in MASTERS.glob(f"{name}_*.png") if p.stem != name)
+
+
 def install(master_path: Path) -> None:
     name = master_path.stem
     master, warnings = check_master(master_path)
 
     warnings += check_geometry(name, master)
 
-    static_path = MASTERS / f"{name}{STATIC_SUFFIX}.png"
-    has_static = static_path.is_file()
-    if has_static:
-        warnings += check_static(static_path, master)
+    extras = companions(name)
+    for extra in extras:
+        if extra.stem == f"{name}{STATIC_SUFFIX}":
+            warnings += check_static(extra, master)
+        else:
+            warnings += check_mask(extra, master)
 
     OUT.mkdir(parents=True, exist_ok=True)
     shutil.copy2(master_path, OUT / master_path.name)
-    if has_static:
-        shutil.copy2(static_path, OUT / static_path.name)
+    for extra in extras:
+        shutil.copy2(extra, OUT / extra.name)
 
-    files = 2 if has_static else 1
-    print(f"{name}: installed {files} file(s) to {OUT}")
+    print(f"{name}: installed {1 + len(extras)} file(s) to {OUT}")
     for warning in warnings:
         print(f"  warning: {warning}")
 
@@ -194,7 +238,9 @@ def main() -> None:
     if not MASTERS.is_dir():
         sys.exit(f"No masters directory at {MASTERS}")
     wanted = sys.argv[1:]
-    masters = [m for m in sorted(MASTERS.glob("*.png")) if not m.stem.endswith(STATIC_SUFFIX)]
+    stems = {m.stem for m in MASTERS.glob("*.png")}
+    masters = [m for m in sorted(MASTERS.glob("*.png"))
+               if not ("_" in m.stem and m.stem.rsplit("_", 1)[0] in stems)]
     if wanted:
         masters = [m for m in masters if m.stem in wanted]
         missing = set(wanted) - {m.stem for m in masters}

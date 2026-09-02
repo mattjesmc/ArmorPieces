@@ -10,12 +10,23 @@ sRGB lerp, same "luminance is the master's red channel", same rule that alpha co
 and a static pixel outside the silhouette is not drawn. See DecorationPalette's class javadoc for
 why the ramp has three stops rather than vanilla's eight; that reasoning is not repeated here.
 
+Fittings ride the same port. A masked fitting is one more greyscale sheet beside the master,
+`<part>_<fitting>.png`, and while it is filled its opaque pixels take the mask's OWN value through
+the fitting's colour: a second trim material's palette (`gemstone=emerald`), or a dye's colour
+through the static ramp (`inlay=red`). Alpha is still the master's. The masks are laid over the
+recoloured master in the order given, later over earlier, which is the order the part's `fittings`
+list them - see DecorationTextureManager.applyMask. A fitting that draws its own geometry, like the
+banner, has no mask and is not previewed here.
+
 Palettes come from tools/.mcassets, so run tools/vanilla_assets.py first.
 
 Usage:
     python tools/preview_material.py spaulders gold
+    python tools/preview_material.py circlet gold --fitting gemstone=emerald
+    python tools/preview_material.py sash iron --fitting inlay=red --fitting guard=gold
     python tools/preview_material.py spaulders --all --out-dir build/preview
     python tools/preview_material.py --ramp gold --static-colours '#ff0000,#00ff00'
+    python tools/preview_material.py --fittings src/main/resources/data/armorpieces/armorpieces/armor_decoration/sash.json
 """
 
 from __future__ import annotations
@@ -29,7 +40,9 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
 MASTERS = ROOT / "tools" / "decoration_masters"
-PALETTES = ROOT / "tools" / ".mcassets" / "palette"
+ASSETS = ROOT / "tools" / ".mcassets"
+PALETTES = ASSETS / "palette"
+RESOURCES = ROOT / "src" / "main" / "resources"
 
 STATIC_SUFFIX = "_static"
 
@@ -42,6 +55,34 @@ MATERIALS = [
     "redstone", "resin",
     "copper_darker", "diamond_darker", "gold_darker", "iron_darker", "netherite_darker",
 ]
+
+# DyeColor's texture diffuse colours, which is what DyeFitting.colour() hands the baker - the
+# colour a dyed block's texture is tinted with, not the legibility-tuned text colour. Read out of
+# the 26.2 jar with javap; they have not moved since 1.17, but check them if a dye ever looks off.
+DYES = {
+    "white": (0xF9, 0xFF, 0xFE),
+    "orange": (0xF9, 0x80, 0x1D),
+    "magenta": (0xC7, 0x4E, 0xBD),
+    "light_blue": (0x3A, 0xB3, 0xDA),
+    "yellow": (0xFE, 0xD8, 0x3D),
+    "lime": (0x80, 0xC7, 0x1F),
+    "pink": (0xF3, 0x8B, 0xAA),
+    "gray": (0x47, 0x4F, 0x52),
+    "light_gray": (0x9D, 0x9D, 0x97),
+    "cyan": (0x16, 0x9C, 0x9C),
+    "purple": (0x89, 0x32, 0xB8),
+    "blue": (0x3C, 0x44, 0xAA),
+    "brown": (0x83, 0x54, 0x32),
+    "green": (0x5E, 0x7C, 0x16),
+    "red": (0xB0, 0x2E, 0x26),
+    "black": (0x1D, 0x1D, 0x21),
+}
+
+# The fitting types this mod ships that colour a mask, and the type that draws geometry instead.
+# A type from another mod is listed by --fittings as unknown, with no options, which is the most
+# this tool can say about a value whose shape it does not know.
+MATERIAL_TYPE = "armorpieces:material"
+DYE_TYPE = "armorpieces:dye"
 
 
 def _lerp(a, b, t):
@@ -100,6 +141,37 @@ def static_ramp(rgb):
         (round(r + (255 - r) * 0.5), round(g + (255 - g) * 0.5), round(b + (255 - b) * 0.5)))
 
 
+def material_ramp(material: str):
+    """The ramp for a trim material by its palette suffix, or an exit if the palette is not here."""
+    key_path = PALETTES / "trim_palette.png"
+    palette_path = PALETTES / f"{material}.png"
+    if not key_path.is_file() or not palette_path.is_file():
+        sys.exit(f"error: no palette for {material!r} in {PALETTES}. "
+                 f"Run: python tools/vanilla_assets.py")
+    return palette_ramp(key_path, palette_path)
+
+
+def parse_hex(colour: str):
+    hex_colour = colour.strip().lstrip("#")
+    if len(hex_colour) != 6:
+        sys.exit(f"error: colour {colour!r} is not #rrggbb")
+    return tuple(int(hex_colour[i:i + 2], 16) for i in (0, 2, 4))
+
+
+def fitting_ramp(value: str):
+    """The ramp a fitting value colours its mask through.
+
+    `#rrggbb` and a dye name go through the static ramp, which is what DyeFitting asks for; anything
+    else is a trim material's palette suffix, which is what MaterialFitting asks for. A material
+    with no palette gives None, and the mask then shows at its own greys, as it does in the game."""
+    value = value.strip().lower()
+    if value.startswith("#"):
+        return static_ramp(parse_hex(value))
+    if value in DYES:
+        return static_ramp(DYES[value])
+    return material_ramp(value)
+
+
 def recolour(master: Image.Image, statics: Image.Image | None, ramp) -> Image.Image:
     """DecorationTextureManager.recolour, pixel for pixel."""
     master = master.convert("RGBA")
@@ -134,6 +206,26 @@ def recolour(master: Image.Image, statics: Image.Image | None, ramp) -> Image.Im
     return out
 
 
+def apply_mask(out: Image.Image, master: Image.Image, mask: Image.Image, ramp) -> None:
+    """DecorationTextureManager.applyMask, in place: the mask's own red channel is the shading, the
+    master's alpha is still the silhouette, and a None ramp leaves the mask at its own greys."""
+    master_pixels = master.convert("RGBA").load()
+    mask_pixels = mask.convert("RGBA").load()
+    target = out.load()
+    width = min(out.width, mask.width)
+    height = min(out.height, mask.height)
+    for y in range(height):
+        for x in range(width):
+            mr, mg, mb, ma = mask_pixels[x, y]
+            if ma == 0:
+                continue
+            alpha = master_pixels[x, y][3]
+            if alpha == 0:
+                continue
+            colour = ramp[mr] if ramp is not None else (mr, mg, mb)
+            target[x, y] = (colour[0], colour[1], colour[2], alpha)
+
+
 def ramp_tables(material: str, static_colours) -> dict:
     """The lookup tables a live editor needs to composite a preview itself.
 
@@ -141,48 +233,177 @@ def ramp_tables(material: str, static_colours) -> dict:
     too slow for that. But the maths must not move into JavaScript, or there would be two ports of
     DecorationPalette to keep in step. So the split is: this prints the finished 256-entry ramps,
     the material's own and one per static colour the layer currently uses, and the editor does
-    nothing but index them by the master's red channel - the same table lookup the game does."""
-    key_path = PALETTES / "trim_palette.png"
-    palette_path = PALETTES / f"{material}.png"
-    if not key_path.is_file() or not palette_path.is_file():
-        sys.exit(f"error: no palette for {material!r} in {PALETTES}. "
-                 f"Run: python tools/vanilla_assets.py")
-    material_ramp = palette_ramp(key_path, palette_path)
+    nothing but index them by the master's red channel - the same table lookup the game does. A
+    fitting is the same two tables again: a material fitting indexes a material's ramp, a dye
+    fitting a static colour's, both by the mask's red channel."""
     statics = {}
     for colour in static_colours:
-        hex_colour = colour.strip().lstrip("#")
-        if len(hex_colour) != 6:
-            sys.exit(f"error: static colour {colour!r} is not #rrggbb")
-        rgb = tuple(int(hex_colour[i:i + 2], 16) for i in (0, 2, 4))
-        statics["#" + hex_colour.lower()] = static_ramp(rgb)
-    return {"material": material_ramp, "static": statics}
+        rgb = parse_hex(colour)
+        statics["#%02x%02x%02x" % rgb] = static_ramp(rgb)
+    return {"material": material_ramp(material), "static": statics}
 
 
 def preview(part: str, material: str, out_path: Path,
             master_override: Path | None = None,
-            static_override: Path | None = None) -> Path:
-    """Composite one material's look.
+            static_override: Path | None = None,
+            fittings: list[tuple[str, str]] = (),
+            mask_overrides: dict[str, Path] | None = None) -> Path:
+    """Composite one material's look, with any filled fittings laid over it.
 
-    The two overrides exist so a live editor can preview UNSAVED paint: it dumps whatever is on
-    screen to a scratch file and points this at that, instead of the alternative - flushing the
-    editor's buffer to the real master first, which would make merely looking at a material a write
-    to a tracked source file."""
+    The overrides exist so a live editor can preview UNSAVED paint: it dumps whatever is on screen
+    to a scratch file and points this at that, instead of the alternative - flushing the editor's
+    buffer to the real master first, which would make merely looking at a material a write to a
+    tracked source file. `fittings` is (name, value) pairs in layer order; a fitting whose mask is
+    not on disk changes nothing, exactly as in the game."""
     master_path = master_override or MASTERS / f"{part}.png"
     if not master_path.is_file():
         sys.exit(f"error: no master at {master_path}")
-    key_path = PALETTES / "trim_palette.png"
-    palette_path = PALETTES / f"{material}.png"
-    if not key_path.is_file() or not palette_path.is_file():
-        sys.exit(f"error: no palette for {material!r} in {PALETTES}. "
-                 f"Run: python tools/vanilla_assets.py")
+    ramp = material_ramp(material)
 
     statics_path = static_override or MASTERS / f"{part}{STATIC_SUFFIX}.png"
     statics = Image.open(statics_path) if statics_path.is_file() else None
 
-    image = recolour(Image.open(master_path), statics, palette_ramp(key_path, palette_path))
+    master = Image.open(master_path)
+    image = recolour(master, statics, ramp)
+    for name, value in fittings:
+        mask_path = (mask_overrides or {}).get(name) or MASTERS / f"{part}_{name}.png"
+        if not mask_path.is_file():
+            print(f"note: no mask at {mask_path}, {name} changes nothing", file=sys.stderr)
+            continue
+        apply_mask(image, master, Image.open(mask_path), fitting_ramp(value))
     out_path.parent.mkdir(parents=True, exist_ok=True)
     image.save(out_path)
     return out_path
+
+
+# ---- what a part's fittings are, for a live editor ------------------------------------------
+
+def _read_json(path: Path):
+    return json.loads(path.read_text(encoding="utf8"))
+
+
+def _split_id(value: str, default_namespace: str = "minecraft") -> tuple[str, str]:
+    namespace, _, name = value.rpartition(":")
+    return (namespace or default_namespace), name
+
+
+def _lang(pack_dirs: list[Path], namespace: str) -> dict:
+    """The English strings for a namespace: the pack's own, else the mod's, else vanilla's."""
+    for pack in pack_dirs:
+        lang = pack / "assets" / namespace / "lang" / "en_us.json"
+        if lang.is_file():
+            return _read_json(lang)
+    vanilla = ASSETS / "lang" / "en_us.json"
+    return _read_json(vanilla) if namespace == "minecraft" and vanilla.is_file() else {}
+
+
+def _translate(pack_dirs: list[Path], namespace: str, key: str, fallback: str) -> str:
+    return _lang(pack_dirs, namespace).get(key) or fallback.replace("_", " ").title()
+
+
+def _find(pack_dirs: list[Path], *relative: str) -> Path | None:
+    for pack in pack_dirs:
+        candidate = pack.joinpath(*relative)
+        if candidate.is_file():
+            return candidate
+    return None
+
+
+def _tag_members(pack_dirs: list[Path], registry: str, tag: str, seen: set | None = None) -> list[str]:
+    """The ids a tag lists, nested tags flattened, in file order."""
+    seen = seen if seen is not None else set()
+    if tag in seen:
+        return []
+    seen.add(tag)
+    namespace, name = _split_id(tag)
+    path = _find(pack_dirs, "data", namespace, "tags", registry, f"{name}.json")
+    if path is None:
+        return []
+    members: list[str] = []
+    for entry in _read_json(path).get("values", []):
+        value = entry.get("id") if isinstance(entry, dict) else entry
+        if not isinstance(value, str):
+            continue
+        if value.startswith("#"):
+            members.extend(_tag_members(pack_dirs, registry, value[1:], seen))
+        elif value not in members:
+            members.append(value)
+    return members
+
+
+def _material_options(pack_dirs: list[Path], materials) -> list[dict]:
+    """One option per trim material the fitting accepts, named as the game names it. Only materials
+    with a palette here are offered: the game would show the others at the mask's own greys, which
+    is not a preview anyone asks for."""
+    if isinstance(materials, str):
+        ids = _tag_members(pack_dirs, "trim_material", materials[1:]) if materials.startswith("#") else [materials]
+    else:
+        ids = [m for m in materials if isinstance(m, str)]
+    options = []
+    for material in ids:
+        namespace, name = _split_id(material)
+        if not (PALETTES / f"{name}.png").is_file():
+            continue
+        label = _translate(pack_dirs, namespace, f"trim_material.{namespace}.{name}", name)
+        options.append({"value": name, "label": label.removesuffix(" Material"), "colour": f"palette:{name}"})
+    return options
+
+
+def _dye_options(pack_dirs: list[Path]) -> list[dict]:
+    return [{
+        "value": name,
+        "label": _translate(pack_dirs, "minecraft", f"color.minecraft.{name}", name),
+        "colour": "solid:#%02x%02x%02x" % rgb,
+    } for name, rgb in DYES.items()]
+
+
+def list_fittings(data_path: Path) -> list[dict]:
+    """The fittings a part declares, resolved far enough for an editor to offer them.
+
+    `data_path` is the part's datapack half, `<pack>/data/<ns>/armorpieces/armor_decoration/<part>.json`.
+    Fittings, tags and language files are looked up in that pack first and the mod's own resources
+    second, which is how the game would resolve them with both loaded. Each fitting comes back with
+    its mask name (the id's path), its type, whether it is a mask over the texture, a display name,
+    and - for the two masked types this mod ships - the values it can take, each with the colour it
+    asks the baker for: `palette:<suffix>` or `solid:#rrggbb`."""
+    data_path = data_path.resolve()
+    pack = data_path.parents[4] if len(data_path.parents) > 4 else data_path.parent
+    pack_dirs = [pack] + ([RESOURCES] if RESOURCES.resolve() != pack else [])
+
+    out = []
+    for fitting_id in _read_json(data_path).get("fittings", []):
+        if not isinstance(fitting_id, str):
+            continue
+        namespace, name = _split_id(fitting_id, "armorpieces")
+        entry = {"id": f"{namespace}:{name}", "name": name, "type": None, "masked": False,
+                 "label": name.replace("_", " ").title(), "options": []}
+        path = _find(pack_dirs, "data", namespace, "armorpieces", "fitting", f"{name}.json")
+        if path is not None:
+            fitting = _read_json(path)
+            entry["type"] = fitting.get("type")
+            description = fitting.get("description")
+            if isinstance(description, dict) and isinstance(description.get("translate"), str):
+                entry["label"] = _translate(pack_dirs, namespace, description["translate"], name)
+            elif isinstance(description, str):
+                entry["label"] = description
+            if entry["type"] == MATERIAL_TYPE:
+                entry["masked"] = True
+                entry["options"] = _material_options(pack_dirs, fitting.get("materials", []))
+            elif entry["type"] == DYE_TYPE:
+                entry["masked"] = True
+                entry["options"] = _dye_options(pack_dirs)
+        out.append(entry)
+    return out
+
+
+def _parse_pairs(values, what: str) -> list[tuple[str, str]]:
+    pairs = []
+    for item in values or []:
+        name, sep, value = item.partition("=")
+        if not sep or not name.strip() or not value.strip():
+            sys.exit(f"error: {what} {item!r} is not NAME=VALUE")
+        pairs.append((name.strip(), value.strip()))
+    return pairs
 
 
 def main() -> None:
@@ -195,6 +416,14 @@ def main() -> None:
                          "and exit, for a live editor to composite with")
     ap.add_argument("--static-colours", default="",
                     help="comma-separated #rrggbb colours to include ramps for with --ramp")
+    ap.add_argument("--fittings", metavar="DATA_JSON", type=Path,
+                    help="print the fittings the part at this datapack file declares, with the "
+                         "values each can take, as JSON and exit")
+    ap.add_argument("--fitting", action="append", metavar="NAME=VALUE",
+                    help="fill a fitting for the preview, e.g. gemstone=emerald, inlay=red, "
+                         "guard=#c0c0c0; repeatable, laid over in the order given")
+    ap.add_argument("--mask", action="append", metavar="NAME=PATH",
+                    help="use this file as the fitting's mask instead of the authored one")
     ap.add_argument("--all", action="store_true", help="every material")
     ap.add_argument("--out-dir", type=Path, default=ROOT / "build" / "preview")
     ap.add_argument("--master", type=Path,
@@ -208,16 +437,26 @@ def main() -> None:
         print(json.dumps(ramp_tables(args.ramp, colours)))
         return
 
+    if args.fittings:
+        if not args.fittings.is_file():
+            sys.exit(f"error: no part data at {args.fittings}")
+        print(json.dumps(list_fittings(args.fittings)))
+        return
+
     if not args.part:
-        ap.error("name a part, or pass --ramp")
+        ap.error("name a part, or pass --ramp or --fittings")
     if not args.all and not args.material:
         ap.error("name a material, or pass --all")
 
+    fittings = _parse_pairs(args.fitting, "--fitting")
+    masks = {name: Path(value) for name, value in _parse_pairs(args.mask, "--mask")}
+    suffix = "".join(f"_{name}-{value.lstrip('#')}" for name, value in fittings)
     materials = MATERIALS if args.all else [args.material]
     for material in materials:
-        out = preview(args.part, material, args.out_dir / f"{args.part}_{material}.png",
-                      args.master, args.static)
-        print(f"{args.part} x {material} -> {out}")
+        out = preview(args.part, material, args.out_dir / f"{args.part}_{material}{suffix}.png",
+                      args.master, args.static, fittings, masks)
+        print(f"{args.part} x {material}"
+              + "".join(f" + {name}={value}" for name, value in fittings) + f" -> {out}")
 
 
 if __name__ == "__main__":

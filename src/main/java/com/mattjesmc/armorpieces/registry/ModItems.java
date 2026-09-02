@@ -4,6 +4,7 @@ import com.mattjesmc.armorpieces.ArmorPieces;
 import com.mattjesmc.armorpieces.decoration.ArmorDecoration;
 import com.mattjesmc.armorpieces.decoration.DecorationAnchor;
 import com.mattjesmc.armorpieces.item.DecorationTemplateItem;
+import com.mattjesmc.armorpieces.item.FittingTemplateItem;
 import java.util.EnumMap;
 import java.util.Map;
 import net.minecraft.core.Holder;
@@ -17,16 +18,22 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 
 /**
- * The mod's items: exactly one smithing template per {@link DecorationAnchor}, and nothing else.
+ * The mod's items: exactly one smithing template per {@link DecorationAnchor}, plus the one fitting
+ * template, and nothing else.
  *
  * <p>The count is bounded by the anchor enum on purpose. Registering an item per PART would make the
  * part list compiled-in and undo the whole datapack story; registering one per SOCKET costs the same
- * twelve registrations forever, because the socket list is closed anyway. Which part a template applies
+ * twelve registrations forever - thirteen items with the fitting template - because the socket list
+ * is closed anyway. Which part a template applies
  * is carried on the stack - see {@link DecorationTemplateItem}.
+ *
+ * <p>The fitting template is one item for every fitting there will ever be, because the ITEM placed
+ * beside it decides where it goes - see {@link FittingTemplateItem}.
  */
 public final class ModItems {
     private static final Map<DecorationAnchor, DecorationTemplateItem> TEMPLATES =
         new EnumMap<>(DecorationAnchor.class);
+    private static FittingTemplateItem fittingTemplate;
 
     private ModItems() {}
 
@@ -39,7 +46,19 @@ public final class ModItems {
                 anchor, new Item.Properties().setId(key).rarity(Rarity.UNCOMMON));
             TEMPLATES.put(anchor, Registry.register(BuiltInRegistries.ITEM, key, item));
         }
-        ArmorPieces.LOGGER.info("[Armor Pieces] Registered {} decoration templates.", TEMPLATES.size());
+        final ResourceKey<Item> fittingKey = ResourceKey.create(
+            Registries.ITEM, Identifier.fromNamespaceAndPath(ArmorPieces.MOD_ID, "fitting_template"));
+        fittingTemplate = Registry.register(
+            BuiltInRegistries.ITEM,
+            fittingKey,
+            new FittingTemplateItem(new Item.Properties().setId(fittingKey).rarity(Rarity.UNCOMMON)));
+        ArmorPieces.LOGGER.info(
+            "[Armor Pieces] Registered {} decoration templates and the fitting template.", TEMPLATES.size());
+    }
+
+    /** The template that sets a second material into a part already on the armor. */
+    public static FittingTemplateItem fittingTemplate() {
+        return fittingTemplate;
     }
 
     /** The template item for a socket. Never null - every anchor has one by construction. */

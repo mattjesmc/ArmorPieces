@@ -1,6 +1,7 @@
 package com.mattjesmc.armorpieces.decoration;
 
 import com.mattjesmc.armorpieces.decoration.effect.DecorationEffect;
+import com.mattjesmc.armorpieces.decoration.fitting.Fitting;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.HashSet;
@@ -37,6 +38,13 @@ import net.minecraft.world.item.equipment.trim.ArmorTrim;
  * @param anchors    the sockets this part is allowed to occupy. Validated when a recipe applies it, so
  *                   a datapack cannot bolt a plume onto a boot. Usually one entry; a part designed to
  *                   work in several places (a spike that suits both crest and spurs) may list more.
+ * @param fittings   the places on this part that take a second material, in the order the smithing
+ *                   table offers an item to them - the first to accept it wins, so a part that lists
+ *                   {@code gemstone} before {@code guard} sends a gem to the stone even if the guard
+ *                   would take gems too. Each names an entry of {@code armorpieces:fitting}; what it
+ *                   looks like is a mask or a bone in the part's assets, named after the fitting.
+ *                   Empty for most parts, and a part with none looks and behaves exactly as it did
+ *                   before fittings existed.
  * @param effects    what the part DOES while it is worn, if anything. Empty for every part this mod
  *                   ships but {@code pinions}, and for every part that is only meant to look like
  *                   something, which is the
@@ -54,6 +62,7 @@ public record ArmorDecoration(
     Identifier assetId,
     Component description,
     Set<DecorationAnchor> anchors,
+    List<Holder<Fitting>> fittings,
     List<DecorationEffect> effects
 ) {
     public static final Codec<ArmorDecoration> DIRECT_CODEC = RecordCodecBuilder.create(
@@ -63,6 +72,7 @@ public record ArmorDecoration(
                 ExtraCodecs.nonEmptyList(DecorationAnchor.CODEC.listOf())
                     .xmap(Set::copyOf, List::copyOf)
                     .fieldOf("anchors").forGetter(ArmorDecoration::anchors),
+                Fitting.CODEC.listOf().optionalFieldOf("fittings", List.of()).forGetter(ArmorDecoration::fittings),
                 DecorationEffect.LIST_CODEC.optionalFieldOf("effects", List.of()).forGetter(ArmorDecoration::effects)
             )
             .apply(i, ArmorDecoration::new)
@@ -85,6 +95,8 @@ public record ArmorDecoration(
         ArmorDecoration::description,
         DecorationAnchor.STREAM_CODEC.apply(ByteBufCodecs.collection(HashSet::new)),
         ArmorDecoration::anchors,
+        Fitting.STREAM_CODEC.apply(ByteBufCodecs.list()),
+        ArmorDecoration::fittings,
         ByteBufCodecs.fromCodecWithRegistries(DecorationEffect.LIST_CODEC),
         ArmorDecoration::effects,
         ArmorDecoration::new
@@ -96,7 +108,13 @@ public record ArmorDecoration(
 
     public ArmorDecoration {
         anchors = Set.copyOf(anchors);
+        fittings = List.copyOf(fittings);
         effects = List.copyOf(effects);
+    }
+
+    /** Whether this part has anywhere for a second material to go. */
+    public boolean hasFittings() {
+        return !this.fittings.isEmpty();
     }
 
     /** Whether this part may be applied to the given socket. The recipe's guard rail. */

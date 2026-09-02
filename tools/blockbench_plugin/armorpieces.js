@@ -11,16 +11,18 @@
  *
  * The one thing it does with pixels itself is index a lookup table. A material preview has to follow
  * the brush, and a Python process per brush movement cannot, so preview_material.py prints its
- * finished 256-entry ramps once and the plugin composites master + static through them - the same
- * table lookup the game performs, with none of the arithmetic that fills the table.
+ * finished 256-entry ramps once and the plugin composites master, static layer and fitting masks
+ * through them - the same table lookup the game performs, with none of the arithmetic that fills
+ * the table.
  *
  * What it changes about Blockbench while a piece is open ("the workspace"):
  *
  *   - the project is in its own format, `armorpieces`, which is `free` with the modes and panels a
  *     part author never needs conditioned away. Other projects are untouched, because every change
  *     is a condition that asks "is the current project a piece?" rather than a layout edit.
- *   - one panel, "Armor Piece", holds every control: which piece and anchor, master or static edit
- *     mode, material preview, walk/sprint pose and phase, and the reference toggles.
+ *   - one panel, "Armor Piece", holds every control: which piece and anchor, master, static or
+ *     fitting-mask edit mode, material preview with the fittings filled or empty, walk/sprint pose
+ *     and phase, and the reference toggles.
  *   - the Textures panel is gone. Which PNG the brush lands on is decided by the edit-mode switch,
  *     and a material preview is only ever a thing you look at: strokes over it are routed to the
  *     layer being edited, and the preview is recomposited under the brush.
@@ -73,6 +75,10 @@
 			part_only: true,
 			recipe_focus: '',
 			recipe_ring: 'minecraft:paper',
+			// The fitting whose mask is under the brush while edit is 'fitting'.
+			fitting: '',
+			// The preview's fitting values by fitting name, '' for empty.
+			fittings: {},
 		};
 	}
 
@@ -89,6 +95,29 @@
 
 	function tex(id) {
 		return Texture.all.find(function (t) { return t.id === id; }) || null;
+	}
+
+	/*
+	 * The sheets a part is painted on, each linked to a file beside the master: `part` (the
+	 * greyscale master), `part_static` (the colour opt-out) and `part_<fitting>` (one greyscale
+	 * mask per masked fitting). Everything that grows, moves, saves or folds paint walks this list,
+	 * so a new kind of sheet is a new id here and nothing else.
+	 */
+	function isSheetId(id) {
+		return id === 'part' || (typeof id === 'string' && id.indexOf('part_') === 0);
+	}
+
+	/* Greyscale by definition: the master and the masks. The static layer is colour. */
+	function isGreyId(id) {
+		return isSheetId(id) && id !== 'part_static';
+	}
+
+	function sheets() {
+		return Texture.all.filter(function (t) { return isSheetId(t.id); });
+	}
+
+	function maskId(name) {
+		return 'part_' + name;
 	}
 
 	// ---- repo + python ------------------------------------------------------------------------
@@ -247,6 +276,31 @@
 		if (!piece || !fs.existsSync(piece.data)) return [];
 		const data = JSON.parse(fs.readFileSync(piece.data, 'utf8'));
 		return (data.anchors || []).filter(function (a) { return typeof a === 'string'; });
+	}
+
+	/*
+	 * The fittings the piece's datapack half lists, resolved by preview_material.py: the mask name,
+	 * the type, whether it is a mask over the texture, a display name, and the values it can take,
+	 * each with the colour it asks the baker for. Resolving means reading fitting files, tags and
+	 * language files across the pack and the mod, which is Python's job, not this file's. Cached on
+	 * the project: a piece's fittings change only when its data file does, and Rebuild rereads it.
+	 */
+	function fittingsOf(piece) {
+		if (!piece || !Project || !fs.existsSync(piece.data)) return [];
+		if (!Project[ID + '_fittings']) {
+			try {
+				Project[ID + '_fittings'] = JSON.parse(tool('preview_material.py', ['--fittings', piece.data]));
+			} catch (err) {
+				console.error(err);
+				Project[ID + '_fittings'] = [];
+			}
+		}
+		return Project[ID + '_fittings'];
+	}
+
+	/* The fittings that are a region of the texture - the ones with a sheet to paint and preview. */
+	function maskedFittings() {
+		return fittingsOf(currentPiece()).filter(function (f) { return f.masked; });
 	}
 
 	// ---- the template recipe ------------------------------------------------------------------
@@ -412,6 +466,7 @@
 
 		Project[ID + '_piece'] = piece;
 		Project[ID + '_texture'] = texture;
+		Project[ID + '_fittings'] = null;
 		Project[ID + '_state'] = Object.assign(defaultState(), { anchor: anchor });
 		const recipe = readRecipe(piece);
 		if (recipe) {
@@ -499,11 +554,9 @@
 		const part = tex('part');
 		if (part && texture) {
 			// save() writes back to the linked path; save(true) is "save as" and opens a native
-			// file picker, which blocks the whole app.
-			part.save();
-			// The static layer is a real authored file too, and it is linked the same way.
-			const statics = tex('part_static');
-			if (statics) statics.save();
+			// file picker, which blocks the whole app. Every sheet is a real authored file linked
+			// the same way: the master, the static layer, and each fitting mask.
+			for (const sheet of sheets()) sheet.save();
 			if (texture.isMaster) {
 				// Installing is the sync script's job, and it is also what checks the master against
 				// the geometry - the check that catches paint sliding off a face it was drawn for.
@@ -622,45 +675,61 @@
 	/*
 	 * A part is authored as one greyscale master - luminance is shading, alpha is silhouette - plus
 	 * an optional RGBA companion whose opaque pixels keep their own colour instead of taking the
-	 * material's. Two things can be edited, and a third can be looked at:
+	 * material's, plus one greyscale mask per masked fitting: the region that takes the second
+	 * material, shaded by its own values. Three kinds of thing can be edited, and one looked at:
 	 *
-	 *   part          the greyscale you paint. Everything opaque here takes the material's colour.
-	 *   part_static   the opt-out layer, painted in real colours. Only exists if the part has one.
-	 *   preview       a composite of both through a material's ramp. Never edited: strokes over it
-	 *                 are routed to whichever of the other two is the edit target.
+	 *   part            the greyscale you paint. Everything opaque here takes the material's colour.
+	 *   part_static     the opt-out layer, painted in real colours. Only exists if the part has one.
+	 *   part_<fitting>  a fitting's mask, greyscale like the master. Only exists once painted.
+	 *   preview         a composite of all of them through a material's ramp, with the fittings
+	 *                   filled as the panel says. Never edited: strokes over it are routed to
+	 *                   whichever of the others is the edit target.
 	 */
 	const MATERIALS = ['amethyst', 'copper', 'diamond', 'emerald', 'gold', 'iron', 'lapis',
 		'netherite', 'quartz', 'redstone', 'resin', 'copper_darker', 'diamond_darker', 'gold_darker',
 		'iron_darker', 'netherite_darker'];
 
 	/*
-	 * A static layer is optional, so a piece starts without one. The first switch to static editing
-	 * creates it: a blank sheet the size of the master, next to the master, linked the same way, so
-	 * Save writes it back and the sync script installs it with the master.
+	 * The static layer and the masks are optional, so a piece starts without them. The first switch
+	 * to editing one creates it: a blank sheet the size of the master, next to the master, linked
+	 * the same way, so Save writes it back and the sync script installs it with the master.
 	 */
-	function createStaticLayer() {
+	function createSheet(id, suffix) {
 		const piece = currentPiece();
 		const master = tex('part');
 		if (!piece || !master || !master.canvas.width) return null;
-		const file = masterFor(piece).file.replace(/\.png$/i, '_static.png');
+		const file = masterFor(piece).file.replace(/\.png$/i, suffix + '.png');
 		if (!fs.existsSync(file)) {
 			fs.writeFileSync(file, Buffer.from(
 				blankPng(master.canvas.width, master.canvas.height).split(',')[1], 'base64'));
 		}
-		const statics = new Texture({
-			name: 'part_static', id: 'part_static',
+		const sheet = new Texture({
+			name: id, id: id,
 			uv_width: master.uv_width, uv_height: master.uv_height,
 		}).fromPath(file).add(false);
 		Blockbench.showQuickMessage('Created ' + path.basename(file), 2500);
-		return statics;
+		return sheet;
 	}
 
-	/* The texture the brush lands on. Falls back to the master when the part has no static layer. */
+	function createStaticLayer() {
+		return createSheet('part_static', '_static');
+	}
+
+	function createMaskLayer(name) {
+		return createSheet(maskId(name), '_' + name);
+	}
+
+	/* The texture the brush lands on. Falls back to the master when the chosen sheet is missing. */
 	function editTarget() {
 		const s = state();
 		if (s.edit === 'static') {
 			const statics = tex('part_static');
 			if (statics) return statics;
+			s.edit = 'master';
+		}
+		if (s.edit === 'fitting') {
+			const mask = s.fitting ? tex(maskId(s.fitting)) : null;
+			if (mask) return mask;
 			s.edit = 'master';
 		}
 		return tex('part');
@@ -726,12 +795,57 @@
 	}
 
 	/*
+	 * What a fitting's chosen value asks the baker for, as preview_material.py listed it:
+	 * 'palette:<material>' for a second trim material, 'solid:#rrggbb' for a dye. '' when empty.
+	 */
+	function fittingColour(fitting, value) {
+		const option = (fitting.options || []).find(function (o) { return o.value === value; });
+		return option ? option.colour : '';
+	}
+
+	/*
+	 * The filled masked fittings as the compositor lays them: in the part's own order, each with
+	 * its mask sheet and the ramp its value indexes - a material's, or a dye colour's static ramp,
+	 * both from preview_material.py. A fitting whose mask is not in the project changes nothing,
+	 * as in the game; a ramp not fetched yet is null and the mask shows at its own greys until
+	 * fetchFittingRamps has run.
+	 */
+	function previewMasks() {
+		const s = state();
+		const out = [];
+		for (const fitting of maskedFittings()) {
+			const value = s.fittings[fitting.name];
+			if (!value) continue;
+			const mask = tex(maskId(fitting.name));
+			if (!mask || !mask.canvas.width) continue;
+			const colour = fittingColour(fitting, value);
+			let ramp = null;
+			if (colour.indexOf('palette:') === 0) ramp = ramps.material[colour.slice(8)] || null;
+			else if (colour.indexOf('solid:') === 0) ramp = ramps.static[colour.slice(6)] || null;
+			out.push({ texture: mask, ramp: ramp });
+		}
+		return out;
+	}
+
+	/* Ask for the ramps the filled fittings index, the same way and to the same cache. */
+	function fetchFittingRamps() {
+		const s = state();
+		for (const fitting of maskedFittings()) {
+			const colour = fittingColour(fitting, s.fittings[fitting.name] || '');
+			if (colour.indexOf('palette:') === 0) fetchRamps(colour.slice(8), []);
+			else if (colour.indexOf('solid:') === 0) fetchRamps(s.material, [colour.slice(6)]);
+		}
+	}
+
+	/*
 	 * DecorationTextureManager.recolour as a table lookup: alpha from the master, colour from the
 	 * static layer's own ramp where it is opaque, else from the material's ramp, both indexed by
-	 * the master's red channel - exactly as the game reads it. Returns the static colours that had
-	 * no ramp yet, which are drawn flat until fetchRamps has been asked for them.
+	 * the master's red channel - exactly as the game reads it. Then applyMask per filled fitting,
+	 * in order: the mask's own red channel through the fitting's ramp, the master's alpha still the
+	 * silhouette. Returns the static colours that had no ramp yet, which are drawn flat until
+	 * fetchRamps has been asked for them.
 	 */
-	function compositeInto(canvas, master, statics, material) {
+	function compositeInto(canvas, master, statics, material, masks) {
 		const w = master.canvas.width, h = master.canvas.height;
 		const src = master.ctx.getImageData(0, 0, w, h).data;
 		const sw = statics && statics.canvas.width ? statics.canvas.width : 0;
@@ -769,6 +883,25 @@
 				dst[i + 3] = alpha;
 			}
 		}
+		for (const mask of masks || []) {
+			const mw = mask.texture.canvas.width, mh = mask.texture.canvas.height;
+			const mdata = mask.texture.ctx.getImageData(0, 0, mw, mh).data;
+			const cw = Math.min(w, mw), ch = Math.min(h, mh);
+			for (let y = 0; y < ch; y++) {
+				for (let x = 0; x < cw; x++) {
+					const j = (y * mw + x) * 4;
+					if (mdata[j + 3] === 0) continue;
+					const i = (y * w + x) * 4;
+					const alpha = src[i + 3];
+					if (alpha === 0) continue;
+					const colour = mask.ramp ? mask.ramp[mdata[j]] : [mdata[j], mdata[j + 1], mdata[j + 2]];
+					dst[i] = colour[0];
+					dst[i + 1] = colour[1];
+					dst[i + 2] = colour[2];
+					dst[i + 3] = alpha;
+				}
+			}
+		}
 		if (canvas.width !== w || canvas.height !== h) {
 			canvas.width = w;
 			canvas.height = h;
@@ -790,6 +923,7 @@
 		const statics = tex('part_static');
 		try {
 			fetchRamps(s.material, staticColoursIn(statics));
+			fetchFittingRamps();
 		} catch (err) {
 			console.error(err);
 			Blockbench.showQuickMessage('No ramp for ' + s.material + ' - run tools/vanilla_assets.py', 3000);
@@ -801,7 +935,7 @@
 			return preview;
 		}
 		const scratch = document.createElement('canvas');
-		compositeInto(scratch, master, statics, s.material);
+		compositeInto(scratch, master, statics, s.material, previewMasks());
 		preview = new Texture({
 			name: 'preview', id: 'preview', internal: true,
 			uv_width: master.uv_width, uv_height: master.uv_height,
@@ -821,11 +955,11 @@
 		if (!preview || !master || !master.canvas.width) return;
 		const s = state();
 		const statics = tex('part_static');
-		let missing = compositeInto(preview.canvas, master, statics, s.material);
+		let missing = compositeInto(preview.canvas, master, statics, s.material, previewMasks());
 		if (missing.length && settle) {
 			try {
 				fetchRamps(s.material, missing);
-				compositeInto(preview.canvas, master, statics, s.material);
+				compositeInto(preview.canvas, master, statics, s.material, previewMasks());
 			} catch (err) {
 				console.error(err);
 			}
@@ -840,7 +974,8 @@
 	 * The master is greyscale by definition - the game reads a pixel's value as a position on the
 	 * material's ramp, so a coloured pixel there is not a colour, it is a wrong shade. Rather than
 	 * ask an author to remember that, any colour painted onto the master is folded to its luma
-	 * under the brush. The static layer is left alone: colour is the whole point of it.
+	 * under the brush. A fitting mask is read the same way and folds the same way. The static
+	 * layer is left alone: colour is the whole point of it.
 	 *
 	 * Folding happens inside the stroke, on the canvas the paint tool just drew on, rather than
 	 * after it. That is what keeps the undo history legal: the snapshot Blockbench takes when the
@@ -878,7 +1013,8 @@
 			probe.getContext('2d').drawImage(texture.canvas, 0, 0);
 			if (!foldCanvasToGreyscale(probe)) return;
 			texture.edit(function (canvas) { foldCanvasToGreyscale(canvas); }, { no_undo: true });
-			Blockbench.showQuickMessage('Master is greyscale - colour folded to value', 1500);
+			Blockbench.showQuickMessage((texture.id === 'part' ? 'Master' : 'Mask')
+				+ ' is greyscale - colour folded to value', 1500);
 		} finally {
 			greyscaleGuard = false;
 		}
@@ -887,8 +1023,8 @@
 	function onEditTexture(data) {
 		if (!data || !data.texture || !isWorkspace()) return;
 		const id = data.texture.id;
-		if (id !== 'part' && id !== 'part_static') return;
-		if (id === 'part' && foldsMaster() && data.canvas) foldCanvasToGreyscale(data.canvas);
+		if (!isSheetId(id)) return;
+		if (isGreyId(id) && foldsMaster() && data.canvas) foldCanvasToGreyscale(data.canvas);
 		refreshPreview(false);
 	}
 
@@ -897,8 +1033,8 @@
 		const textures = (data && data.aspects && data.aspects.textures) || [];
 		let touched = false;
 		for (const texture of textures) {
-			if (texture.id === 'part' && foldsMaster()) enforceGreyscale(texture);
-			if (texture.id === 'part' || texture.id === 'part_static') touched = true;
+			if (isGreyId(texture.id) && foldsMaster()) enforceGreyscale(texture);
+			if (isSheetId(texture.id)) touched = true;
 		}
 		if (touched) refreshPreview(true);
 	}
@@ -917,8 +1053,8 @@
 	// ---- palette ------------------------------------------------------------------------------
 
 	/*
-	 * Master mode paints values, so the palette offers values: the ramp's three stops and the
-	 * steps between them. Static mode gets the author's own palette back.
+	 * Master and mask modes paint values, so the palette offers values: the ramp's three stops and
+	 * the steps between them. Static mode gets the author's own palette back.
 	 *
 	 * Blockbench writes the live palette to its own storage whenever a colour is picked, so the
 	 * greys can end up persisted as if they were the author's. The author's palette is therefore
@@ -962,7 +1098,7 @@
 
 	function applyPalette() {
 		if (!ColorPanel.palette) return;
-		const greys = isWorkspace() && state().edit === 'master';
+		const greys = isWorkspace() && state().edit !== 'static';
 		if (greys) {
 			if (userPalette === null && !isGreyPalette(ColorPanel.palette)) {
 				userPalette = ColorPanel.palette.slice();
@@ -1131,12 +1267,9 @@
 	function growSheet(width, height) {
 		Project.texture_width = width;
 		Project.texture_height = height;
-		for (const id of ['part', 'part_static', 'preview']) {
-			const texture = tex(id);
-			if (texture) {
-				texture.uv_width = width;
-				texture.uv_height = height;
-			}
+		for (const texture of sheets().concat(tex('preview') || [])) {
+			texture.uv_width = width;
+			texture.uv_height = height;
 		}
 	}
 
@@ -1241,7 +1374,7 @@
 			aspects.elements = (aspects.elements || []).concat(unlisted);
 		}
 		const grew = width > sheet[0] || height > sheet[1];
-		const textures = [tex('part'), tex('part_static')].filter(Boolean);
+		const textures = sheets();
 		if (moves.length || grew) {
 			// finishEdit may have been handed its own aspects object, distinct from the one the
 			// record was opened with; the record reads the latter, the after-snapshot the former.
@@ -1359,6 +1492,38 @@
 		return { idle: 'Idle', walk: 'Walk', sprint: 'Sprint' };
 	}
 
+	/*
+	 * The fittings are two sets of controls: which mask the brush paints, and what each fitting
+	 * holds in the preview. A piece has any number of fittings and a form has a fixed set of
+	 * fields, so the preview gets three slots, one per masked fitting in the part's order, hidden
+	 * past the last one; three is one more than any shipped part has. Each slot's label is the
+	 * fitting's own name, set on the built label element by syncForm, because a form label is
+	 * a string fixed at build time and the fitting behind a slot is not.
+	 */
+	const FITTING_SLOTS = 3;
+
+	function fittingEditOptions() {
+		const options = {};
+		for (const fitting of maskedFittings()) options[fitting.name] = fitting.label;
+		if (!Object.keys(options).length) options[''] = '- no masked fittings -';
+		return options;
+	}
+
+	function fittingSlot(index) {
+		return {
+			label: 'Fitting ' + (index + 1), type: 'select',
+			options: function () {
+				const fitting = maskedFittings()[index];
+				const options = { '': fitting ? '(empty)' : '-' };
+				for (const option of (fitting ? fitting.options : [])) options[option.value] = option.label;
+				return options;
+			},
+			condition: function (result) {
+				return !!result.preview && maskedFittings().length > index;
+			},
+		};
+	}
+
 	function panelForm() {
 		const materialOptions = MATERIALS.reduce(function (all, m) { all[m] = m; return all; }, {});
 		return {
@@ -1375,13 +1540,22 @@
 			_1: '_',
 			edit: {
 				label: 'Editing', type: 'inline_select',
-				options: { master: 'Master (grey)', static: 'Static (colour)' },
+				options: { master: 'Master (grey)', static: 'Static (colour)', fitting: 'Mask (grey)' },
+			},
+			fitting: {
+				label: 'Fitting', type: 'select', options: fittingEditOptions,
+				condition: function (result) { return result.edit === 'fitting'; },
+				description: 'Whose mask the brush paints: the region of the part that takes the ' +
+					'second material, shaded by its own values. Created blank on first use.',
 			},
 			preview: { label: 'Material preview', type: 'checkbox', style: 'toggle_switch', value: false },
 			material: {
 				label: 'Material', type: 'select', options: materialOptions, value: 'iron',
 				condition: function (result) { return !!result.preview; },
 			},
+			fitting_0: fittingSlot(0),
+			fitting_1: fittingSlot(1),
+			fitting_2: fittingSlot(2),
 			_2: '_',
 			animation: { label: 'Pose', type: 'inline_select', options: animationOptions() },
 			phase: {
@@ -1411,14 +1585,14 @@
 		if (!panel || !panel.form) return;
 		const piece = currentPiece();
 		const s = state();
+		const masked = maskedFittings();
 		syncingForm = true;
 		try {
-			// Select inputs resolve their option lists lazily, but the displayed label of the
-			// current value is looked up when it is set, so the lists must be current first.
-			panel.form.setValues({
+			const values = {
 				piece: piece ? piece.key : '',
 				anchor: s.anchor,
 				edit: s.edit,
+				fitting: s.fitting,
 				preview: s.preview,
 				material: s.material,
 				animation: s.animation,
@@ -1428,7 +1602,17 @@
 				part_only: s.part_only,
 				recipe_focus: s.recipe_focus,
 				recipe_ring: s.recipe_ring,
-			});
+			};
+			for (let i = 0; i < FITTING_SLOTS; i++) {
+				const fitting = masked[i];
+				values['fitting_' + i] = fitting ? (s.fittings[fitting.name] || '') : '';
+				const element = panel.form.form_data['fitting_' + i];
+				const label = element && element.bar && element.bar.querySelector('label');
+				if (label) label.textContent = fitting ? fitting.label : 'Fitting ' + (i + 1);
+			}
+			// Select inputs resolve their option lists lazily, but the displayed label of the
+			// current value is looked up when it is set, so the lists must be current first.
+			panel.form.setValues(values);
 		} finally {
 			syncingForm = false;
 		}
@@ -1462,20 +1646,31 @@
 		s.part_only = !!result.part_only;
 		s.recipe_focus = result.recipe_focus || '';
 		s.recipe_ring = result.recipe_ring || '';
+		s.fitting = result.fitting || '';
+		const masked = maskedFittings();
+		for (let i = 0; i < masked.length && i < FITTING_SLOTS; i++) {
+			s.fittings[masked[i].name] = result['fitting_' + i] || '';
+		}
 
-		if (changed.includes('edit')) {
+		if (changed.includes('edit') || changed.includes('fitting')) {
 			if (s.edit === 'static' && !tex('part_static')) createStaticLayer();
+			if (s.edit === 'fitting') {
+				if (!s.fitting && masked.length) s.fitting = masked[0].name;
+				if (s.fitting && !tex(maskId(s.fitting))) createMaskLayer(s.fitting);
+			}
 			applyTextures();
 			applyPalette();
-			// The static layer may be missing, in which case editTarget fell back to the master.
+			// The chosen sheet may be missing, in which case editTarget fell back to the master.
 			if (s.edit !== result.edit) {
-				Blockbench.showQuickMessage(piece.name + ' has no static layer', 2500);
-				syncForm();
+				Blockbench.showQuickMessage(piece.name + ' has no '
+					+ (result.edit === 'static' ? 'static layer' : 'masked fitting'), 2500);
 			}
+			syncForm();
 		}
-		if (changed.includes('preview') || changed.includes('material')) {
-			if (s.preview && changed.includes('material')) {
-				// A new material means a new ramp; drop the preview so it is rebuilt through it.
+		const fittingChanged = changed.some(function (key) { return key.indexOf('fitting_') === 0; });
+		if (changed.includes('preview') || changed.includes('material') || fittingChanged) {
+			if (s.preview && (changed.includes('material') || fittingChanged)) {
+				// A new material or fitting means a new ramp; rebuild the preview through it.
 				refreshPreviewMaterial();
 			}
 			applyTextures();
@@ -1490,6 +1685,7 @@
 		const s = state();
 		try {
 			fetchRamps(s.material, staticColoursIn(tex('part_static')));
+			fetchFittingRamps();
 		} catch (err) {
 			console.error(err);
 			Blockbench.showQuickMessage('No ramp for ' + s.material + ' - run tools/vanilla_assets.py', 3000);
@@ -1740,6 +1936,7 @@
 					return openPiece(piece, anchor);
 				},
 				state: state,
+				fittings: function () { return fittingsOf(currentPiece()); },
 				isWorkspace: isWorkspace,
 				save: savePiece,
 				readRecipe: readRecipe,

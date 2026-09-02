@@ -3,6 +3,9 @@ package com.mattjesmc.armorpieces.decoration.effect;
 import com.mattjesmc.armorpieces.decoration.ArmorDecoration;
 import com.mattjesmc.armorpieces.decoration.DecorationAnchor;
 import com.mattjesmc.armorpieces.decoration.DecorationEntry;
+import com.mattjesmc.armorpieces.decoration.fitting.Fitting;
+import com.mattjesmc.armorpieces.decoration.fitting.FittingValue;
+import java.util.Map;
 import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -31,7 +34,7 @@ import org.jspecify.annotations.Nullable;
  *                check.
  * @param anchor  the socket, which also fixes the {@link #slot()} the piece occupies.
  * @param stack   the worn piece itself.
- * @param entry   the part and its material.
+ * @param entry   the part, its material, and what is set in its fittings.
  */
 public record DecorationEffectContext(
     LivingEntity wearer,
@@ -47,6 +50,21 @@ public record DecorationEffectContext(
     /** The trim material the part was made in. */
     public Holder<TrimMaterial> material() {
         return this.entry.material();
+    }
+
+    /**
+     * What is set in one of the part's fittings, or {@code null} if it is empty - the gem in the
+     * circlet, for an effect that only runs while there is one. See
+     * {@link com.mattjesmc.armorpieces.decoration.effect.builtin.ConditionalEffect} for the
+     * data-only way to say that.
+     */
+    public @Nullable FittingValue fitting(final Holder<Fitting> fitting) {
+        return this.entry.fitting(fitting);
+    }
+
+    /** Everything set in the part's fittings. */
+    public Map<Holder<Fitting>, FittingValue> fittings() {
+        return this.entry.fittings();
     }
 
     /** Which armor slot the decorated piece is in. Fixed by the socket. */

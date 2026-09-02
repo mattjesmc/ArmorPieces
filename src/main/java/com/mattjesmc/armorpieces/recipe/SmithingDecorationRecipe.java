@@ -8,7 +8,6 @@ import com.mattjesmc.armorpieces.registry.ModDataComponents;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
@@ -133,9 +132,15 @@ public class SmithingDecorationRecipe extends SimpleSmithingRecipe {
      * - a creative command, a loot function, a datagen preview - goes through one implementation
      * rather than re-deriving the rules.
      *
+     * <p>Whatever the socket already had set in its fittings carries over, so far as the incoming
+     * part has places for it - see {@link DecorationEntry#applying}. Re-applying a part is how a
+     * player changes its metal, and a step that quietly ate the gem set in it would be a trap.
+     *
      * <p>Returns {@link ItemStack#EMPTY} when the operation would be a no-op, matching vanilla
      * trimming: re-applying the identical part in the identical material must not consume the
-     * ingredients.
+     * ingredients. With the fittings carried over, that guard covers a fitted part too - before, an
+     * entry rebuilt empty always differed from the fitted one it replaced, so the craft went through
+     * and the fittings were the price.
      */
     public static ItemStack applyDecoration(
         final ItemStack baseItem,
@@ -149,8 +154,8 @@ public class SmithingDecorationRecipe extends SimpleSmithingRecipe {
         }
 
         final ArmorDecorations existing = baseItem.getOrDefault(ModDataComponents.DECORATIONS, ArmorDecorations.EMPTY);
-        final DecorationEntry newEntry = new DecorationEntry(material, decoration);
-        if (Objects.equals(existing.get(anchor), newEntry)) {
+        final DecorationEntry newEntry = DecorationEntry.applying(material, decoration, existing.get(anchor));
+        if (newEntry.equals(existing.get(anchor))) {
             return ItemStack.EMPTY;
         }
 

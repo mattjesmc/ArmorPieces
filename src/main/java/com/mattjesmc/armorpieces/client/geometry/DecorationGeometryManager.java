@@ -3,6 +3,8 @@ package com.mattjesmc.armorpieces.client.geometry;
 import com.mattjesmc.armorpieces.ArmorPieces;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
@@ -40,6 +42,14 @@ public class DecorationGeometryManager
     // Written on the reload's apply stage and read while rendering. Those are the same thread today,
     // but volatile costs nothing here and keeps the handoff correct if that ever stops being true.
     private volatile Map<Identifier, ModelPart> baked = Map.of();
+    /** The definitions the above were baked from, kept so a variant can be baked on demand. */
+    private volatile Map<Identifier, DecorationGeometry> definitions = Map.of();
+    /**
+     * A part baked with some bones left out, for a filled fitting that draws those bones itself.
+     * Baked on first use rather than up front: the set of fittings a part could have filled is a
+     * cross product, and the set actually worn is a handful.
+     */
+    private final Map<Variant, ModelPart> variants = new ConcurrentHashMap<>();
 
     private DecorationGeometryManager() {
         super(DecorationGeometry.CODEC, LISTER);
@@ -59,6 +69,23 @@ public class DecorationGeometryManager
         return this.baked.get(assetId);
     }
 
+    /**
+     * The baked shape with {@code without} bones omitted, or {@code null} as {@link #get}. The same
+     * object for the same request until the next reload.
+     */
+    public @Nullable ModelPart get(final Identifier assetId, final Set<String> without) {
+        if (without.isEmpty()) {
+            return this.get(assetId);
+        }
+        final DecorationGeometry definition = this.definitions.get(assetId);
+        if (definition == null) {
+            return null;
+        }
+        return this.variants.computeIfAbsent(new Variant(assetId, Set.copyOf(without)), v -> definition.bake(v.without()));
+    }
+
+    private record Variant(Identifier assetId, Set<String> without) {}
+
     @Override
     protected void apply(
         final Map<Identifier, DecorationGeometry> preparations,
@@ -76,6 +103,8 @@ public class DecorationGeometryManager
             }
         }
         this.baked = Map.copyOf(result);
+        this.definitions = Map.copyOf(preparations);
+        this.variants.clear();
         ArmorPieces.LOGGER.info("[Armor Pieces] Baked {} decoration geometries.", this.baked.size());
     }
 

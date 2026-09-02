@@ -30,6 +30,8 @@ from pathlib import Path
 
 from PIL import Image
 
+from fitting_mask import write_mask
+
 ROOT = Path(__file__).resolve().parent.parent
 GEO = ROOT / "src" / "main" / "resources" / "assets" / "armorpieces" / "armorpieces" / "decoration" / "circlet.json"
 OUT = ROOT / "tools" / "decoration_masters" / "circlet.png"
@@ -216,6 +218,11 @@ def main() -> None:
     img.save(OUT)
     lums = [img.getpixel(p)[0] for p in sorted(opaque)]
     print(f"wrote {OUT} ({len(opaque)} opaque px, values {min(lums)}-{max(lums)})")
+
+    # The stone is the circlet's gemstone fitting: set a gem and these faces take the gem's palette
+    # in place of the band's metal. Same shading - the cabochon's highlight is the cut, whatever the
+    # stone is made of - so the mask is the master restricted to the boss.
+    write_mask(img, faces(*CUBES["stone"]).values(), OUT.with_name("circlet_gemstone.png"))
 
 
 if __name__ == "__main__":

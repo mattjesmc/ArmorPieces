@@ -53,5 +53,14 @@
   "commands.armorpieces.stage.variant": "Variant %s",
   "commands.armorpieces.stage.nothing": "Nothing to stage - no decorations, no trim materials or no armor to wear them",
   "commands.armorpieces.stage.too_many": "That is %s armor stands, past the limit of %s - narrow it with an argument",
-  "decoration.armorpieces.mittens": "Mittens"
+  "commands.armorpieces.stage.no_fittings": "Nothing to stage - no part declares a fitting that any item fills",
+  "decoration.armorpieces.mittens": "Mittens",
+  "item.armorpieces.fitting": "%s: %s",
+  "item.armorpieces.fitting_template": "Fitting Smithing Template",
+  "item.armorpieces.fitting_template.applies_to": "Armor wearing a part with a fitting",
+  "item.armorpieces.fitting_template.ingredients": "Gems, Metals, Dyes or Banners",
+  "fitting.armorpieces.gemstone": "Gemstone",
+  "fitting.armorpieces.guard": "Guard",
+  "fitting.armorpieces.inlay": "Inlay",
+  "fitting.armorpieces.banner": "Banner"
 }

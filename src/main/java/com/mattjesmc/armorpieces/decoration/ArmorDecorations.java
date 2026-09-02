@@ -1,10 +1,13 @@
 package com.mattjesmc.armorpieces.decoration;
 
+import com.mattjesmc.armorpieces.decoration.fitting.Fitting;
+import com.mattjesmc.armorpieces.decoration.fitting.FittingValue;
 import com.mojang.serialization.Codec;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.CommonComponents;
@@ -91,9 +94,22 @@ public record ArmorDecorations(Map<DecorationAnchor, DecorationEntry> entries) i
         consumer.accept(DECORATED_TITLE);
         for (final DecorationAnchor anchor : DecorationAnchor.values()) {
             final DecorationEntry entry = this.entries.get(anchor);
-            if (entry != null) {
-                consumer.accept(CommonComponents.space()
-                    .append(entry.decoration().value().copyWithStyle(entry.material())));
+            if (entry == null) {
+                continue;
+            }
+            consumer.accept(CommonComponents.space()
+                .append(entry.decoration().value().copyWithStyle(entry.material())));
+            // What is set in the part's fittings, one line each under the part, in the part's own
+            // order rather than the map's so the list is stable across re-fittings. An empty fitting
+            // is not listed: a circlet without its stone is still just a circlet.
+            for (final Holder<Fitting> fitting : entry.decoration().value().fittings()) {
+                final FittingValue value = entry.fitting(fitting);
+                if (value != null) {
+                    consumer.accept(CommonComponents.space().append(CommonComponents.space())
+                        .append(Component.translatable(
+                            "item.armorpieces.fitting", fitting.value().description(), value.name())
+                            .withStyle(ChatFormatting.GRAY)));
+                }
             }
         }
     }

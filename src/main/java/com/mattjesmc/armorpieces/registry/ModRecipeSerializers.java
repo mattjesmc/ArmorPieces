@@ -2,6 +2,7 @@ package com.mattjesmc.armorpieces.registry;
 
 import com.mattjesmc.armorpieces.ArmorPieces;
 import com.mattjesmc.armorpieces.recipe.SmithingDecorationRecipe;
+import com.mattjesmc.armorpieces.recipe.SmithingFittingRecipe;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -22,6 +23,11 @@ public final class ModRecipeSerializers {
             BuiltInRegistries.RECIPE_SERIALIZER,
             Identifier.fromNamespaceAndPath(ArmorPieces.MOD_ID, "smithing_decoration"),
             SmithingDecorationRecipe.SERIALIZER
+        );
+        Registry.register(
+            BuiltInRegistries.RECIPE_SERIALIZER,
+            Identifier.fromNamespaceAndPath(ArmorPieces.MOD_ID, "smithing_fitting"),
+            SmithingFittingRecipe.SERIALIZER
         );
         ArmorPieces.LOGGER.info("[Armor Pieces] Registered recipe serializers.");
     }

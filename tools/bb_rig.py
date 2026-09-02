@@ -46,9 +46,6 @@ from bb_geo import PART_GROUP, RIG_DIR, build_bbmodel, det_uuid, flip_point, mak
 # seconds.
 TICKS_PER_SECOND = 20.0
 
-# The suffix sync_decoration_masters.py already uses for a part's non-metal companion layer.
-STATIC_SUFFIX = "_static"
-
 ROOT = Path(__file__).resolve().parent.parent
 ANCHOR_SRC = ROOT / "src" / "main" / "java" / "com" / "mattjesmc" / "armorpieces" / "decoration" / "DecorationAnchor.java"
 GEO_DIR = ROOT / "src" / "main" / "resources" / "assets" / "armorpieces" / "armorpieces" / "decoration"
@@ -243,18 +240,21 @@ def build_textures(anchor_name, material, slim, out_dir, master=None):
         textures.append(texture_entry(
             "part", master, det_uuid(f"rig/{anchor_name}/texture/part"), uv, out_dir))
 
-        # The companion static layer, when the part has one. It is loaded but nothing samples it:
-        # a cube face reads exactly one texture, and the two layers are composited by the game (and
-        # by preview_material.py), not by stacking them in the viewport. Having it in the project
-        # is what makes it paintable at all - switch the part onto it to edit the non-metal pixels.
-        statics = master.with_name(f"{master.stem}{STATIC_SUFFIX}.png")
-        if statics.is_file():
-            with Image.open(statics) as image:
-                static_uv = image.size
-            index["part_static"] = len(textures)
+        # The companion sheets, when the part has any: the static layer, `<part>_static.png`, and
+        # one fitting mask per `<part>_<fitting>.png` - the same set sync_decoration_masters.py
+        # installs. They are loaded but nothing samples them: a cube face reads exactly one
+        # texture, and the sheets are composited by the game (and by preview_material.py), not by
+        # stacking them in the viewport. Having them in the project is what makes them paintable
+        # at all - switch the part onto one to edit it. Each is the texture `part_<suffix>`, which
+        # is how the plugin finds them.
+        for companion in sorted(master.parent.glob(f"{master.stem}_*.png")):
+            suffix = companion.stem[len(master.stem):]
+            key = f"part{suffix}"
+            with Image.open(companion) as image:
+                companion_uv = image.size
+            index[key] = len(textures)
             textures.append(texture_entry(
-                "part_static", statics, det_uuid(f"rig/{anchor_name}/texture/part_static"),
-                static_uv, out_dir))
+                key, companion, det_uuid(f"rig/{anchor_name}/texture/{key}"), companion_uv, out_dir))
 
     return textures, index, part_texture
 

@@ -1,12 +1,22 @@
 package com.mattjesmc.armorpieces.client;
 
+import com.mattjesmc.armorpieces.client.fitting.FittingRenderer;
+import com.mattjesmc.armorpieces.client.fitting.FittingRenderers;
 import com.mattjesmc.armorpieces.client.geometry.DecorationGeometryManager;
 import com.mattjesmc.armorpieces.client.texture.DecorationTextureManager;
+import com.mattjesmc.armorpieces.decoration.ArmorDecoration;
 import com.mattjesmc.armorpieces.decoration.ArmorDecorations;
 import com.mattjesmc.armorpieces.decoration.DecorationAnchor;
 import com.mattjesmc.armorpieces.decoration.DecorationEntry;
+import com.mattjesmc.armorpieces.decoration.fitting.Fitting;
+import com.mattjesmc.armorpieces.decoration.fitting.FittingValue;
 import com.mattjesmc.armorpieces.registry.ModDataComponents;
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import net.minecraft.core.Holder;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.model.HumanoidModel;
@@ -119,17 +129,45 @@ public class ArmorDecorationLayer<S extends HumanoidRenderState, M extends Human
         final DecorationEntry entry,
         final ResourceKey<EquipmentAsset> assetKey
     ) {
-        final Identifier assetId = entry.decoration().value().assetId();
-        final ModelPart geometry = DecorationGeometryManager.instance().get(assetId);
-        if (geometry == null) {
+        final ArmorDecoration decoration = entry.decoration().value();
+        final Identifier assetId = decoration.assetId();
+        final ModelPart full = DecorationGeometryManager.instance().get(assetId);
+        if (full == null) {
             // A datapack named a part whose resource pack half is not installed. Not an error worth
             // a log line every frame, and the rest of the armor still draws.
             return;
         }
 
-        // One greyscale master, coloured for this material on first use and cached from then on.
+        // What is set in the part's fittings, sorted into what it means for drawing: a mask to bake
+        // into the texture, bones to leave out of the part's own pass, a renderer to run after it.
+        final List<DecorationTextureManager.Mask> masks = new ArrayList<>();
+        final Set<String> replaced = new HashSet<>();
+        final List<Drawn> drawn = new ArrayList<>();
+        for (final Holder<Fitting> holder : decoration.fittings()) {
+            final FittingValue value = entry.fitting(holder);
+            final Fitting fitting = holder.value();
+            if (value == null || !fitting.holds(value)) {
+                continue;
+            }
+            if (fitting instanceof Fitting.Masked masked) {
+                holder.unwrapKey().ifPresent(key ->
+                    masks.add(new DecorationTextureManager.Mask(key.identifier().getPath(), masked.colour(value, assetKey))));
+            }
+            replaced.addAll(fitting.replacedBones());
+            final FittingRenderer renderer = FittingRenderers.get(fitting);
+            if (renderer != null) {
+                drawn.add(new Drawn(renderer, fitting, value));
+            }
+        }
+        final ModelPart geometry = replaced.isEmpty() ? full : DecorationGeometryManager.instance().get(assetId, replaced);
+        if (geometry == null) {
+            return;
+        }
+
+        // One greyscale master, coloured for this material and these fittings on first use and
+        // cached from then on.
         final var renderType = RenderTypes.armorCutoutNoCull(
-            DecorationTextureManager.instance().resolve(assetId, entry.materialSuffix(assetKey)));
+            DecorationTextureManager.instance().resolve(assetId, entry.materialSuffix(assetKey), masks));
         final M model = this.getParentModel();
 
         for (final DecorationAnchor.Attachment attachment : anchor.attachments()) {
@@ -146,9 +184,16 @@ public class ArmorDecorationLayer<S extends HumanoidRenderState, M extends Human
                 poseStack.scale(-1.0F, 1.0F, 1.0F);
             }
             collector.submitModelPart(geometry, poseStack, renderType, lightCoords, overlayCoords, null, -1, null, state.outlineColor);
+            // Fittings that draw, in the same frame, over the bones the pass above left out.
+            for (final Drawn fitting : drawn) {
+                fitting.renderer().submit(new FittingRenderer.Context(
+                    poseStack, collector, lightCoords, overlayCoords, state.outlineColor, full, fitting.fitting(), fitting.value()));
+            }
             poseStack.popPose();
         }
     }
+
+    private record Drawn(FittingRenderer renderer, Fitting fitting, FittingValue value) {}
 
     private static ModelPart resolvePart(final HumanoidModel<?> model, final DecorationAnchor.HumanoidPart part) {
         return switch (part) {

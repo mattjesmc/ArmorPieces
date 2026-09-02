@@ -98,6 +98,8 @@ from pathlib import Path
 
 from PIL import Image
 
+from fitting_mask import write_mask
+
 ROOT = Path(__file__).resolve().parent.parent
 GEO = ROOT / "src" / "main" / "resources" / "assets" / "armorpieces" / "armorpieces" / "decoration" / "sash.json"
 OUT = ROOT / "tools" / "decoration_masters" / "sash.png"
@@ -687,6 +689,15 @@ def main() -> None:
     img.save(OUT)
     lums = [img.getpixel(p)[0] for p in sorted(opaque)]
     print(f"wrote {OUT} ({len(opaque)} opaque px, values {min(lums)}-{max(lums)})")
+
+    # Two fittings. Everything that is strap - the ring, the knot, the hanging tail - is the inlay
+    # and takes a dye; the buckle alone is the guard and takes a metal. Between them they cover the
+    # whole part, so a sash dyed and buckled shows none of its first material at all, which is the
+    # point: a leather belt was never meant to be redstone.
+    cloth = [rect for name, (size, uv) in CUBES.items() if name != "buckle"
+             for rect in faces(size, uv).values()]
+    write_mask(img, cloth, OUT.with_name("sash_inlay.png"))
+    write_mask(img, faces(*CUBES["buckle"]).values(), OUT.with_name("sash_guard.png"))
 
 
 if __name__ == "__main__":

@@ -3,6 +3,7 @@ package com.mattjesmc.armorpieces.client.geometry;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
+import java.util.Set;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.model.geom.ModelPart;
@@ -50,10 +51,22 @@ public record DecorationGeometry(int textureWidth, int textureHeight, List<Bone>
      * see {@link DecorationGeometryManager}. Never call it per frame.
      */
     public ModelPart bake() {
+        return this.bake(Set.of());
+    }
+
+    /**
+     * Builds the tree with the named bones - and everything under them - left out.
+     *
+     * <p>For a filled fitting that draws a bone itself: the banner takes over the cloth, and the
+     * part's own pass must not draw the cloth beneath it. Leaving the bone out of the bake is the
+     * one way to do that which survives deferred rendering - a {@code visible} flag toggled around a
+     * submit would be read back long after it was reset.
+     */
+    public ModelPart bake(final Set<String> without) {
         final MeshDefinition mesh = new MeshDefinition();
         final PartDefinition root = mesh.getRoot();
         for (final Bone bone : this.bones) {
-            bone.addTo(root);
+            bone.addTo(root, without);
         }
         return LayerDefinition.create(mesh, this.textureWidth, this.textureHeight).bakeRoot();
     }
@@ -87,7 +100,10 @@ public record DecorationGeometry(int textureWidth, int textureHeight, List<Bone>
             )
         );
 
-        private void addTo(final PartDefinition parent) {
+        private void addTo(final PartDefinition parent, final Set<String> without) {
+            if (without.contains(this.name)) {
+                return;
+            }
             final CubeListBuilder builder = CubeListBuilder.create().mirror(this.mirror);
             for (final Cube cube : this.cubes) {
                 cube.addTo(builder);
@@ -105,7 +121,7 @@ public record DecorationGeometry(int textureWidth, int textureHeight, List<Bone>
                 )
             );
             for (final Bone child : this.children) {
-                child.addTo(self);
+                child.addTo(self, without);
             }
         }
     }

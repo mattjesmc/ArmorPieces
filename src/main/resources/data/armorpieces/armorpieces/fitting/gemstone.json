@@ -1,0 +1,7 @@
+{
+  "type": "armorpieces:material",
+  "description": {
+    "translate": "fitting.armorpieces.gemstone"
+  },
+  "materials": "#armorpieces:gemstones"
+}

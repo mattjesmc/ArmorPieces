@@ -4,6 +4,7 @@ import com.mattjesmc.armorpieces.ArmorPieces;
 import com.mattjesmc.armorpieces.decoration.ArmorPiecesRegistries;
 import com.mattjesmc.armorpieces.decoration.effect.builtin.AttributeEffect;
 import com.mattjesmc.armorpieces.decoration.effect.builtin.BlinkEffect;
+import com.mattjesmc.armorpieces.decoration.effect.builtin.ConditionalEffect;
 import com.mattjesmc.armorpieces.decoration.effect.builtin.GlideEffect;
 import com.mattjesmc.armorpieces.decoration.effect.builtin.StatusEffect;
 import com.mojang.serialization.MapCodec;
@@ -48,9 +49,10 @@ import net.minecraft.resources.Identifier;
  * model or a render layer, and it does not touch this mod's code. The part itself was already
  * datapack-only; this adds the one thing that could not be, which is behaviour.
  *
- * <p>A PACK that ships no Java at all is not shut out either - the four built-ins below are
- * general-purpose enough to cover most of what a part would want to do, and every one of them is
- * configured entirely from the part's JSON.
+ * <p>A PACK that ships no Java at all is not shut out either - the four built-in behaviours below are
+ * general-purpose enough to cover most of what a part would want to do, a fifth registration gates
+ * any of them on what a fitting holds, and every one of them is configured entirely from the part's
+ * JSON.
  *
  * <p>The registry is a static one rather than a datapack registry, for the same reason vanilla's
  * effect-type registries are: it holds codecs, which are code, and code does not load from a pack.
@@ -79,12 +81,12 @@ public final class DecorationEffects {
     /**
      * The built-ins.
      *
-     * <p>Four, reaching four of the five hooks with no Java: an attribute modifier and a status
-     * effect (the two things most parts would want), a dodge (the one that proves a part can refuse
-     * a hit), and a glider (the one that proves a part can change how the wearer moves).
-     * {@link DecorationEffect.Lifecycle} is the hook none of them reach, and deliberately so: what
-     * it is for is state living outside the item, which is the one thing a JSON field cannot
-     * describe.
+     * <p>Four behaviours, reaching four of the five hooks with no Java: an attribute modifier and a
+     * status effect (the two things most parts would want), a dodge (the one that proves a part can
+     * refuse a hit), and a glider (the one that proves a part can change how the wearer moves).
+     * {@link DecorationEffect.Lifecycle} is the hook none of them reach, and deliberately so: what it
+     * is for is state living outside the item, which is the one thing a JSON field cannot describe.
+     * {@code if_fitting} is a fifth registration but not a fifth behaviour - it gates the others.
      *
      * <p>Nineteen of the twenty parts this mod ships use none of them and stay purely cosmetic,
      * which is a choice about this mod's content rather than a limit of the system. The twentieth is
@@ -98,6 +100,9 @@ public final class DecorationEffects {
         register("mob_effect", StatusEffect.CODEC);
         register("blink", BlinkEffect.CODEC);
         register("glide", GlideEffect.CODEC);
+        // Not a fifth behaviour but a gate on the other four: runs its effect only while one of the
+        // part's fittings holds what it asks for, which is how a gem comes to mean something.
+        register("if_fitting", ConditionalEffect.CODEC);
         ArmorPieces.LOGGER.info(
             "[Armor Pieces] Registered {} decoration effect types.", ArmorPiecesRegistries.DECORATION_EFFECT_TYPES.size());
     }

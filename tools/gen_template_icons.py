@@ -1,7 +1,8 @@
 """
 Generate the item icon for each socket's smithing template.
 
-One icon per DecorationAnchor, and they have to be told apart at 16x16 in a full hotbar. The scheme
+One icon per DecorationAnchor plus one for the fitting template, and they have to be told apart at
+16x16 in a full hotbar. The scheme
 that does that: every icon is the same template card, and inside it sits the ARMOR PIECE the socket
 belongs to (helmet / chestplate / leggings / boots) with the socket itself picked out in amber. So
 the icon answers both questions a player has - what does this go on, and where - without reading the
@@ -35,6 +36,8 @@ PALETTE = {
     "A": (0x9E, 0xAB, 0xB6, 0xFF),  # armor, lit
     "+": (0xB8, 0x83, 0x14, 0xFF),  # socket accent, shadow
     "*": (0xFF, 0xCE, 0x4B, 0xFF),  # socket accent
+    "g": (0x1E, 0x8A, 0x4C, 0xFF),  # gem, shadow
+    "G": (0x5C, 0xE0, 0x8C, 0xFF),  # gem, lit
 }
 
 # The card. Its 10x10 recess (rows 3-12, cols 3-12) is where the armor art goes.
@@ -201,6 +204,21 @@ INLAY = {
         ".a+a..a+a.",
         ".aaa..aaa.",
         ".aaa..aaa.",
+        "..........",
+    ],
+    # Not a socket: the fitting template, which sets a second material into a part already worn.
+    # No armor silhouette, because it goes on any of them - a cut gem in an amber setting instead,
+    # the one fitting every player will meet first.
+    "fitting": [
+        "..........",
+        "....**....",
+        "...*GG*...",
+        "..*GGGG*..",
+        ".*GGGgGG*.",
+        ".*GGgggG*.",
+        "..*gggg*..",
+        "...*gg*...",
+        "....**....",
         "..........",
     ],
 }

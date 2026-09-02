@@ -4,6 +4,7 @@ import com.mattjesmc.armorpieces.command.StageCommand;
 import com.mattjesmc.armorpieces.decoration.ArmorPiecesRegistries;
 import com.mattjesmc.armorpieces.decoration.effect.DecorationEffectDispatcher;
 import com.mattjesmc.armorpieces.decoration.effect.DecorationEffects;
+import com.mattjesmc.armorpieces.decoration.fitting.Fittings;
 import com.mattjesmc.armorpieces.registry.ModCreativeTabs;
 import com.mattjesmc.armorpieces.registry.ModDataComponents;
 import com.mattjesmc.armorpieces.registry.ModItems;
@@ -51,6 +52,8 @@ public class ArmorPieces implements ModInitializer {
         ArmorPiecesRegistries.register();
         // Effect types must exist before any datapack is read, since a part names one by id.
         DecorationEffects.register();
+        // Likewise fitting types: a fitting file names one, and fittings load with the datapack.
+        Fittings.register();
         ModDataComponents.register();
         ModItems.register();          // templates read the DECORATION component, so components come first
         ModCreativeTabs.register();   // the tab builds stacks of those items

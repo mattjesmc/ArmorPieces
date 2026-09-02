@@ -1,0 +1,5 @@
+{
+  "type": "armorpieces:smithing_fitting",
+  "template": "armorpieces:fitting_template",
+  "base": "#armorpieces:fittable"
+}

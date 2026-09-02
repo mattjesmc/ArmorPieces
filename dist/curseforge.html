@@ -22,6 +22,9 @@ sash on the belt, spurs on the heels.</p>
 <p>A part is applied at a smithing table the way a trim is, with a template and a trim material, and
 takes that material&rsquo;s colour. Trim and parts live on the same piece of armor; neither replaces the
 other.</p>
+<p>Some parts take a second material through a <strong>fitting</strong>: a gem set into the circlet, a metal
+buckle and a dyed strap on the sash, a banner&rsquo;s design on the back banner. One more smithing
+step, and the item decides where it goes.</p>
 <p>Twenty parts ship across twelve sockets. Each is a datapack entry, a model and a texture, no
 code, and a pack can add its own the same way.</p>
 
@@ -31,6 +34,7 @@ code, and a pack can add its own the same way.</p>
 <ul>
 <li><strong>Twelve sockets, one part at a time</strong> &mdash; <code>crest</code>, <code>brow</code>, <code>horns</code>, <code>pauldrons</code>, <code>back</code>, <code>collar</code>, <code>vambraces</code>, <code>belt</code>, <code>tassets</code>, <code>knees</code>, <code>spurs</code>, <code>greaves</code>. A socket holds one part, so a new crest replaces the crest — but the twenty parts are spread unevenly over the twelve, three of them on <code>back</code> alone. Seven of the sockets are mirrored pairs, so spaulders means both shoulders.</li>
 <li><strong>Coloured by vanilla trim materials</strong> &mdash; One grayscale master per part is mapped onto each material&rsquo;s own palette at load time. A new trim material costs a part no new art at all.</li>
+<li><strong>Fittings</strong> &mdash; A part can declare places for a second material — <code>gemstone</code>, <code>guard</code>, <code>inlay</code>, <code>banner</code> — and the fitting template sets one: gems and metals by trim material, inlays by dye, banners from a banner made at a loom. The template alone takes them out again. Fittings are data too, and an effect can be gated on one.</li>
 <li><strong>One smithing recipe per socket, forever</strong> &mdash; The part rides on the template item as a component, so a pack hands out a template and needs no recipe of its own.</li>
 <li><strong>Optional behaviour</strong> &mdash; A part may carry effects — attributes, mob effects, a projectile dodge, gliding — configured in the same JSON file. <code>pinions</code> is a cut-down elytra that actually flies.</li>
 <li><strong>/armorpieces stage</strong> &mdash; Places a grid of armor stands wearing every part in every material, read from the registries, so a datapack&rsquo;s parts show up on it too.</li>
@@ -61,26 +65,31 @@ code, and a pack can add its own the same way.</p>
 <tr>
 <td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__apply_collar.gif" alt="Smithing Decoration recipe for Apply Collar"><br><sub>Apply Collar <em>(Smithing Decoration)</em></sub></td>
 <td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__apply_crest.gif" alt="Smithing Decoration recipe for Apply Crest"><br><sub>Apply Crest <em>(Smithing Decoration)</em></sub></td>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__apply_greaves.gif" alt="Smithing Decoration recipe for Apply Greaves"><br><sub>Apply Greaves <em>(Smithing Decoration)</em></sub></td>
+<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__apply_fitting.gif" alt="Smithing Fitting recipe for Apply Fitting"><br><sub>Apply Fitting <em>(Smithing Fitting)</em></sub></td>
 </tr>
 <tr>
+<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__apply_greaves.gif" alt="Smithing Decoration recipe for Apply Greaves"><br><sub>Apply Greaves <em>(Smithing Decoration)</em></sub></td>
 <td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__apply_horns.gif" alt="Smithing Decoration recipe for Apply Horns"><br><sub>Apply Horns <em>(Smithing Decoration)</em></sub></td>
 <td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__apply_knees.gif" alt="Smithing Decoration recipe for Apply Knees"><br><sub>Apply Knees <em>(Smithing Decoration)</em></sub></td>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__apply_pauldrons.gif" alt="Smithing Decoration recipe for Apply Pauldrons"><br><sub>Apply Pauldrons <em>(Smithing Decoration)</em></sub></td>
 </tr>
 <tr>
+<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__apply_pauldrons.gif" alt="Smithing Decoration recipe for Apply Pauldrons"><br><sub>Apply Pauldrons <em>(Smithing Decoration)</em></sub></td>
 <td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__apply_spurs.gif" alt="Smithing Decoration recipe for Apply Spurs"><br><sub>Apply Spurs <em>(Smithing Decoration)</em></sub></td>
 <td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__apply_tassets.gif" alt="Smithing Decoration recipe for Apply Tassets"><br><sub>Apply Tassets <em>(Smithing Decoration)</em></sub></td>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__apply_vambraces.gif" alt="Smithing Decoration recipe for Apply Vambraces"><br><sub>Apply Vambraces <em>(Smithing Decoration)</em></sub></td>
 </tr>
 <tr>
+<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__apply_vambraces.gif" alt="Smithing Decoration recipe for Apply Vambraces"><br><sub>Apply Vambraces <em>(Smithing Decoration)</em></sub></td>
+<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__clear_fitting.gif" alt="Smithing Fitting recipe for Clear Fitting"><br><sub>Clear Fitting <em>(Smithing Fitting)</em></sub></td>
 <td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_banner.png" alt="Crafting recipe for Template Banner"><br><sub>Template Banner</sub></td>
+</tr>
+<tr>
 <td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_brooch.png" alt="Crafting recipe for Template Brooch"><br><sub>Template Brooch</sub></td>
 <td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_brush_crest.png" alt="Crafting recipe for Template Brush Crest"><br><sub>Template Brush Crest</sub></td>
+<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_circlet.png" alt="Crafting recipe for Template Circlet"><br><sub>Template Circlet</sub></td>
 </tr>
 <tr>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_circlet.png" alt="Crafting recipe for Template Circlet"><br><sub>Template Circlet</sub></td>
 <td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_feathering.png" alt="Crafting recipe for Template Feathering"><br><sub>Template Feathering</sub></td>
+<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_fitting.png" alt="Crafting recipe for Template Fitting"><br><sub>Template Fitting</sub></td>
 <td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_gorget.png" alt="Crafting recipe for Template Gorget"><br><sub>Template Gorget</sub></td>
 </tr>
 <tr>
@@ -198,6 +207,27 @@ tomorrow — is free.</p>
 colour instead of taking the material&rsquo;s, so a horn stays ivory and a sash stays cloth while the
 hardware still turns gold. The master remains the single source of truth for the silhouette. If a
 part needs bespoke art in one material, <code>dragon_crest_&lt;suffix&gt;.png</code> beside the master wins.</p>
+<p><strong>3b. Fittings, if the part has any.</strong> A fitting is a region of the part that takes a second
+material. Declare it on the part, in the order the smithing table should offer an item to them:</p>
+<pre><code class="language-json">&quot;fittings&quot;: [&quot;armorpieces:gemstone&quot;, &quot;armorpieces:guard&quot;]
+</code></pre>
+<p>and paint the region as a grayscale mask beside the master, named after the fitting:
+<code>dragon_crest_gemstone.png</code>. While the fitting is empty the mask is ignored; while it holds a gem,
+every opaque mask pixel takes the mask&rsquo;s own value through the gem&rsquo;s palette. Four fittings ship —
+<code>gemstone</code> and <code>guard</code> take trim materials (gems and metals, by tag), <code>inlay</code> takes a dye, and
+<code>banner</code> takes a banner made at a loom onto a bone of the geometry named <code>banner</code>. A fitting is a
+datapack file too, <code>data/&lt;ns&gt;/armorpieces/fitting/&lt;name&gt;.json</code>, so a pack can add a <code>pommel</code> that
+takes any metal:</p>
+<pre><code class="language-json">{ &quot;type&quot;: &quot;armorpieces:material&quot;,
+  &quot;description&quot;: { &quot;translate&quot;: &quot;fitting.&lt;ns&gt;.pommel&quot; },
+  &quot;materials&quot;: &quot;#minecraft:trim_materials&quot; }
+</code></pre>
+<p>A new fitting <em>type</em> — one that reads an item the three built-in types cannot, or draws its own
+geometry instead of colouring a mask — is Java, the way a new effect type is: implement
+<code>Fitting</code> (or <code>Fitting.Masked</code>) and register its codec with <code>Fittings.register</code>, plus a
+<code>FittingRenderer</code> through <code>FittingRenderers.register</code> if it draws. Whatever item fills it must
+also be in <code>#armorpieces:fitting_additions</code>; that tag is what the one fitting recipe accepts, so
+an item outside it never lights the table up, however willing the fitting.</p>
 <p><strong>4. Handing it out.</strong> There is no recipe to write. The mod ships one smithing recipe per socket
 and the part travels on the <em>template stack</em>, so a pack only has to give out a template carrying
 the <code>armorpieces:decoration</code> component:</p>
@@ -213,8 +243,8 @@ the <code>armorpieces:decoration</code> component:</p>
 </code></pre>
 <p>A loot table with <code>minecraft:set_components</code> does the same, and so does nothing at all: the
 creative tab is built by walking the registry, so a new part appears there the moment the pack
-loads. The twelve template items are <code>&lt;socket&gt;_template</code> — <code>crest_template</code>, <code>brow_template</code>, and
-so on.</p>
+loads. The twelve socket templates are <code>&lt;socket&gt;_template</code> — <code>crest_template</code>, <code>brow_template</code>,
+and so on — and <code>fitting_template</code> is the thirteenth, shared by every fitting.</p>
 <p><strong>Overriding what this mod ships.</strong> Same ids, your pack. A resource pack can restyle any part&rsquo;s
 geometry or texture and a datapack can change where it may be worn.</p>
 
@@ -227,7 +257,8 @@ geometry or texture and a datapack can change where it may be worn.</p>
   { &quot;type&quot;: &quot;armorpieces:blink&quot;, &quot;chance&quot;: 0.2, &quot;damage_types&quot;: &quot;minecraft:is_projectile&quot; }
 ]
 </code></pre>
-<p>Four built-ins reach four of the five hooks from JSON alone:</p>
+<p>Four built-in behaviours reach four of the five hooks from JSON alone, and a fifth type gates
+them:</p>
 <table>
 <thead>
 <tr>
@@ -257,13 +288,23 @@ geometry or texture and a datapack can change where it may be worn.</p>
 <td>Gliding + Ticking</td>
 <td><code>sink</code>, <code>wear_interval</code></td>
 </tr>
+<tr>
+<td><code>armorpieces:if_fitting</code></td>
+<td>all, forwarded</td>
+<td><code>if</code> (a fitting, and optionally <code>material</code> or <code>dye</code>), <code>then</code> (any effect)</td>
+</tr>
 </tbody>
 </table>
+<p>The last is what makes a gem more than paint: <code>{ "type": "armorpieces:if_fitting",
+"if": { "fitting": "armorpieces:gemstone", "material": "minecraft:emerald" }, "then": { ... } }</code>
+runs its effect only while an emerald is set. <code>material</code> and <code>dye</code> are alternatives — one narrows
+a material fitting, the other a dye fitting, and a condition naming both is refused at load.
+Naming neither is the shortest form: while there is anything in the fitting at all.</p>
 <p>The five hooks are <code>Ticking</code> (every server tick worn), <code>Damage</code> (a veto — <code>allowDamage</code> false
 cancels the hit outright), <code>Attributes</code> (equip/unequip), <code>Gliding</code> (vanilla&rsquo;s own <code>canGlide</code>
 check) and <code>Lifecycle</code> (put on and taken off, for state that lives outside the item — the one
-hook no built-in reaches, so putting anything there means Java). A part has no durability of
-its own, so an effect that costs something
+hook no built-in behaviour reaches, so putting anything there means Java). A part has no
+durability of its own, so an effect that costs something
 spends the <em>decorated piece&rsquo;s</em> durability — <code>pinions</code> wears the chestplate it is bolted to.</p>
 <p><strong>A new effect type is the one thing that needs Java</strong>, because behaviour is code. Implement a
 hook, register the codec, and add nothing else:</p>
@@ -290,7 +331,9 @@ Effects are synced to the client, because <code>canGlide</code> runs on both sid
 <p><code>./gradlew build</code>, <code>./gradlew runClient</code>, <code>./gradlew runServer</code>.</p>
 <p><code>/armorpieces stage</code> (permission level 2) is how a part is judged against the others:
 <code>parts [&lt;part&gt;]</code> puts one stand per part × material, <code>bases [&lt;armor item&gt;]</code> repeats that for every
-base armor set, <code>full</code> dresses complete sets with every socket filled, and <code>clear</code> removes them.</p>
+base armor set, <code>full</code> dresses complete sets with every socket filled, <code>fittings [&lt;part&gt;]</code> shows
+every fitting filled with everything it takes, one block per fitting with the part&rsquo;s materials
+down the rows, and <code>clear</code> removes them.</p>
 <table>
 <thead>
 <tr>
@@ -313,7 +356,7 @@ base armor set, <code>full</code> dresses complete sets with every socket filled
 </tr>
 <tr>
 <td><code>tools/</code></td>
-<td>Blockbench rigs (<code>bb_rig.py</code>, with the vanilla figure and walk cycle from <code>mc_humanoid.py</code>), <code>.bbmodel</code> ↔ geometry (<code>bb_geo.py</code>), master painting and install (<code>paint_&lt;part&gt;_master.py</code>, <code>sync_decoration_masters.py</code>), a material preview outside the game (<code>preview_material.py</code>), template icons, <code>trace_geometry.py</code> for measuring a part against the body</td>
+<td>Blockbench rigs (<code>bb_rig.py</code>, with the vanilla figure and walk cycle from <code>mc_humanoid.py</code>), <code>.bbmodel</code> ↔ geometry (<code>bb_geo.py</code>), master and mask painting and install (<code>paint_&lt;part&gt;_master.py</code>, <code>fitting_mask.py</code>, <code>sync_decoration_masters.py</code>), a material and fitting preview outside the game (<code>preview_material.py</code>), template icons, <code>trace_geometry.py</code> for measuring a part against the body</td>
 </tr>
 <tr>
 <td><code>tools/blockbench_plugin/</code></td>
@@ -335,8 +378,9 @@ skin, armor and palette textures they reference are extracted from the game jar 
 <h2>Editing parts in Blockbench</h2>
 
 <p><code>tools/blockbench_plugin/armorpieces.js</code> turns Blockbench into an editor for parts. A piece opens
-on the vanilla player wearing real armor, its master and static layer are painted in place, any
-trim material can be previewed live, and Save puts everything back where it came from. The
+on the vanilla player wearing real armor, its master, static layer and fitting masks are painted
+in place, any trim material can be previewed live with the fittings filled or empty, and Save
+puts everything back where it came from. The
 plugin has no geometry or colour maths of its own: it drives the repo&rsquo;s Python tools, so the
 editor and the command line cannot disagree.</p>
 <p><strong>Install.</strong> Blockbench 5.1 or later, and Python 3 with Pillow on <code>PATH</code> (the same requirement
@@ -367,12 +411,20 @@ and Paint modes, the outliner, transform, the UV editor, colour and palette, and
 <td>Create a piece; write the model and textures back to the pack; reload the open one from disk.</td>
 </tr>
 <tr>
-<td>Editing: Master / Static</td>
+<td>Editing: Master / Static / Mask</td>
 <td>Which sheet the brush paints. The master is greyscale by definition — the palette turns grey and any colour painted on it folds to its value under the brush. The static layer keeps real colour and is created the first time it is selected.</td>
+</tr>
+<tr>
+<td>Fitting</td>
+<td>With Mask selected: which of the part&rsquo;s masked fittings the brush paints. A mask is greyscale like the master — its values are the fitting&rsquo;s shading — and is created blank the first time it is selected.</td>
 </tr>
 <tr>
 <td>Material preview</td>
 <td>Shows the part through a trim material&rsquo;s palette. Strokes still land on the sheet being edited, the UV editor keeps showing the greyscale, and the preview follows the brush.</td>
+</tr>
+<tr>
+<td>one row per fitting</td>
+<td>With the preview on: what each masked fitting holds — a gem, a metal, a dye, or empty. The preview bakes the masks exactly as the game does, in the part&rsquo;s order. A banner fitting draws its own geometry and is not previewed.</td>
 </tr>
 <tr>
 <td>Pose, Phase</td>
@@ -392,8 +444,8 @@ and Paint modes, the outliner, transform, the UV editor, colour and palette, and
 mod&rsquo;s format is box UV only, so the plugin keeps it that way: a cube added, converted or
 resized is laid out in free space on the texture, the paint on its faces moves with them, and
 the texture grows when it is full. All of that lands in the same undo step as the edit.</p>
-<p><strong>Saving.</strong> Save exports the geometry through <code>bb_geo.py</code>, writes the master and static layer
-back to their files, writes the template recipe, and — for a part whose master lives in
+<p><strong>Saving.</strong> Save exports the geometry through <code>bb_geo.py</code>, writes the master, static layer and
+masks back to their files, writes the template recipe, and — for a part whose master lives in
 <code>tools/decoration_masters/</code> — runs <code>sync_decoration_masters.py</code>, which installs the sheets and
 checks them against the geometry.</p>
 
@@ -401,6 +453,7 @@ checks them against the geometry.</p>
 <h2>FAQ</h2>
 
 <p><strong>Does a part replace the armor trim?</strong><br>No. A piece carries its trim and its parts at once.</p>
+<p><strong>How do I put a gem in the circlet?</strong><br>Craft a fitting template, then smithing table: template, the decorated helmet, and the gem. A gem goes to the gemstone, an ingot to the guard, a dye to the inlay and a banner to the banner — the item decides, so one template covers every fitting. Every part on the piece is offered the item, so one gem fills the stone of each part that has one. Template and helmet with the third slot empty takes every fitting out again. Re-applying a part at its own socket template keeps what is set in it, so changing a circlet&rsquo;s metal does not cost the gem.</p>
 <p><strong>Can two parts share a socket?</strong><br>No — applying a new crest replaces the crest. Several parts may be <em>available</em> for one socket (<code>horns</code> and <code>helm_wings</code> both fit <code>horns</code>); the choice is the expressive act.</p>
 <p><strong>Do I need the mod to add parts?</strong><br>You need the mod installed, but adding a part takes no Java — a datapack and a resource pack. Only a brand-new <em>effect</em> type needs code.</p>
 

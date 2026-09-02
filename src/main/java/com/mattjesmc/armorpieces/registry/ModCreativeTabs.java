@@ -46,6 +46,9 @@ public final class ModCreativeTabs {
                                 .filter(decoration -> decoration.value().fits(anchor))
                                 .forEach(decoration -> output.accept(ModItems.templateFor(anchor, decoration)));
                         }
+                        // Last, after every part: the one template that fits gems, metals, dyes and
+                        // banners into whatever the piece already wears.
+                        output.accept(new ItemStack(ModItems.fittingTemplate()));
                     }))
                 .build());
         ArmorPieces.LOGGER.info("[Armor Pieces] Registered creative tab.");

@@ -1,0 +1,9 @@
+{
+  "type": "armorpieces:banner",
+  "description": {
+    "translate": "fitting.armorpieces.banner"
+  },
+  "bone": "banner",
+  "sheet": "shield",
+  "front": "south"
+}

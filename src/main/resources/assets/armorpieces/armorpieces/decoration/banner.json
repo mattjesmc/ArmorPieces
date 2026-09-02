@@ -3,29 +3,13 @@
   "texture_height": 32,
   "bones": [
     {
-      "name": "banner",
+      "name": "mount",
       "pivot": [
         0,
         0,
         0
       ],
       "cubes": [
-        {
-          "origin": [
-            -3.5,
-            1.5,
-            3.25
-          ],
-          "size": [
-            7,
-            12,
-            1
-          ],
-          "uv": [
-            0,
-            0
-          ]
-        },
         {
           "origin": [
             -0.5,
@@ -72,6 +56,34 @@
           "uv": [
             28,
             0
+          ]
+        }
+      ],
+      "children": [
+        {
+          "name": "banner",
+          "pivot": [
+            0,
+            0,
+            0
+          ],
+          "cubes": [
+            {
+              "origin": [
+                -3.5,
+                1.5,
+                3.25
+              ],
+              "size": [
+                7,
+                12,
+                1
+              ],
+              "uv": [
+                0,
+                0
+              ]
+            }
           ]
         }
       ]

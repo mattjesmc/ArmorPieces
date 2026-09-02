@@ -5,6 +5,8 @@ import com.mattjesmc.armorpieces.decoration.ArmorDecorations;
 import com.mattjesmc.armorpieces.decoration.ArmorPiecesRegistries;
 import com.mattjesmc.armorpieces.decoration.DecorationAnchor;
 import com.mattjesmc.armorpieces.decoration.DecorationEntry;
+import com.mattjesmc.armorpieces.decoration.fitting.Fitting;
+import com.mattjesmc.armorpieces.decoration.fitting.FittingValue;
 import com.mattjesmc.armorpieces.registry.ModDataComponents;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
@@ -56,7 +58,7 @@ import org.jspecify.annotations.Nullable;
  * on the stage the moment they load, which is the only way a preview of a data-driven system can
  * avoid lying about what the system contains.
  *
- * <p>Four modes, three of them a different slice of the same cross product:
+ * <p>Five modes, four of them a different slice of the same cross product:
  *
  * <ul>
  *   <li>{@code parts} - one stand per (socketed part x material). The default view: every part in
@@ -66,7 +68,11 @@ import org.jspecify.annotations.Nullable;
  *       resolution is invisible until the two stand side by side.</li>
  *   <li>{@code full} - one stand per (material x variant) wearing a complete set with every socket
  *       filled, which is where parts that overlap at the joints show themselves.</li>
- *   <li>{@code clear} - removes what the other three placed, by tag.</li>
+ *   <li>{@code fittings} - one block per (socketed part x fitting): the part's materials down the
+ *       rows, everything the fitting takes across the columns, that fitting filled. The other three
+ *       modes leave every fitting empty, which is the part as the socket recipe first makes it; this
+ *       is where the masks and the cloth are judged.</li>
+ *   <li>{@code clear} - removes what the other four placed, by tag.</li>
  * </ul>
  *
  * <p>Nothing here goes through {@link com.mattjesmc.armorpieces.recipe.SmithingDecorationRecipe}'s
@@ -125,6 +131,11 @@ public final class StageCommand {
                         .executes(ctx -> stageBases(ctx.getSource(), ItemArgument.getItem(ctx, "base")))))
                 .then(Commands.literal("full")
                     .executes(ctx -> stageFull(ctx.getSource())))
+                .then(Commands.literal("fittings")
+                    .executes(ctx -> stageFittings(ctx.getSource(), null))
+                    .then(Commands.argument("decoration",
+                            ResourceArgument.resource(context, ArmorPiecesRegistries.ARMOR_DECORATION))
+                        .executes(ctx -> stageFittings(ctx.getSource(), decorationArgument(ctx)))))
                 .then(Commands.literal("clear")
                     .executes(ctx -> clear(ctx.getSource())))));
     }
@@ -250,6 +261,74 @@ public final class StageCommand {
                 layout.stand(column, variant, worn, material.value().description());
                 placed++;
             }
+        }
+        return finish(source, placed);
+    }
+
+    /**
+     * One block per (socket, part, fitting), each block the part's materials down the rows and every
+     * value the fitting takes across the columns, with that one fitting filled and the part's others
+     * left empty.
+     *
+     * <p>Both axes matter and neither can stand in for the other: a gem's colour is read against the
+     * band it sits in, so an emerald in a gold circlet and the same emerald in an iron one are two
+     * different pictures, and a mask that reads well under one is not thereby right under the rest.
+     * One fitting at a time, rather than all of a part's at once, so a stand shows exactly one thing
+     * that was not there before.
+     *
+     * <p>The columns are READ FROM THE ITEM REGISTRY, not from the fitting's own tag: every item in
+     * the game is offered to the fitting through the same {@link Fitting#accept} the smithing table
+     * runs, and what it takes is what is staged. That is the only list that cannot disagree with the
+     * table, and it is how a modded dye or a datapack trim material shows up here unasked.
+     */
+    private static int stageFittings(final CommandSourceStack source, final @Nullable Holder<ArmorDecoration> only) {
+        final List<FittedSlot> blocks = fittedSlots(source, only);
+        final List<Holder.Reference<TrimMaterial>> materials = materials(source);
+        final BaseArmor base = defaultBase();
+        if (blocks.isEmpty()) {
+            source.sendFailure(Component.translatable("commands.armorpieces.stage.no_fittings"));
+            return 0;
+        }
+        if (materials.isEmpty() || base == null) {
+            return nothingToStage(source);
+        }
+
+        int planned = 0;
+        for (final FittedSlot block : blocks) {
+            planned += materials.size() * block.values().size();
+        }
+        if (tooMany(source, planned)) {
+            return 0;
+        }
+
+        final Layout layout = Layout.inFrontOf(source);
+        int placed = 0;
+        double row = 0.0;
+        for (final FittedSlot block : blocks) {
+            final List<FittingValue> values = block.values();
+            layout.label(-2.0, row - 1.0, block.label());
+            for (int column = 0; column < values.size(); column++) {
+                layout.label(column, row - 1.0, values.get(column).name());
+            }
+            for (int line = 0; line < materials.size(); line++) {
+                final Holder.Reference<TrimMaterial> material = materials.get(line);
+                layout.label(-1.0, row + line, material.value().description());
+                for (int column = 0; column < values.size(); column++) {
+                    final ItemStack piece = base.piece(block.slot().armorType());
+                    if (piece.isEmpty()) {
+                        continue;
+                    }
+                    decorate(piece, block.slot().anchor(), block.slot().decoration(), material);
+                    fit(piece, block.slot().anchor(), block.fitting(), values.get(column));
+                    layout.stand(
+                        column,
+                        row + line,
+                        Map.of(block.slot().armorType(), piece),
+                        block.slot().decoration().value().copyWithStyle(material));
+                    placed++;
+                }
+            }
+            row += materials.size() + BLOCK_GAP;
         }
         return finish(source, placed);
     }
@@ -387,6 +466,52 @@ public final class StageCommand {
             return this.decoration.value().description().copy()
                 .append(Component.literal(" (" + this.anchor.getSerializedName() + ")"));
         }
+    }
+
+    /**
+     * One block of {@code fittings}: a socketed part, one of its fittings, and everything in the item
+     * registry that fills it, in registry order.
+     */
+    private record FittedSlot(Slot slot, Holder<Fitting> fitting, List<FittingValue> values) {
+        Component label() {
+            return this.slot.label().copy()
+                .append(Component.literal(" - "))
+                .append(this.fitting.value().description());
+        }
+    }
+
+    /**
+     * Every (socket, part, fitting) triple the loaded data allows, in {@link #slots} order and then
+     * the part's own fitting order - the order the smithing table offers an item to them.
+     *
+     * <p>A fitting that no item in the registry fills is left out rather than staged as an empty
+     * block: the stage shows what the game can produce, and a fitting nothing fills produces nothing.
+     */
+    private static List<FittedSlot> fittedSlots(final CommandSourceStack source, final @Nullable Holder<ArmorDecoration> only) {
+        final List<FittedSlot> blocks = new ArrayList<>();
+        for (final Slot slot : slots(source, only)) {
+            for (final Holder<Fitting> fitting : slot.decoration().value().fittings()) {
+                final List<FittingValue> values = fittingValues(fitting.value());
+                if (!values.isEmpty()) {
+                    blocks.add(new FittedSlot(slot, fitting, values));
+                }
+            }
+        }
+        return blocks;
+    }
+
+    /**
+     * Every distinct value a fitting takes from some item in the game, found by offering it every
+     * item there is. Two items that yield the same value - two stacks of the same dye - count once.
+     */
+    private static List<FittingValue> fittingValues(final Fitting fitting) {
+        final List<FittingValue> values = new ArrayList<>();
+        for (final Item item : BuiltInRegistries.ITEM) {
+            fitting.accept(new ItemStack(item))
+                .filter(value -> !values.contains(value))
+                .ifPresent(values::add);
+        }
+        return values;
     }
 
     /**
@@ -542,6 +667,24 @@ public final class StageCommand {
     ) {
         final ArmorDecorations existing = piece.getOrDefault(ModDataComponents.DECORATIONS, ArmorDecorations.EMPTY);
         piece.set(ModDataComponents.DECORATIONS, existing.with(anchor, new DecorationEntry(material, decoration)));
+    }
+
+    /**
+     * Sets one fitting of the part in {@code anchor}, in place. Straight to the component for the
+     * reason {@link #decorate} gives: {@link com.mattjesmc.armorpieces.recipe.SmithingFittingRecipe}
+     * routes by item and refuses a no-op, and a stage wants neither.
+     */
+    private static void fit(
+        final ItemStack piece,
+        final DecorationAnchor anchor,
+        final Holder<Fitting> fitting,
+        final FittingValue value
+    ) {
+        final ArmorDecorations existing = piece.getOrDefault(ModDataComponents.DECORATIONS, ArmorDecorations.EMPTY);
+        final DecorationEntry entry = existing.get(anchor);
+        if (entry != null) {
+            piece.set(ModDataComponents.DECORATIONS, existing.with(anchor, entry.withFitting(fitting, value)));
+        }
     }
 
     // ---- feedback -------------------------------------------------------------------------------

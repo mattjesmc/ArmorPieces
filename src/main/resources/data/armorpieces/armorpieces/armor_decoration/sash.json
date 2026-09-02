@@ -5,5 +5,9 @@
   },
   "anchors": [
     "belt"
+  ],
+  "fittings": [
+    "armorpieces:inlay",
+    "armorpieces:guard"
   ]
 }
