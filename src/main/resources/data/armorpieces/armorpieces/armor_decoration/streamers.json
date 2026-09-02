@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:streamers",
+  "description": {
+    "translate": "decoration.armorpieces.streamers"
+  },
+  "anchors": [
+    "spurs"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ]
+}

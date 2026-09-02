@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:claws",
+  "description": {
+    "translate": "decoration.armorpieces.claws"
+  },
+  "anchors": [
+    "vambraces"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ]
+}

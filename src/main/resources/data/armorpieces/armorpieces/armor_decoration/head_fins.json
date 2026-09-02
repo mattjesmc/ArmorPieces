@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:head_fins",
+  "description": {
+    "translate": "decoration.armorpieces.head_fins"
+  },
+  "anchors": [
+    "horns"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ]
+}

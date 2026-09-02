@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:coronet",
+  "description": {
+    "translate": "decoration.armorpieces.coronet"
+  },
+  "anchors": [
+    "brow"
+  ],
+  "fittings": [
+    "armorpieces:gemstone"
+  ]
+}

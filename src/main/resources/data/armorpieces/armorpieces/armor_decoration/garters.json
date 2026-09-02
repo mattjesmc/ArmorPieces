@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:garters",
+  "description": {
+    "translate": "decoration.armorpieces.garters"
+  },
+  "anchors": [
+    "knees"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ]
+}

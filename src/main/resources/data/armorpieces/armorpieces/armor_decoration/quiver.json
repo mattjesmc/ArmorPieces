@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:quiver",
+  "description": {
+    "translate": "decoration.armorpieces.quiver"
+  },
+  "anchors": [
+    "back"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ]
+}

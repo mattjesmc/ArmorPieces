@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces:chain_of_office",
+  "description": {
+    "translate": "decoration.armorpieces.chain_of_office"
+  },
+  "anchors": [
+    "collar"
+  ],
+  "fittings": [
+    "armorpieces:guard",
+    "armorpieces:gemstone"
+  ]
+}

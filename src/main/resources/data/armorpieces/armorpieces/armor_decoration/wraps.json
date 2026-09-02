@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:wraps",
+  "description": {
+    "translate": "decoration.armorpieces.wraps"
+  },
+  "anchors": [
+    "vambraces"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ]
+}
