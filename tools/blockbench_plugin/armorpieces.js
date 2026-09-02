@@ -153,7 +153,12 @@
 
 	function python(args, options) {
 		const root = repoRoot();
-		if (!root) throw new Error('Set "Armor Pieces repository" in Settings to the repo root.');
+		if (!root) {
+			throw new Error('The Armor Pieces repository is the toolkit this plugin drives - the rigs, ' +
+				'the preview and the game-asset extraction are its Python. Clone it from ' +
+				'github.com/mattjesmc/ArmorPieces, install Python 3 with Pillow, and set ' +
+				'"Armor Pieces repository" in Settings to the clone. Your own packs can live anywhere.');
+		}
 		const exe = Settings.get(ID + '_python') || 'python';
 		return execFileSync(exe, args, Object.assign({
 			cwd: root, encoding: 'utf8', windowsHide: true,
@@ -181,27 +186,68 @@
 	const DATA_REL = ['armorpieces', 'armor_decoration'];
 	const ASSET_REL = ['armorpieces', 'decoration'];
 
-	function searchRoots() {
-		const root = repoRoot();
-		if (!root) return [];
-		const roots = [path.join(root, 'src', 'main', 'resources')];
-		for (const relative of [['run', 'resourcepacks'], ['run', 'saves']]) {
-			const dir = path.join(root, ...relative);
-			if (!fs.existsSync(dir)) continue;
-			for (const entry of fs.readdirSync(dir)) {
-				const candidate = path.join(dir, entry);
-				if (!fs.statSync(candidate).isDirectory()) continue;
-				roots.push(candidate);
-				// A world's datapacks sit one level deeper than the world folder.
-				const datapacks = path.join(candidate, 'datapacks');
-				if (fs.existsSync(datapacks)) {
-					for (const pack of fs.readdirSync(datapacks)) {
-						roots.push(path.join(datapacks, pack));
-					}
-				}
-			}
+	/* The folders the author has added through Packs..., kept as JSON in a setting. */
+	function userPacks() {
+		try {
+			const list = JSON.parse(Settings.get(ID + '_packs') || '[]');
+			return Array.isArray(list) ? list.filter(function (p) { return typeof p === 'string' && p; }) : [];
+		} catch (err) {
+			return [];
+		}
+	}
+
+	function setUserPacks(list) {
+		settings[ID + '_packs'].set(JSON.stringify(list));
+		Settings.save();
+	}
+
+	function subdirs(dir) {
+		if (!dir || !fs.existsSync(dir)) return [];
+		return fs.readdirSync(dir)
+			.map(function (entry) { return path.join(dir, entry); })
+			.filter(function (candidate) {
+				try { return fs.statSync(candidate).isDirectory(); } catch (err) { return false; }
+			});
+	}
+
+	/* The running game's own folder, where its resource packs and worlds live. */
+	function minecraftDir() {
+		if (process.platform === 'win32') return path.join(process.env.APPDATA || '', '.minecraft');
+		if (process.platform === 'darwin') return path.join(os.homedir(), 'Library', 'Application Support', 'minecraft');
+		return path.join(os.homedir(), '.minecraft');
+	}
+
+	/* Every resource pack folder and every world datapack folder under a game directory. */
+	function packsUnderGameDir(dir) {
+		const roots = subdirs(path.join(dir, 'resourcepacks'));
+		for (const world of subdirs(path.join(dir, 'saves'))) {
+			roots.push(...subdirs(path.join(world, 'datapacks')));
 		}
 		return roots;
+	}
+
+	/*
+	 * Where packs are looked for: the author's own list first, then the repository's three places
+	 * when there is a repository - its resources, its run/ resource packs, its run/ worlds'
+	 * datapacks - then the installed game's. The repository is the toolkit, not the workspace, so
+	 * content never has to live in it; the game folders are there so a pack made for the launcher
+	 * needs no adding.
+	 */
+	function searchRoots() {
+		const roots = userPacks().slice();
+		const root = repoRoot();
+		if (root) {
+			roots.push(path.join(root, 'src', 'main', 'resources'));
+			roots.push(...packsUnderGameDir(path.join(root, 'run')));
+		}
+		roots.push(...packsUnderGameDir(minecraftDir()));
+		const seen = new Set();
+		return roots.filter(function (dir) {
+			const key = path.resolve(dir).toLowerCase();
+			if (seen.has(key) || !fs.existsSync(dir)) return false;
+			seen.add(key);
+			return true;
+		});
 	}
 
 	function namespacesIn(packDir, kind) {
@@ -219,43 +265,101 @@
 			.map(function (f) { return f.slice(0, -5); });
 	}
 
-	function pieceRecord(packDir, namespace, name) {
-		const dataDir = path.join(packDir, 'data', namespace, ...DATA_REL);
-		const assetDir = path.join(packDir, 'assets', namespace, ...ASSET_REL);
+	/*
+	 * A piece has two packs. The datapack half - the part file, its fittings, recipes and tags -
+	 * lives in `dataPack`; the resourcepack half - geometry, textures and the language file - in
+	 * `assetPack`. In this repository and in a world folder used for both they are the same
+	 * directory; for a player's own content they are a folder under resourcepacks/ and one under a
+	 * world's datapacks/, and every writer here goes to the right one. `pack` is the datapack, kept
+	 * under its old name because every datapack-side writer reads it.
+	 */
+	function pieceRecord(dataPack, assetPack, namespace, name) {
+		const dataDir = path.join(dataPack, 'data', namespace, ...DATA_REL);
+		const assetDir = path.join(assetPack, 'assets', namespace, ...ASSET_REL);
 		return {
 			name: name,
 			namespace: namespace,
 			key: namespace + ':' + name,
-			pack: packDir,
+			pack: dataPack,
+			dataPack: dataPack,
+			assetPack: assetPack,
 			data: path.join(dataDir, name + '.json'),
 			geometry: path.join(assetDir, name + '.json'),
-			texture: path.join(packDir, 'assets', namespace, 'textures', 'entity', 'decoration',
+			texture: path.join(assetPack, 'assets', namespace, 'textures', 'entity', 'decoration',
 				name + '.png'),
 		};
 	}
 
-	function piecesIn(packDir) {
+	/* The halves one pack directory holds, by piece key: which of data and assets it has. */
+	function halvesIn(packDir) {
 		const found = {};
 		for (const namespace of new Set(
 			namespacesIn(packDir, 'data').concat(namespacesIn(packDir, 'assets')))) {
 			const dataDir = path.join(packDir, 'data', namespace, ...DATA_REL);
 			const assetDir = path.join(packDir, 'assets', namespace, ...ASSET_REL);
-			for (const name of new Set(listJson(dataDir).concat(listJson(assetDir)))) {
-				found[namespace + ':' + name] = pieceRecord(packDir, namespace, name);
+			for (const name of listJson(dataDir)) {
+				const key = namespace + ':' + name;
+				found[key] = found[key] || { namespace: namespace, name: name };
+				found[key].data = true;
+			}
+			for (const name of listJson(assetDir)) {
+				const key = namespace + ':' + name;
+				found[key] = found[key] || { namespace: namespace, name: name };
+				found[key].assets = true;
 			}
 		}
-		return Object.values(found);
+		return found;
 	}
 
+	/*
+	 * Every piece across every root, the two halves of a `namespace:name` paired up wherever they
+	 * sit. A root holding both halves wins over a pair split across two; a half that is nowhere
+	 * borrows the other half's folder, so the record still says where it WOULD go and the label
+	 * can say it is missing.
+	 */
 	function allPieces() {
-		const out = [];
-		for (const packDir of searchRoots()) out.push(...piecesIn(packDir));
-		return out;
+		const byKey = {};
+		for (const packDir of searchRoots()) {
+			const halves = halvesIn(packDir);
+			for (const key of Object.keys(halves)) {
+				const half = halves[key];
+				const entry = byKey[key] || (byKey[key] = {
+					namespace: half.namespace, name: half.name, dataPack: null, assetPack: null, both: null,
+				});
+				if (half.data && half.assets && !entry.both) entry.both = packDir;
+				if (half.data && !entry.dataPack) entry.dataPack = packDir;
+				if (half.assets && !entry.assetPack) entry.assetPack = packDir;
+			}
+		}
+		return Object.values(byKey).map(function (entry) {
+			const dataPack = entry.both || entry.dataPack || entry.assetPack;
+			const assetPack = entry.both || entry.assetPack || entry.dataPack;
+			return pieceRecord(dataPack, assetPack, entry.namespace, entry.name);
+		});
+	}
+
+	/* A pack folder as the list shows it: relative to the repository when it is inside it. */
+	function packLabel(dir) {
+		const root = repoRoot();
+		if (root) {
+			const relative = path.relative(root, dir);
+			if (relative && !relative.startsWith('..') && !path.isAbsolute(relative)) {
+				return relative.replace(/\\/g, '/');
+			}
+			if (!relative) return '.';
+		}
+		const game = minecraftDir();
+		const relative = path.relative(game, dir);
+		if (relative && !relative.startsWith('..') && !path.isAbsolute(relative)) {
+			return '.minecraft/' + relative.replace(/\\/g, '/');
+		}
+		return dir;
 	}
 
 	function pieceLabel(piece) {
-		const root = repoRoot();
-		const where = path.relative(root, piece.pack).replace(/\\/g, '/') || '.';
+		const where = piece.dataPack === piece.assetPack
+			? packLabel(piece.dataPack)
+			: packLabel(piece.dataPack) + ' + ' + packLabel(piece.assetPack);
 		const half = (fs.existsSync(piece.data) ? '' : ' [no data]') +
 			(fs.existsSync(piece.geometry) ? '' : ' [no model]');
 		return piece.key + '  (' + where + ')' + half;
@@ -266,12 +370,15 @@
 	 * master in tools/decoration_masters is the source of truth, and sync_decoration_masters.py
 	 * copies it in. Painting the installed copy would put the edit in the place the next sync
 	 * overwrites. So a piece with a master edits the master; a piece in someone else's pack, which
-	 * has no master, edits the pack file directly.
+	 * has no master, edits the pack file directly. Only the mod's own namespace has masters here:
+	 * a user's `circlet` is their file, not a way into the mod's.
 	 */
 	function masterFor(piece) {
 		const root = repoRoot();
-		const master = path.join(root, 'tools', 'decoration_masters', piece.name + '.png');
-		if (fs.existsSync(master)) return { file: master, isMaster: true };
+		if (root && piece.namespace === 'armorpieces') {
+			const master = path.join(root, 'tools', 'decoration_masters', piece.name + '.png');
+			if (fs.existsSync(master)) return { file: master, isMaster: true };
+		}
 		return { file: piece.texture, isMaster: false };
 	}
 
@@ -314,7 +421,7 @@
 		const description = data && data.description;
 		if (typeof description === 'string') return { text: description, editable: true, key: null };
 		if (description && typeof description.translate === 'string') {
-			const entries = readJsonOr(langFile(piece.pack, piece.namespace), {});
+			const entries = readJsonOr(langFile(piece.assetPack, piece.namespace), {});
 			const text = entries[description.translate];
 			return {
 				text: typeof text === 'string' ? text : titleCase(piece.name),
@@ -340,9 +447,9 @@
 			if (piece === currentPiece() && partData()) {
 				const scratch = path.join(tempDir(), 'fittings.json');
 				fs.writeFileSync(scratch, JSON.stringify(partData()), 'utf8');
-				args = ['--fittings', scratch, '--pack', piece.pack];
+				args = ['--fittings', scratch, '--pack', piece.dataPack, '--pack', piece.assetPack];
 			} else if (fs.existsSync(piece.data)) {
-				args = ['--fittings', piece.data];
+				args = ['--fittings', piece.data, '--pack', piece.dataPack, '--pack', piece.assetPack];
 			}
 			if (!args) return [];
 			try {
@@ -358,7 +465,8 @@
 	/* Every fitting a part in the piece's pack could declare: the pack's definitions and the mod's. */
 	function availableFittings(piece) {
 		try {
-			return JSON.parse(tool('preview_material.py', ['--list-fittings', piece.pack]));
+			return JSON.parse(tool('preview_material.py',
+				['--list-fittings', piece.dataPack, '--pack', piece.assetPack]));
 		} catch (err) {
 			console.error(err);
 			return [];
@@ -611,9 +719,11 @@
 		const pieces = allPieces();
 		if (!pieces.length) {
 			Blockbench.showMessageBox({
-				title: 'No packs found',
-				message: 'Nothing under src/main/resources or run/. Check the repository path in ' +
-					'Settings.',
+				title: 'No pieces found',
+				message: 'No part in any pack: not in the folders added under Tools > Armor Pieces > ' +
+					'Packs..., not in the repository\'s resources or run/, and not in the game\'s ' +
+					'resourcepacks/ or worlds\' datapacks/. Add the folder your pack is in, or make one ' +
+					'with New Pack....',
 			});
 			return;
 		}
@@ -649,7 +759,7 @@
 		}
 		if (Project[ID + '_name']) {
 			const shown = displayName(piece, partData());
-			if (shown.key) writeLang(piece.pack, piece.namespace, shown.key, Project[ID + '_name']);
+			if (shown.key) writeLang(piece.assetPack, piece.namespace, shown.key, Project[ID + '_name']);
 			Project[ID + '_name'] = null;
 			notes.push('name');
 		}
@@ -736,17 +846,32 @@
 		return canvas.toDataURL('image/png');
 	}
 
+	/* The pack folders as a select's options, labelled the way the piece list labels them. */
+	function packOptions(packs) {
+		const options = {};
+		packs.forEach(function (p, i) { options[i] = packLabel(p); });
+		return options;
+	}
+
+	/*
+	 * A new piece asks for two packs, the datapack for the part file and the resource pack for
+	 * its model, texture and name, and they default to the same folder: in this repository and in
+	 * a world used for both they are one folder, and a player making content for the launcher
+	 * picks a world's datapack and a resource pack. A namespace other than the mod's is the
+	 * default outside the repository, since the mod's namespace is the mod's.
+	 */
 	function newPiece() {
-		const packs = searchRoots().filter(function (d) { return fs.existsSync(d); });
+		const packs = searchRoots();
 		if (!packs.length) {
-			Blockbench.showMessageBox({ title: 'No packs found', message: 'Check the repository path.' });
+			Blockbench.showMessageBox({
+				title: 'No packs',
+				message: 'No pack folder to put the piece in. Make one with Tools > Armor Pieces > ' +
+					'New Pack..., or add an existing folder under Packs....',
+			});
 			return;
 		}
 		const root = repoRoot();
-		const packOptions = {};
-		packs.forEach(function (p, i) {
-			packOptions[i] = path.relative(root, p).replace(/\\/g, '/') || '.';
-		});
+		const inRepo = root && packs[0].startsWith(root);
 		const anchorOptions = {};
 		for (const name of Object.keys(anchors())) {
 			anchorOptions[name] = name + '  (' + anchors()[name].part + ')';
@@ -757,9 +882,16 @@
 			title: 'New Armor Piece',
 			form: {
 				name: { label: 'Name', type: 'text', value: '', placeholder: 'gorget' },
-				namespace: { label: 'Namespace', type: 'text', value: 'armorpieces' },
+				namespace: { label: 'Namespace', type: 'text', value: inRepo ? 'armorpieces' : 'mypack' },
 				anchor: { label: 'Anchor', type: 'select', options: anchorOptions },
-				pack: { label: 'Pack', type: 'select', options: packOptions, value: '0' },
+				data_pack: {
+					label: 'Datapack', type: 'select', options: packOptions(packs), value: '0',
+					description: 'Where the part file, its recipe and any fittings go.',
+				},
+				asset_pack: {
+					label: 'Resource pack', type: 'select', options: packOptions(packs), value: '0',
+					description: 'Where the model, the textures and the language file go. The same folder is fine.',
+				},
 			},
 			onConfirm: function (result) {
 				const name = (result.name || '').trim().toLowerCase().replace(/[^a-z0-9_]/g, '_');
@@ -769,9 +901,10 @@
 				}
 				this.hide();
 
-				const packDir = packs[parseInt(result.pack, 10)];
-				const namespace = result.namespace.trim() || 'armorpieces';
-				const piece = pieceRecord(packDir, namespace, name);
+				const dataPack = packs[parseInt(result.data_pack, 10)];
+				const assetPack = packs[parseInt(result.asset_pack, 10)];
+				const namespace = (result.namespace || '').trim().toLowerCase().replace(/[^a-z0-9_.-]/g, '_') || 'mypack';
+				const piece = pieceRecord(dataPack, assetPack, namespace, name);
 				if (fs.existsSync(piece.data) || fs.existsSync(piece.geometry)) {
 					Blockbench.showMessageBox({
 						title: 'Already exists',
@@ -792,13 +925,198 @@
 				fs.writeFileSync(piece.texture, Buffer.from(blankPng(64, 32).split(',')[1], 'base64'));
 
 				// The name a player reads, so the piece is not "decoration.ns.name" in a tooltip.
+				// In the resource pack: the language file is assets, wherever the data file went.
 				const key = 'decoration.' + namespace + '.' + name;
-				if (!readJsonOr(langFile(packDir, namespace), {})[key]) {
-					writeLang(packDir, namespace, key, titleCase(name));
+				if (!readJsonOr(langFile(assetPack, namespace), {})[key]) {
+					writeLang(assetPack, namespace, key, titleCase(name));
 				}
 
 				Blockbench.showQuickMessage('Created ' + namespace + ':' + name, 2500);
 				openPiece(piece, result.anchor);
+			},
+		}).show();
+	}
+
+	// ---- packs: the author's own folders ------------------------------------------------------
+
+	/*
+	 * The pack formats the game this mod is built for expects, read out of gradle.properties so a
+	 * Minecraft bump stays one block in one file. The numbers under them are a last resort for a
+	 * repository without the lines.
+	 */
+	function packFormats() {
+		const formats = { resourcepack: 88, datapack: 107 };
+		const root = repoRoot();
+		if (!root) return formats;
+		try {
+			const text = fs.readFileSync(path.join(root, 'gradle.properties'), 'utf8');
+			const resource = /^resourcepack_format\s*=\s*(\d+)/m.exec(text);
+			const data = /^datapack_format\s*=\s*(\d+)/m.exec(text);
+			if (resource) formats.resourcepack = parseInt(resource[1], 10);
+			if (data) formats.datapack = parseInt(data[1], 10);
+		} catch (err) {
+			console.error(err);
+		}
+		return formats;
+	}
+
+	const PACKS_DIALOG_TEMPLATE = [
+		'<div class="armorpieces_packs">',
+		'	<p class="ap_dim">Folders looked in for parts, besides the repository\'s own and the game\'s ',
+		'	resourcepacks/ and worlds\' datapacks/. A pack is a folder with data/ or assets/ in it.</p>',
+		'	<ul>',
+		'		<li v-for="(dir, i) in packs" :key="dir">',
+		'			<span :title="dir">{{ dir }}</span>',
+		'			<i class="material-icons" title="Forget this folder" @click="remove(i)">clear</i>',
+		'		</li>',
+		'		<li v-if="!packs.length" class="ap_dim">No folders added.</li>',
+		'	</ul>',
+		'	<div class="ap_add">',
+		'		<button type="button" @click="add">Add folder...</button>',
+		'		<button type="button" @click="create">New Pack...</button>',
+		'	</div>',
+		'	<p class="ap_dim">Found now: {{ found }}</p>',
+		'</div>',
+	].join('\n');
+
+	const PACKS_DIALOG_CSS = [
+		'.armorpieces_packs ul { list-style: none; margin: 6px 0; padding: 0; max-height: 240px; overflow-y: auto; }',
+		'.armorpieces_packs li { display: flex; align-items: center; gap: 8px; padding: 2px 6px; margin-bottom: 2px; background: var(--color-back); }',
+		'.armorpieces_packs li span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }',
+		'.armorpieces_packs li .material-icons { cursor: pointer; opacity: 0.6; }',
+		'.armorpieces_packs li .material-icons:hover { opacity: 1; }',
+		'.armorpieces_packs .ap_add { display: flex; gap: 6px; }',
+		'.armorpieces_packs .ap_dim { color: var(--color-subtle_text); font-size: 0.9em; margin: 4px 0; }',
+	].join('\n');
+
+	/* Packs...: the list the author owns, added to with a folder picker and by New Pack.... */
+	function packsDialog() {
+		let dialog = null;
+		dialog = new Dialog({
+			id: ID + '_packs',
+			title: 'Armor Pieces Packs',
+			width: 560,
+			singleButton: true,
+			component: {
+				data: function () {
+					return { packs: userPacks(), found: searchRoots().map(packLabel).join(', ') || 'nothing' };
+				},
+				methods: {
+					refresh: function () {
+						this.packs = userPacks();
+						this.found = searchRoots().map(packLabel).join(', ') || 'nothing';
+					},
+					remove: function (i) {
+						const list = userPacks();
+						list.splice(i, 1);
+						setUserPacks(list);
+						this.refresh();
+					},
+					add: function () {
+						const dir = Blockbench.pickDirectory({ title: 'Add a pack folder', startpath: minecraftDir() });
+						if (!dir) return;
+						const list = userPacks();
+						if (!list.includes(dir)) list.push(dir);
+						setUserPacks(list);
+						this.refresh();
+					},
+					create: function () {
+						const vue = this;
+						newPack(function () { vue.refresh(); });
+					},
+				},
+				template: PACKS_DIALOG_TEMPLATE,
+			},
+		});
+		dialog.show();
+	}
+
+	/*
+	 * New Pack...: a folder with a pack.mcmeta for one half - a datapack or a resource pack - at
+	 * the format the game this mod is built for wants, so the author never has to know the
+	 * numbers. Added to the author's list, so the next New Armor Piece can pick it.
+	 */
+	function newPack(done) {
+		const formats = packFormats();
+		new Dialog({
+			id: ID + '_new_pack',
+			title: 'New Pack',
+			form: {
+				name: { label: 'Folder name', type: 'text', value: '', placeholder: 'My Armor Pieces' },
+				kind: {
+					label: 'Kind', type: 'select', value: 'datapack',
+					options: {
+						datapack: 'Datapack  (parts, recipes, fittings; goes in a world\'s datapacks/)',
+						resourcepack: 'Resource pack  (models, textures, names; goes in resourcepacks/)',
+					},
+				},
+				where: {
+					label: 'Put it in', type: 'folder', value: minecraftDir(),
+					description: 'The folder the pack folder is created in. The game reads resource packs ' +
+						'from .minecraft/resourcepacks and datapacks from .minecraft/saves/<world>/datapacks.',
+				},
+				description: { label: 'Description', type: 'text', value: 'Armor Pieces parts' },
+			},
+			onConfirm: function (result) {
+				const name = (result.name || '').trim();
+				const where = (result.where || '').trim();
+				if (!name || !where) {
+					Blockbench.showQuickMessage('Name the pack and say where it goes', 2500);
+					return false;
+				}
+				const dir = path.join(where, name);
+				if (fs.existsSync(path.join(dir, 'pack.mcmeta'))) {
+					Blockbench.showMessageBox({ title: 'Already a pack', message: dir + ' already has a pack.mcmeta.' });
+					return false;
+				}
+				const format = result.kind === 'resourcepack' ? formats.resourcepack : formats.datapack;
+				writeJson(path.join(dir, 'pack.mcmeta'), {
+					pack: { description: result.description || name, pack_format: format },
+				});
+				fs.mkdirSync(path.join(dir, result.kind === 'resourcepack' ? 'assets' : 'data'), { recursive: true });
+				const list = userPacks();
+				if (!list.includes(dir)) list.push(dir);
+				setUserPacks(list);
+				this.hide();
+				Blockbench.showQuickMessage('Created ' + dir, 3000);
+				if (done) done(dir);
+			},
+		}).show();
+	}
+
+	/*
+	 * Export Pack...: a pack folder zipped for handing round, the way the build zips the mod's
+	 * own halves. The zip is written by export_pack.py beside the folder, so what is in it is what
+	 * the command line would make.
+	 */
+	function exportPack() {
+		const packs = searchRoots();
+		if (!packs.length) {
+			Blockbench.showMessageBox({ title: 'No packs', message: 'Nothing to export. Add or make a pack first.' });
+			return;
+		}
+		new Dialog({
+			id: ID + '_export_pack',
+			title: 'Export Pack',
+			form: {
+				pack: { label: 'Pack', type: 'select', options: packOptions(packs), value: '0' },
+				zip: {
+					label: 'Zip file', type: 'save', extensions: ['zip'], filetype: 'Pack zip',
+					value: path.join(minecraftDir(), 'pack.zip'),
+					description: 'Blank writes <pack folder>.zip beside the folder.',
+				},
+			},
+			onConfirm: function (result) {
+				const dir = packs[parseInt(result.pack, 10)];
+				const zip = (result.zip || '').trim() || dir.replace(/[\\\/]+$/, '') + '.zip';
+				this.hide();
+				try {
+					const report = tool('export_pack.py', [dir, zip]);
+					Blockbench.showQuickMessage(report.trim() || ('Wrote ' + zip), 3000);
+				} catch (err) {
+					console.error(err);
+					Blockbench.showMessageBox({ title: 'Export failed', message: String(err.stderr || err.message || err) });
+				}
 			},
 		}).show();
 	}
@@ -2200,7 +2518,8 @@
 	/* The trim materials and trim-material tags a new fitting could take, from preview_material.py. */
 	function fittingChoices(piece) {
 		try {
-			return JSON.parse(tool('preview_material.py', ['--fitting-choices', piece.pack]));
+			return JSON.parse(tool('preview_material.py',
+				['--fitting-choices', piece.dataPack, '--pack', piece.assetPack]));
 		} catch (err) {
 			console.error(err);
 			return { materials: [], tags: [] };
@@ -2338,10 +2657,10 @@
 					definition.ingredients = { translate: 'fitting.' + namespace + '.' + name + '.ingredients' };
 				}
 				writeJson(file, definition);
-				writeLang(piece.pack, namespace, 'fitting.' + namespace + '.' + name,
+				writeLang(piece.assetPack, namespace, 'fitting.' + namespace + '.' + name,
 					(result.label || '').trim() || titleCase(name));
 				if (ingredients) {
-					writeLang(piece.pack, namespace, 'fitting.' + namespace + '.' + name + '.ingredients', ingredients);
+					writeLang(piece.assetPack, namespace, 'fitting.' + namespace + '.' + name + '.ingredients', ingredients);
 				}
 				// The fitting's own template: the bare fitting template carrying this fitting as
 				// armorpieces:fitting, in the same ring shape as a part's template recipe.
@@ -2754,10 +3073,20 @@
 		onload() {
 			registered.push(new Setting(ID + '_root', {
 				name: 'Armor Pieces repository',
-				description: 'Path to the repo root (the folder holding tools/ and src/).',
+				description: 'Required: a clone of github.com/mattjesmc/ArmorPieces (the folder holding ' +
+					'tools/ and src/), with Python 3 and Pillow installed. It is the toolkit, not the ' +
+					'workspace - your packs can live anywhere; add them under Tools > Armor Pieces > Packs....',
 				category: 'edit',
 				type: 'text',
 				value: '',
+			}));
+			registered.push(new Setting(ID + '_packs', {
+				name: 'Armor Pieces packs',
+				description: 'The pack folders added under Tools > Armor Pieces > Packs..., as a JSON list. ' +
+					'Edit them there rather than here.',
+				category: 'edit',
+				type: 'text',
+				value: '[]',
 			}));
 			registered.push(new Setting(ID + '_python', {
 				name: 'Armor Pieces Python',
@@ -2834,18 +3163,37 @@
 				icon: 'add_box',
 				click: newPiece,
 			});
+			const packs = new Action(ID + '_packs', {
+				name: 'Packs...',
+				description: 'The folders your own packs are in.',
+				icon: 'folder_open',
+				click: packsDialog,
+			});
+			const createPack = new Action(ID + '_new_pack', {
+				name: 'New Pack...',
+				description: 'Make a datapack or resource pack folder with its pack.mcmeta.',
+				icon: 'create_new_folder',
+				click: function () { newPack(null); },
+			});
+			const exportZip = new Action(ID + '_export_pack', {
+				name: 'Export Pack...',
+				description: 'Zip a pack folder for handing round.',
+				icon: 'archive',
+				click: exportPack,
+			});
 
-			// One submenu, not three loose entries in Tools. `children` is also what makes cleanup
+			// One submenu, not six loose entries in Tools. `children` is also what makes cleanup
 			// tractable: there is exactly one menu node to remove on unload, and forgetting it is
 			// how a reloaded plugin ends up listed twice.
 			const menu = new Action(ID + '_menu', {
 				name: 'Armor Pieces',
 				description: 'Browse, edit and preview Armor Pieces.',
 				icon: 'shield',
-				children: [open, create, save],
+				children: [open, create, save, '_', packs, createPack, exportZip],
 			});
-			registered.push(open, save, create, menu);
+			registered.push(open, save, create, packs, createPack, exportZip, menu);
 			MenuBar.addAction(menu, 'tools');
+			registered.push(Blockbench.addCSS(PACKS_DIALOG_CSS));
 
 			panel = new Panel(ID + '_panel', {
 				name: 'Armor Piece',

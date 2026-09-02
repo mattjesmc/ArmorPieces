@@ -19,8 +19,9 @@ the claim that opening a part and saving it unchanged changes nothing:
              and a disabled recipe keeps what it was
 
 Usage:
-    python tools/check_authoring.py            # the mod's own resources
-    python tools/check_authoring.py <pack>     # any pack directory holding data/ and assets/
+    python tools/check_authoring.py                       # the mod's own resources
+    python tools/check_authoring.py <pack>                # any pack directory holding data/ and assets/
+    python tools/check_authoring.py <datapack> <respack>  # a piece split over two folders
 """
 
 from __future__ import annotations
@@ -181,10 +182,13 @@ def check_fitting_recipes(pack: Path) -> list[str]:
     return failures
 
 
-def check_pack(pack: Path) -> list[str]:
+def check_pack(pack: Path, assets: Path | None = None) -> list[str]:
+    """`pack` holds the datapack half; `assets`, when given, the resource pack half - the two
+    folders a player's own content sits in. One folder for both is the usual case here."""
+    assets = assets or pack
     failures: list[str] = []
     data_files = sorted(pack.glob("data/*/armorpieces/armor_decoration/*.json"))
-    geometry_files = sorted(pack.glob("assets/*/armorpieces/decoration/*.json"))
+    geometry_files = sorted(assets.glob("assets/*/armorpieces/decoration/*.json"))
     if not data_files and not geometry_files:
         return [f"{pack}: no parts found"]
 
@@ -198,7 +202,7 @@ def check_pack(pack: Path) -> list[str]:
         parsed = json.loads(text)
         if json.dumps(parsed, indent=2) + "\n" != text:
             failures.append(f"data {data.name}: would be reformatted by a save")
-        for fitting in preview_material.list_fittings(data, pack):
+        for fitting in preview_material.list_fittings(data, [pack, assets]):
             if fitting["type"] is None:
                 failures.append(f"data {data.name}: fitting {fitting['id']} has no definition")
         for effect in parsed.get("effects", []):
@@ -216,7 +220,8 @@ def check_pack(pack: Path) -> list[str]:
 
 def main() -> None:
     pack = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else RESOURCES
-    failures = check_pack(pack)
+    assets = Path(sys.argv[2]).resolve() if len(sys.argv) > 2 else None
+    failures = check_pack(pack, assets)
     print()
     if failures:
         print("\n".join(failures))

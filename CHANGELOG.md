@@ -28,6 +28,19 @@ just has no recipe any more. Because the fitting is a component, a pack's own fi
 template from a recipe alone, and `ingredients` on a fitting file supplies the tooltip's words,
 with a default per type. The apply and clear recipes stay one file each.
 
+**Your own pack, in Blockbench.** The plugin no longer assumes content lives in this repository.
+The repository is the toolkit - still required, for the rigs, the preview and the game-asset
+extraction, and the settings and the first-run message now say so - but a piece can sit anywhere:
+*Packs...* is a list of folders the author owns, added with a folder picker; *New Pack...* makes a
+datapack or resource pack folder with its `pack.mcmeta` at the format the game this mod is built
+for wants; *Export Pack...* zips one for handing round. Pieces are found in that list, in the
+repository's own places, and in the installed game's `resourcepacks/` and every world's
+`datapacks/`, and a piece has two packs: the halves of a `namespace:name` are paired across every
+folder, the list shows both when they differ, *New Armor Piece...* asks for both, and every write
+goes to the right one - the part file, fittings, recipes and tags to the datapack, the geometry,
+textures and the language file to the resource pack. Only the mod's own namespace has masters in
+`tools/decoration_masters`; anyone else's `circlet` edits its own file.
+
 **Disabling recipes.** A recipe type that loads and does nothing, `armorpieces:disabled`. A
 datapack cannot delete a file the mod ships, so it overrides the file with
 `{"type": "armorpieces:disabled"}` instead: the recipe has no fields, matches nothing, and has no
@@ -60,8 +73,11 @@ until it is switched back on, and the summary line says *not craftable*. The Par
 The New Fitting dialog takes the template's "Ingredients:" words and its two recipe items, and
 writes the fitting's template recipe with the definition. `check_authoring.py` round-trips every
 part's template recipe, switched on or off, the way it does the data files, checks every loot row
-is in the shape the dialog writes, and checks every fitting's template recipe. `gen_template_icons.py`
-draws the four fitting template icons beside the bare one.
+is in the shape the dialog writes, and checks every fitting's template recipe; given two folders it
+checks a piece split over a datapack and a resource pack. `gen_template_icons.py` draws the four
+fitting template icons beside the bare one. `export_pack.py` zips a pack folder with its contents
+at the root, and is what the plugin's *Export Pack...* runs. `preview_material.py` takes `--pack`
+more than once, for a piece whose two halves are two folders.
 
 ## 0.2.0
 

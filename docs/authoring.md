@@ -21,16 +21,34 @@ in place, any trim material can be previewed live with the fittings filled or em
 puts everything back where it came from. The plugin has no geometry or colour maths of its own: it
 drives the repo's Python tools, so the editor and the command line cannot disagree.
 
+**Your own pack.** The repository is the toolkit, not the workspace: the plugin needs a clone of
+it, because the rigs, the preview and the game-asset extraction are its Python, but your content
+never has to live inside it. A player's part is two folders — a resource pack under
+`.minecraft/resourcepacks/<name>` for the model, textures and names, and a datapack under
+`.minecraft/saves/<world>/datapacks/<name>` for the part file, its recipe and any fittings — and
+the plugin knows both. *Tools › Armor Pieces › New Pack…* makes either kind, with a `pack.mcmeta`
+at the format the game this mod is built for wants, and adds it to your list; *Packs…* is that
+list, any folder holding `data/` or `assets/`, added with a folder picker. Pieces are looked for
+in your list, then the repository's own places, then the game's `resourcepacks/` and every world's
+`datapacks/`, and the two halves of a `namespace:name` are paired wherever they sit, so the piece
+list shows `mypack:visor  (.minecraft/saves/Home/datapacks/mine + .minecraft/resourcepacks/mine)`
+and every write goes to the right half. *Export Pack…* zips a folder for handing round, contents
+at the root the way the game wants them. Three settings: *Armor Pieces repository* (the clone),
+*Armor Pieces Python* (the interpreter, `python` by default) and *Armor Pieces packs* (your list,
+edited through *Packs…*). Only the mod's own namespace has masters in `tools/decoration_masters`;
+a pack's `circlet` is its own file.
+
 **Install.** Blockbench 5.1 or later, and Python 3 with Pillow on `PATH` (the same requirement
 as every tool in the repository). In Blockbench: *File › Plugins › Load Plugin from File*, and pick
 the file. It finds the repository from its own location; if the file was copied elsewhere, set
 *Armor Pieces repository* in Settings to the repo root. The first piece opened extracts the
 vanilla textures the rig needs from the game jar.
 
-**Open a piece.** *Tools › Armor Pieces › Open Armor Piece…* lists every part in
-`src/main/resources` and under `run/` — resource packs and world datapacks included — and opens
-it as its own tab. *New Armor Piece…* writes the datapack entry, a starter model, a blank
-texture and the language line, then opens that. A piece tab shows only what a part needs: Edit
+**Open a piece.** *Tools › Armor Pieces › Open Armor Piece…* lists every part in your packs, in
+`src/main/resources` and under `run/`, and in the game's own folders, and opens it as its own
+tab. *New Armor Piece…* asks for a datapack and a resource pack — the same folder is fine, and is
+the default — and writes the datapack entry to the one, a starter model, a blank texture and the
+language line to the other, then opens that. A piece tab shows only what a part needs: Edit
 and Paint modes, the outliner, transform, the UV editor, colour and palette, and one
 **Armor Piece** panel with every control:
 
@@ -81,7 +99,9 @@ and the language line, and nothing else: a field the dialog has no control for, 
 is written back exactly as it was read, a file nothing changed is not touched, and the recipe
 keeps a `group` or any other field the two item choices do not decide — including, when it is
 switched off, the pattern and items the disabled file still holds.
-`tools/check_authoring.py` runs the round trip over every shipped part, recipes included.
+`tools/check_authoring.py` runs the round trip over every shipped part, recipes included; given
+a pack folder it checks that pack, and given two — `check_authoring.py <datapack> <resourcepack>` —
+a piece split over both.
 
 **Starting from a rig.** Outside the plugin, authoring a part starts from a rig: each one holds
 the vanilla body and all four armor layers at their real inflate, animated with the game's own walk
@@ -325,3 +345,9 @@ removes them. `loot <table> [rolls]` is numbers rather than stands: it rolls the
 thousand times unless told otherwise, and counts what the mod put in it — templates by part,
 decorated armor by what it wears — against everything else the table dropped, so a chance and a
 weight can be judged without opening a thousand chests.
+
+The loop between the editor and the game has one thing every author trips on once. Textures and
+geometry are resources: F3+T reloads them, and the change is on the stand a moment after Save.
+A change to the part's data file — its anchors, its fittings, its loot, a new part — is a change
+to a dynamic registry, which the game reads once as a world opens, so it needs the world left and
+re-entered; `/reload` is not enough. Recipes and loot tables do reload with `/reload`.

@@ -360,10 +360,15 @@ def _dye_options(pack_dirs: list[Path]) -> list[dict]:
     } for name, rgb in DYES.items()]
 
 
-def _pack_dirs(pack: Path) -> list[Path]:
-    """Where a pack's references resolve: the pack itself first, then the mod's own resources."""
-    pack = pack.resolve()
-    return [pack] + ([RESOURCES] if RESOURCES.resolve() != pack else [])
+def _pack_dirs(pack) -> list[Path]:
+    """Where a pack's references resolve: the pack itself first - or the packs, when a piece's
+    datapack and resource pack are two folders - then the mod's own resources."""
+    packs = [Path(p).resolve() for p in (pack if isinstance(pack, (list, tuple)) else [pack]) if p]
+    ordered: list[Path] = []
+    for directory in packs + [RESOURCES.resolve()]:
+        if directory not in ordered:
+            ordered.append(directory)
+    return ordered
 
 
 def _fitting_entry(pack_dirs: list[Path], fitting_id: str) -> dict:
@@ -406,9 +411,10 @@ def list_fittings(data_path: Path, pack: Path | None = None) -> list[dict]:
     `data_path` is the part's datapack half, `<pack>/data/<ns>/armorpieces/armor_decoration/<part>.json`.
     Fittings, tags and language files are looked up in that pack first and the mod's own resources
     second, which is how the game would resolve them with both loaded. `pack` names the pack when
-    the file is not inside one - a live editor's scratch copy of unsaved data, say."""
+    the file is not inside one - a live editor's scratch copy of unsaved data, say - and may be a
+    list, for a piece whose datapack and resource pack (where the language file is) differ."""
     data_path = data_path.resolve()
-    if pack is None:
+    if not pack:
         pack = data_path.parents[4] if len(data_path.parents) > 4 else data_path.parent
     pack_dirs = _pack_dirs(pack)
     return [_fitting_entry(pack_dirs, fitting_id)
@@ -489,8 +495,10 @@ def main() -> None:
     ap.add_argument("--fittings", metavar="DATA_JSON", type=Path,
                     help="print the fittings the part at this datapack file declares, with the "
                          "values each can take, as JSON and exit")
-    ap.add_argument("--pack", metavar="DIR", type=Path,
-                    help="with --fittings: the pack the file belongs to, when it is not inside one")
+    ap.add_argument("--pack", metavar="DIR", type=Path, action="append",
+                    help="with --fittings: the pack the file belongs to, when it is not inside one; "
+                         "with any of the three, a further folder to resolve in - repeat it for a "
+                         "piece whose datapack and resource pack are two folders")
     ap.add_argument("--list-fittings", metavar="PACK_DIR", type=Path,
                     help="print every fitting a part in this pack could declare - the pack's own "
                          "and the mod's - as JSON and exit")
@@ -524,13 +532,13 @@ def main() -> None:
     if args.list_fittings:
         if not args.list_fittings.is_dir():
             sys.exit(f"error: no pack at {args.list_fittings}")
-        print(json.dumps(available_fittings(args.list_fittings)))
+        print(json.dumps(available_fittings([args.list_fittings] + (args.pack or []))))
         return
 
     if args.fitting_choices:
         if not args.fitting_choices.is_dir():
             sys.exit(f"error: no pack at {args.fitting_choices}")
-        print(json.dumps(fitting_choices(args.fitting_choices)))
+        print(json.dumps(fitting_choices([args.fitting_choices] + (args.pack or []))))
         return
 
     if not args.part:
