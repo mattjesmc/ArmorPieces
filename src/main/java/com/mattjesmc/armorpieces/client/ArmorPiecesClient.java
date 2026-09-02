@@ -3,12 +3,15 @@ package com.mattjesmc.armorpieces.client;
 import com.mattjesmc.armorpieces.ArmorPieces;
 import com.mattjesmc.armorpieces.client.fitting.FittingRenderers;
 import com.mattjesmc.armorpieces.client.geometry.DecorationGeometryManager;
+import com.mattjesmc.armorpieces.client.screen.AdvancedSmithingScreen;
 import com.mattjesmc.armorpieces.client.texture.DecorationTextureManager;
+import com.mattjesmc.armorpieces.registry.ModMenus;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityRenderLayerRegistrationCallback;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
@@ -27,6 +30,10 @@ public class ArmorPiecesClient implements ClientModInitializer {
 
         // The one fitting type that draws rather than colours. A mod's own goes through the same door.
         FittingRenderers.registerBuiltins();
+
+        // The advanced smithing table's screen. MenuScreens.register is opened up by Fabric API's
+        // transitive access wideners, which is the sanctioned route for a mod-added menu.
+        MenuScreens.register(ModMenus.ADVANCED_SMITHING, AdvancedSmithingScreen::new);
 
         // Attach the decoration layer to every renderer that draws a humanoid, rather than to a fixed
         // list of entity types. Players, armor stands, zombies, skeletons, piglins and any modded mob

@@ -7,6 +7,7 @@ import com.mattjesmc.armorpieces.decoration.DecorationAnchor;
 import com.mattjesmc.armorpieces.decoration.DecorationEntry;
 import com.mattjesmc.armorpieces.decoration.fitting.Fitting;
 import com.mattjesmc.armorpieces.decoration.fitting.FittingValue;
+import com.mattjesmc.armorpieces.menu.AdvancedSmithingMenu;
 import com.mattjesmc.armorpieces.registry.ModDataComponents;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
@@ -32,6 +33,8 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.decoration.ArmorStand;
@@ -137,7 +140,21 @@ public final class StageCommand {
                             ResourceArgument.resource(context, ArmorPiecesRegistries.ARMOR_DECORATION))
                         .executes(ctx -> stageFittings(ctx.getSource(), decorationArgument(ctx)))))
                 .then(Commands.literal("clear")
-                    .executes(ctx -> clear(ctx.getSource())))));
+                    .executes(ctx -> clear(ctx.getSource()))))
+            // The advanced smithing table without the block: the same menu, opened for the caller
+            // wherever they stand. A preview aid in the spirit of `stage` - a set is dressed on the
+            // stand and taken apart again without a table being placed - and so behind the same
+            // permission level, not a survival shortcut.
+            .then(Commands.literal("table")
+                .executes(ctx -> openTable(ctx.getSource()))));
+    }
+
+    private static int openTable(final CommandSourceStack source) throws CommandSyntaxException {
+        final ServerPlayer player = source.getPlayerOrException();
+        player.openMenu(new SimpleMenuProvider(
+            (containerId, inventory, p) -> new AdvancedSmithingMenu(containerId, inventory),
+            Component.translatable("container.armorpieces.advanced_smithing")));
+        return 1;
     }
 
     private static Holder<ArmorDecoration> decorationArgument(final CommandContext<CommandSourceStack> ctx)

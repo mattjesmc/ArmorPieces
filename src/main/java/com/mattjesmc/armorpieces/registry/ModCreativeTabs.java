@@ -41,6 +41,9 @@ public final class ModCreativeTabs {
                 .displayItems((parameters, output) -> parameters.holders()
                     .lookup(ArmorPiecesRegistries.ARMOR_DECORATION)
                     .ifPresent(lookup -> {
+                        // First, before any part: the one block, since a player who has found the
+                        // tab is looking for the place the rest of it is used.
+                        output.accept(new ItemStack(ModBlocks.advancedSmithingTableItem()));
                         for (final DecorationAnchor anchor : DecorationAnchor.values()) {
                             lookup.listElements()
                                 .filter(decoration -> decoration.value().fits(anchor))

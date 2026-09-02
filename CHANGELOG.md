@@ -11,6 +11,19 @@ makes a part loot-only (`recipe/template_circlet.json`), a server fitting-free
 (`recipe/apply_horns.json`) - any recipe the mod has, and any other mod's just the same. Every
 field but the type is ignored.
 
+**The advanced smithing table.** A block, crafted from a smithing table, an armor stand and two
+iron ingots, that shows a set of armor and lets a part come off again. Four display slots hold a
+helmet, a chestplate, leggings and boots, all worn at once by an armor stand that can be turned by
+dragging; a button beside each slot selects the piece to work on, and the selected piece's sockets
+are listed head to toe, each filled one showing its part as the template that put it there, with
+the part's material and fittings on hover, and a cross that empties the socket - the one way a part
+is ever taken off, since the smithing table has no ingredient that means "nothing". Below the list
+sit the smithing table's own template and material slots with the selected piece standing in for
+the base: Apply runs the ordinary smithing recipe lookup and writes the result back into the
+display slot, so a socket template puts a part on, a fitting template sets a stone, and a vanilla
+trim template trims, while a recipe a pack has turned off stays off. Nothing is kept in the block;
+everything goes back to the player when the menu closes.
+
 **Tools.** The Blockbench panel gains a *Craftable* switch beside the two recipe items: off, Save
 writes the recipe with its type swapped and the pattern and items kept, so the choices survive
 until it is switched back on, and the summary line says *not craftable*. `check_authoring.py`

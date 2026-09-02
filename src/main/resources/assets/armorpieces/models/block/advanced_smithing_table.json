@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "down": "armorpieces:block/advanced_smithing_table_bottom",
+    "east": "armorpieces:block/advanced_smithing_table_side",
+    "north": "armorpieces:block/advanced_smithing_table_front",
+    "particle": "armorpieces:block/advanced_smithing_table_front",
+    "south": "armorpieces:block/advanced_smithing_table_front",
+    "up": "armorpieces:block/advanced_smithing_table_top",
+    "west": "armorpieces:block/advanced_smithing_table_side"
+  }
+}

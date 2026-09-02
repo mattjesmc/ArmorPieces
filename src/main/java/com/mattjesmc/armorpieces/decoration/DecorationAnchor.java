@@ -132,6 +132,11 @@ public enum DecorationAnchor implements StringRepresentable {
         return java.util.Arrays.stream(values()).filter(a -> a.armorType == armorType).toList();
     }
 
+    /** The anchors on whatever equips in {@code slot}, in declaration order. Empty for a non-armor slot. */
+    public static List<DecorationAnchor> forSlot(final EquipmentSlot slot) {
+        return java.util.Arrays.stream(values()).filter(a -> a.slot() == slot).toList();
+    }
+
     /**
      * One place a part is drawn: a parent model part, an offset from that part's pivot, and whether
      * the geometry is mirrored across X to make it read as the other side of a pair.

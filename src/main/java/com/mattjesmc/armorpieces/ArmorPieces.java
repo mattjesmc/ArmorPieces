@@ -5,9 +5,11 @@ import com.mattjesmc.armorpieces.decoration.ArmorPiecesRegistries;
 import com.mattjesmc.armorpieces.decoration.effect.DecorationEffectDispatcher;
 import com.mattjesmc.armorpieces.decoration.effect.DecorationEffects;
 import com.mattjesmc.armorpieces.decoration.fitting.Fittings;
+import com.mattjesmc.armorpieces.registry.ModBlocks;
 import com.mattjesmc.armorpieces.registry.ModCreativeTabs;
 import com.mattjesmc.armorpieces.registry.ModDataComponents;
 import com.mattjesmc.armorpieces.registry.ModItems;
+import com.mattjesmc.armorpieces.registry.ModMenus;
 import com.mattjesmc.armorpieces.registry.ModRecipeSerializers;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -55,9 +57,11 @@ public class ArmorPieces implements ModInitializer {
         // Likewise fitting types: a fitting file names one, and fittings load with the datapack.
         Fittings.register();
         ModDataComponents.register();
+        ModBlocks.register();         // the advanced smithing table and its item
         ModItems.register();          // templates read the DECORATION component, so components come first
         ModCreativeTabs.register();   // the tab builds stacks of those items
         ModRecipeSerializers.register();
+        ModMenus.register();          // the table's menu; its screen is registered on the client
         // A preview of the whole cross product, for judging parts against each other rather than
         // one smithing operation at a time. See StageCommand.
         CommandRegistrationCallback.EVENT.register(
