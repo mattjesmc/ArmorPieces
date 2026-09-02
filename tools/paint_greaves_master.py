@@ -37,6 +37,11 @@ What this part is, and what that costs the painter:
     of the values in this file - rib, bare boot, rib, band - and that the modelled relief exists for
     the three-quarter view and for the profile, not for the render a player sees first.
 
+  * CORRECTION, applied after this prose was written: the boots shell over the LEG is 0.9, not the
+    1.0 quoted throughout below, because createBaseArmorMesh re-adds both legs at extend(-0.1).
+    Every leg-shell plane in this file is therefore 0.1 nearer the leg than stated, which makes
+    the part's clearances slightly larger, never smaller - no painted value turns on it, since
+    this painter reasons burial into its value tables by hand rather than from a shell box.
   * It rides the LEG bone, and so do the boots shell and the leggings shell over the leg. Burial down
     here is permanent: part and shell share the bone, so no INNER pixel ever uncovers - unlike the
     tassets, which had to paint one row as flank because the torso shell rides a different bone. The
@@ -97,7 +102,7 @@ TEX_W, TEX_H = 64, 32
 #               boot's shell wall at x = 1.1 rather than being buried in it, which is only legal
 #               because it clears that shell in z as well - it stands in front of the far boot, not
 #               inside it, and the same 0.1 that clears the near shell clears the far one.
-#   rim       - the ankle band, 0.65 proud of the plate and 0.4 proud of the boot; geo x -0.25..4.75,
+#   rim       - the ankle band, 0.65 proud of the plate and 0.4 proud of the boot; geo x 0.25..4.25,
 #               y 22.75..23.75, z -3.4..-1.4. It crosses in front of both ridges and swallows the
 #               last 0.7 of each.
 # Shared planes with area in common, from an exhaustive pairwise face scan over the part, the
@@ -109,7 +114,7 @@ CUBES = {
     "plate":     ((5, 5, 2), (0, 0)),
     "ridge_out": ((1, 4, 2), (14, 0)),
     "ridge_in":  ((1, 4, 2), (20, 0)),
-    "rim":       ((5, 1, 2), (26, 0)),
+    "rim":       ((4, 1, 2), (27, 0)),
 }
 
 random.seed(61)  # deterministic output - regenerating must not churn the PNG
@@ -242,18 +247,24 @@ def paint_ridge(img, key: str, north: int, flank: int) -> None:
 
 def paint_rim(img) -> None:
     """The ankle band, 0.4 proud of the boot and the frontmost thing on the part - it crosses in
-    front of both ribs and swallows the last 0.7 of each. Five wide, one tall, two deep.
+    front of both ribs and swallows the last 0.7 of each. Four wide, one tall, two deep.
 
     Its `north` is the only face of this part that stands clear along its whole length, so it carries
-    the lateral reading on its own: a ramp from the midline outboard, over five texels, which is the
+    the lateral reading on its own: a ramp from the midline outboard, over four texels, which is the
     outboard-lit / inboard-shadowed split spread flat rather than folded round a rib. Column 0 is not
     on that ramp. It is the seam - the half unit where this band and the mirrored twin's occupy the
     same plane at z = -3.4 - and it is dropped to SEAM so that the pair reads as two bands meeting at
     the ankle rather than as one apron with a flaw down the middle. Nothing else can be done about
     two coincident faces from a texture, and a dark column at the join is what a join looks like.
 
-    The band is the same width as the plate rather than inset inside it, offset a quarter unit
-    outboard so that no side face of the two lands on one plane. The standing argument against a band as
+    The band was once the same width as the plate, offset a quarter unit outboard so that no side
+    face of the two landed on one plane; it is now a unit narrower (inset 0.75 inboard, 0.25
+    outboard), which is the shipped geometry this file was corrected to.
+
+    NOTE, unreconciled: at four wide the band no longer reaches across the midline, so the SEAM
+    column below is arguing for a join that is not there any more. Whoever narrowed the band in
+    Blockbench should decide whether column 0 stays dropped; the value tables were reasoned for the
+    five-wide band. The standing argument against a band as
     wide as its plate - that the pair renders as a capital I - does not arise here, because the plate
     is inside the boot and contributes no silhouette for a band to be measured against.
 

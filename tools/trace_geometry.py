@@ -48,7 +48,22 @@ import math
 import sys
 from pathlib import Path
 
-from bb_rig import ARMOR_LAYERS, BODY, GEO_DIR, ROOT, parse_anchors
+import mc_humanoid
+from bb_rig import GEO_DIR, ROOT, parse_anchors
+
+# The vanilla figure lives in mc_humanoid, transcribed from the decompiled sources; these two tables
+# are read out of it rather than kept as a second copy that can drift. BODY is bone -> (pivot,
+# origin, size); ARMOR_LAYERS is layer -> {bone: inflate}, per bone because createBaseArmorMesh
+# re-adds the legs at extend(-0.1) and a legging's thigh is therefore thinner than its torso.
+BODY = {
+    box["bone"]: (mc_humanoid.BONES[box["bone"]], tuple(box["origin"]), tuple(box["size"]))
+    for box in mc_humanoid.player_boxes() if box["name"] == box["bone"]
+}
+ARMOR_LAYERS = {
+    f"armor_{slot}": {b["bone"]: b["inflate"] for b in mc_humanoid.armor_boxes(slot)
+                      if not b["name"].startswith("hat_")}
+    for slot in mc_humanoid.ARMOR_SLOTS
+}
 
 DEC_DIR = ROOT / "src" / "main" / "resources" / "data" / "armorpieces" / "armorpieces" / "armor_decoration"
 
@@ -121,8 +136,9 @@ def shells_for(bone_name):
     """The body box and every armor shell that covers this bone, as (label, lo, hi) in bone space."""
     _, origin, size = BODY[bone_name]
     out = [("body", list(origin), [origin[a] + size[a] for a in range(3)])]
-    for layer, (bones, inflate) in ARMOR_LAYERS.items():
+    for layer, bones in ARMOR_LAYERS.items():
         if bone_name in bones:
+            inflate = bones[bone_name]
             out.append((layer.replace("armor_", ""),
                         [origin[a] - inflate for a in range(3)],
                         [origin[a] + size[a] + inflate for a in range(3)]))

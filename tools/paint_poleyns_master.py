@@ -17,7 +17,7 @@ Master convention: luminance carries shading, alpha carries silhouette.
 one-unit plate and not a closed box, so the argument cannot be the one a deep part gets to use - that
 a hole would show the inside of the box under `armorCutoutNoCull` - and the policy has to stand on
 its own: a knee cop has no fringe to fray and no fretwork to punch, and the only thing behind the
-plate is the leggings shell 0.40 away, so a hole here reads as a hole in the armour rather than as
+plate is the leggings shell 0.50 away, so a hole here reads as a hole in the armour rather than as
 shaping. Everything is value.
 
 --------------------------------------------------------------------------------------------------
@@ -27,8 +27,8 @@ The part, in numbers
 leg-local (0, 6, -2) - the leg box's own front face, at the knee. Two frames are quoted throughout:
 *part-local* (what the geometry JSON holds) and *leg-local* (part-local + (0, 6, -2)), which is what
 `trace_geometry.py` prints. The leg box is leg-local x -2..2, y 0..12, z -2..2; the leggings shell -
-the INNER layer at 0.5, not the outer 1.0 the chest parts are used to - is x +-2.5, y -0.5..12.5,
-z +-2.5.
+the INNER layer at 0.5, but the legs are re-added at extend(-0.1) by createBaseArmorMesh, so over
+THIS bone it is 0.4 - is x +-2.4, y -0.4..12.4, z +-2.4.
 
     cube     part-local                                    leg-local
     cop      x -0.35..2.65 y -2.30..0.70 z -1.90..-0.90    x -0.35..2.65 y 3.70..6.70 z -3.90..-2.90
@@ -41,8 +41,8 @@ cant. It also buys a check the rotated parts cannot have, because `trace_geometr
 for coplanarity with a shell when the whole chain is axis-aligned. It reports none here.
 
 **The cop is a plate, and it stands clear of every shell.** Its back face is at leg-local z = -2.90,
-0.40 in front of the leggings shell's front wall at -2.50, so *nothing of this part is buried in the
-armour it hangs on*. That 0.40 is the number the whole master turns on: it is a real gap, a low or
+0.50 in front of the leggings shell's front wall at -2.40, so *nothing of this part is buried in the
+armour it hangs on*. That 0.50 is the number the whole master turns on: it is a real gap, a low or
 side-on camera can see into it, and it is what makes `cop.south` and `crown.south` faces to be
 painted rather than INNER fill. The boots shell is the near miss - it is the OUTER layer at 1.0, its
 wall is at z = -3.00, and the plate's rearmost 0.10 lies inside it - but its texture up here is
@@ -82,7 +82,7 @@ and paints INNER wherever the *whole* pixel is covered. Partly-covered pixels ar
 which is the safe direction: a visible pixel painted dark is a mistake you can see, a buried pixel
 painted bright is not.
 
-**The shell finds nothing**, because the plate stands 0.40 in front of it, and `check_mask` asserts
+**The shell finds nothing**, because the plate stands 0.50 in front of it, and `check_mask` asserts
 that rather than leaving it as dead code - if the part is ever pushed back onto the leg the mask has
 to start biting again and the assertion is what will say so. All three INNER pixels this master has
 are cube-in-cube: the centre of the plate's face and the centre of its back, both taken by the boss
@@ -137,7 +137,7 @@ inboard across 0.95 units of air at the other leg's leggings shell, and 3.10 at 
 cop, so it is a face in shadow rather than a face that is hidden.
 
 `south` is the face this shape creates. The plate's back and the boss's 0.25 stub both stand in the
-0.40 crevice in front of the leggings, lit by nothing and seen only by a camera low enough or
+0.50 crevice in front of the leggings, lit by nothing and seen only by a camera low enough or
 side-on enough to look into the gap - so they are painted at `CREVICE`, above INNER and well below
 anything on the front. Thirteen of the sixty-four pixels go on those two faces; that is what box UV
 costs on a plate whose back is not buried.
@@ -174,7 +174,7 @@ TEX_W, TEX_H = 64, 32
 # size (w, h, d), uv (u, v) and pivot-relative origin, mirroring poleyns.json in that file's own
 # order. The single bone sits at the anchor with no rotation, so origin IS the part-local corner.
 #   cop   - the plate over the kneecap. 1 deep, and its back face at part-local z = -0.90 stands
-#           0.40 in front of the leggings shell, so none of it is buried in the armour.
+#           0.50 in front of the leggings shell, so none of it is buried in the armour.
 #   crown - the domed boss, 2 deep against the plate's 1: it stands 0.75 proud in front and pokes
 #           0.25 out the back, piercing the plate rather than sitting in it.
 #   lame  - the lower lame, 0.45 proud of the plate's face, hanging 0.40 below its lower edge and
@@ -185,13 +185,14 @@ CUBES = {
     "lame":  ((2, 1, 1), (20, 0), (0.25, 0.10, -2.35)),
 }
 
-# The leggings shell over this leg, in part-local coordinates (leg-local x +-2.5, y -0.5..12.5,
-# z +-2.5 shifted by the anchor at (0, 6, -2)). It is the INNER armor layer at 0.5 inflate, it is
+# The leggings shell over this leg, in part-local coordinates (leg-local x +-2.4, y -0.4..12.4,
+# z +-2.4 shifted by the anchor at (0, 6, -2)). It is the INNER armor layer at 0.5 inflate LESS the
+# extend(-0.1) createBaseArmorMesh re-adds the legs at, so 0.4 over this bone; it is
 # always worn when this part draws, and it rides the same bone - so anything inside it would be
 # buried permanently. Nothing is: the whole part sits in front of z = -0.5, and check_mask asserts
 # it, so the day the part is pushed back onto the leg this file will say so. The boots shell is NOT
 # in this list; see the docstring.
-SHELL = ((-2.5, -6.5, -0.5), (2.5, 6.5, 4.5))
+SHELL = ((-2.4, -6.4, -0.4), (2.4, 6.4, 4.4))
 
 PUSH = 0.05      # how far off a face a sample sits before it is tested for containment
 EPS = 1e-9
@@ -206,7 +207,7 @@ FACE = 182      # `north` on the plate: the rim ringing the boss
 GUTTER = 100    # the plate's face where the boss's shadow and the lame's top edge both cross it
 IN = 84         # `east`, geo -x: the inboard flank, across 0.95 of air to the other leg's shell
 SUNK = 64       # a texel three quarters of the way inside the plate: the shadow at the boss's root
-CREVICE = 60    # a back face standing in the 0.40 gap in front of the leggings shell
+CREVICE = 60    # a back face standing in the 0.50 gap in front of the leggings shell
 INNER = 42      # buried - wholly inside another cube of the part, or inside the leggings shell
 DOWN = 36       # a free underside
 
@@ -337,7 +338,7 @@ def cop_west(i, j, fw, fh):
     """The outboard flank, one column deep and 3 tall - the plate's whole profile, and the reason the
     part reads from the side at all. There is no depth left to fall off across, so the only gradient
     is down: a lit chamfer on the top row and `FALL` under it. The column shows in full because the
-    plate hangs 0.15 past the leggings shell's outer wall at x = 2.5 - the same trick, and nearly the
+    plate hangs 0.25 past the leggings shell's outer wall at x = 2.4 - the same trick, and nearly the
     same small number, that keeps the greaves' flank alive at 0.35."""
     if j == 0:
         return FLANK + RIM
@@ -367,7 +368,7 @@ def cop_down(i, j, fw, fh):
 
 def cop_south(i, j, fw, fh):
     """The plate's back, 3 x 3, column 0 outboard and row 0 the top - a face that only needs painting
-    because the plate stands 0.40 clear of the leggings. It is seen through that gap, by a camera low
+    because the plate stands 0.50 clear of the leggings. It is seen through that gap, by a camera low
     or side-on enough to look into it, so it is `CREVICE` rather than INNER: dark enough to read as
     the shadowed side of a plate, light enough not to look like a hole. The outboard column carries
     the most of what light gets in there, because it is the one hanging 0.15 past the shell's wall
