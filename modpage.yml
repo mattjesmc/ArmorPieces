@@ -37,10 +37,14 @@ sections:
 
     Some parts take a second material through a **fitting**: a gem set into the circlet, a metal
     buckle and a dyed strap on the sash, a dyed inlay on the greaves, a banner's design on the back banner. One more smithing
-    step, and the item decides where it goes.
+    step, with a template per fitting, and the item decides where it goes.
+
+    Parts are crafted, or found: every one ships in a few of the world's chests. An **advanced
+    smithing table** shows a whole set on a stand and takes a part off again, which the smithing
+    table cannot.
 
     Twenty parts ship across twelve sockets. Each is a datapack entry, a model and a texture, no
-    code, and a pack can add its own the same way.
+    code, and a pack can add its own the same way - from Blockbench, in folders of its own.
 
   features:
     items:
@@ -57,9 +61,23 @@ sections:
       - title: Fittings
         description: >-
           A part can declare places for a second material — `gemstone`, `guard`, `inlay`, `banner` —
-          and the fitting template sets one: gems and metals by trim material, inlays by dye, banners
-          from a banner made at a loom. The template alone takes them out again. Fittings are data
-          too, and an effect can be gated on one.
+          and a fitting template sets one: gems and metals by trim material, inlays by dye, banners
+          from a banner made at a loom. There is a template per fitting, each with its own look and
+          recipe, and the template with the third slot empty takes its fitting out again. Fittings
+          are data too — a pack's new fitting gets its template from a recipe — and an effect can be
+          gated on one.
+      - title: Found in the world
+        description: >-
+          Every shipped part turns up in a few of the world's chests — wings in end cities, horns in
+          bastions, the circlet in ancient cities — and a part names its own tables in its data file,
+          which the mod adds it to as they load, the one thing a datapack cannot do for itself. A
+          loot function puts a part on a piece of armor a table drops, gem and all.
+      - title: Taking parts off
+        description: >-
+          The advanced smithing table, crafted from a smithing table, an armor stand and two iron
+          ingots, holds a whole set worn by a stand at once, lists each piece's sockets, and empties
+          one with a click — the one way a part ever comes off. Its own template and material slots
+          run the smithing table's recipes, with the result on the stand before it is paid for.
       - title: One smithing recipe per socket, forever
         description: >-
           The part rides on the template item as a component, so a pack hands out a template and needs
@@ -74,8 +92,9 @@ sections:
         description: >-
           Opens a part on the vanilla player wearing real armor, walk cycle and all. Master, static
           layer and fitting masks are painted in place, any trim material previews live with its
-          fittings filled or empty, the name, sockets, fittings and effects are a dialog, and Save
-          writes every file the pack needs.
+          fittings filled or empty, the name, sockets, fittings, effects and loot are a dialog, and
+          Save writes every file the pack needs — into your own datapack and resource pack, which
+          it makes, finds and zips for you.
 
   gallery:
     images:
@@ -92,12 +111,16 @@ sections:
     columns: 3
     scale: 3
     summary: "Every recipe in the mod"
-    # Shields and banners are rendered from a 3D model in game, so they have no flat item texture
-    # to look up and drew as the missing-texture checkerboard. Stand-ins, from
-    # tools/gen_recipe_icons.py. Paths are relative to assets.dir.
+    # Shields, banners, the smithing table and the loom are rendered from a 3D model in game, so
+    # they have no flat item texture to look up and drew as the missing-texture checkerboard; the
+    # mod's own table is a block with the same problem. Stand-ins, from tools/gen_recipe_icons.py.
+    # Paths are relative to assets.dir.
     icons:
       "minecraft:shield": icons/shield.png
       "minecraft:white_banner": icons/white_banner.png
+      "minecraft:smithing_table": icons/smithing_table.png
+      "minecraft:loom": icons/loom.png
+      "armorpieces:advanced_smithing_table": icons/advanced_smithing_table.png
     custom_types:
       # The mod computes the decorated armor in code, so there is no `result`
       # in the JSON -- show the base armor as the outcome instead.
@@ -128,13 +151,17 @@ sections:
         a: No. A piece carries its trim and its parts at once.
       - q: How do I put a gem in the circlet?
         a: >-
-          Craft a fitting template, then smithing table: template, the decorated helmet, and the gem.
-          A gem goes to the gemstone, an ingot to the guard, a dye to the inlay and a banner to the
-          banner — the item decides, so one template covers every fitting. Every part on the piece is
-          offered the item, so one gem fills the stone of each part that has one. Template and helmet
-          with the third slot empty takes every fitting out again. Re-applying a part at its own
+          Craft a gemstone fitting template (an amethyst block in a ring of paper), then smithing
+          table: template, the decorated helmet, and the gem. Every part on the piece is offered the
+          item, so one gem fills the stone of each part that has one. The same template with the
+          third slot empty takes the gem out again. A guard template does the same for metals, an
+          inlay template for dyes, a banner template for banners. Re-applying a part at its own
           socket template keeps what is set in it, so changing a circlet's metal does not cost the
           gem.
+      - q: How do I take a part off?
+        a: >-
+          At the advanced smithing table. Put the piece in one of its four slots, pick the socket
+          in the list and click the cross. What was in the part's fittings goes with it.
       - q: Can two parts share a socket?
         a: >-
           No — applying a new crest replaces the crest. Several parts may be *available* for one socket
@@ -184,8 +211,9 @@ custom_sections:
       | --- | --- |
       | `decoration/` | anchors, the datapack registry entry, the item component, the effect hooks |
       | `client/` | the render layer, the geometry loader and bake cache, the per-material palette |
-      | `recipe/`, `item/`, `registry/`, `command/` | smithing, the twelve templates, the creative tab, `/armorpieces stage` |
-      | `tools/` | Blockbench rigs (`bb_rig.py`, with the vanilla figure and walk cycle from `mc_humanoid.py`), `.bbmodel` ↔ geometry (`bb_geo.py`), master and mask painting and install (`paint_<part>_master.py`, `fitting_mask.py`, `sync_decoration_masters.py`), a material and fitting preview outside the game (`preview_material.py`), template icons, `trace_geometry.py` for measuring a part against the body |
+      | `recipe/`, `item/`, `registry/`, `command/` | smithing, the twelve socket templates and the fitting template, the creative tab, `/armorpieces stage` |
+      | `loot/`, `block/`, `menu/` | parts in loot tables and the `set_decoration` function; the advanced smithing table and its menu |
+      | `tools/` | Blockbench rigs (`bb_rig.py`, with the vanilla figure and walk cycle from `mc_humanoid.py`), `.bbmodel` ↔ geometry (`bb_geo.py`), master and mask painting and install (`paint_<part>_master.py`, `fitting_mask.py`, `sync_decoration_masters.py`), a material and fitting preview outside the game (`preview_material.py`), template and recipe icons, `export_pack.py` for zipping a pack, `trace_geometry.py` for measuring a part against the body |
       | `tools/blockbench_plugin/` | the Blockbench plugin — see the [authoring guide](https://github.com/mattjesmc/ArmorPieces/blob/main/docs/authoring.md) |
       | `tools/decoration_masters/` | the grayscale masters — the source of truth for every part's art |
 

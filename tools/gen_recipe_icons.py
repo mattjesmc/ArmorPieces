@@ -3,11 +3,12 @@ Generate stand-in inventory icons for the vanilla items that have no flat textur
 
 modpage draws each recipe by looking up a 16x16 PNG per ingredient. Most vanilla items have one:
 `textures/item/<id>.png`. A handful do not, because the game renders them from a 3D model instead -
-shields and banners are the two this mod crafts with, and both came out of `modpage build` as the
-missing-texture checkerboard on the CurseForge and Modrinth recipe images.
+shields and banners, and the smithing table and loom, are what this mod crafts with, and each came
+out of `modpage build` as the missing-texture checkerboard on the CurseForge and Modrinth recipe
+images. The mod's own advanced smithing table is a block with the same problem.
 
 There is no "correct" file to point at: the sprite a player sees is a render, not an asset. So these
-two are drawn here and wired up through modpage's `recipes.icons` override.
+are drawn here and wired up through modpage's `recipes.icons` override.
 
 Authored as pixel art rather than drawn procedurally, for the same reason gen_template_icons.py is:
 at this size every pixel is a decision.
@@ -97,9 +98,100 @@ BANNER = [
     "................",
 ]
 
+SMITHING_PALETTE = {
+    ".": (0, 0, 0, 0),
+    "o": (0x12, 0x13, 0x16, 0xFF),  # outline (derived: the top's darkest, darkened)
+    "T": (0x49, 0x4B, 0x5F, 0xFF),  # top slab, lit
+    "t": (0x36, 0x37, 0x3F, 0xFF),  # top slab
+    "d": (0x2F, 0x30, 0x37, 0xFF),  # top slab, shaded
+    "W": (0x4A, 0x1F, 0x1A, 0xFF),  # body, lit
+    "w": (0x42, 0x1C, 0x17, 0xFF),  # body
+    "s": (0x2F, 0x14, 0x11, 0xFF),  # body, shaded
+    "i": (0x26, 0x27, 0x2D, 0xFF),  # tools on the front
+    # Only the mod's table: the amber rim its top and front carry.
+    "G": (0xE8, 0xC3, 0x3A, 0xFF),
+    "g": (0xCF, 0xA5, 0x28, 0xFF),
+}
+
+# A smithing table seen from the front and slightly above: the dark slab on top, the dark-red
+# body, the tools hung on the front. The mod's table is the same block with an amber rim.
+SMITHING_TABLE = [
+    "................",
+    "..oooooooooooo..",
+    ".oTTTTTTTTTTTTo.",
+    ".oTttttttttttdo.",
+    ".oTttttttttttdo.",
+    ".odddddddddddoo.",
+    ".oWWWWWWWWWWWso.",
+    ".oWwiiwwwwiiwso.",
+    ".oWwiiwwwwiiwso.",
+    ".oWwwwwwwwwwwso.",
+    ".oWwiiwwwwiiwso.",
+    ".oWwiiwwwwiiwso.",
+    ".oWwwwwwwwwwwso.",
+    ".osssssssssssso.",
+    "..oooooooooooo..",
+    "................",
+]
+
+ADVANCED_SMITHING_TABLE = [
+    "................",
+    "..oooooooooooo..",
+    ".oGGGGGGGGGGGGo.",
+    ".oGttttttttttgo.",
+    ".oGttttttttttgo.",
+    ".oggggggggggggo.",
+    ".oWWWWWWWWWWWso.",
+    ".oWwiiwwwwiiwso.",
+    ".oWwiiwGGwiiwso.",
+    ".oWwwwwGGwwwwso.",
+    ".oWwiiwwwwiiwso.",
+    ".oWwiiwwwwiiwso.",
+    ".oWwwwwwwwwwwso.",
+    ".osssssssssssso.",
+    "..oooooooooooo..",
+    "................",
+]
+
+LOOM_PALETTE = {
+    ".": (0, 0, 0, 0),
+    "o": (0x1E, 0x16, 0x0B, 0xFF),  # outline (derived: the top's darkest, darkened)
+    "F": (0xCA, 0xA6, 0x71, 0xFF),  # frame, lit
+    "f": (0xB3, 0x8C, 0x51, 0xFF),  # frame
+    "e": (0x80, 0x63, 0x37, 0xFF),  # frame, shaded
+    "k": (0x52, 0x41, 0x27, 0xFF),  # the dark of the top
+    "C": (0xB5, 0xA4, 0x9D, 0xFF),  # thread, lit
+    "c": (0xA8, 0x95, 0x8C, 0xFF),  # thread
+    "r": (0x84, 0x4F, 0x42, 0xFF),  # the red-brown of the sides
+}
+
+# A loom from the front: the pale wooden frame, the woven threads across its middle, the
+# red-brown cloth beam at the sides - which is what tells it from a crafting table at a glance.
+LOOM = [
+    "................",
+    "..oooooooooooo..",
+    ".oFFFFFFFFFFFFo.",
+    ".oFkkkkkkkkkkeo.",
+    ".oFkCcCcCcCckeo.",
+    ".oFkcCcCcCcCkeo.",
+    ".oFkCcCcCcCckeo.",
+    ".oFkcCcCcCcCkeo.",
+    ".oFkkkkkkkkkkeo.",
+    ".orffffffffffro.",
+    ".orffffffffffro.",
+    ".oFfffffffffeeo.",
+    ".oFfo......ofeo.",
+    ".oFfo......ofeo.",
+    "..oo........oo..",
+    "................",
+]
+
 ICONS = {
     "shield": (SHIELD, SHIELD_PALETTE),
     "white_banner": (BANNER, BANNER_PALETTE),
+    "smithing_table": (SMITHING_TABLE, SMITHING_PALETTE),
+    "advanced_smithing_table": (ADVANCED_SMITHING_TABLE, SMITHING_PALETTE),
+    "loom": (LOOM, LOOM_PALETTE),
 }
 
 
