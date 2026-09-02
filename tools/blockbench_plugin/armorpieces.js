@@ -356,9 +356,7 @@
 			const element = panel.form.form_data[field];
 			const input = element && element.input;
 			if (!input) continue;
-			// Blockbench 5.1 builds the datalist but never attaches it (it appends `list[0]` of a
-			// plain element), so the input names a list that is not on the page. Make that list.
-			const listId = input.getAttribute('list') || (panel.form.uuid + '_' + field + '_list');
+			const listId = panel.form.uuid + '_' + field + '_list';
 			input.setAttribute('list', listId);
 			let list = document.getElementById(listId);
 			if (!list) {
@@ -1395,13 +1393,14 @@
 			show_armor: { label: 'Show armor', type: 'checkbox', style: 'toggle_switch', value: true },
 			part_only: { label: 'Outliner: part only', type: 'checkbox', style: 'toggle_switch', value: true },
 			_4: '_',
-			// `list: []` is what makes the form create the datalist node; it is filled on first use.
+			// No `list` here on purpose: Blockbench 5.1's own datalist never reaches the page and
+			// leaves the text "undefined" beside the field. fillItemLists attaches a working one.
 			recipe_focus: {
-				label: 'Recipe centre', type: 'text', value: '', placeholder: 'minecraft:feather', list: [],
+				label: 'Recipe centre', type: 'text', value: '', placeholder: 'minecraft:feather',
 				description: 'The item in the middle of the template recipe. Written on Save.',
 			},
 			recipe_ring: {
-				label: 'Recipe ring', type: 'text', value: 'minecraft:paper', list: [],
+				label: 'Recipe ring', type: 'text', value: 'minecraft:paper',
 				description: 'The four items around it.',
 			},
 		};
