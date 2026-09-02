@@ -37,7 +37,7 @@ code, and a pack can add its own the same way.</p>
 <li><strong>Fittings</strong> &mdash; A part can declare places for a second material — <code>gemstone</code>, <code>guard</code>, <code>inlay</code>, <code>banner</code> — and the fitting template sets one: gems and metals by trim material, inlays by dye, banners from a banner made at a loom. The template alone takes them out again. Fittings are data too, and an effect can be gated on one.</li>
 <li><strong>One smithing recipe per socket, forever</strong> &mdash; The part rides on the template item as a component, so a pack hands out a template and needs no recipe of its own.</li>
 <li><strong>Optional behaviour</strong> &mdash; A part may carry effects — attributes, mob effects, a projectile dodge, gliding — configured in the same JSON file. <code>pinions</code> is a cut-down elytra that actually flies.</li>
-<li><strong>/armorpieces stage</strong> &mdash; Places a grid of armor stands wearing every part in every material, read from the registries, so a datapack&rsquo;s parts show up on it too.</li>
+<li><strong>A Blockbench plugin for making parts</strong> &mdash; Opens a part on the vanilla player wearing real armor, walk cycle and all. Master, static layer and fitting masks are painted in place, any trim material previews live with its fittings filled or empty, the name, sockets, fittings and effects are a dialog, and Save writes every file the pack needs.</li>
 </ul>
 
 <hr>
@@ -144,196 +144,21 @@ code, and a pack can add its own the same way.</p>
 <hr>
 <h2>Adding a part</h2>
 
-<p>Two files and a PNG, plus a line in your language file for the name — none of it code.
-Namespace them however you like; every namespace is scanned.</p>
-<p><strong>1. The part</strong> — <code>data/&lt;ns&gt;/armorpieces/armor_decoration/dragon_crest.json</code></p>
-<pre><code class="language-json">{
-  &quot;asset_id&quot;: &quot;&lt;ns&gt;:dragon_crest&quot;,
-  &quot;description&quot;: { &quot;translate&quot;: &quot;decoration.&lt;ns&gt;.dragon_crest&quot; },
-  &quot;anchors&quot;: [&quot;crest&quot;]
-}
-</code></pre>
-<p><code>anchors</code> lists every socket the part may occupy; a smithing attempt anywhere else will not craft.
-The sockets are a closed list — they are places on the humanoid model, not data:</p>
-<table>
-<thead>
-<tr>
-<th>Piece</th>
-<th>Anchors</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Helmet</td>
-<td><code>crest</code>, <code>brow</code>, <code>horns</code></td>
-</tr>
-<tr>
-<td>Chestplate</td>
-<td><code>pauldrons</code>, <code>back</code>, <code>collar</code>, <code>vambraces</code></td>
-</tr>
-<tr>
-<td>Leggings</td>
-<td><code>belt</code>, <code>tassets</code>, <code>knees</code></td>
-</tr>
-<tr>
-<td>Boots</td>
-<td><code>spurs</code>, <code>greaves</code></td>
-</tr>
-</tbody>
-</table>
-<p><strong>2. The shape</strong> — <code>assets/&lt;ns&gt;/armorpieces/decoration/dragon_crest.json</code></p>
-<p>Bones and cubes in Blockbench&rsquo;s vocabulary, baked through vanilla&rsquo;s own <code>MeshDefinition</code> path, so
-UVs, per-bone pivots and rotations and cube inflation all behave as they do for any entity model.
-Coordinates are entity-model units (1/16 block) and <strong>+Y points down</strong>, which is why something
-standing on top of a head has a negative Y origin.</p>
-<pre><code class="language-json">{
-  &quot;texture_width&quot;: 64,
-  &quot;texture_height&quot;: 32,
-  &quot;bones&quot;: [
-    {
-      &quot;name&quot;: &quot;spine&quot;,
-      &quot;pivot&quot;: [0, 0, 0],
-      &quot;cubes&quot;: [ { &quot;origin&quot;: [-1, -6, -4], &quot;size&quot;: [2, 6, 8], &quot;uv&quot;: [0, 0] } ],
-      &quot;children&quot;: []
-    }
-  ]
-}
-</code></pre>
-<p><strong>3. The texture</strong> — <code>assets/&lt;ns&gt;/textures/entity/decoration/dragon_crest.png</code></p>
-<p>One grayscale master: <strong>value is shading, alpha is the silhouette</strong>. The game maps it onto each
-trim material&rsquo;s own palette at load time, so every material — including ones a pack adds
-tomorrow — is free.</p>
-<p>Not everything is metal. An optional RGBA companion named <code>dragon_crest_static.png</code> keeps its own
-colour instead of taking the material&rsquo;s, so a horn stays ivory and a sash stays cloth while the
-hardware still turns gold. The master remains the single source of truth for the silhouette. If a
-part needs bespoke art in one material, <code>dragon_crest_&lt;suffix&gt;.png</code> beside the master wins.</p>
-<p><strong>3b. Fittings, if the part has any.</strong> A fitting is a region of the part that takes a second
-material. Declare it on the part, in the order the smithing table should offer an item to them:</p>
-<pre><code class="language-json">&quot;fittings&quot;: [&quot;armorpieces:gemstone&quot;, &quot;armorpieces:guard&quot;]
-</code></pre>
-<p>and paint the region as a grayscale mask beside the master, named after the fitting:
-<code>dragon_crest_gemstone.png</code>. While the fitting is empty the mask is ignored; while it holds a gem,
-every opaque mask pixel takes the mask&rsquo;s own value through the gem&rsquo;s palette. Four fittings ship —
-<code>gemstone</code> and <code>guard</code> take trim materials (gems and metals, by tag), <code>inlay</code> takes a dye, and
-<code>banner</code> takes a banner made at a loom onto a bone of the geometry named <code>banner</code>. A fitting is a
-datapack file too, <code>data/&lt;ns&gt;/armorpieces/fitting/&lt;name&gt;.json</code>, so a pack can add a <code>pommel</code> that
-takes any metal:</p>
-<pre><code class="language-json">{ &quot;type&quot;: &quot;armorpieces:material&quot;,
-  &quot;description&quot;: { &quot;translate&quot;: &quot;fitting.&lt;ns&gt;.pommel&quot; },
-  &quot;materials&quot;: &quot;#armorpieces:guard_metals&quot; }
-</code></pre>
-<p>A new fitting <em>type</em> — one that reads an item the three built-in types cannot, or draws its own
-geometry instead of colouring a mask — is Java, the way a new effect type is: implement
-<code>Fitting</code> (or <code>Fitting.Masked</code>) and register its codec with <code>Fittings.register</code>, plus a
-<code>FittingRenderer</code> through <code>FittingRenderers.register</code> if it draws. Whatever item fills it must
-also be in <code>#armorpieces:fitting_additions</code>; that tag is what the one fitting recipe accepts, so
-an item outside it never lights the table up, however willing the fitting.</p>
-<p><strong>4. Handing it out.</strong> There is no recipe to write. The mod ships one smithing recipe per socket
-and the part travels on the <em>template stack</em>, so a pack only has to give out a template carrying
-the <code>armorpieces:decoration</code> component:</p>
-<pre><code class="language-json">{
-  &quot;type&quot;: &quot;minecraft:crafting_shaped&quot;,
-  &quot;pattern&quot;: [&quot; # &quot;, &quot;#F#&quot;, &quot; # &quot;],
-  &quot;key&quot;: { &quot;#&quot;: &quot;minecraft:paper&quot;, &quot;F&quot;: &quot;minecraft:dragon_breath&quot; },
-  &quot;result&quot;: {
-    &quot;id&quot;: &quot;armorpieces:crest_template&quot;,
-    &quot;components&quot;: { &quot;armorpieces:decoration&quot;: &quot;&lt;ns&gt;:dragon_crest&quot; }
-  }
-}
-</code></pre>
-<p>A loot table with <code>minecraft:set_components</code> does the same, and so does nothing at all: the
-creative tab is built by walking the registry, so a new part appears there the moment the pack
-loads. The twelve socket templates are <code>&lt;socket&gt;_template</code> — <code>crest_template</code>, <code>brow_template</code>,
-and so on — and <code>fitting_template</code> is the thirteenth, shared by every fitting.</p>
-<p><strong>Overriding what this mod ships.</strong> Same ids, your pack. A resource pack can restyle any part&rsquo;s
-geometry or texture and a datapack can change where it may be worn.</p>
-
-<hr>
-<h2>Giving a part behaviour</h2>
-
-<p>Parts are cosmetic by default. A part that should do something while it is worn carries <code>effects</code>
-— one more field on the file you were already writing:</p>
-<pre><code class="language-json">&quot;effects&quot;: [
-  { &quot;type&quot;: &quot;armorpieces:blink&quot;, &quot;chance&quot;: 0.2, &quot;damage_types&quot;: &quot;minecraft:is_projectile&quot; }
-]
-</code></pre>
-<p>Four built-in behaviours reach four of the five hooks from JSON alone, and a fifth type gates
-them:</p>
-<table>
-<thead>
-<tr>
-<th><code>type</code></th>
-<th>Hooks</th>
-<th>Fields</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>armorpieces:attribute</code></td>
-<td>Attributes</td>
-<td><code>id</code>, <code>attribute</code>, <code>amount</code>, <code>operation</code></td>
-</tr>
-<tr>
-<td><code>armorpieces:mob_effect</code></td>
-<td>Ticking</td>
-<td><code>effect</code>, <code>amplifier</code>, <code>ambient</code>, <code>show_particles</code>, <code>show_icon</code></td>
-</tr>
-<tr>
-<td><code>armorpieces:blink</code></td>
-<td>Damage</td>
-<td><code>chance</code>, <code>radius</code>, <code>damage_types</code>, <code>attempts</code></td>
-</tr>
-<tr>
-<td><code>armorpieces:glide</code></td>
-<td>Gliding + Ticking</td>
-<td><code>sink</code>, <code>wear_interval</code></td>
-</tr>
-<tr>
-<td><code>armorpieces:if_fitting</code></td>
-<td>all, forwarded</td>
-<td><code>if</code> (a fitting, and optionally <code>material</code> or <code>dye</code>), <code>then</code> (any effect)</td>
-</tr>
-</tbody>
-</table>
-<p>The last is what makes a gem more than paint: <code>{ "type": "armorpieces:if_fitting",
-"if": { "fitting": "armorpieces:gemstone", "material": "minecraft:emerald" }, "then": { ... } }</code>
-runs its effect only while an emerald is set. <code>material</code> and <code>dye</code> are alternatives — one narrows
-a material fitting, the other a dye fitting, and a condition naming both is refused at load.
-Naming neither is the shortest form: while there is anything in the fitting at all.</p>
-<p>The five hooks are <code>Ticking</code> (every server tick worn), <code>Damage</code> (a veto — <code>allowDamage</code> false
-cancels the hit outright), <code>Attributes</code> (equip/unequip), <code>Gliding</code> (vanilla&rsquo;s own <code>canGlide</code>
-check) and <code>Lifecycle</code> (put on and taken off, for state that lives outside the item — the one
-hook no built-in behaviour reaches, so putting anything there means Java). A part has no
-durability of its own, so an effect that costs something
-spends the <em>decorated piece&rsquo;s</em> durability — <code>pinions</code> wears the chestplate it is bolted to.</p>
-<p><strong>A new effect type is the one thing that needs Java</strong>, because behaviour is code. Implement a
-hook, register the codec, and add nothing else:</p>
-<pre><code class="language-java">public record BlinkAway(float chance) implements DecorationEffect.Damage {
-    public static final MapCodec&lt;BlinkAway&gt; CODEC = RecordCodecBuilder.mapCodec(i -&gt; i.group(
-        Codec.FLOAT.fieldOf(&quot;chance&quot;).forGetter(BlinkAway::chance)
-    ).apply(i, BlinkAway::new));
-
-    public MapCodec&lt;? extends DecorationEffect&gt; codec() { return CODEC; }
-
-    public boolean allowDamage(DecorationEffectContext ctx, DamageSource src, float amount) { ... }
-}
-
-// in onInitialize
-DecorationEffects.register(Identifier.fromNamespaceAndPath(&quot;examplemod&quot;, &quot;blink_away&quot;), BlinkAway.CODEC);
-</code></pre>
-<p>From then on <code>"type": "examplemod:blink_away"</code> works on any part in anybody&rsquo;s datapack. The
-context carries the whole entry, so an effect can scale with the material it was applied in.
-Effects are synced to the client, because <code>canGlide</code> runs on both sides.</p>
+<p>A part is two files and a PNG, plus a line in your language file for the name — none of it
+code, and any namespace will do. Two ways to make them:</p>
+<ul>
+<li><strong>In Blockbench</strong>, with the <a href="https://github.com/mattjesmc/ArmorPieces/blob/main/tools/blockbench_plugin/armorpieces.js">Armor Pieces plugin</a>. It opens a part on the vanilla
+  player wearing real armor, paints the textures in place, previews any trim material, and
+  writes every file on Save.</li>
+<li><strong>By hand</strong>, writing the datapack entry, the geometry and the grayscale master yourself.</li>
+</ul>
+<p>The <a href="https://github.com/mattjesmc/ArmorPieces/blob/main/docs/authoring.md">authoring guide</a> covers both, along with fittings, handing a part out, and giving
+it behaviour — attributes, mob effects, a dodge, gliding — from the same JSON file.</p>
 
 <hr>
 <h2>Working on it</h2>
 
 <p><code>./gradlew build</code>, <code>./gradlew runClient</code>, <code>./gradlew runServer</code>.</p>
-<p><code>/armorpieces stage</code> (permission level 2) is how a part is judged against the others:
-<code>parts [&lt;part&gt;]</code> puts one stand per part × material, <code>bases [&lt;armor item&gt;]</code> repeats that for every
-base armor set, <code>full</code> dresses complete sets with every socket filled, <code>fittings [&lt;part&gt;]</code> shows
-every fitting filled with everything it takes, one block per fitting with the part&rsquo;s materials
-down the rows, and <code>clear</code> removes them.</p>
 <table>
 <thead>
 <tr>
@@ -360,7 +185,7 @@ down the rows, and <code>clear</code> removes them.</p>
 </tr>
 <tr>
 <td><code>tools/blockbench_plugin/</code></td>
-<td>the Blockbench plugin — see the next section</td>
+<td>the Blockbench plugin — see the <a href="https://github.com/mattjesmc/ArmorPieces/blob/main/docs/authoring.md">authoring guide</a></td>
 </tr>
 <tr>
 <td><code>tools/decoration_masters/</code></td>
@@ -368,106 +193,9 @@ down the rows, and <code>clear</code> removes them.</p>
 </tr>
 </tbody>
 </table>
-<p>Authoring a part starts from a rig: each one holds the vanilla body and all four armor layers at
-their real inflate, animated with the game&rsquo;s own walk and sprint cycles, with an empty group
-sitting exactly where the layer will draw. <code>python tools/bb_rig.py --all</code> regenerates them; the
-skin, armor and palette textures they reference are extracted from the game jar by
-<code>tools/vanilla_assets.py</code> on first use and are never committed.</p>
-
-<hr>
-<h2>Editing parts in Blockbench</h2>
-
-<p><code>tools/blockbench_plugin/armorpieces.js</code> turns Blockbench into an editor for parts. A piece opens
-on the vanilla player wearing real armor, its master, static layer and fitting masks are painted
-in place, any trim material can be previewed live with the fittings filled or empty, and Save
-puts everything back where it came from. The
-plugin has no geometry or colour maths of its own: it drives the repo&rsquo;s Python tools, so the
-editor and the command line cannot disagree.</p>
-<p><strong>Install.</strong> Blockbench 5.1 or later, and Python 3 with Pillow on <code>PATH</code> (the same requirement
-as every tool here). In Blockbench: <em>File › Plugins › Load Plugin from File</em>, and pick the
-file. It finds the repository from its own location; if the file was copied elsewhere, set
-<em>Armor Pieces repository</em> in Settings to the repo root. The first piece opened extracts the
-vanilla textures the rig needs from the game jar.</p>
-<p><strong>Open a piece.</strong> <em>Tools › Armor Pieces › Open Armor Piece…</em> lists every part in
-<code>src/main/resources</code> and under <code>run/</code> — resource packs and world datapacks included — and opens
-it as its own tab. <em>New Armor Piece…</em> writes the datapack entry, a starter model, a blank
-texture and the language line, then opens that. A piece tab shows only what a part needs: Edit
-and Paint modes, the outliner, transform, the UV editor, colour and palette, and one
-<strong>Armor Piece</strong> panel with every control:</p>
-<table>
-<thead>
-<tr>
-<th>Control</th>
-<th>What it does</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Piece, Anchor</td>
-<td>Which part is open and which socket it is rigged on. Changing the anchor rebuilds the rig, which reloads the model from disk, so save modelling first; what <em>Part…</em> changed carries across.</td>
-</tr>
-<tr>
-<td>New…, Part…, Save, Rebuild</td>
-<td>Create a piece; edit its name, anchors and fittings; write everything back to the pack; reload the open one from disk. A line under the buttons says what the part is: name, anchors, fittings.</td>
-</tr>
-<tr>
-<td>Editing: Master / Static / Mask</td>
-<td>Which sheet the brush paints. The master is greyscale by definition — the palette turns grey and any colour painted on it folds to its value under the brush. The static layer keeps real colour and is created the first time it is selected.</td>
-</tr>
-<tr>
-<td>Fitting</td>
-<td>With Mask selected: which of the part&rsquo;s masked fittings the brush paints. A mask is greyscale like the master — its values are the fitting&rsquo;s shading — and is created blank the first time it is selected.</td>
-</tr>
-<tr>
-<td>Material preview</td>
-<td>Shows the part through a trim material&rsquo;s palette. Strokes still land on the sheet being edited, the UV editor keeps showing the greyscale, and the preview follows the brush.</td>
-</tr>
-<tr>
-<td>one row per fitting</td>
-<td>With the preview on: what each fitting holds — a gem, a metal, a dye, a banner, or empty. The preview bakes the masks exactly as the game does, in the part&rsquo;s order. A banner fitting is shown as a flat fill of the banner&rsquo;s base colour over its bone, standing in for the pattern layers the game draws there.</td>
-</tr>
-<tr>
-<td>Pose, Phase</td>
-<td>The walk or sprint cycle, frozen at any point, without leaving Edit or Paint mode.</td>
-</tr>
-<tr>
-<td>Show player, Show armor, Outliner: part only</td>
-<td>Hide the reference figure, the armor layers, or everything but the part in the outliner.</td>
-</tr>
-<tr>
-<td>Recipe centre, Recipe ring</td>
-<td>The template recipe: one item in the middle of a ring of four, paper unless there is a reason. Item ids autocomplete from the game&rsquo;s own list. Written on Save as <code>data/&lt;ns&gt;/recipe/template_&lt;part&gt;.json</code>.</td>
-</tr>
-</tbody>
-</table>
-<p><strong>The part itself.</strong> <em>Part…</em> opens the datapack half as a dialog: the name a player reads,
-the sockets the part may occupy, ticked by armor piece, and its fittings as an ordered list
-picked from every fitting definition in the pack and the mod — each shown with its kind, a
-mask to paint or a bone to draw on. The panel follows at once: the Anchor list, the Fitting
-list, the preview rows and the summary line. <em>New…</em> beside that list defines a fitting the
-pack does not have yet: a material fitting over a trim-material tag or over ticked materials,
-which are written as a tag in the pack so another pack can add to it; a dye fitting; or a
-banner fitting on one of the part&rsquo;s own bones, with its pattern sheet and front face. The
-definition, its language line and any tag are written the moment the dialog confirms, and
-the fitting joins the part&rsquo;s list. Effects are rows on the same dialog: pick a built-in
-type and its fields appear, with the ranges, defaults and descriptions read out of the Java
-that defines it, and attribute, mob-effect and damage-tag ids autocompleting from the game.
-Any row can be switched to run <em>only while</em> one of the part&rsquo;s fittings holds a chosen
-material or dye, which is <code>armorpieces:if_fitting</code> written for you. An effect the dialog
-cannot show — a type from another mod — is kept as it is and shown read-only.</p>
-<p><strong>Modelling.</strong> Model inside the <code>part</code> group; everything else is the locked reference. The
-mod&rsquo;s format is box UV only, so the plugin keeps it that way: a cube added, converted or
-resized is laid out in free space on the texture, the paint on its faces moves with them, and
-the texture grows when it is full. All of that lands in the same undo step as the edit. Cubes
-do not rotate — the mod&rsquo;s cube has no rotation — so a tilt is a rotated bone.</p>
-<p><strong>Saving.</strong> Save exports the geometry through <code>bb_geo.py</code>, writes the master, static layer and
-masks back to their files, writes the template recipe, and — for a part whose master lives in
-<code>tools/decoration_masters/</code> — runs <code>sync_decoration_masters.py</code>, which installs the sheets and
-checks them against the geometry. When <em>Part…</em> changed something it also writes the data file
-and the language line, and nothing else: a field the dialog has no control for, an effect say,
-is written back exactly as it was read, a file nothing changed is not touched, and the recipe
-keeps a <code>group</code> or any other field the two item choices do not decide.
-<code>tools/check_authoring.py</code> runs the round trip over every shipped part.</p>
+<p>The rigs, the <code>/armorpieces stage</code> command and the plugin&rsquo;s Save path are described in the
+<a href="https://github.com/mattjesmc/ArmorPieces/blob/main/docs/authoring.md">authoring guide</a>; <code>tools/check_authoring.py</code> runs the plugin&rsquo;s round trip over every
+shipped part.</p>
 
 <hr>
 <h2>FAQ</h2>
@@ -475,7 +203,7 @@ keeps a <code>group</code> or any other field the two item choices do not decide
 <p><strong>Does a part replace the armor trim?</strong><br>No. A piece carries its trim and its parts at once.</p>
 <p><strong>How do I put a gem in the circlet?</strong><br>Craft a fitting template, then smithing table: template, the decorated helmet, and the gem. A gem goes to the gemstone, an ingot to the guard, a dye to the inlay and a banner to the banner — the item decides, so one template covers every fitting. Every part on the piece is offered the item, so one gem fills the stone of each part that has one. Template and helmet with the third slot empty takes every fitting out again. Re-applying a part at its own socket template keeps what is set in it, so changing a circlet&rsquo;s metal does not cost the gem.</p>
 <p><strong>Can two parts share a socket?</strong><br>No — applying a new crest replaces the crest. Several parts may be <em>available</em> for one socket (<code>horns</code> and <code>helm_wings</code> both fit <code>horns</code>); the choice is the expressive act.</p>
-<p><strong>Do I need the mod to add parts?</strong><br>You need the mod installed, but adding a part takes no Java — a datapack and a resource pack. Only a brand-new <em>effect</em> type needs code.</p>
+<p><strong>Do I need the mod to add parts?</strong><br>You need the mod installed, but adding a part takes no Java — a datapack and a resource pack. Only a brand-new <em>effect</em> type needs code. The <a href="https://github.com/mattjesmc/ArmorPieces/blob/main/docs/authoring.md">authoring guide</a> walks through it.</p>
 
 <hr>
 <h2>License</h2>
