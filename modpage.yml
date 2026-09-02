@@ -40,10 +40,12 @@ sections:
 
   features:
     items:
-      - title: Twelve sockets, one part each
+      - title: Twelve sockets, one part at a time
         description: >-
           `crest`, `brow`, `horns`, `pauldrons`, `back`, `collar`, `vambraces`, `belt`, `tassets`,
-          `knees`, `spurs`, `greaves`. A mirrored pair is one socket, so spaulders means both shoulders.
+          `knees`, `spurs`, `greaves`. A socket holds one part, so a new crest replaces the crest —
+          but the twenty parts are spread unevenly over the twelve, three of them on `back` alone.
+          Seven of the sockets are mirrored pairs, so spaulders means both shoulders.
       - title: Coloured by vanilla trim materials
         description: >-
           One grayscale master per part is mapped onto each material's own palette at load time.
@@ -133,8 +135,8 @@ custom_sections:
     title: Adding a part
     after: installation
     body: |
-      Three files and a PNG, none of them code. Namespace them however you like; every namespace is
-      scanned.
+      Two files and a PNG, plus a line in your language file for the name — none of it code.
+      Namespace them however you like; every namespace is scanned.
 
       **1. The part** — `data/<ns>/armorpieces/armor_decoration/dragon_crest.json`
 
@@ -226,7 +228,7 @@ custom_sections:
       ]
       ```
 
-      Four built-ins cover every hook from JSON alone:
+      Four built-ins reach four of the five hooks from JSON alone:
 
       | `type` | Hooks | Fields |
       | --- | --- | --- |
@@ -237,7 +239,9 @@ custom_sections:
 
       The five hooks are `Ticking` (every server tick worn), `Damage` (a veto — `allowDamage` false
       cancels the hit outright), `Attributes` (equip/unequip), `Gliding` (vanilla's own `canGlide`
-      check) and `Lifecycle`. A part has no durability of its own, so an effect that costs something
+      check) and `Lifecycle` (put on and taken off, for state that lives outside the item — the one
+      hook no built-in reaches, so putting anything there means Java). A part has no durability of
+      its own, so an effect that costs something
       spends the *decorated piece's* durability — `pinions` wears the chestplate it is bolted to.
 
       **A new effect type is the one thing that needs Java**, because behaviour is code. Implement a
@@ -330,4 +334,4 @@ custom_sections:
       `tools/decoration_masters/` — runs `sync_decoration_masters.py`, which installs the sheets and
       checks them against the geometry.
 
-footer: "Every part in this mod is the same four files a pack of your own would write."
+footer: "Every part in this mod is the same two files and a PNG a pack of your own would write."

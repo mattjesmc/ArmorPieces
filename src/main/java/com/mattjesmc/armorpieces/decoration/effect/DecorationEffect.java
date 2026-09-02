@@ -37,8 +37,9 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
  *
  * <p>The hooks are the nested interfaces below. An effect implements as many as it needs and none it
  * does not; dispatch is by {@code instanceof}, so an effect that only reacts to damage costs nothing
- * on the tick path. All of them run SERVER-SIDE only, which is also why effects are deliberately
- * absent from {@link ArmorDecoration#DIRECT_STREAM_CODEC} - see the note there.
+ * on the tick path. Every hook below RUNS on the server, but the effects themselves are still sent
+ * to the client in {@link ArmorDecoration#DIRECT_STREAM_CODEC}, because vanilla evaluates
+ * {@code canGlide} on both sides - see the note there.
  */
 public interface DecorationEffect {
     /**

@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.1.3
+
+**Docs.** Every claim on the mod page was checked against the code, and four were wrong. Twelve
+sockets do not hold one part each: they hold one part *at a time*, and the twenty parts are spread
+unevenly over them, three on `back` alone. The built-in effects reach four of the five hooks, not
+all of them - nothing built in touches `Lifecycle`. A part is two files and a PNG, plus a line in a
+language file, not three files and a PNG. Four stale source comments were corrected to match the
+code they describe, including one in `DecorationEffect` that claimed effects are stripped from the
+network codec when `ArmorDecoration` in fact sends them, and one in `ModItems` that still counted
+ten sockets rather than twelve.
+
+No behaviour changes: comments, `modpage.yml` and the pages generated from it.
+
 ## 0.1.2
 
 **Blockbench plugin.** `tools/blockbench_plugin/armorpieces.js` turns Blockbench into an editor for

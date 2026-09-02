@@ -32,7 +32,7 @@ code, and a pack can add its own the same way.
 
 ## Features
 
-- **Twelve sockets, one part each** — `crest`, `brow`, `horns`, `pauldrons`, `back`, `collar`, `vambraces`, `belt`, `tassets`, `knees`, `spurs`, `greaves`. A mirrored pair is one socket, so spaulders means both shoulders.
+- **Twelve sockets, one part at a time** — `crest`, `brow`, `horns`, `pauldrons`, `back`, `collar`, `vambraces`, `belt`, `tassets`, `knees`, `spurs`, `greaves`. A socket holds one part, so a new crest replaces the crest — but the twenty parts are spread unevenly over the twelve, three of them on `back` alone. Seven of the sockets are mirrored pairs, so spaulders means both shoulders.
 - **Coloured by vanilla trim materials** — One grayscale master per part is mapped onto each material's own palette at load time. A new trim material costs a part no new art at all.
 - **One smithing recipe per socket, forever** — The part rides on the template item as a component, so a pack hands out a template and needs no recipe of its own.
 - **Optional behaviour** — A part may carry effects — attributes, mob effects, a projectile dodge, gliding — configured in the same JSON file. `pinions` is a cut-down elytra that actually flies.
@@ -151,8 +151,8 @@ code, and a pack can add its own the same way.
 
 ## Adding a part
 
-Three files and a PNG, none of them code. Namespace them however you like; every namespace is
-scanned.
+Two files and a PNG, plus a line in your language file for the name — none of it code.
+Namespace them however you like; every namespace is scanned.
 
 **1. The part** — `data/<ns>/armorpieces/armor_decoration/dragon_crest.json`
 
@@ -244,7 +244,7 @@ Parts are cosmetic by default. A part that should do something while it is worn 
 ]
 ```
 
-Four built-ins cover every hook from JSON alone:
+Four built-ins reach four of the five hooks from JSON alone:
 
 | `type` | Hooks | Fields |
 | --- | --- | --- |
@@ -255,7 +255,9 @@ Four built-ins cover every hook from JSON alone:
 
 The five hooks are `Ticking` (every server tick worn), `Damage` (a veto — `allowDamage` false
 cancels the hit outright), `Attributes` (equip/unequip), `Gliding` (vanilla's own `canGlide`
-check) and `Lifecycle`. A part has no durability of its own, so an effect that costs something
+check) and `Lifecycle` (put on and taken off, for state that lives outside the item — the one
+hook no built-in reaches, so putting anything there means Java). A part has no durability of
+its own, so an effect that costs something
 spends the *decorated piece's* durability — `pinions` wears the chestplate it is bolted to.
 
 **A new effect type is the one thing that needs Java**, because behaviour is code. Implement a
@@ -381,4 +383,4 @@ in writing and covers the distribution it describes.
 
 ---
 
-Every part in this mod is the same four files a pack of your own would write.
+Every part in this mod is the same two files and a PNG a pack of your own would write.

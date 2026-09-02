@@ -38,7 +38,8 @@ import net.minecraft.world.item.equipment.trim.ArmorTrim;
  *                   a datapack cannot bolt a plume onto a boot. Usually one entry; a part designed to
  *                   work in several places (a spike that suits both crest and spurs) may list more.
  * @param effects    what the part DOES while it is worn, if anything. Empty for every part this mod
- *                   ships and for every part that is only meant to look like something, which is the
+ *                   ships but {@code pinions}, and for every part that is only meant to look like
+ *                   something, which is the
  *                   normal case - the field exists so that a part is allowed to be more than paint,
  *                   not so that it has to be. Each entry names a type from
  *                   {@code armorpieces:decoration_effect_type}, a registry any mod may add to; see

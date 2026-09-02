@@ -29,7 +29,7 @@ code, and a pack can add its own the same way.</p>
 <h2>Features</h2>
 
 <ul>
-<li><strong>Twelve sockets, one part each</strong> &mdash; <code>crest</code>, <code>brow</code>, <code>horns</code>, <code>pauldrons</code>, <code>back</code>, <code>collar</code>, <code>vambraces</code>, <code>belt</code>, <code>tassets</code>, <code>knees</code>, <code>spurs</code>, <code>greaves</code>. A mirrored pair is one socket, so spaulders means both shoulders.</li>
+<li><strong>Twelve sockets, one part at a time</strong> &mdash; <code>crest</code>, <code>brow</code>, <code>horns</code>, <code>pauldrons</code>, <code>back</code>, <code>collar</code>, <code>vambraces</code>, <code>belt</code>, <code>tassets</code>, <code>knees</code>, <code>spurs</code>, <code>greaves</code>. A socket holds one part, so a new crest replaces the crest — but the twenty parts are spread unevenly over the twelve, three of them on <code>back</code> alone. Seven of the sockets are mirrored pairs, so spaulders means both shoulders.</li>
 <li><strong>Coloured by vanilla trim materials</strong> &mdash; One grayscale master per part is mapped onto each material&rsquo;s own palette at load time. A new trim material costs a part no new art at all.</li>
 <li><strong>One smithing recipe per socket, forever</strong> &mdash; The part rides on the template item as a component, so a pack hands out a template and needs no recipe of its own.</li>
 <li><strong>Optional behaviour</strong> &mdash; A part may carry effects — attributes, mob effects, a projectile dodge, gliding — configured in the same JSON file. <code>pinions</code> is a cut-down elytra that actually flies.</li>
@@ -135,8 +135,8 @@ code, and a pack can add its own the same way.</p>
 <hr>
 <h2>Adding a part</h2>
 
-<p>Three files and a PNG, none of them code. Namespace them however you like; every namespace is
-scanned.</p>
+<p>Two files and a PNG, plus a line in your language file for the name — none of it code.
+Namespace them however you like; every namespace is scanned.</p>
 <p><strong>1. The part</strong> — <code>data/&lt;ns&gt;/armorpieces/armor_decoration/dragon_crest.json</code></p>
 <pre><code class="language-json">{
   &quot;asset_id&quot;: &quot;&lt;ns&gt;:dragon_crest&quot;,
@@ -227,7 +227,7 @@ geometry or texture and a datapack can change where it may be worn.</p>
   { &quot;type&quot;: &quot;armorpieces:blink&quot;, &quot;chance&quot;: 0.2, &quot;damage_types&quot;: &quot;minecraft:is_projectile&quot; }
 ]
 </code></pre>
-<p>Four built-ins cover every hook from JSON alone:</p>
+<p>Four built-ins reach four of the five hooks from JSON alone:</p>
 <table>
 <thead>
 <tr>
@@ -261,7 +261,9 @@ geometry or texture and a datapack can change where it may be worn.</p>
 </table>
 <p>The five hooks are <code>Ticking</code> (every server tick worn), <code>Damage</code> (a veto — <code>allowDamage</code> false
 cancels the hit outright), <code>Attributes</code> (equip/unequip), <code>Gliding</code> (vanilla&rsquo;s own <code>canGlide</code>
-check) and <code>Lifecycle</code>. A part has no durability of its own, so an effect that costs something
+check) and <code>Lifecycle</code> (put on and taken off, for state that lives outside the item — the one
+hook no built-in reaches, so putting anything there means Java). A part has no durability of
+its own, so an effect that costs something
 spends the <em>decorated piece&rsquo;s</em> durability — <code>pinions</code> wears the chestplate it is bolted to.</p>
 <p><strong>A new effect type is the one thing that needs Java</strong>, because behaviour is code. Implement a
 hook, register the codec, and add nothing else:</p>
@@ -415,4 +417,4 @@ publishing a fork. Linking to an official download page never needs permission.<
 in writing and covers the distribution it describes.</p>
 
 <hr>
-<p>Every part in this mod is the same four files a pack of your own would write.</p>
+<p>Every part in this mod is the same two files and a PNG a pack of your own would write.</p>

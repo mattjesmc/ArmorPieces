@@ -21,7 +21,7 @@ import net.minecraft.world.item.Rarity;
  *
  * <p>The count is bounded by the anchor enum on purpose. Registering an item per PART would make the
  * part list compiled-in and undo the whole datapack story; registering one per SOCKET costs the same
- * ten registrations forever, because the socket list is closed anyway. Which part a template applies
+ * twelve registrations forever, because the socket list is closed anyway. Which part a template applies
  * is carried on the stack - see {@link DecorationTemplateItem}.
  */
 public final class ModItems {

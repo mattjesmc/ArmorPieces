@@ -79,16 +79,19 @@ public final class DecorationEffects {
     /**
      * The built-ins.
      *
-     * <p>Four, chosen so that between them every hook has at least one implementation a pack can
-     * reach with no Java: an attribute modifier and a status effect (the two things most parts would
-     * want), a dodge (the one that proves a part can refuse a hit), and a glider (the one that proves
-     * a part can change how the wearer moves). Eighteen of the nineteen parts this mod ships use
-     * none of them and stay purely cosmetic, which is a choice about this mod's content rather than
-     * a limit of the system. The nineteenth is {@code pinions} - an elytra cut down and bolted to a
-     * back bracket - and it exists so that this registry has one worked example inside the mod
-     * rather than only in a test pack: the part is still four datapack files and a PNG, and the
-     * only thing that makes it fly is a {@code "type": "armorpieces:glide"} entry any pack could
-     * have written.
+     * <p>Four, reaching four of the five hooks with no Java: an attribute modifier and a status
+     * effect (the two things most parts would want), a dodge (the one that proves a part can refuse
+     * a hit), and a glider (the one that proves a part can change how the wearer moves).
+     * {@link DecorationEffect.Lifecycle} is the hook none of them reach, and deliberately so: what
+     * it is for is state living outside the item, which is the one thing a JSON field cannot
+     * describe.
+     *
+     * <p>Nineteen of the twenty parts this mod ships use none of them and stay purely cosmetic,
+     * which is a choice about this mod's content rather than a limit of the system. The twentieth is
+     * {@code pinions} - an elytra cut down and bolted to a back bracket - and it exists so that this
+     * registry has one worked example inside the mod rather than only in a test pack: the part is
+     * still two files and a PNG, and the only thing that makes it fly is a
+     * {@code "type": "armorpieces:glide"} entry any pack could have written.
      */
     public static void register() {
         register("attribute", AttributeEffect.CODEC);
