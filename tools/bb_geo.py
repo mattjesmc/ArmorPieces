@@ -178,9 +178,14 @@ def export(bb_path, out_path, group_name=PART_GROUP, quiet=False):
     bb_path, out_path = Path(bb_path), Path(out_path)
     data, cubes, groups = read_bbmodel(bb_path)
 
+    # 'modded_entity' is what a bare part project is; 'free' is what a rig is, because a rig needs
+    # several textures at different sizes; 'armorpieces' is the Blockbench plugin's own format,
+    # which is 'free' with the workspace trimmed down. All store geometry identically, so all
+    # export the same.
     fmt = data.get("meta", {}).get("model_format")
-    if fmt != "modded_entity":
-        print(f"warning: {bb_path.name} is format {fmt!r}, expected 'modded_entity'", file=sys.stderr)
+    if fmt not in ("modded_entity", "free", "armorpieces"):
+        print(f"warning: {bb_path.name} is format {fmt!r}, expected 'modded_entity', 'free' or "
+              f"'armorpieces'", file=sys.stderr)
     if data.get("modded_entity_flip_y") is False:
         sys.exit("error: project has modded_entity_flip_y disabled; the 24-unit lift would be wrong")
 
@@ -222,7 +227,7 @@ def det_uuid(path):
     return str(uuid.uuid5(UUID_NS, path))
 
 
-def bone_to_group(bone, parent_origin_bb, path, elements, groups):
+def bone_to_group(bone, parent_origin_bb, path, elements, groups, texture_index=None):
     delta = flip_delta(bone.get("pivot", [0, 0, 0]))
     origin_bb = [parent_origin_bb[i] + delta[i] for i in range(3)]
     guid = det_uuid(path)
@@ -237,6 +242,12 @@ def bone_to_group(bone, parent_origin_bb, path, elements, groups):
         # Both flips invert the ordering on X and Y, so the geo maximum is the Blockbench minimum.
         frm = [num(-hi_geo[0]), num(BB_Y - hi_geo[1]), num(lo_geo[2])]
         to = [num(-lo_geo[0]), num(BB_Y - lo_geo[1]), num(hi_geo[2])]
+        # In a single-texture project every face samples the only texture there is, so `faces` is
+        # left off entirely; in a rig it is the only way to say "this cube wears the part's master
+        # and not the player's skin".
+        faces = None if texture_index is None else {
+            d: {"uv": [0, 0, 0, 0], "texture": texture_index}
+            for d in ("north", "east", "south", "west", "up", "down")}
         elements.append({
             "name": f"{bone.get('name', 'bone')}_{i}",
             "box_uv": True,
@@ -252,6 +263,7 @@ def bone_to_group(bone, parent_origin_bb, path, elements, groups):
             "mirror_uv": bool(cube.get("mirror", False)),
             "origin": [num(v) for v in origin_bb],
             "uv_offset": [int(v) for v in cube.get("uv", [0, 0])],
+            **({"faces": faces} if faces else {}),
             "type": "cube",
             "uuid": cuid,
         })
@@ -259,7 +271,7 @@ def bone_to_group(bone, parent_origin_bb, path, elements, groups):
 
     for i, child in enumerate(bone.get("children", [])):
         children.append(bone_to_group(
-            child, origin_bb, f"{path}/{child.get('name', i)}", elements, groups))
+            child, origin_bb, f"{path}/{child.get('name', i)}", elements, groups, texture_index))
 
     groups.append(make_group(bone.get("name", "bone"), guid, origin_bb,
                              flip_rot(bone.get("rotation", [0, 0, 0])),
@@ -286,19 +298,31 @@ def make_group(name, guid, origin_bb, rotation_bb, children, locked=False, color
     }
 
 
-def build_bbmodel(geo, name, anchor_geo=(0.0, 0.0, 0.0), reference=None):
+def build_bbmodel(geo, name, anchor_geo=(0.0, 0.0, 0.0), reference=None, textures=None,
+                  animations=None, model_format="modded_entity", part_parent=None,
+                  part_texture=None):
     """Assemble a Blockbench project.
 
     `reference` is an optional (elements, groups) pair of locked geometry - the vanilla body and
     armor - that bb_rig.py supplies. The part being authored always lives in a group named `part`,
-    placed at the anchor so that what you see in Blockbench is what ArmorDecorationLayer will draw."""
+    placed at the anchor so that what you see in Blockbench is what ArmorDecorationLayer will draw.
+
+    `part_parent` is the uuid of a reference group the part should hang under, which is what makes
+    the part swing with the limb it is attached to instead of standing still while the arm moves.
+    Group origins are absolute in Blockbench, so this is purely an outliner change - no coordinate
+    anywhere is affected by where the part sits in the tree.
+
+    `model_format` is 'modded_entity' for the plain part projects and 'free' for the rigs. The rigs
+    need 'free' for one reason: 'modded_entity' is single_texture, and a rig has to show the skin
+    (64x64), the armor layers (64x32) and the part's own master at the same time. 'free' is the only
+    animation-capable format with both multiple textures and per-texture UV sizes."""
     elements, groups = [], []
     part_origin_bb = flip_point(list(anchor_geo))
 
     part_children = []
     for i, bone in enumerate(geo.get("bones", [])):
         part_children.append(bone_to_group(
-            bone, part_origin_bb, f"{name}/{bone.get('name', i)}", elements, groups))
+            bone, part_origin_bb, f"{name}/{bone.get('name', i)}", elements, groups, part_texture))
 
     part_uuid = det_uuid(f"{name}/{PART_GROUP}")
     groups.append(make_group(PART_GROUP, part_uuid, part_origin_bb, [0, 0, 0],
@@ -308,6 +332,13 @@ def build_bbmodel(geo, name, anchor_geo=(0.0, 0.0, 0.0), reference=None):
     all_groups = ref_groups + groups
 
     tree_by_uuid = {g["uuid"]: g.pop("_tree") for g in all_groups}
+
+    # Hanging the part off a bone is just re-parenting it in the tree; the loop below then sees the
+    # part uuid as claimed and stops emitting it at the top of the outliner.
+    if part_parent is not None:
+        if part_parent not in tree_by_uuid:
+            raise KeyError(f"part_parent {part_parent} is not one of the reference groups")
+        tree_by_uuid[part_parent]["children"].append(part_uuid)
     # Only groups nothing else claims as a child sit at the top of the outliner.
     claimed = {c for t in tree_by_uuid.values() for c in t["children"] if c in tree_by_uuid}
 
@@ -318,8 +349,8 @@ def build_bbmodel(geo, name, anchor_geo=(0.0, 0.0, 0.0), reference=None):
 
     outliner = [nest(tree_by_uuid[g["uuid"]]) for g in all_groups if g["uuid"] not in claimed]
 
-    return {
-        "meta": {"format_version": "5.0", "model_format": "modded_entity", "box_uv": True},
+    model = {
+        "meta": {"format_version": "5.0", "model_format": model_format, "box_uv": True},
         "name": name,
         "model_identifier": name,
         "modded_entity_flip_y": True,
@@ -330,8 +361,11 @@ def build_bbmodel(geo, name, anchor_geo=(0.0, 0.0, 0.0), reference=None):
         "elements": ref_elements + elements,
         "groups": all_groups,
         "outliner": outliner,
-        "textures": [],
+        "textures": textures or [],
     }
+    if animations:
+        model["animations"] = animations
+    return model
 
 
 def do_import(geo_path, out_path, anchor_geo=(0.0, 0.0, 0.0), quiet=False):

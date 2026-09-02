@@ -17,15 +17,16 @@
 
 ## About
 
-Vanilla trims are *paint*: a texture layer drawn onto the armor model, which is why no trim ever
-sticks out from the armor. Armor Pieces adds the other half — **parts**, real geometry hung on the
-body. A plume on the helmet, spaulders on the shoulders, a sash on the belt, spurs on the heels.
+A vanilla trim is paint on the armor's texture, so it never sticks out. Armor Pieces adds
+**parts**: real geometry hung on the body. A plume on the helmet, spaulders on the shoulders, a
+sash on the belt, spurs on the heels.
 
-Parts are applied at a smithing table exactly the way trims are, and coloured by the same vanilla
-trim materials. A piece carries its trim and its parts at once; neither erases the other.
+A part is applied at a smithing table the way a trim is, with a template and a trim material, and
+takes that material's colour. Trim and parts live on the same piece of armor; neither replaces the
+other.
 
-Nineteen parts ship across twelve sockets. Every one of them is data — a datapack and a resource
-pack, no Java — and so is every part you add.
+Nineteen parts ship across twelve sockets. Each is a datapack entry, a model and a texture, no
+code, and a pack can add its own the same way.
 
 ---
 
@@ -293,11 +294,56 @@ base armor set, `full` dresses complete sets with every socket filled, and `clea
 | `decoration/` | anchors, the datapack registry entry, the item component, the effect hooks |
 | `client/` | the render layer, the geometry loader and bake cache, the per-material palette |
 | `recipe/`, `item/`, `registry/`, `command/` | smithing, the twelve templates, the creative tab, `/armorpieces stage` |
-| `tools/` | Blockbench rigs (`bb_rig.py`), `.bbmodel` ↔ geometry (`bb_geo.py`), master painting and install (`paint_<part>_master.py`, `sync_decoration_masters.py`), template icons, `trace_geometry.py` for measuring a part against the body |
+| `tools/` | Blockbench rigs (`bb_rig.py`, with the vanilla figure and walk cycle from `mc_humanoid.py`), `.bbmodel` ↔ geometry (`bb_geo.py`), master painting and install (`paint_<part>_master.py`, `sync_decoration_masters.py`), a material preview outside the game (`preview_material.py`), template icons, `trace_geometry.py` for measuring a part against the body |
+| `tools/blockbench_plugin/` | the Blockbench plugin — see the next section |
 | `tools/decoration_masters/` | the grayscale masters — the source of truth for every part's art |
 
 Authoring a part starts from a rig: each one holds the vanilla body and all four armor layers at
-their real inflate, with an empty group sitting exactly where the layer will draw.
+their real inflate, animated with the game's own walk and sprint cycles, with an empty group
+sitting exactly where the layer will draw. `python tools/bb_rig.py --all` regenerates them; the
+skin, armor and palette textures they reference are extracted from the game jar by
+`tools/vanilla_assets.py` on first use and are never committed.
+
+---
+
+## Editing parts in Blockbench
+
+`tools/blockbench_plugin/armorpieces.js` turns Blockbench into an editor for parts. A piece opens
+on the vanilla player wearing real armor, its master and static layer are painted in place, any
+trim material can be previewed live, and Save puts everything back where it came from. The
+plugin has no geometry or colour maths of its own: it drives the repo's Python tools, so the
+editor and the command line cannot disagree.
+
+**Install.** Blockbench 5.1 or later, and Python 3 with Pillow on `PATH` (the same requirement
+as every tool here). In Blockbench: *File › Plugins › Load Plugin from File*, and pick the
+file. It finds the repository from its own location; if the file was copied elsewhere, set
+*Armor Pieces repository* in Settings to the repo root. The first piece opened extracts the
+vanilla textures the rig needs from the game jar.
+
+**Open a piece.** *Tools › Armor Pieces › Open Armor Piece…* lists every part in
+`src/main/resources` and under `run/` — resource packs and world datapacks included — and opens
+it as its own tab. *New Armor Piece…* writes the datapack entry, a starter model, a blank
+texture and the language line, then opens that. A piece tab shows only what a part needs: Edit
+and Paint modes, the outliner, transform, the UV editor, colour and palette, and one
+**Armor Piece** panel with every control:
+
+| Control | What it does |
+| --- | --- |
+| Piece, Anchor | Which part is open and which socket it is rigged on. Changing the anchor rebuilds the rig from disk, so save first. |
+| New…, Save, Rebuild | Create a piece; write the model and textures back to the pack; reload the open one from disk. |
+| Editing: Master / Static | Which sheet the brush paints. The master is greyscale by definition — the palette turns grey and any colour painted on it folds to its value under the brush. The static layer keeps real colour and is created the first time it is selected. |
+| Material preview | Shows the part through a trim material's palette. Strokes still land on the sheet being edited, the UV editor keeps showing the greyscale, and the preview follows the brush. |
+| Pose, Phase | The walk or sprint cycle, frozen at any point, without leaving Edit or Paint mode. |
+| Show player, Show armor, Outliner: part only | Hide the reference figure, the armor layers, or everything but the part in the outliner. |
+
+**Modelling.** Model inside the `part` group; everything else is the locked reference. The
+mod's format is box UV only, so the plugin keeps it that way: a cube added, converted or
+resized is laid out in free space on the texture, the paint on its faces moves with them, and
+the texture grows when it is full. All of that lands in the same undo step as the edit.
+
+**Saving.** Save exports the geometry through `bb_geo.py`, writes the master and static layer
+back to their files, and — for a part whose master lives in `tools/decoration_masters/` — runs
+`sync_decoration_masters.py`, which installs the sheets and checks them against the geometry.
 
 ---
 

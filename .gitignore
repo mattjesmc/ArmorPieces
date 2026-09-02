@@ -45,3 +45,7 @@ Thumbs.db
 # Python bytecode from tools/
 __pycache__/
 *.pyc
+
+# Vanilla assets extracted from the game jar for the Blockbench rigs (tools/vanilla_assets.py).
+# Mojang's files, not ours to redistribute - same rule as the modpage texture cache above.
+tools/.mcassets/
