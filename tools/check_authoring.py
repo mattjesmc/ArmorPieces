@@ -13,6 +13,8 @@ the claim that opening a part and saving it unchanged changes nothing:
              it knows how to show
   loot       every row of a part's `loot` list is in the shape the Part dialog writes - table,
              weight, chance, in that order and of those types - so a save reproduces it
+  grids      no two shaped recipes in the pack share a crafting grid: every template is the same
+             ring of paper, so two parts given one centre item is one unobtainable part, silently
   recipes    every data/<ns>/recipe/template_<part>.json in the plugin's shape - the ring pattern,
              switched on or off with `armorpieces:disabled` - re-serialises to its own bytes from
              the two items and the switch the panel reads out of it, so a save reproduces the file
@@ -182,6 +184,40 @@ def check_fitting_recipes(pack: Path) -> list[str]:
     return failures
 
 
+def _shaped_signature(recipe: dict):
+    """What the crafting grid sees of a shaped recipe: the pattern and the ingredient under each
+    key. Two recipes with the same signature are one recipe to the game - it hands out whichever
+    it finds first and the other is silently unobtainable."""
+    if recipe.get("type") != "minecraft:crafting_shaped":
+        return None
+    pattern = recipe.get("pattern")
+    key = recipe.get("key")
+    if not isinstance(pattern, list) or not isinstance(key, dict):
+        return None
+    return (tuple(pattern), tuple(sorted((k, json.dumps(v, sort_keys=True)) for k, v in key.items())))
+
+
+def check_recipe_collisions(pack: Path) -> list[str]:
+    """Every shaped recipe in the pack has a grid no other shaped recipe in the pack has. Every
+    template recipe here is the same ring of paper, so the centre item is the whole recipe, and two
+    parts given the same centre is exactly the mistake nothing else reports."""
+    seen: dict = {}
+    failures: list[str] = []
+    for recipe_file in sorted(pack.glob("data/*/recipe/*.json")):
+        try:
+            signature = _shaped_signature(json.loads(recipe_file.read_text(encoding="utf8")))
+        except ValueError:
+            continue
+        if signature is None:
+            continue
+        if signature in seen:
+            failures.append(f"recipe {recipe_file.name}: same crafting grid as {seen[signature]} - "
+                            "one of the two can never be crafted")
+        else:
+            seen[signature] = recipe_file.name
+    return failures
+
+
 def check_pack(pack: Path, assets: Path | None = None) -> list[str]:
     """`pack` holds the datapack half; `assets`, when given, the resource pack half - the two
     folders a player's own content sits in. One folder for both is the usual case here."""
@@ -215,6 +251,7 @@ def check_pack(pack: Path, assets: Path | None = None) -> list[str]:
         print(f"data {data.name}: ok")
     failures.extend(check_recipes(pack, data_files))
     failures.extend(check_fitting_recipes(pack))
+    failures.extend(check_recipe_collisions(pack))
     return failures
 
 
