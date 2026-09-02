@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.3.0
+
+**Disabling recipes.** A recipe type that loads and does nothing, `armorpieces:disabled`. A
+datapack cannot delete a file the mod ships, so it overrides the file with
+`{"type": "armorpieces:disabled"}` instead: the recipe has no fields, matches nothing, and has no
+display, so it is out of the recipe book and out of any recipe viewer that reads displays. That
+makes a part loot-only (`recipe/template_circlet.json`), a server fitting-free
+(`recipe/apply_fitting.json` and `recipe/clear_fitting.json`), or a socket closed to smithing
+(`recipe/apply_horns.json`) - any recipe the mod has, and any other mod's just the same. Every
+field but the type is ignored.
+
+**Tools.** The Blockbench panel gains a *Craftable* switch beside the two recipe items: off, Save
+writes the recipe with its type swapped and the pattern and items kept, so the choices survive
+until it is switched back on, and the summary line says *not craftable*. `check_authoring.py`
+round-trips every part's template recipe, switched on or off, the way it does the data files.
+
 ## 0.2.0
 
 **Fittings.** A part can take a second material. A fitting names a region of the part - a mask

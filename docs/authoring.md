@@ -45,6 +45,7 @@ and Paint modes, the outliner, transform, the UV editor, colour and palette, and
 | Pose, Phase | The walk or sprint cycle, frozen at any point, without leaving Edit or Paint mode. |
 | Show player, Show armor, Outliner: part only | Hide the reference figure, the armor layers, or everything but the part in the outliner. |
 | Recipe centre, Recipe ring | The template recipe: one item in the middle of a ring of four, paper unless there is a reason. Item ids autocomplete from the game's own list. Written on Save as `data/<ns>/recipe/template_<part>.json`. |
+| Craftable | Whether that recipe works. Off, Save writes the same file with its type swapped to `armorpieces:disabled` — it loads, matches nothing and is absent from the recipe book — and the two items kept, so switching it back on is the reverse swap. The summary line says *not craftable* while it is off. For a part that is found rather than made. |
 
 **The part itself.** *Part…* opens the datapack half as a dialog: the name a player reads,
 the sockets the part may occupy, ticked by armor piece, and its fittings as an ordered list
@@ -74,8 +75,9 @@ masks back to their files, writes the template recipe, and — for a part whose 
 checks them against the geometry. When *Part…* changed something it also writes the data file
 and the language line, and nothing else: a field the dialog has no control for, an effect say,
 is written back exactly as it was read, a file nothing changed is not touched, and the recipe
-keeps a `group` or any other field the two item choices do not decide.
-`tools/check_authoring.py` runs the round trip over every shipped part.
+keeps a `group` or any other field the two item choices do not decide — including, when it is
+switched off, the pattern and items the disabled file still holds.
+`tools/check_authoring.py` runs the round trip over every shipped part, recipes included.
 
 **Starting from a rig.** Outside the plugin, authoring a part starts from a rig: each one holds
 the vanilla body and all four armor layers at their real inflate, animated with the game's own walk
@@ -190,6 +192,21 @@ and so on — and `fitting_template` is the thirteenth, shared by every fitting.
 
 **Overriding what this mod ships.** Same ids, your pack. A resource pack can restyle any part's
 geometry or texture and a datapack can change where it may be worn.
+
+**Turning a recipe off.** A datapack cannot delete a file the mod ships, so the mod ships a recipe
+type that loads and does nothing. Override the recipe's file with it:
+
+```json
+{ "type": "armorpieces:disabled" }
+```
+
+It has no fields, matches nothing, and has no display, so it is absent from the recipe book and
+from any recipe viewer that reads displays. That is how a part becomes loot-only
+(`recipe/template_circlet.json`), how a server does without fittings (`recipe/apply_fitting.json`
+and `recipe/clear_fitting.json`), or how a socket is closed to smithing altogether
+(`recipe/apply_horns.json`) — any recipe the mod has, and any other mod's just the same. Every
+other field in the file is ignored, which is why the Blockbench plugin's *Craftable* switch can
+leave the pattern and items in place under the swapped type.
 
 ## Giving a part behaviour
 

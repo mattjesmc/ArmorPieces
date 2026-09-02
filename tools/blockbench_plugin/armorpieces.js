@@ -77,6 +77,8 @@
 			part_only: true,
 			recipe_focus: '',
 			recipe_ring: 'minecraft:paper',
+			// Off, the recipe file is written with its type swapped to armorpieces:disabled.
+			recipe_craftable: true,
 			// The fitting whose mask is under the brush while edit is 'fitting'.
 			fitting: '',
 			// The preview's fitting values by fitting name, '' for empty.
@@ -383,6 +385,9 @@
 	 */
 	const RING_PATTERN = [' # ', '#F#', ' # '];
 	const ITEM_ID = /^[a-z0-9_.-]+:[a-z0-9_\/.-]+$/;
+	// The mod's recipe type that loads and does nothing. A recipe is switched off by writing the
+	// file with this type and everything else kept, and on again by writing the real type back.
+	const DISABLED_TYPE = 'armorpieces:disabled';
 	let itemCache = null;
 
 	function recipeFileFor(piece) {
@@ -408,20 +413,25 @@
 		return '';
 	}
 
-	/* The two choices an existing recipe file was written from, or null if there is no such file
-	 * or it is not shaped the way this plugin writes it (then it is somebody's hand-made recipe and
-	 * is left alone). */
+	/* The two choices an existing recipe file was written from, and whether it is switched on, or
+	 * null if there is no such file or it is not shaped the way this plugin writes it (then it is
+	 * somebody's hand-made recipe and is left alone). A disabled file keeps its pattern and key, so
+	 * the two items still read back; a bare disabled file - `{"type": "armorpieces:disabled"}` by
+	 * hand - reads as switched off with nothing to show. */
 	function readRecipe(piece) {
 		const file = recipeFileFor(piece);
 		if (!fs.existsSync(file)) return null;
 		try {
 			const recipe = JSON.parse(fs.readFileSync(file, 'utf8'));
-			if (recipe.type !== 'minecraft:crafting_shaped') return null;
-			if (JSON.stringify(recipe.pattern) !== JSON.stringify(RING_PATTERN)) return null;
+			const craftable = recipe.type !== DISABLED_TYPE;
+			if (craftable && recipe.type !== 'minecraft:crafting_shaped') return null;
+			if (JSON.stringify(recipe.pattern) !== JSON.stringify(RING_PATTERN)) {
+				return craftable ? null : { focus: '', ring: '', craftable: false };
+			}
 			const focus = ingredientId(recipe.key && recipe.key.F);
 			const ring = ingredientId(recipe.key && recipe.key['#']);
-			if (!focus || !ring) return null;
-			return { focus: focus, ring: ring };
+			if (!focus || !ring) return craftable ? null : { focus: '', ring: '', craftable: false };
+			return { focus: focus, ring: ring, craftable: craftable };
 		} catch (err) {
 			return null;
 		}
@@ -452,10 +462,13 @@
 		}
 		const socket = anchorsOf(piece)[0] || s.anchor;
 		// Only the fields the two choices decide are replaced. Anything else in an existing file - a
-		// group, a notification flag - is somebody's authoring and stays.
+		// group, a notification flag - is somebody's authoring and stays. Switched off, the type is
+		// the disabled one and the rest is written all the same, so the choices survive until it
+		// is switched back on; the game ignores every field of a disabled recipe but its type.
+		const craftable = s.recipe_craftable !== false;
 		const file = recipeFileFor(piece);
 		const recipe = Object.assign(readJsonOr(file, {}), {
-			type: 'minecraft:crafting_shaped',
+			type: craftable ? 'minecraft:crafting_shaped' : DISABLED_TYPE,
 			pattern: RING_PATTERN,
 			key: { '#': ring, F: focus },
 			result: {
@@ -465,7 +478,7 @@
 		});
 		if (!recipe.category) recipe.category = 'equipment';
 		writeJson(file, recipe);
-		return 'recipe: ' + focus + ' in ' + ring;
+		return (craftable ? 'recipe: ' : 'recipe off, kept: ') + focus + ' in ' + ring;
 	}
 
 	/*
@@ -553,6 +566,7 @@
 		if (recipe) {
 			Project[ID + '_state'].recipe_focus = recipe.focus;
 			Project[ID + '_state'].recipe_ring = recipe.ring;
+			Project[ID + '_state'].recipe_craftable = recipe.craftable;
 		}
 		Project.name = piece.name;
 		// The rig is scratch; saving it would put a rig where the piece should go. Save Piece is the
@@ -1830,7 +1844,8 @@
 		const name = Project[ID + '_name'] || displayName(piece, data).text;
 		return name + '  ·  ' + anchorsOf(piece).join(', ')
 			+ '  ·  ' + (fittings.length ? 'fittings: ' + fittings.join(', ') : 'no fittings')
-			+ (effects.length ? '  ·  effects: ' + effects.join(', ') : '');
+			+ (effects.length ? '  ·  effects: ' + effects.join(', ') : '')
+			+ (state().recipe_craftable === false ? '  ·  not craftable' : '');
 	}
 
 	const PART_DIALOG_TEMPLATE = [
@@ -2427,6 +2442,12 @@
 				label: 'Recipe ring', type: 'text', value: 'minecraft:paper',
 				description: 'The four items around it.',
 			},
+			recipe_craftable: {
+				label: 'Craftable', type: 'checkbox', style: 'toggle_switch', value: true,
+				description: 'Off, Save writes the recipe as armorpieces:disabled - it loads, matches '
+					+ 'nothing and is absent from the recipe book - with the two items kept, so it '
+					+ 'can be switched back on. For a part that is found rather than made.',
+			},
 		};
 	}
 
@@ -2452,6 +2473,7 @@
 				part_only: s.part_only,
 				recipe_focus: s.recipe_focus,
 				recipe_ring: s.recipe_ring,
+				recipe_craftable: s.recipe_craftable !== false,
 			};
 			for (let i = 0; i < FITTING_SLOTS; i++) {
 				const fitting = masked[i];
@@ -2499,7 +2521,10 @@
 		s.part_only = !!result.part_only;
 		s.recipe_focus = result.recipe_focus || '';
 		s.recipe_ring = result.recipe_ring || '';
+		s.recipe_craftable = result.recipe_craftable !== false;
 		s.fitting = result.fitting || '';
+		// The summary line says "not craftable" while the switch is off.
+		if (changed.includes('recipe_craftable')) syncForm();
 		const masked = maskedFittings();
 		const shown = previewFittings();
 		for (let i = 0; i < shown.length && i < FITTING_SLOTS; i++) {
@@ -2593,7 +2618,7 @@
 		author: 'mattjes',
 		icon: 'shield',
 		description: 'Browse, edit and save Armor Pieces on an animated vanilla player wearing real armor.',
-		version: '0.2.0',
+		version: '0.3.0',
 		variant: 'desktop',
 		tags: ['Minecraft: Java Edition'],
 

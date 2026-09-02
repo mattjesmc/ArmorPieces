@@ -63,7 +63,9 @@ sections:
       - title: One smithing recipe per socket, forever
         description: >-
           The part rides on the template item as a component, so a pack hands out a template and needs
-          no recipe of its own.
+          no recipe of its own. And any recipe the mod ships can be switched off by overriding its file
+          with `{"type": "armorpieces:disabled"}` — a part that is found rather than made, a server
+          without fittings.
       - title: Optional behaviour
         description: >-
           A part may carry effects — attributes, mob effects, a projectile dodge, gliding — configured

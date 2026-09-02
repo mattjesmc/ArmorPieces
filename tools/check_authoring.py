@@ -11,6 +11,10 @@ the claim that opening a part and saving it unchanged changes nothing:
              dialog's write-back reproduces the file rather than reformatting it
   fittings   every fitting a part lists resolves to a definition the plugin can offer, with a type
              it knows how to show
+  recipes    every data/<ns>/recipe/template_<part>.json in the plugin's shape - the ring pattern,
+             switched on or off with `armorpieces:disabled` - re-serialises to its own bytes from
+             the two items and the switch the panel reads out of it, so a save reproduces the file
+             and a disabled recipe keeps what it was
 
 Usage:
     python tools/check_authoring.py            # the mod's own resources
@@ -51,6 +55,74 @@ def _effect_editable(effect, schema) -> bool:
 ROOT = Path(__file__).resolve().parent.parent
 RESOURCES = ROOT / "src" / "main" / "resources"
 
+# The plugin's recipe shape: one centre item in a ring of four, and the type it writes when the
+# Craftable switch is off. Mirrors RING_PATTERN and DISABLED_TYPE in the plugin.
+RING_PATTERN = [" # ", "#F#", " # "]
+DISABLED_TYPE = "armorpieces:disabled"
+
+
+def _ingredient_id(value) -> str:
+    if isinstance(value, str):
+        return value
+    if isinstance(value, dict) and isinstance(value.get("item"), str):
+        return value["item"]
+    return ""
+
+
+def _recipe_rewrite(recipe: dict, namespace: str, part: str, anchor: str) -> dict | None:
+    """What the plugin's Save would write for this recipe file, or None if it would leave it alone.
+
+    Mirrors readRecipe + writeRecipe: a file not in the ring shape is somebody's hand-made recipe
+    and is never touched; a ring-shaped one - switched on or off - is rewritten from its two items
+    and the switch, over whatever else the file holds.
+    """
+    craftable = recipe.get("type") != DISABLED_TYPE
+    if craftable and recipe.get("type") != "minecraft:crafting_shaped":
+        return None
+    if recipe.get("pattern") != RING_PATTERN:
+        return None
+    key = recipe.get("key") or {}
+    focus, ring = _ingredient_id(key.get("F")), _ingredient_id(key.get("#"))
+    if not focus or not ring:
+        return None
+    out = dict(recipe)
+    out.update({
+        "type": "minecraft:crafting_shaped" if craftable else DISABLED_TYPE,
+        "pattern": RING_PATTERN,
+        "key": {"#": ring, "F": focus},
+        "result": {
+            "id": f"armorpieces:{anchor}_template",
+            "components": {"armorpieces:decoration": f"{namespace}:{part}"},
+        },
+    })
+    out.setdefault("category", "equipment")
+    return out
+
+
+def check_recipes(pack: Path, data_files: list[Path]) -> list[str]:
+    failures: list[str] = []
+    for data in data_files:
+        namespace, part = data.parents[2].name, data.stem
+        recipe_file = pack / "data" / namespace / "recipe" / f"template_{part}.json"
+        if not recipe_file.exists():
+            continue
+        text = recipe_file.read_text(encoding="utf8")
+        try:
+            recipe = json.loads(text)
+        except ValueError:
+            failures.append(f"recipe {recipe_file.name}: not valid JSON")
+            continue
+        anchors = json.loads(data.read_text(encoding="utf8")).get("anchors") or [""]
+        rewrite = _recipe_rewrite(recipe, namespace, part, anchors[0])
+        if rewrite is None:
+            print(f"recipe {recipe_file.name}: hand-made, left alone")
+            continue
+        if json.dumps(rewrite, indent=2) + "\n" != text:
+            failures.append(f"recipe {recipe_file.name}: would be rewritten by a save")
+        state = "off" if recipe.get("type") == DISABLED_TYPE else "on"
+        print(f"recipe {recipe_file.name}: ok ({state})")
+    return failures
+
 
 def check_pack(pack: Path) -> list[str]:
     failures: list[str] = []
@@ -77,6 +149,7 @@ def check_pack(pack: Path) -> list[str]:
                 failures.append(f"data {data.name}: effect {effect.get('type') if isinstance(effect, dict) else effect}"
                                 " would show read-only in the editor")
         print(f"data {data.name}: ok")
+    failures.extend(check_recipes(pack, data_files))
     return failures
 
 
