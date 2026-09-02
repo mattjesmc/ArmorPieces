@@ -23,7 +23,7 @@ sash on the belt, spurs on the heels.</p>
 takes that material&rsquo;s colour. Trim and parts live on the same piece of armor; neither replaces the
 other.</p>
 <p>Some parts take a second material through a <strong>fitting</strong>: a gem set into the circlet, a metal
-buckle and a dyed strap on the sash, a banner&rsquo;s design on the back banner. One more smithing
+buckle and a dyed strap on the sash, a dyed inlay on the greaves, a banner&rsquo;s design on the back banner. One more smithing
 step, and the item decides where it goes.</p>
 <p>Twenty parts ship across twelve sockets. Each is a datapack entry, a model and a texture, no
 code, and a pack can add its own the same way.</p>
@@ -220,7 +220,7 @@ datapack file too, <code>data/&lt;ns&gt;/armorpieces/fitting/&lt;name&gt;.json</
 takes any metal:</p>
 <pre><code class="language-json">{ &quot;type&quot;: &quot;armorpieces:material&quot;,
   &quot;description&quot;: { &quot;translate&quot;: &quot;fitting.&lt;ns&gt;.pommel&quot; },
-  &quot;materials&quot;: &quot;#minecraft:trim_materials&quot; }
+  &quot;materials&quot;: &quot;#armorpieces:guard_metals&quot; }
 </code></pre>
 <p>A new fitting <em>type</em> — one that reads an item the three built-in types cannot, or draws its own
 geometry instead of colouring a mask — is Java, the way a new effect type is: implement
@@ -404,11 +404,11 @@ and Paint modes, the outliner, transform, the UV editor, colour and palette, and
 <tbody>
 <tr>
 <td>Piece, Anchor</td>
-<td>Which part is open and which socket it is rigged on. Changing the anchor rebuilds the rig from disk, so save first.</td>
+<td>Which part is open and which socket it is rigged on. Changing the anchor rebuilds the rig, which reloads the model from disk, so save modelling first; what <em>Part…</em> changed carries across.</td>
 </tr>
 <tr>
-<td>New…, Save, Rebuild</td>
-<td>Create a piece; write the model and textures back to the pack; reload the open one from disk.</td>
+<td>New…, Part…, Save, Rebuild</td>
+<td>Create a piece; edit its name, anchors and fittings; write everything back to the pack; reload the open one from disk. A line under the buttons says what the part is: name, anchors, fittings.</td>
 </tr>
 <tr>
 <td>Editing: Master / Static / Mask</td>
@@ -424,7 +424,7 @@ and Paint modes, the outliner, transform, the UV editor, colour and palette, and
 </tr>
 <tr>
 <td>one row per fitting</td>
-<td>With the preview on: what each masked fitting holds — a gem, a metal, a dye, or empty. The preview bakes the masks exactly as the game does, in the part&rsquo;s order. A banner fitting draws its own geometry and is not previewed.</td>
+<td>With the preview on: what each fitting holds — a gem, a metal, a dye, a banner, or empty. The preview bakes the masks exactly as the game does, in the part&rsquo;s order. A banner fitting is shown as a flat fill of the banner&rsquo;s base colour over its bone, standing in for the pattern layers the game draws there.</td>
 </tr>
 <tr>
 <td>Pose, Phase</td>
@@ -440,14 +440,34 @@ and Paint modes, the outliner, transform, the UV editor, colour and palette, and
 </tr>
 </tbody>
 </table>
+<p><strong>The part itself.</strong> <em>Part…</em> opens the datapack half as a dialog: the name a player reads,
+the sockets the part may occupy, ticked by armor piece, and its fittings as an ordered list
+picked from every fitting definition in the pack and the mod — each shown with its kind, a
+mask to paint or a bone to draw on. The panel follows at once: the Anchor list, the Fitting
+list, the preview rows and the summary line. <em>New…</em> beside that list defines a fitting the
+pack does not have yet: a material fitting over a trim-material tag or over ticked materials,
+which are written as a tag in the pack so another pack can add to it; a dye fitting; or a
+banner fitting on one of the part&rsquo;s own bones, with its pattern sheet and front face. The
+definition, its language line and any tag are written the moment the dialog confirms, and
+the fitting joins the part&rsquo;s list. Effects are rows on the same dialog: pick a built-in
+type and its fields appear, with the ranges, defaults and descriptions read out of the Java
+that defines it, and attribute, mob-effect and damage-tag ids autocompleting from the game.
+Any row can be switched to run <em>only while</em> one of the part&rsquo;s fittings holds a chosen
+material or dye, which is <code>armorpieces:if_fitting</code> written for you. An effect the dialog
+cannot show — a type from another mod — is kept as it is and shown read-only.</p>
 <p><strong>Modelling.</strong> Model inside the <code>part</code> group; everything else is the locked reference. The
 mod&rsquo;s format is box UV only, so the plugin keeps it that way: a cube added, converted or
 resized is laid out in free space on the texture, the paint on its faces moves with them, and
-the texture grows when it is full. All of that lands in the same undo step as the edit.</p>
+the texture grows when it is full. All of that lands in the same undo step as the edit. Cubes
+do not rotate — the mod&rsquo;s cube has no rotation — so a tilt is a rotated bone.</p>
 <p><strong>Saving.</strong> Save exports the geometry through <code>bb_geo.py</code>, writes the master, static layer and
 masks back to their files, writes the template recipe, and — for a part whose master lives in
 <code>tools/decoration_masters/</code> — runs <code>sync_decoration_masters.py</code>, which installs the sheets and
-checks them against the geometry.</p>
+checks them against the geometry. When <em>Part…</em> changed something it also writes the data file
+and the language line, and nothing else: a field the dialog has no control for, an effect say,
+is written back exactly as it was read, a file nothing changed is not touched, and the recipe
+keeps a <code>group</code> or any other field the two item choices do not decide.
+<code>tools/check_authoring.py</code> runs the round trip over every shipped part.</p>
 
 <hr>
 <h2>FAQ</h2>

@@ -36,7 +36,7 @@ sections:
     other.
 
     Some parts take a second material through a **fitting**: a gem set into the circlet, a metal
-    buckle and a dyed strap on the sash, a banner's design on the back banner. One more smithing
+    buckle and a dyed strap on the sash, a dyed inlay on the greaves, a banner's design on the back banner. One more smithing
     step, and the item decides where it goes.
 
     Twenty parts ship across twelve sockets. Each is a datapack entry, a model and a texture, no
@@ -231,7 +231,7 @@ custom_sections:
       ```json
       { "type": "armorpieces:material",
         "description": { "translate": "fitting.<ns>.pommel" },
-        "materials": "#minecraft:trim_materials" }
+        "materials": "#armorpieces:guard_metals" }
       ```
 
       A new fitting *type* — one that reads an item the three built-in types cannot, or draws its own
@@ -377,24 +377,45 @@ custom_sections:
 
       | Control | What it does |
       | --- | --- |
-      | Piece, Anchor | Which part is open and which socket it is rigged on. Changing the anchor rebuilds the rig from disk, so save first. |
-      | New…, Save, Rebuild | Create a piece; write the model and textures back to the pack; reload the open one from disk. |
+      | Piece, Anchor | Which part is open and which socket it is rigged on. Changing the anchor rebuilds the rig, which reloads the model from disk, so save modelling first; what *Part…* changed carries across. |
+      | New…, Part…, Save, Rebuild | Create a piece; edit its name, anchors and fittings; write everything back to the pack; reload the open one from disk. A line under the buttons says what the part is: name, anchors, fittings. |
       | Editing: Master / Static / Mask | Which sheet the brush paints. The master is greyscale by definition — the palette turns grey and any colour painted on it folds to its value under the brush. The static layer keeps real colour and is created the first time it is selected. |
       | Fitting | With Mask selected: which of the part's masked fittings the brush paints. A mask is greyscale like the master — its values are the fitting's shading — and is created blank the first time it is selected. |
       | Material preview | Shows the part through a trim material's palette. Strokes still land on the sheet being edited, the UV editor keeps showing the greyscale, and the preview follows the brush. |
-      | one row per fitting | With the preview on: what each masked fitting holds — a gem, a metal, a dye, or empty. The preview bakes the masks exactly as the game does, in the part's order. A banner fitting draws its own geometry and is not previewed. |
+      | one row per fitting | With the preview on: what each fitting holds — a gem, a metal, a dye, a banner, or empty. The preview bakes the masks exactly as the game does, in the part's order. A banner fitting is shown as a flat fill of the banner's base colour over its bone, standing in for the pattern layers the game draws there. |
       | Pose, Phase | The walk or sprint cycle, frozen at any point, without leaving Edit or Paint mode. |
       | Show player, Show armor, Outliner: part only | Hide the reference figure, the armor layers, or everything but the part in the outliner. |
       | Recipe centre, Recipe ring | The template recipe: one item in the middle of a ring of four, paper unless there is a reason. Item ids autocomplete from the game's own list. Written on Save as `data/<ns>/recipe/template_<part>.json`. |
 
+      **The part itself.** *Part…* opens the datapack half as a dialog: the name a player reads,
+      the sockets the part may occupy, ticked by armor piece, and its fittings as an ordered list
+      picked from every fitting definition in the pack and the mod — each shown with its kind, a
+      mask to paint or a bone to draw on. The panel follows at once: the Anchor list, the Fitting
+      list, the preview rows and the summary line. *New…* beside that list defines a fitting the
+      pack does not have yet: a material fitting over a trim-material tag or over ticked materials,
+      which are written as a tag in the pack so another pack can add to it; a dye fitting; or a
+      banner fitting on one of the part's own bones, with its pattern sheet and front face. The
+      definition, its language line and any tag are written the moment the dialog confirms, and
+      the fitting joins the part's list. Effects are rows on the same dialog: pick a built-in
+      type and its fields appear, with the ranges, defaults and descriptions read out of the Java
+      that defines it, and attribute, mob-effect and damage-tag ids autocompleting from the game.
+      Any row can be switched to run *only while* one of the part's fittings holds a chosen
+      material or dye, which is `armorpieces:if_fitting` written for you. An effect the dialog
+      cannot show — a type from another mod — is kept as it is and shown read-only.
+
       **Modelling.** Model inside the `part` group; everything else is the locked reference. The
       mod's format is box UV only, so the plugin keeps it that way: a cube added, converted or
       resized is laid out in free space on the texture, the paint on its faces moves with them, and
-      the texture grows when it is full. All of that lands in the same undo step as the edit.
+      the texture grows when it is full. All of that lands in the same undo step as the edit. Cubes
+      do not rotate — the mod's cube has no rotation — so a tilt is a rotated bone.
 
       **Saving.** Save exports the geometry through `bb_geo.py`, writes the master, static layer and
       masks back to their files, writes the template recipe, and — for a part whose master lives in
       `tools/decoration_masters/` — runs `sync_decoration_masters.py`, which installs the sheets and
-      checks them against the geometry.
+      checks them against the geometry. When *Part…* changed something it also writes the data file
+      and the language line, and nothing else: a field the dialog has no control for, an effect say,
+      is written back exactly as it was read, a file nothing changed is not touched, and the recipe
+      keeps a `group` or any other field the two item choices do not decide.
+      `tools/check_authoring.py` runs the round trip over every shipped part.
 
 footer: "Every part in this mod is the same two files and a PNG a pack of your own would write."

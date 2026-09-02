@@ -8,7 +8,7 @@ table offers an item to every part on the piece, filling the first fitting on ea
 gem to the `gemstone`, an ingot to the `guard`, a dye to the `inlay`, a banner made at a loom to the
 `banner`. One fitting template covers all of them, and the template with nothing in the third slot
 takes every fitting out again. The circlet takes a gem in its stone, the sash takes a dye on its
-strap and a metal on its buckle, and the back banner wears a real banner's design, drawn in pattern
+strap and a metal on its buckle, the greaves take a dye in their inlay, and the back banner wears a real banner's design, drawn in pattern
 layers the way a shield wears one. Re-applying a part keeps what is set in it, so a circlet can be
 changed from iron to gold without losing its emerald.
 
@@ -31,6 +31,29 @@ plugin paints masks as a third edit mode, greyscale like the master and created 
 its material preview fills each fitting from a dropdown. The rigs load the masks beside the master.
 `/armorpieces stage fittings [<part>]` stages every fitting filled with everything the item registry
 puts in it, one block per fitting, the part's materials down the rows.
+
+**Blockbench, the datapack half.** *Part...* on the panel edits the name, the anchors and the
+fittings list - picked from every fitting definition in the pack and the mod - and the panel
+follows at once: the Anchor list, the Fitting list, the preview rows and a summary line under the
+buttons. *New...* beside the list defines a fitting the pack lacks: material (over a tag, or over
+ticked materials written as a tag in the pack), dye, or banner on one of the part's bones; the
+file, its language line and any tag are written when the dialog confirms. A banner fitting gets a
+preview row like the masked ones, and fills its bone with the chosen banner's base colour, a stand-in
+for the pattern layers the game draws there. Effects are rows on the same dialog, their fields,
+ranges, defaults and descriptions parsed out of the built-in records by `tools/effect_schema.py`
+so that Java stays the one source of truth; ids autocomplete from the game jar
+(`vanilla_assets.py --list-ids`); any row can be gated on a fitting, which writes
+`armorpieces:if_fitting`; a type from another mod is kept as read. Save writes the data
+file and the language line, and writes back any field the dialog has no control for exactly as it
+read it; a data file is never reformatted for being opened, and the template recipe keeps a
+`group` or any other field the two item choices do not decide. Cube rotation is off in the
+workspace format, since the mod's cube has none and the exporter dropped it silently.
+`preview_material.py --fittings` takes `--pack` for a file outside one, `--list-fittings <pack>`
+lists every definition a part there could declare and `--fitting-choices <pack>` the materials and
+tags a new one could take; `vanilla_assets.py` now also extracts the trim-material registry and
+tags, from a jar that carries `data/`; `tools/check_authoring.py` runs the round trip over every
+shipped part. The mod page's example fitting named `#minecraft:trim_materials`, which is an item
+tag and would not have loaded; it names `#armorpieces:guard_metals` now.
 
 **Docs.** The mod page gains the fitting sections, the `smithing_fitting` recipe type and the
 `armorpieces:if_fitting` effect row, and `fitting_template` is named as the thirteenth template item

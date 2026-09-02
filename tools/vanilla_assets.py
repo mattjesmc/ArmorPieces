@@ -13,6 +13,7 @@ Usage:
     python tools/vanilla_assets.py               # extract everything the rigs need
     python tools/vanilla_assets.py --list        # show what would be extracted, and where from
     python tools/vanilla_assets.py --list-items  # print every vanilla item id with its name, as JSON
+    python tools/vanilla_assets.py --list-ids    # attribute and mob effect ids, damage-type tags
 """
 
 from __future__ import annotations
@@ -70,11 +71,13 @@ def find_jar(version: str) -> Path:
     Both the plain and the deobfuscated jar carry the same `assets/` tree, so either will do and the
     first one that exists wins. Nothing here reads code out of the jar - only PNGs."""
     candidates = [
+        LOOM / version / "minecraft-client.jar",
+        LOOM / version / "minecraft-merged.jar",
+        LOOM / "minecraftMaven" / "net" / "minecraft" / "minecraft-merged-deobf" / version
+        / f"minecraft-merged-deobf-{version}.jar",
         LOOM / "minecraftMaven" / "net" / "minecraft" / "minecraft-clientonly-deobf" / version
         / f"minecraft-clientonly-deobf-{version}.jar",
-        LOOM / version / "minecraft-client.jar",
         LOOM / version / "minecraft-client-only.jar",
-        LOOM / version / "minecraft-merged.jar",
     ]
     for path in candidates:
         if path.is_file():
@@ -125,6 +128,29 @@ def list_items(jar_path: Path) -> dict[str, str]:
     return dict(sorted(items.items()))
 
 
+def list_ids(jar_path: Path) -> dict:
+    """The ids an effect's fields can name, with their English names, for an editor's autocomplete:
+    attributes and mob effects from the language file, the way list_items reads items, and the
+    damage-type tags from the data the jar carries."""
+    with zipfile.ZipFile(jar_path) as jar:
+        lang = json.loads(jar.read("assets/minecraft/lang/en_us.json"))
+        tags = sorted(
+            "#minecraft:" + name.rsplit("/", 1)[1][:-5]
+            for name in jar.namelist()
+            if name.startswith("data/minecraft/tags/damage_type/") and name.endswith(".json"))
+    attributes, effects = {}, {}
+    for key, name in lang.items():
+        if key.startswith("attribute.name."):
+            attributes["minecraft:" + key[len("attribute.name."):]] = name
+        elif key.startswith("effect.minecraft.") and key.count(".") == 2:
+            effects["minecraft:" + key[len("effect.minecraft."):]] = name
+    return {
+        "attribute": dict(sorted(attributes.items())),
+        "mob_effect": dict(sorted(effects.items())),
+        "damage_type_tags": tags,
+    }
+
+
 def extract(jar_path: Path, listing_only: bool = False) -> tuple[int, list[str]]:
     """Copy every wanted entry out of the jar. Returns (count, missing entries).
 
@@ -136,6 +162,15 @@ def extract(jar_path: Path, listing_only: bool = False) -> tuple[int, list[str]]
 
     with zipfile.ZipFile(jar_path) as jar:
         names = set(jar.namelist())
+        # The trim-material registry entries and any tags over them, so a tool here can say which
+        # materials exist and what a tag means. Enumerated from the jar rather than listed here,
+        # because the set is Mojang's to grow. (The client-only jar carries no data/ at all, so the
+        # candidates below prefer a jar that does.)
+        for name in names:
+            if name.endswith(".json") and (name.startswith("data/minecraft/trim_material/")
+                                           or name.startswith("data/minecraft/tags/trim_material/")
+                                           or name.startswith("data/minecraft/tags/damage_type/")):
+                entries[name] = name
         for entry, relative in sorted(entries.items()):
             if entry not in names:
                 missing.append(entry)
@@ -163,12 +198,18 @@ def main() -> None:
                     help="report what would be extracted without writing anything")
     ap.add_argument("--list-items", action="store_true",
                     help="print every vanilla item id with its display name as JSON and exit")
+    ap.add_argument("--list-ids", action="store_true",
+                    help="print the attribute and mob effect ids with their names, and the "
+                         "damage-type tags, as JSON and exit")
     args = ap.parse_args()
 
     version = minecraft_version()
     jar_path = find_jar(version)
     if args.list_items:
         print(json.dumps(list_items(jar_path), indent=1))
+        return
+    if args.list_ids:
+        print(json.dumps(list_ids(jar_path), indent=1))
         return
     print(f"minecraft {version} <- {jar_path}")
 

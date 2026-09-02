@@ -83,6 +83,7 @@ DYES = {
 # this tool can say about a value whose shape it does not know.
 MATERIAL_TYPE = "armorpieces:material"
 DYE_TYPE = "armorpieces:dye"
+BANNER_TYPE = "armorpieces:banner"
 
 
 def _lerp(a, b, t):
@@ -316,7 +317,8 @@ def _tag_members(pack_dirs: list[Path], registry: str, tag: str, seen: set | Non
         return []
     seen.add(tag)
     namespace, name = _split_id(tag)
-    path = _find(pack_dirs, "data", namespace, "tags", registry, f"{name}.json")
+    # Vanilla's own tags come last, from the copy vanilla_assets.py takes out of the jar.
+    path = _find(pack_dirs + [ASSETS], "data", namespace, "tags", registry, f"{name}.json")
     if path is None:
         return []
     members: list[str] = []
@@ -345,7 +347,8 @@ def _material_options(pack_dirs: list[Path], materials) -> list[dict]:
         if not (PALETTES / f"{name}.png").is_file():
             continue
         label = _translate(pack_dirs, namespace, f"trim_material.{namespace}.{name}", name)
-        options.append({"value": name, "label": label.removesuffix(" Material"), "colour": f"palette:{name}"})
+        options.append({"value": name, "id": material, "label": label.removesuffix(" Material"),
+                        "colour": f"palette:{name}"})
     return options
 
 
@@ -357,43 +360,110 @@ def _dye_options(pack_dirs: list[Path]) -> list[dict]:
     } for name, rgb in DYES.items()]
 
 
-def list_fittings(data_path: Path) -> list[dict]:
+def _pack_dirs(pack: Path) -> list[Path]:
+    """Where a pack's references resolve: the pack itself first, then the mod's own resources."""
+    pack = pack.resolve()
+    return [pack] + ([RESOURCES] if RESOURCES.resolve() != pack else [])
+
+
+def _fitting_entry(pack_dirs: list[Path], fitting_id: str) -> dict:
+    """One fitting, resolved far enough for an editor to offer it: its mask name (the id's path),
+    its type, whether it is a mask over the texture, a display name, the file it was read from,
+    and - for the two masked types this mod ships - the values it can take, each with the colour
+    it asks the baker for: `palette:<suffix>` or `solid:#rrggbb`. A fitting with no file is listed
+    with a null type, which is what an editor should show as missing."""
+    namespace, name = _split_id(fitting_id, "armorpieces")
+    entry = {"id": f"{namespace}:{name}", "name": name, "type": None, "masked": False,
+             "label": name.replace("_", " ").title(), "options": [], "path": None}
+    path = _find(pack_dirs, "data", namespace, "armorpieces", "fitting", f"{name}.json")
+    if path is not None:
+        fitting = _read_json(path)
+        entry["path"] = str(path)
+        entry["type"] = fitting.get("type")
+        description = fitting.get("description")
+        if isinstance(description, dict) and isinstance(description.get("translate"), str):
+            entry["label"] = _translate(pack_dirs, namespace, description["translate"], name)
+        elif isinstance(description, str):
+            entry["label"] = description
+        if entry["type"] == MATERIAL_TYPE:
+            entry["masked"] = True
+            entry["options"] = _material_options(pack_dirs, fitting.get("materials", []))
+        elif entry["type"] == DYE_TYPE:
+            entry["masked"] = True
+            entry["options"] = _dye_options(pack_dirs)
+        elif entry["type"] == BANNER_TYPE:
+            # Not a mask: the game draws the banner's layers over the named bone instead of its
+            # texture. An editor can stand in for that with the base colour, so the options are
+            # the sixteen banner bases, and the bone is named for it to find.
+            entry["bone"] = fitting.get("bone", "banner")
+            entry["options"] = _dye_options(pack_dirs)
+    return entry
+
+
+def list_fittings(data_path: Path, pack: Path | None = None) -> list[dict]:
     """The fittings a part declares, resolved far enough for an editor to offer them.
 
     `data_path` is the part's datapack half, `<pack>/data/<ns>/armorpieces/armor_decoration/<part>.json`.
     Fittings, tags and language files are looked up in that pack first and the mod's own resources
-    second, which is how the game would resolve them with both loaded. Each fitting comes back with
-    its mask name (the id's path), its type, whether it is a mask over the texture, a display name,
-    and - for the two masked types this mod ships - the values it can take, each with the colour it
-    asks the baker for: `palette:<suffix>` or `solid:#rrggbb`."""
+    second, which is how the game would resolve them with both loaded. `pack` names the pack when
+    the file is not inside one - a live editor's scratch copy of unsaved data, say."""
     data_path = data_path.resolve()
-    pack = data_path.parents[4] if len(data_path.parents) > 4 else data_path.parent
-    pack_dirs = [pack] + ([RESOURCES] if RESOURCES.resolve() != pack else [])
+    if pack is None:
+        pack = data_path.parents[4] if len(data_path.parents) > 4 else data_path.parent
+    pack_dirs = _pack_dirs(pack)
+    return [_fitting_entry(pack_dirs, fitting_id)
+            for fitting_id in _read_json(data_path).get("fittings", [])
+            if isinstance(fitting_id, str)]
 
-    out = []
-    for fitting_id in _read_json(data_path).get("fittings", []):
-        if not isinstance(fitting_id, str):
+
+def available_fittings(pack: Path) -> list[dict]:
+    """Every fitting a part in `pack` could declare: the pack's own definitions and the mod's,
+    resolved the same way as list_fittings, the pack's winning where both define one id."""
+    pack_dirs = _pack_dirs(pack)
+    seen: dict[str, dict] = {}
+    for directory in pack_dirs:
+        data = directory / "data"
+        if not data.is_dir():
             continue
-        namespace, name = _split_id(fitting_id, "armorpieces")
-        entry = {"id": f"{namespace}:{name}", "name": name, "type": None, "masked": False,
-                 "label": name.replace("_", " ").title(), "options": []}
-        path = _find(pack_dirs, "data", namespace, "armorpieces", "fitting", f"{name}.json")
-        if path is not None:
-            fitting = _read_json(path)
-            entry["type"] = fitting.get("type")
-            description = fitting.get("description")
-            if isinstance(description, dict) and isinstance(description.get("translate"), str):
-                entry["label"] = _translate(pack_dirs, namespace, description["translate"], name)
-            elif isinstance(description, str):
-                entry["label"] = description
-            if entry["type"] == MATERIAL_TYPE:
-                entry["masked"] = True
-                entry["options"] = _material_options(pack_dirs, fitting.get("materials", []))
-            elif entry["type"] == DYE_TYPE:
-                entry["masked"] = True
-                entry["options"] = _dye_options(pack_dirs)
-        out.append(entry)
-    return out
+        for path in sorted(data.glob("*/armorpieces/fitting/*.json")):
+            fitting_id = f"{path.parents[2].name}:{path.stem}"
+            if fitting_id not in seen:
+                seen[fitting_id] = _fitting_entry(pack_dirs, fitting_id)
+    return list(seen.values())
+
+
+def fitting_choices(pack: Path) -> dict:
+    """What a new fitting definition can be made of: the trim materials with a palette here, named
+    as the game names them, and every trim-material tag in the pack, the mod and vanilla with the
+    materials it resolves to. The Blockbench plugin's New Fitting dialog is built from this."""
+    pack_dirs = _pack_dirs(pack)
+    materials, seen = [], set()
+    # Every trim material registered: vanilla's from the jar copy, then any a pack defines. Only
+    # ones with a palette here are offered, for the same reason _material_options skips them.
+    for directory in [ASSETS] + pack_dirs:
+        data = directory / "data"
+        if not data.is_dir():
+            continue
+        for path in sorted(data.glob("*/trim_material/*.json")):
+            material = f"{path.parents[1].name}:{path.stem}"
+            if material in seen or not (PALETTES / f"{path.stem}.png").is_file():
+                continue
+            seen.add(material)
+            namespace, name = _split_id(material)
+            label = _translate(pack_dirs, namespace, f"trim_material.{namespace}.{name}", name)
+            materials.append({"value": material, "label": label.removesuffix(" Material")})
+    tags, seen = [], set()
+    for directory in pack_dirs + [ASSETS]:
+        data = directory / "data"
+        if not data.is_dir():
+            continue
+        for path in sorted(data.glob("*/tags/trim_material/*.json")):
+            tag = f"{path.parents[2].name}:{path.stem}"
+            if tag in seen:
+                continue
+            seen.add(tag)
+            tags.append({"id": f"#{tag}", "members": _tag_members(pack_dirs, "trim_material", tag)})
+    return {"materials": materials, "tags": tags}
 
 
 def _parse_pairs(values, what: str) -> list[tuple[str, str]]:
@@ -419,6 +489,14 @@ def main() -> None:
     ap.add_argument("--fittings", metavar="DATA_JSON", type=Path,
                     help="print the fittings the part at this datapack file declares, with the "
                          "values each can take, as JSON and exit")
+    ap.add_argument("--pack", metavar="DIR", type=Path,
+                    help="with --fittings: the pack the file belongs to, when it is not inside one")
+    ap.add_argument("--list-fittings", metavar="PACK_DIR", type=Path,
+                    help="print every fitting a part in this pack could declare - the pack's own "
+                         "and the mod's - as JSON and exit")
+    ap.add_argument("--fitting-choices", metavar="PACK_DIR", type=Path,
+                    help="print the trim materials and trim-material tags a new fitting in this "
+                         "pack could take, as JSON and exit")
     ap.add_argument("--fitting", action="append", metavar="NAME=VALUE",
                     help="fill a fitting for the preview, e.g. gemstone=emerald, inlay=red, "
                          "guard=#c0c0c0; repeatable, laid over in the order given")
@@ -440,11 +518,23 @@ def main() -> None:
     if args.fittings:
         if not args.fittings.is_file():
             sys.exit(f"error: no part data at {args.fittings}")
-        print(json.dumps(list_fittings(args.fittings)))
+        print(json.dumps(list_fittings(args.fittings, args.pack)))
+        return
+
+    if args.list_fittings:
+        if not args.list_fittings.is_dir():
+            sys.exit(f"error: no pack at {args.list_fittings}")
+        print(json.dumps(available_fittings(args.list_fittings)))
+        return
+
+    if args.fitting_choices:
+        if not args.fitting_choices.is_dir():
+            sys.exit(f"error: no pack at {args.fitting_choices}")
+        print(json.dumps(fitting_choices(args.fitting_choices)))
         return
 
     if not args.part:
-        ap.error("name a part, or pass --ramp or --fittings")
+        ap.error("name a part, or pass --ramp, --fittings, --list-fittings or --fitting-choices")
     if not args.all and not args.material:
         ap.error("name a material, or pass --all")
 
