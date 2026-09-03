@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:carapace",
+  "description": {
+    "translate": "decoration.armorpieces.carapace"
+  },
+  "anchors": [
+    "back"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:winged_cops",
+  "description": {
+    "translate": "decoration.armorpieces.winged_cops"
+  },
+  "anchors": [
+    "knees"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ]
+}

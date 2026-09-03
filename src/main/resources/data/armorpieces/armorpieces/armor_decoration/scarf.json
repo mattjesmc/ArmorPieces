@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:scarf",
+  "description": {
+    "translate": "decoration.armorpieces.scarf"
+  },
+  "anchors": [
+    "collar"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ]
+}

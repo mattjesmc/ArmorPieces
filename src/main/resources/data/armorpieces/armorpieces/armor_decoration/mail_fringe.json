@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:mail_fringe",
+  "description": {
+    "translate": "decoration.armorpieces.mail_fringe"
+  },
+  "anchors": [
+    "tassets"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ]
+}

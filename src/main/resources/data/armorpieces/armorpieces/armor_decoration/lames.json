@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:lames",
+  "description": {
+    "translate": "decoration.armorpieces.lames"
+  },
+  "anchors": [
+    "pauldrons"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ]
+}

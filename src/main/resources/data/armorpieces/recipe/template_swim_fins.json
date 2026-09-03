@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:kelp"
+  },
+  "result": {
+    "id": "armorpieces:greaves_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces:swim_fins"
+    }
+  },
+  "category": "equipment"
+}

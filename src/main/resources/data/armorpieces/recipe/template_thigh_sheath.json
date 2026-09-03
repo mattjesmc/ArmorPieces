@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:iron_sword"
+  },
+  "result": {
+    "id": "armorpieces:tassets_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces:thigh_sheath"
+    }
+  },
+  "category": "equipment"
+}

@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:chain_belt",
+  "description": {
+    "translate": "decoration.armorpieces.chain_belt"
+  },
+  "anchors": [
+    "belt"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:laurel",
+  "description": {
+    "translate": "decoration.armorpieces.laurel"
+  },
+  "anchors": [
+    "brow"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:thigh_sheath",
+  "description": {
+    "translate": "decoration.armorpieces.thigh_sheath"
+  },
+  "anchors": [
+    "tassets"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ]
+}

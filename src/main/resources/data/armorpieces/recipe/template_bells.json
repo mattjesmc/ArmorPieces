@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:bell"
+  },
+  "result": {
+    "id": "armorpieces:spurs_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces:bells"
+    }
+  },
+  "category": "equipment"
+}

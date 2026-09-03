@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:pendant",
+  "description": {
+    "translate": "decoration.armorpieces.pendant"
+  },
+  "anchors": [
+    "collar"
+  ],
+  "fittings": [
+    "armorpieces:gemstone"
+  ]
+}

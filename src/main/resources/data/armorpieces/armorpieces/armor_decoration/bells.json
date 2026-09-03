@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:bells",
+  "description": {
+    "translate": "decoration.armorpieces.bells"
+  },
+  "anchors": [
+    "spurs"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ]
+}

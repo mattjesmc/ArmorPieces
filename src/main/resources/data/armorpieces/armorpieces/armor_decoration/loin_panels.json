@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:loin_panels",
+  "description": {
+    "translate": "decoration.armorpieces.loin_panels"
+  },
+  "anchors": [
+    "tassets"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:chainmail_chestplate"
+  },
+  "result": {
+    "id": "armorpieces:pauldrons_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces:lames"
+    }
+  },
+  "category": "equipment"
+}

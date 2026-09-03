@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:fanged_cop",
+  "description": {
+    "translate": "decoration.armorpieces.fanged_cop"
+  },
+  "anchors": [
+    "knees"
+  ],
+  "fittings": [
+    "armorpieces:gemstone"
+  ]
+}

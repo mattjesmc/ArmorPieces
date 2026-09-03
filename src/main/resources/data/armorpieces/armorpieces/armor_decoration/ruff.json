@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:ruff",
+  "description": {
+    "translate": "decoration.armorpieces.ruff"
+  },
+  "anchors": [
+    "collar"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:cheek_guards",
+  "description": {
+    "translate": "decoration.armorpieces.cheek_guards"
+  },
+  "anchors": [
+    "horns"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ]
+}

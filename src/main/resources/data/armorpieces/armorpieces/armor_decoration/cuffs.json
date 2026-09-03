@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:cuffs",
+  "description": {
+    "translate": "decoration.armorpieces.cuffs"
+  },
+  "anchors": [
+    "vambraces"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ]
+}

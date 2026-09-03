@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:boot_cuffs",
+  "description": {
+    "translate": "decoration.armorpieces.boot_cuffs"
+  },
+  "anchors": [
+    "greaves"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ]
+}

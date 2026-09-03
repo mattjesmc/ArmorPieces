@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces:girdle",
+  "description": {
+    "translate": "decoration.armorpieces.girdle"
+  },
+  "anchors": [
+    "belt"
+  ],
+  "fittings": [
+    "armorpieces:guard",
+    "armorpieces:gemstone"
+  ]
+}

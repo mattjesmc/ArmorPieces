@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:buckler",
+  "description": {
+    "translate": "decoration.armorpieces.buckler"
+  },
+  "anchors": [
+    "vambraces"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ]
+}

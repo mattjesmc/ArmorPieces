@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:dorsal_fin",
+  "description": {
+    "translate": "decoration.armorpieces.dorsal_fin"
+  },
+  "anchors": [
+    "crest"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ]
+}

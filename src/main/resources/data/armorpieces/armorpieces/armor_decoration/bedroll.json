@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:bedroll",
+  "description": {
+    "translate": "decoration.armorpieces.bedroll"
+  },
+  "anchors": [
+    "back"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ]
+}

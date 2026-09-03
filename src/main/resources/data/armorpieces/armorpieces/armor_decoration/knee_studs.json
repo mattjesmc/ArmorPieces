@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:knee_studs",
+  "description": {
+    "translate": "decoration.armorpieces.knee_studs"
+  },
+  "anchors": [
+    "knees"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:cord",
+  "description": {
+    "translate": "decoration.armorpieces.cord"
+  },
+  "anchors": [
+    "belt"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ]
+}

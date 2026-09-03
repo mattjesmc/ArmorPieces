@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:talons",
+  "description": {
+    "translate": "decoration.armorpieces.talons"
+  },
+  "anchors": [
+    "spurs"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:pouch_belt",
+  "description": {
+    "translate": "decoration.armorpieces.pouch_belt"
+  },
+  "anchors": [
+    "belt"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ]
+}

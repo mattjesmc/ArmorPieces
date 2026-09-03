@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:ears",
+  "description": {
+    "translate": "decoration.armorpieces.ears"
+  },
+  "anchors": [
+    "horns"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ]
+}

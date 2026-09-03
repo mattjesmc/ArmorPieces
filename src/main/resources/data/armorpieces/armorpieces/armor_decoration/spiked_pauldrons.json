@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:spiked_pauldrons",
+  "description": {
+    "translate": "decoration.armorpieces.spiked_pauldrons"
+  },
+  "anchors": [
+    "pauldrons"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ]
+}

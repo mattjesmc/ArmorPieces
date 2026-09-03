@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:beef"
+  },
+  "result": {
+    "id": "armorpieces:collar_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces:fang_necklace"
+    }
+  },
+  "category": "equipment"
+}

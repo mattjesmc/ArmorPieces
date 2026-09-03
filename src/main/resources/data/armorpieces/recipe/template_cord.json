@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:bamboo"
+  },
+  "result": {
+    "id": "armorpieces:belt_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces:cord"
+    }
+  },
+  "category": "equipment"
+}

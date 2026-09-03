@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:browband",
+  "description": {
+    "translate": "decoration.armorpieces.browband"
+  },
+  "anchors": [
+    "brow"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ]
+}

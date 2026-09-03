@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces:cloak",
+  "description": {
+    "translate": "decoration.armorpieces.cloak"
+  },
+  "anchors": [
+    "back"
+  ],
+  "fittings": [
+    "armorpieces:banner",
+    "armorpieces:guard"
+  ]
+}

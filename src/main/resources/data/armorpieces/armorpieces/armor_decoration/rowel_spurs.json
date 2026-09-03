@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:rowel_spurs",
+  "description": {
+    "translate": "decoration.armorpieces.rowel_spurs"
+  },
+  "anchors": [
+    "spurs"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ]
+}

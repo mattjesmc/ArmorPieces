@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:fauld",
+  "description": {
+    "translate": "decoration.armorpieces.fauld"
+  },
+  "anchors": [
+    "belt"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ]
+}

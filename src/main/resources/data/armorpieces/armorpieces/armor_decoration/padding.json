@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:padding",
+  "description": {
+    "translate": "decoration.armorpieces.padding"
+  },
+  "anchors": [
+    "knees"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ]
+}

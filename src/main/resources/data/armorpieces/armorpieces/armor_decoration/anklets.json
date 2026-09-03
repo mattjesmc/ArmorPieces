@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:anklets",
+  "description": {
+    "translate": "decoration.armorpieces.anklets"
+  },
+  "anchors": [
+    "spurs"
+  ],
+  "fittings": [
+    "armorpieces:gemstone"
+  ]
+}

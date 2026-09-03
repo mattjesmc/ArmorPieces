@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:carrot"
+  },
+  "result": {
+    "id": "armorpieces:horns_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces:ears"
+    }
+  },
+  "category": "equipment"
+}

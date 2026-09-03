@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:pointed_dripstone"
+  },
+  "result": {
+    "id": "armorpieces:greaves_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces:shin_spikes"
+    }
+  },
+  "category": "equipment"
+}

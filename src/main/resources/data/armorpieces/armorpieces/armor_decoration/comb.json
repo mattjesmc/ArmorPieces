@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:comb",
+  "description": {
+    "translate": "decoration.armorpieces.comb"
+  },
+  "anchors": [
+    "crest"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ]
+}

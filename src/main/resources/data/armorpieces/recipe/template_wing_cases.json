@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:shulker_shell"
+  },
+  "result": {
+    "id": "armorpieces:pauldrons_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces:wing_cases"
+    }
+  },
+  "category": "equipment"
+}

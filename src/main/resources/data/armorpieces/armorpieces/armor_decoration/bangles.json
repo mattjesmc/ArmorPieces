@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:bangles",
+  "description": {
+    "translate": "decoration.armorpieces.bangles"
+  },
+  "anchors": [
+    "vambraces"
+  ],
+  "fittings": [
+    "armorpieces:gemstone"
+  ]
+}
