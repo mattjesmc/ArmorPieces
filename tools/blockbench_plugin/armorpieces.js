@@ -210,11 +210,18 @@
 			});
 	}
 
-	/* The running game's own folder, where its resource packs and worlds live. */
+	/*
+	 * The running game's own folder, where its resource packs and worlds live. Only `os`, never
+	 * `process`: Blockbench 5.1 runs a plugin file through `new Function` in a scope with no
+	 * `process` global (native_apis.ts deletes it), so `process.platform` here is a ReferenceError
+	 * that takes every pack dialog down with it. An eval-loaded copy of this file does see
+	 * `process`, which is why that check must be a Plugins reload, not an eval.
+	 */
 	function minecraftDir() {
-		if (process.platform === 'win32') return path.join(process.env.APPDATA || '', '.minecraft');
-		if (process.platform === 'darwin') return path.join(os.homedir(), 'Library', 'Application Support', 'minecraft');
-		return path.join(os.homedir(), '.minecraft');
+		const home = os.homedir();
+		if (os.platform() === 'win32') return path.join(home, 'AppData', 'Roaming', '.minecraft');
+		if (os.platform() === 'darwin') return path.join(home, 'Library', 'Application Support', 'minecraft');
+		return path.join(home, '.minecraft');
 	}
 
 	/* Every resource pack folder and every world datapack folder under a game directory. */
