@@ -32,7 +32,11 @@ Model inside the `part` group, every cube in a bone group under it, in Blockbenc
 Cubes cannot rotate in this format - a tilt is a rotated bone group. Mirrored sockets (horns,
 pauldrons, vambraces, tassets, knees, spurs, greaves) model ONE side; the game mirrors it.
 Inflate is fine. Box UV is automatic: every cube you add or resize is laid out in free space on
-the sheet and its paint moves with it; never set UV offsets or autouv.
+the sheet and its paint moves with it; never set UV offsets or autouv. Two traps that destroy
+the whole workspace (every open tab, other sessions' unsaved work included): `add_group` with a
+UUID as `parent` crashes the project, so always pass the parent bone's NAME; and a bone named
+`root` resolves to the scene root, so never use that name (call the anchor bone `base`). Put
+bridge calls that build on each other one per message, so each reply's check confirms the last.
 
 Sheets, by texture id: `part` is the master - greyscale by definition, its value is the position
 on the trim material's ramp, anything coloured is folded to grey; `part_static` keeps real colour
