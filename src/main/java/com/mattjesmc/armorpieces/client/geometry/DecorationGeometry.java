@@ -150,13 +150,29 @@ public record DecorationGeometry(int textureWidth, int textureHeight, List<Bone>
             // mirror() is sticky on the builder, so a per-cube flag has to be set and cleared around
             // the box it belongs to rather than left on for whatever follows.
             builder.mirror(this.mirror);
+            // Vanilla maps a box's UV from its float size, so a 2.1-wide face would sample 2.1
+            // texels and share its edge column with the face beside it. The unwrap here is whole
+            // texels, rounded up - the net every authoring tool paints for - and the box is drawn at
+            // its true size by giving vanilla the rounded size and shrinking each axis back by the
+            // difference. Growth does not touch UV, so the faces stay on whole texels.
+            final float dx = whole(this.size.x());
+            final float dy = whole(this.size.y());
+            final float dz = whole(this.size.z());
+            final float sx = (this.size.x() - dx) / 2.0F;
+            final float sy = (this.size.y() - dy) / 2.0F;
+            final float sz = (this.size.z() - dz) / 2.0F;
             builder.texOffs(this.u, this.v)
                 .addBox(
-                    this.origin.x(), this.origin.y(), this.origin.z(),
-                    this.size.x(), this.size.y(), this.size.z(),
-                    new CubeDeformation(this.inflate)
+                    this.origin.x() + sx, this.origin.y() + sy, this.origin.z() + sz,
+                    dx, dy, dz,
+                    new CubeDeformation(this.inflate + sx, this.inflate + sy, this.inflate + sz)
                 );
             builder.mirror(false);
+        }
+
+        /** A size rounded up to whole texels, tolerant of the float noise a modelling tool writes. */
+        private static float whole(final float size) {
+            return (float) Math.ceil(size - 1.0E-4);
         }
     }
 

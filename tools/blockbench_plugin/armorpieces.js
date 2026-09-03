@@ -691,9 +691,70 @@
 
 		// Format activation ran inside load(), before the piece was attached, so it saw an ordinary
 		// project. Now that this is a piece, bring the workspace up.
+		Project[ID + '_saved_index'] = 0;
 		enterWorkspace();
+		publishStatus('open', { model: true, sheets: 'all' });
 		Blockbench.showQuickMessage(piece.name + ' on ' + anchor, 2000);
 		return true;
+	}
+
+	/*
+	 * Open a piece for a caller that cannot click: the bridge. A piece already open in a tab is
+	 * reused rather than opened twice, rebuilt on a new anchor, and refused while it has unsaved
+	 * edits unless the caller says to discard them. The close of a rebuilt tab is deferred a
+	 * tick, because a bridge eval that closes the current project has no project left for the
+	 * bridge's own bookkeeping to finish on.
+	 */
+	function openFor(key, anchor, options) {
+		options = options || {};
+		const existing = ModelProject.all.find(function (p) {
+			return p[ID + '_piece'] && p[ID + '_piece'].key === key;
+		});
+		if (existing) {
+			if (existing !== Project) existing.select();
+			const current = state().anchor;
+			const unsaved = existing.undo && existing.undo.index !== (existing[ID + '_saved_index'] || 0);
+			if ((!anchor || anchor === current) && !options.reload) {
+				// Switching to the tab loses nothing, so unsaved edits are reported, not refused.
+				enterWorkspace();
+				publishStatus('select', { model: true, sheets: 'all' });
+				return { piece: key, anchor: current, reused: true, unsaved_edits: unsaved ? existing.undo.index - (existing[ID + '_saved_index'] || 0) : 0 };
+			}
+			if (unsaved && !options.discard) {
+				throw new Error(key + ' is open with unsaved edits, and rebuilding it on ' + (anchor || current) +
+					' reloads it from disk: save it first (armorpieces_save), or pass discard: true to drop them');
+			}
+			existing.undo.history.length = 0;
+			existing.undo.index = 0;
+			const piece = currentPiece();
+			const carry = options.discard ? null
+				: { data: partData(), dirty: existing[ID + '_dirty'], name: existing[ID + '_name'] };
+			const old = Project;
+			if (!openPiece(piece, anchor || current, carry)) throw new Error('could not rebuild ' + key);
+			const fresh = Project;
+			setTimeout(function () {
+				old.close(true).then(function () { if (fresh !== Project) fresh.select(); });
+			}, 50);
+			return { piece: key, anchor: anchor || current, reused: false };
+		}
+		const piece = allPieces().find(function (p) { return p.key === key; });
+		if (!piece) {
+			throw new Error('no piece ' + key + '; known: ' +
+				allPieces().map(function (p) { return p.key; }).join(', '));
+		}
+		if (!openPiece(piece, anchor)) throw new Error('could not open ' + key + ' - see the message in Blockbench');
+		return { piece: key, anchor: state().anchor, reused: false };
+	}
+
+	/* Close the open piece's tab, deferred a tick for the same reason as the rebuild above. */
+	function closeFor(discard) {
+		if (!isWorkspace()) throw new Error('no piece is open');
+		const unsaved = Project.undo.index !== (Project[ID + '_saved_index'] || 0);
+		if (unsaved && !discard) throw new Error('unsaved edits: save first, or close with discard: true');
+		const closing = Project;
+		const key = currentPiece().key;
+		setTimeout(function () { closing.close(true); }, 50);
+		return { closed: key };
 	}
 
 	/*
@@ -704,7 +765,9 @@
 	function reopen(anchor) {
 		const piece = currentPiece();
 		if (!piece) return;
-		if (Project.undo && Project.undo.history.length) {
+		// Unsaved means edited past the last save, not "has a history": a saved piece has one too.
+		const unsaved = Project.undo && Project.undo.index !== (Project[ID + '_saved_index'] || 0);
+		if (unsaved) {
 			Blockbench.showMessageBox({
 				title: 'Unsaved edits',
 				message: 'Rebuilding reloads ' + piece.name + ' from disk. Save the piece first, or ' +
@@ -780,6 +843,7 @@
 		// Texture: the master is a linked file, so Blockbench writes it back where it came from.
 		const texture = Project[ID + '_texture'];
 		const part = tex('part');
+		let report = '';
 		if (part && texture) {
 			// save() writes back to the linked path; save(true) is "save as" and opens a native
 			// file picker, which blocks the whole app. Every sheet is a real authored file linked
@@ -788,15 +852,21 @@
 			if (texture.isMaster) {
 				// Installing is the sync script's job, and it is also what checks the master against
 				// the geometry - the check that catches paint sliding off a face it was drawn for.
-				const report = tool('sync_decoration_masters.py', [piece.name]);
-				if (report.trim()) console.log('[armorpieces] ' + report.trim());
+				report = tool('sync_decoration_masters.py', [piece.name]).trim();
+				if (report) console.log('[armorpieces] ' + report);
 			}
 		}
 
 		notes.push(writeRecipe(piece));
 		// The summary line reads the name from the file it was just written to.
 		syncForm();
+		Project[ID + '_saved_index'] = Project.undo.index;
+		// A save run from inside a bridge eval sits inside that eval's undo entry, which lands
+		// after this returns; the wrapper around finishEdit moves the mark past it.
+		if (Project.undo.current_save) Project[ID + '_save_in_edit'] = true;
+		publishStatus('save', { model: false, sheets: [] });
 		Blockbench.showQuickMessage('Saved ' + piece.name + ' to ' + piece.namespace + ' - ' + notes.join(', '), 3000);
+		return { piece: piece.key, wrote: notes, report: report };
 	}
 
 	// ---- new piece ----------------------------------------------------------------------------
@@ -804,13 +874,15 @@
 	// One bone with one small cube, sitting on the anchor. A new piece opens as something visible
 	// and movable rather than an empty group, because an empty group in Blockbench looks broken.
 	function starterGeometry() {
+		// Inflated by a quarter so no face of it lies on an armor shell wall, whichever socket it
+		// sits on: the shells are at whole and half units from the body, the socket offsets too.
 		return {
 			texture_width: 64,
 			texture_height: 32,
 			bones: [{
 				name: 'main',
 				pivot: [0, 0, 0],
-				cubes: [{ origin: [-2, -2, -1], size: [4, 2, 2], uv: [0, 0] }],
+				cubes: [{ origin: [-2, -2, -1], size: [4, 2, 2], uv: [0, 0], inflate: 0.25 }],
 			}],
 		};
 	}
@@ -911,37 +983,59 @@
 				const dataPack = packs[parseInt(result.data_pack, 10)];
 				const assetPack = packs[parseInt(result.asset_pack, 10)];
 				const namespace = (result.namespace || '').trim().toLowerCase().replace(/[^a-z0-9_.-]/g, '_') || 'mypack';
-				const piece = pieceRecord(dataPack, assetPack, namespace, name);
-				if (fs.existsSync(piece.data) || fs.existsSync(piece.geometry)) {
-					Blockbench.showMessageBox({
-						title: 'Already exists',
-						message: namespace + ':' + name + ' is already in that pack.',
-					});
+				let piece;
+				try {
+					piece = createPiece(dataPack, assetPack, namespace, name, result.anchor);
+				} catch (err) {
+					Blockbench.showMessageBox({ title: 'Already exists', message: err.message });
 					return;
 				}
-
-				writeJson(piece.data, {
-					asset_id: namespace + ':' + name,
-					description: { translate: 'decoration.' + namespace + '.' + name },
-					anchors: [result.anchor],
-				});
-				writeJson(piece.geometry, starterGeometry());
-
-				// A blank master, so the piece has a texture to paint rather than sampling nothing.
-				fs.mkdirSync(path.dirname(piece.texture), { recursive: true });
-				fs.writeFileSync(piece.texture, Buffer.from(blankPng(64, 32).split(',')[1], 'base64'));
-
-				// The name a player reads, so the piece is not "decoration.ns.name" in a tooltip.
-				// In the resource pack: the language file is assets, wherever the data file went.
-				const key = 'decoration.' + namespace + '.' + name;
-				if (!readJsonOr(langFile(assetPack, namespace), {})[key]) {
-					writeLang(assetPack, namespace, key, titleCase(name));
-				}
-
 				Blockbench.showQuickMessage('Created ' + namespace + ':' + name, 2500);
 				openPiece(piece, result.anchor);
 			},
 		}).show();
+	}
+
+	/*
+	 * The files a new piece starts from, written and nothing else: the dialog above and the
+	 * bridge's armorpieces_new both end up here. Throws when the piece is already in the pack.
+	 */
+	function createPiece(dataPack, assetPack, namespace, name, anchor) {
+		const piece = pieceRecord(dataPack, assetPack, namespace, name);
+		if (fs.existsSync(piece.data) || fs.existsSync(piece.geometry)) {
+			throw new Error(namespace + ':' + name + ' is already in that pack.');
+		}
+		if (!anchors()[anchor]) {
+			throw new Error('unknown anchor ' + anchor + '; one of ' + Object.keys(anchors()).join(', '));
+		}
+
+		writeJson(piece.data, {
+			asset_id: namespace + ':' + name,
+			description: { translate: 'decoration.' + namespace + '.' + name },
+			anchors: [anchor],
+		});
+		writeJson(piece.geometry, starterGeometry());
+
+		// A blank master, so the piece has a texture to paint rather than sampling nothing. For
+		// the mod's own parts the master lives in tools/decoration_masters and Save installs it
+		// into the resources, so the blank goes there as well - otherwise the first Save would
+		// find no master and skip the install and its checks.
+		const blank = Buffer.from(blankPng(64, 32).split(',')[1], 'base64');
+		fs.mkdirSync(path.dirname(piece.texture), { recursive: true });
+		fs.writeFileSync(piece.texture, blank);
+		const root = repoRoot();
+		if (namespace === 'armorpieces' && root && assetPack.startsWith(root)) {
+			const master = path.join(root, 'tools', 'decoration_masters', name + '.png');
+			if (!fs.existsSync(master)) fs.writeFileSync(master, blank);
+		}
+
+		// The name a player reads, so the piece is not "decoration.ns.name" in a tooltip.
+		// In the resource pack: the language file is assets, wherever the data file went.
+		const key = 'decoration.' + namespace + '.' + name;
+		if (!readJsonOr(langFile(assetPack, namespace), {})[key]) {
+			writeLang(assetPack, namespace, key, titleCase(name));
+		}
+		return piece;
 	}
 
 	// ---- packs: the author's own folders ------------------------------------------------------
@@ -1542,15 +1636,26 @@
 		refreshPreview(false);
 	}
 
+	/* Which cubes exist as an edit begins, on its undo record, for the layout to tell new from old. */
+	function onInitEdit(data) {
+		if (!isWorkspace() || !data || !data.save) return;
+		data.save[ID + '_cubes'] = new Set(Cube.all.map(function (c) { return c.uuid; }));
+	}
+
 	function onFinishEdit(data) {
 		if (!isWorkspace()) return;
-		const textures = (data && data.aspects && data.aspects.textures) || [];
+		const aspects = (data && data.aspects) || {};
+		const textures = aspects.textures || [];
 		let touched = false;
 		for (const texture of textures) {
 			if (isGreyId(texture.id) && foldsMaster()) enforceGreyscale(texture);
 			if (isSheetId(texture.id)) touched = true;
 		}
 		if (touched) refreshPreview(true);
+		// The edit is applied and laid out by now, so this is the moment the bridge's checker
+		// wants: the model when the outliner changed, the sheets the edit painted.
+		const model = !!(aspects.elements || aspects.outliner || aspects.group || aspects.groups || aspects.uv_mode);
+		if (model || touched) publishStatus(data && data.message || 'edit', { model: model, sheets: textures });
 	}
 
 	/*
@@ -1561,7 +1666,11 @@
 		if (!isWorkspace()) return;
 		syncSheetSize();
 		refreshPreview(true);
-		setTimeout(function () { refreshPreview(true); }, 200);
+		publishStatus('undo', { model: true, sheets: 'all' });
+		setTimeout(function () {
+			refreshPreview(true);
+			publishStatus('undo', { model: false, sheets: 'all' });
+		}, 200);
 	}
 
 	// ---- palette ------------------------------------------------------------------------------
@@ -1807,12 +1916,18 @@
 	 */
 	function autoLayout(save, aspects) {
 		const touched = new Set(aspects.elements || []);
+		// The cubes that existed when the edit began, stashed by the init_edit hook: a cube not in
+		// it was created by this edit, whether or not the edit listed it - the MCP bridge's
+		// place_cube lists nothing, and its cube would otherwise land on another's net.
+		const existed = save[ID + '_cubes'];
 		const placing = [];
 		for (const cube of Cube.all) {
 			if (cube.locked) continue;
+			const born = existed && !existed.has(cube.uuid);
 			// A cube with hand-placed faces cannot be authored in this format, so it is converted
-			// whichever edit finds it; a box-UV cube is only reconsidered when the edit touched it.
-			if (cube.box_uv && !touched.has(cube)) continue;
+			// whichever edit finds it; a box-UV cube is only reconsidered when the edit touched
+			// or created it.
+			if (cube.box_uv && !touched.has(cube) && !born) continue;
 			const before = save.elements && save.elements[cube.uuid];
 
 			const size = net(cube);
@@ -1931,6 +2046,29 @@
 
 	let layoutGuard = false;
 
+	// The message the Blockbench MCP plugin's risky_eval finishes its wrapper entry with.
+	const BRIDGE_EVAL = 'Agent executed code';
+
+	/*
+	 * Whether an undo record's before-state is the state now. The snapshot holds plain data
+	 * (element copies, the outliner tree, texture copies) plus a reference to the live aspects
+	 * object, which is dropped before comparing.
+	 */
+	function unchangedSince(before, aspects) {
+		const strip = function (save) {
+			const copy = Object.assign({}, save);
+			delete copy.aspects;
+			// The plugin's own bookkeeping on the record (the cube set from init_edit) is not state.
+			for (const key of Object.keys(copy)) if (key.indexOf(ID + '_') === 0) delete copy[key];
+			return JSON.stringify(copy);
+		};
+		try {
+			return strip(new UndoSystem.save(aspects)) === strip(before);
+		} catch (err) {
+			return false;
+		}
+	}
+
 	function onFinishEditWithLayout(save, aspects) {
 		if (layoutGuard || !save || !isWorkspace()) return;
 		if (!aspects.elements && !aspects.outliner) return;
@@ -1944,6 +2082,134 @@
 		} finally {
 			layoutGuard = false;
 		}
+	}
+
+	// ---- painting by face ---------------------------------------------------------------------
+
+	/*
+	 * The bridge's painter: whole faces at a time, addressed by name, on one sheet, in one undo
+	 * step. Both authoring sessions painted this way through a general shape tool - one rectangle
+	 * per face or per row, from the face rectangles the check prints - so this does the
+	 * arithmetic instead. A face is `<cube>.<face>`, the cube by its name or by the check's
+	 * `bone[i]` label, `*` for every part cube or every face; a value is a grey, a hex colour, a
+	 * [top, bottom] pair shaded row by row, or null to clear. On a greyscale sheet a colour is
+	 * folded to its luminance, the same rule the brush follows.
+	 */
+	const FACE_NAMES = ['north', 'south', 'east', 'west', 'up', 'down'];
+
+	function partCubes() {
+		return Cube.all.filter(function (c) { return !c.locked; });
+	}
+
+	/* bone[i], the way check_part names a cube: its bone and its index among the bone's cubes. */
+	function cubeLabel(cube) {
+		const parent = cube.parent;
+		if (!parent || parent === 'root' || !parent.children) return null;
+		const index = parent.children.filter(function (ch) { return ch instanceof Cube; }).indexOf(cube);
+		return parent.name + '[' + index + ']';
+	}
+
+	function resolveFaces(address) {
+		const dot = address.lastIndexOf('.');
+		if (dot < 0) throw new Error('face address "' + address + '" wants cube.face, e.g. plate.up, base[0].*, *.down');
+		const cubePattern = address.slice(0, dot);
+		const facePattern = address.slice(dot + 1);
+		const faces = facePattern === '*' ? FACE_NAMES : [facePattern];
+		if (!faces.every(function (f) { return FACE_NAMES.includes(f); })) {
+			throw new Error('unknown face "' + facePattern + '"; one of ' + FACE_NAMES.join(', ') + ', or *');
+		}
+		const cubes = partCubes().filter(function (c) {
+			return cubePattern === '*' || c.name === cubePattern || cubeLabel(c) === cubePattern;
+		});
+		if (!cubes.length) {
+			throw new Error('no part cube "' + cubePattern + '"; the part has ' + partCubes().map(function (c) {
+				return c.name + ' (' + cubeLabel(c) + ')';
+			}).join(', '));
+		}
+		const out = [];
+		for (const cube of cubes) for (const face of faces) out.push({ cube: cube, face: face });
+		return out;
+	}
+
+	/* One colour: a grey 0-255, or #rrggbb, folded to grey on a greyscale sheet; null clears. */
+	function parseColour(value, grey) {
+		if (value === null) return null;
+		if (typeof value === 'number' && isFinite(value)) {
+			const v = Math.max(0, Math.min(255, Math.round(value)));
+			return [v, v, v];
+		}
+		if (typeof value === 'string') {
+			const m = /^#?([0-9a-f]{6})$/i.exec(value.trim());
+			if (!m) throw new Error('bad colour "' + value + '": a grey 0-255 or #rrggbb');
+			const rgb = [0, 2, 4].map(function (i) { return parseInt(m[1].slice(i, i + 2), 16); });
+			if (grey && !(rgb[0] === rgb[1] && rgb[1] === rgb[2])) {
+				const l = Math.round(0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]);
+				return [l, l, l];
+			}
+			return rgb;
+		}
+		throw new Error('a value is a grey 0-255, a #rrggbb colour, a [top, bottom] pair, or null to clear');
+	}
+
+	/* A face value as [top, bottom] colours; a single value shades the face flat. */
+	function parseValue(value, grey) {
+		if (Array.isArray(value)) {
+			if (value.length !== 2) throw new Error('a shaded value is a [top, bottom] pair');
+			return [parseColour(value[0], grey), parseColour(value[1], grey)];
+		}
+		const one = parseColour(value, grey);
+		return [one, one];
+	}
+
+	function paintFaces(sheetId, faces, pixels) {
+		if (!isWorkspace()) throw new Error('no piece is open');
+		const sheet = tex(sheetId || 'part');
+		if (!sheet) {
+			throw new Error('no sheet "' + sheetId + '"; the piece has ' + sheets().map(function (s) { return s.id; }).join(', ') +
+				' (armorpieces_set_part creates the masks its fittings need, and the static layer)');
+		}
+		const grey = isGreyId(sheet.id);
+		const jobs = [];
+		for (const address of Object.keys(faces || {})) {
+			const value = parseValue(faces[address], grey);
+			for (const target of resolveFaces(address)) jobs.push({ target: target, value: value });
+		}
+		const dots = (pixels || []).map(function (p) {
+			if (typeof p.x !== 'number' || typeof p.y !== 'number') throw new Error('a pixel is {x, y, value}');
+			return { x: Math.floor(p.x), y: Math.floor(p.y), colour: parseColour(p.value === undefined ? null : p.value, grey) };
+		});
+		if (!jobs.length && !dots.length) throw new Error('nothing to paint: give faces, pixels, or both');
+
+		const painted = [];
+		Undo.initEdit({ textures: [sheet], bitmap: true });
+		sheet.edit(function (canvas) {
+			const ctx = canvas.getContext('2d');
+			const fill = function (x, y, w, h, colour) {
+				ctx.clearRect(x, y, w, h);
+				if (!colour) return;
+				ctx.fillStyle = 'rgb(' + colour.join(',') + ')';
+				ctx.fillRect(x, y, w, h);
+			};
+			for (const job of jobs) {
+				const cube = job.target.cube;
+				const rect = faceRects(net(cube), cube.uv_offset || [0, 0])[job.target.face];
+				const x = rect[0], y = rect[1], w = rect[2], h = rect[3];
+				if (w <= 0 || h <= 0) continue;
+				const top = job.value[0], bottom = job.value[1];
+				if (!top || !bottom || h === 1 || (top[0] === bottom[0] && top[1] === bottom[1] && top[2] === bottom[2])) {
+					fill(x, y, w, h, top);
+				} else {
+					for (let r = 0; r < h; r++) {
+						const t = r / (h - 1);
+						fill(x, y + r, w, 1, top.map(function (v, i) { return Math.round(v + (bottom[i] - v) * t); }));
+					}
+				}
+				painted.push(cube.name + '.' + job.target.face + ' at ' + x + ',' + y + ' ' + w + 'x' + h);
+			}
+			for (const dot of dots) fill(dot.x, dot.y, 1, 1, dot.colour);
+		}, { no_undo: true });
+		Undo.finishEdit('Paint faces');
+		return { sheet: sheet.id, faces: painted, pixels: dots.length };
 	}
 
 	// ---- pose ---------------------------------------------------------------------------------
@@ -3058,12 +3324,182 @@
 		applyPalette();
 		applyVisibility();
 		applyPose();
+		writeCurrent(Project.uuid);
 	}
 
 	function leaveWorkspace() {
 		// Called with the piece still selected, so applyPalette would keep the greys; restore
 		// explicitly. Panels and the outliner re-evaluate on the next project's activation.
 		restorePalette();
+		writeCurrent(null);
+	}
+
+	// ---- status for the bridge ----------------------------------------------------------------
+
+	/*
+	 * What the open piece is right now, on disk, for anything outside Blockbench that wants to
+	 * check it - the MCP bridge's proxy (tools/mcp) runs check_part.py over it after every edit
+	 * an agent makes, and `check_part.py --status` is the same by hand. Written synchronously
+	 * inside the edit, so by the time a bridge call returns the files describe its result: the
+	 * project compiled without its textures (bb_geo reads only the outliner), the sheets as PNGs
+	 * straight from their canvases, and meta.json last, carrying a sequence number, so a reader
+	 * that sees a new seq sees complete files. current.json beside the folders names the active
+	 * piece's. Everything lives under the temp dir and is disposable.
+	 */
+	function statusRoot() {
+		const dir = path.join(tempDir(), 'status');
+		if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+		return dir;
+	}
+
+	function statusDir() {
+		const dir = path.join(statusRoot(), Project.uuid);
+		if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+		return dir;
+	}
+
+	function writeCurrent(uuid) {
+		try {
+			fs.writeFileSync(path.join(statusRoot(), 'current.json'),
+				JSON.stringify({ uuid: uuid || null, time: Date.now() }), 'utf8');
+			pruneStatus();
+		} catch (err) {
+			console.error('[armorpieces] status', err);
+		}
+	}
+
+	/* The folders of tabs that are no longer open. */
+	function pruneStatus() {
+		const open = new Set(ModelProject.all.map(function (p) { return p.uuid; }));
+		for (const name of fs.readdirSync(statusRoot())) {
+			if (name === 'current.json' || open.has(name)) continue;
+			fs.rmSync(path.join(statusRoot(), name), { recursive: true, force: true });
+		}
+	}
+
+	function sheetFile(id) {
+		if (id === 'part') return 'master.png';
+		if (id === 'part_static') return 'static.png';
+		return 'mask_' + id.slice('part_'.length) + '.png';
+	}
+
+	/*
+	 * A sheet's pixels as PNG bytes. The canvas is what the brush paints and what Blockbench draws
+	 * the loaded image into - but only once the image has loaded, and a piece just opened has not
+	 * got there yet, so until then the image itself is used, and a sheet still loading is
+	 * published again the moment it lands. Returns null for that last case.
+	 */
+	function sheetPng(texture) {
+		const fromCanvas = function (canvas) {
+			const url = canvas.toDataURL('image/png');
+			return Buffer.from(url.slice(url.indexOf(',') + 1), 'base64');
+		};
+		const img = texture.img;
+		if (texture.width && texture.canvas.width === texture.width && texture.canvas.height === texture.height) {
+			return fromCanvas(texture.canvas);
+		}
+		if (img && img.complete && img.naturalWidth) {
+			const canvas = document.createElement('canvas');
+			canvas.width = img.naturalWidth;
+			canvas.height = img.naturalHeight;
+			canvas.getContext('2d').drawImage(img, 0, 0);
+			return fromCanvas(canvas);
+		}
+		if (img && !img[ID + '_republish']) {
+			img[ID + '_republish'] = true;
+			const owner = Project;
+			img.addEventListener('load', function () {
+				img[ID + '_republish'] = false;
+				if (Project === owner) publishStatus('load', { model: false, sheets: [texture] });
+			}, { once: true });
+		}
+		return null;
+	}
+
+	/* `what.model` writes the model; `what.sheets` is a list of textures, or 'all'. */
+	function publishStatus(reason, what) {
+		if (!isWorkspace()) return null;
+		try {
+			const dir = statusDir();
+			if (what.model) {
+				const doc = JSON.parse(Codecs.project.compile());
+				for (const texture of doc.textures || []) delete texture.source;
+				fs.writeFileSync(path.join(dir, 'part.bbmodel'), JSON.stringify(doc), 'utf8');
+			}
+			const list = what.sheets === 'all' ? sheets()
+				: (what.sheets || []).filter(function (t) { return isSheetId(t.id); });
+			for (const texture of list) {
+				const png = sheetPng(texture);
+				if (png) fs.writeFileSync(path.join(dir, sheetFile(texture.id)), png);
+			}
+			const piece = currentPiece();
+			const s = state();
+			const masks = {};
+			for (const fitting of maskedFittings()) {
+				masks[fitting.name] = tex(maskId(fitting.name)) ? sheetFile(maskId(fitting.name)) : null;
+			}
+			Project[ID + '_seq'] = (Project[ID + '_seq'] || 0) + 1;
+			writeMeta(reason, dir, masks);
+			return dir;
+		} catch (err) {
+			console.error('[armorpieces] status', err);
+			return null;
+		}
+	}
+
+	// Set while an edit's files are published before its undo entry has landed, so the wrapper
+	// around finishEdit rewrites the meta once the entry is in and the unsaved count is right.
+	let metaPending = null;
+
+	function writeMeta(reason, dir, masks) {
+		const piece = currentPiece();
+		const s = state();
+		if (!masks) {
+			masks = {};
+			for (const fitting of maskedFittings()) {
+				masks[fitting.name] = tex(maskId(fitting.name)) ? sheetFile(maskId(fitting.name)) : null;
+			}
+		}
+		const texture = Project[ID + '_texture'] || {};
+		const meta = {
+				seq: Project[ID + '_seq'] || 0,
+				time: Date.now(),
+				reason: reason,
+				project: Project.uuid,
+				piece: {
+					key: piece.key, name: piece.name, namespace: piece.namespace,
+					dataPack: piece.dataPack, assetPack: piece.assetPack,
+					data: piece.data, geometry: piece.geometry,
+					texture: texture.file || piece.texture, isMaster: !!texture.isMaster,
+				},
+				anchor: s.anchor,
+				anchors: anchorsOf(piece),
+				sheet: sheetSize(),
+				editing: s.edit,
+				fitting: s.fitting,
+				recipe: { centre: s.recipe_focus || '', ring: s.recipe_ring || 'minecraft:paper',
+					craftable: s.recipe_craftable !== false },
+				sheets: { master: 'master.png', static: tex('part_static') ? 'static.png' : null, masks: masks },
+				files: { model: 'part.bbmodel' },
+				unsaved_edits: Project.undo.index - (Project[ID + '_saved_index'] || 0),
+				part_dirty: !!Project[ID + '_dirty'],
+		};
+		fs.writeFileSync(path.join(dir, 'meta.json'), JSON.stringify(meta), 'utf8');
+		writeCurrent(Project.uuid);
+		if (Project.undo.current_save) metaPending = { reason: reason, dir: dir, project: Project };
+	}
+
+	/* After the undo entry of a published edit has landed: the same meta, with the count right. */
+	function settleMeta() {
+		const pending = metaPending;
+		metaPending = null;
+		if (!pending || pending.project !== Project || !isWorkspace()) return;
+		try {
+			writeMeta(pending.reason, pending.dir, null);
+		} catch (err) {
+			console.error('[armorpieces] status', err);
+		}
+		metaPending = null;
 	}
 
 	// ---- registration -------------------------------------------------------------------------
@@ -3137,6 +3573,10 @@
 				bone_rig: true,
 				centered_grid: true,
 				optional_box_uv: true,
+				// The unwrap is whole texels rounded UP, in the mod and every tool; Blockbench's
+				// own choices are floored (this flag off: 0.9 deep becomes 0) or exact (on: a
+				// 2.1-wide face straddles texels). Neither matches, so `size` is patched below.
+				box_uv_float_size: false,
 				per_texture_uv_size: true,
 				per_texture_wrap_mode: true,
 				uv_rotation: true,
@@ -3151,6 +3591,7 @@
 			format.onDeactivation = leaveWorkspace;
 			// Likewise for a flag a format object from an earlier load of the plugin still carries.
 			format.rotate_cubes = false;
+			format.box_uv_float_size = false;
 
 			const open = new Action(ID + '_open', {
 				name: 'Open Armor Piece...',
@@ -3267,10 +3708,44 @@
 			UndoSystem.prototype.finishEdit = function (message, aspects) {
 				if (this.current_save) {
 					onFinishEditWithLayout(this.current_save, aspects || this.current_save.aspects);
+					// The MCP bridge wraps every eval in an undo entry of its own, whether or not
+					// the code changed anything. One that changed nothing - a read, a check - is
+					// dropped here, so a piece read through the bridge is still a piece with no
+					// unsaved edits, and Ctrl+Z still undoes the author's last stroke.
+					if (message === BRIDGE_EVAL && isWorkspace() &&
+						unchangedSince(this.current_save, aspects || this.current_save.aspects)) {
+						delete this.current_save;
+						metaPending = null;
+						if (Project) Project[ID + '_save_in_edit'] = false;
+						return;
+					}
 				}
-				return originalFinishEdit.call(this, message, aspects);
+				const result = originalFinishEdit.call(this, message, aspects);
+				if (Project && Project[ID + '_save_in_edit']) {
+					Project[ID + '_save_in_edit'] = false;
+					Project[ID + '_saved_index'] = Project.undo.index;
+				}
+				settleMeta();
+				return result;
 			};
 			undo_hooks.push(function () { UndoSystem.prototype.finishEdit = originalFinishEdit; });
+
+			/*
+			 * Box UV in whole texels rounded up, matching the mod's bake and the tools' nets. Every
+			 * place Blockbench lays a box out - the mesh, the UV editor, the template - asks
+			 * `size(axis, true)` for the floored size; for a piece it gets the ceiling instead, so a
+			 * 0.9-deep cube keeps its side faces and a 4.9-tall one shows all five rows it samples.
+			 */
+			const originalSize = Cube.prototype.size;
+			Cube.prototype.size = function (axis, floored) {
+				if ((floored === true || floored === 'box_uv') && Format === Formats[ID]) {
+					const exact = originalSize.call(this, axis, false);
+					const up = function (v) { return Math.ceil(v - 1e-7); };
+					return axis === undefined ? exact.map(up) : up(exact);
+				}
+				return originalSize.call(this, axis, floored);
+			};
+			undo_hooks.push(function () { Cube.prototype.size = originalSize; });
 
 			Outliner.node_display_rules.push(outlinerRule);
 			undo_hooks.push(function () { Outliner.node_display_rules.remove(outlinerRule); });
@@ -3280,6 +3755,7 @@
 				Cube.preview_controller.removeListener('update_painting_grid', onPaintingGrid);
 			});
 
+			Blockbench.on('init_edit', onInitEdit);
 			Blockbench.on('finish_edit', onFinishEdit);
 			Blockbench.on('edit_texture', onEditTexture);
 			Blockbench.on('select_mode', onSelectMode);
@@ -3291,6 +3767,8 @@
 			// A piece open across a reload of the plugin keeps its resolved fittings from before it,
 			// which may be missing what the resolver now reports. Resolve them again on first use.
 			for (const project of ModelProject.all) project[ID + '_fittings'] = null;
+			// And the unload just before this reload told the bridge no piece was current.
+			if (isWorkspace()) publishStatus('load', { model: true, sheets: 'all' });
 
 			// A previous session may have ended with the greys still in. Put the author's palette
 			// back before anything else can persist the greys again.
@@ -3307,6 +3785,46 @@
 					if (!piece) throw new Error('no piece ' + key);
 					return openPiece(piece, anchor);
 				},
+				openFor: openFor,
+				close: closeFor,
+				create: function (dataPack, assetPack, namespace, name, anchor) {
+					const piece = createPiece(dataPack, assetPack, namespace, name, anchor);
+					if (!openPiece(piece, anchor)) throw new Error('created ' + piece.key + ' but could not open it');
+					return { piece: piece.key, anchor: anchor, files: [piece.data, piece.geometry, piece.texture] };
+				},
+				packs: searchRoots,
+				anchors: anchors,
+				paintFaces: paintFaces,
+				// The sheets the part's fittings need, created where the panel would create them.
+				ensureSheets: function () {
+					if (!isWorkspace()) throw new Error('no piece is open');
+					const made = [];
+					for (const fitting of maskedFittings()) {
+						if (!tex(maskId(fitting.name)) && createMaskLayer(fitting.name)) made.push(maskId(fitting.name));
+					}
+					publishStatus('sheets', { model: false, sheets: 'all' });
+					return made;
+				},
+				ensureStatic: function () {
+					if (!isWorkspace()) throw new Error('no piece is open');
+					if (tex('part_static')) return false;
+					createStaticLayer();
+					publishStatus('sheets', { model: false, sheets: 'all' });
+					return true;
+				},
+				setRecipe: function (centre, ring, craftable) {
+					if (!isWorkspace()) throw new Error('no piece is open');
+					const s = state();
+					if (centre !== undefined && centre !== null) s.recipe_focus = String(centre).trim();
+					if (ring !== undefined && ring !== null) s.recipe_ring = String(ring).trim() || 'minecraft:paper';
+					if (craftable !== undefined && craftable !== null) s.recipe_craftable = !!craftable;
+					syncForm();
+					return { centre: s.recipe_focus, ring: s.recipe_ring, craftable: s.recipe_craftable !== false };
+				},
+				publish: function () { return publishStatus('api', { model: true, sheets: 'all' }); },
+				statusDir: function () { return isWorkspace() ? statusDir() : null; },
+				currentPiece: currentPiece,
+				displayName: function () { return displayName(currentPiece(), partData()); },
 				state: state,
 				data: partData,
 				fittings: function () { return fittingsOf(currentPiece()); },
@@ -3328,6 +3846,7 @@
 		},
 
 		onunload() {
+			Blockbench.removeListener('init_edit', onInitEdit);
 			Blockbench.removeListener('finish_edit', onFinishEdit);
 			Blockbench.removeListener('edit_texture', onEditTexture);
 			Blockbench.removeListener('select_mode', onSelectMode);
