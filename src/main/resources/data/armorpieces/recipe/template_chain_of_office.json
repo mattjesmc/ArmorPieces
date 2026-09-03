@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:gold_nugget"
+  },
+  "result": {
+    "id": "armorpieces:collar_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces:chain_of_office"
+    }
+  }
+}

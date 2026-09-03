@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:bandolier",
+  "description": {
+    "translate": "decoration.armorpieces.bandolier"
+  },
+  "anchors": [
+    "collar"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ]
+}

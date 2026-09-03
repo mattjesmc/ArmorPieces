@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:mantle",
+  "description": {
+    "translate": "decoration.armorpieces.mantle"
+  },
+  "anchors": [
+    "pauldrons"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ]
+}

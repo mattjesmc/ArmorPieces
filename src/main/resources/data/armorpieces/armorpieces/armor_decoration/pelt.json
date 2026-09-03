@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:pelt",
+  "description": {
+    "translate": "decoration.armorpieces.pelt"
+  },
+  "anchors": [
+    "tassets"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ]
+}

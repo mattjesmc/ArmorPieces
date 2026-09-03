@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:puttees",
+  "description": {
+    "translate": "decoration.armorpieces.puttees"
+  },
+  "anchors": [
+    "greaves"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ]
+}

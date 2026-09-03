@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:buckled_belt",
+  "description": {
+    "translate": "decoration.armorpieces.buckled_belt"
+  },
+  "anchors": [
+    "belt"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ]
+}
