@@ -106,5 +106,9 @@
   "anchor.armorpieces.tassets": "Hips",
   "anchor.armorpieces.knees": "Knees",
   "anchor.armorpieces.spurs": "Heels",
-  "anchor.armorpieces.greaves": "Shins"
+  "anchor.armorpieces.greaves": "Shins",
+  "decoration.armorpieces.nasal": "Nasal",
+  "decoration.armorpieces.spire": "Spire",
+  "decoration.armorpieces.antennae": "Antennae",
+  "decoration.armorpieces.horsetail": "Horsetail"
 }

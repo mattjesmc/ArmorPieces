@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:nasal",
+  "description": {
+    "translate": "decoration.armorpieces.nasal"
+  },
+  "anchors": [
+    "brow"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ]
+}

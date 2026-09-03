@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:spire",
+  "description": {
+    "translate": "decoration.armorpieces.spire"
+  },
+  "anchors": [
+    "crest"
+  ],
+  "fittings": [
+    "armorpieces:gemstone"
+  ]
+}

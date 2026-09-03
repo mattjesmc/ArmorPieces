@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:amethyst_cluster"
+  },
+  "result": {
+    "id": "armorpieces:crest_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces:spire"
+    }
+  },
+  "category": "equipment"
+}

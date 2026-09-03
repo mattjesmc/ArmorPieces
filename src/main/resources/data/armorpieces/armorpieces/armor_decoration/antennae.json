@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:antennae",
+  "description": {
+    "translate": "decoration.armorpieces.antennae"
+  },
+  "anchors": [
+    "crest"
+  ],
+  "fittings": [
+    "armorpieces:gemstone"
+  ]
+}

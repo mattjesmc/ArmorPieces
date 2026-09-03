@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:lightning_rod"
+  },
+  "result": {
+    "id": "armorpieces:crest_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces:antennae"
+    }
+  },
+  "category": "equipment"
+}

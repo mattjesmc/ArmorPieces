@@ -27,24 +27,27 @@ badges:
 
 sections:
   about: |
-    A vanilla trim is paint on the armor's texture, so it never sticks out. Armor Pieces adds
-    **parts**: real geometry hung on the body. A plume on the helmet, spaulders on the shoulders, a
-    sash on the belt, spurs on the heels.
+    Armor Pieces adds **modular 3D pieces** to armor. A full set has twelve sockets - crest, brow,
+    horns, pauldrons, back, collar, vambraces, belt, tassets, knees, spurs, greaves - and each socket
+    holds one part: a plume on the helmet, spaulders on the shoulders, a sash on the belt, spurs on
+    the heels. Parts are real geometry hung on the body, not paint on the texture, and any combination
+    of them makes a set.
 
-    A part is applied at a smithing table the way a trim is, with a template and a trim material, and
-    takes that material's colour. Trim and parts live on the same piece of armor; neither replaces the
-    other.
+    A part is applied at a smithing table like a trim, with a template and a trim material, and takes
+    that material's colour. It sits on top of whatever vanilla trim the armor has; neither replaces
+    the other.
 
-    Some parts take a second material through a **fitting**: a gem set into the circlet, a metal
-    buckle and a dyed strap on the sash, a dyed inlay on the greaves, a banner's design on the back banner. One more smithing
-    step, with a template per fitting, and the item decides where it goes.
+    Some parts have a **fitting** that is coloured separately: a gem set into the circlet, a metal
+    buckle and a dyed strap on the sash, a dyed inlay on the greaves, a banner's design on the back
+    banner. One more smithing step, with a template per fitting, and the item decides where it goes.
 
     Parts are crafted, or found: every one ships in a few of the world's chests. An **advanced
     smithing table** shows a whole set on a stand and takes a part off again, which the smithing
     table cannot.
 
-    Twenty parts ship across twelve sockets. Each is a datapack entry, a model and a texture, no
-    code, and a pack can add its own the same way - from Blockbench, in folders of its own.
+    This version ships forty-one parts across the twelve sockets. Each is a datapack entry, a model and
+    a texture, no code, and a pack can add its own the same way - from Blockbench, in folders of its
+    own.
 
   features:
     items:
@@ -52,8 +55,8 @@ sections:
         description: >-
           `crest`, `brow`, `horns`, `pauldrons`, `back`, `collar`, `vambraces`, `belt`, `tassets`,
           `knees`, `spurs`, `greaves`. A socket holds one part, so a new crest replaces the crest —
-          but the twenty parts are spread unevenly over the twelve, three of them on `back` alone.
-          Seven of the sockets are mirrored pairs, so spaulders means both shoulders.
+          and with forty-one parts every socket has at least two to choose from. Seven of the
+          sockets are mirrored pairs, so spaulders means both shoulders.
       - title: Coloured by vanilla trim materials
         description: >-
           One grayscale master per part is mapped onto each material's own palette at load time.
@@ -120,6 +123,7 @@ sections:
       "minecraft:white_banner": icons/white_banner.png
       "minecraft:smithing_table": icons/smithing_table.png
       "minecraft:loom": icons/loom.png
+      "minecraft:hay_block": icons/hay_block.png
       "armorpieces:advanced_smithing_table": icons/advanced_smithing_table.png
     custom_types:
       # The mod computes the decorated armor in code, so there is no `result`

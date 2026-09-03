@@ -186,12 +186,51 @@ LOOM = [
     "................",
 ]
 
+HAY_PALETTE = {
+    ".": (0, 0, 0, 0),
+    "o": (0x4C, 0x36, 0x10, 0xFF),  # outline (derived: the side's darkest straw, darkened)
+    "T": (0xCD, 0xB2, 0x08, 0xFF),  # top, lit
+    "t": (0xAC, 0x8D, 0x08, 0xFF),  # top
+    "k": (0x94, 0x7D, 0x10, 0xFF),  # top, the straw ends
+    "e": (0x8B, 0x71, 0x10, 0xFF),  # top, shaded edge
+    "H": (0xCB, 0xB6, 0x30, 0xFF),  # side straw, lit
+    "h": (0xAB, 0x92, 0x25, 0xFF),  # side straw
+    "s": (0x94, 0x80, 0x1E, 0xFF),  # side straw, shaded strand
+    "d": (0x8A, 0x73, 0x20, 0xFF),  # side straw, dark
+    "R": (0xA4, 0x51, 0x2B, 0xFF),  # binding tie
+    "r": (0x92, 0x41, 0x23, 0xFF),  # binding tie, shaded
+}
+
+# A hay bale seen from the front and slightly above, the way the smithing table is drawn: the
+# top's cut straw ends as a checker, the side's long strands, and the two red-brown ties that
+# make it a bale rather than a yellow block. Palette sampled from hay_block_side.png and
+# hay_block_top.png; only the outline is derived.
+HAY_BLOCK = [
+    "................",
+    "..oooooooooooo..",
+    ".oTTTTTTTTTTTTo.",
+    ".oTtktktktktkeo.",
+    ".oTktktktktkteo.",
+    ".oeeeeeeeeeeeeo.",
+    ".oHhhshhhshhhdo.",
+    ".oHhshhhshhhsdo.",
+    ".oRRRRRRRRRRRro.",
+    ".oHhhshhhshhhdo.",
+    ".oHshhhshhhshdo.",
+    ".oHhhshhhshhhdo.",
+    ".oRRRRRRRRRRRro.",
+    ".odsddsddsddddo.",
+    "..oooooooooooo..",
+    "................",
+]
+
 ICONS = {
     "shield": (SHIELD, SHIELD_PALETTE),
     "white_banner": (BANNER, BANNER_PALETTE),
     "smithing_table": (SMITHING_TABLE, SMITHING_PALETTE),
     "advanced_smithing_table": (ADVANCED_SMITHING_TABLE, SMITHING_PALETTE),
     "loom": (LOOM, LOOM_PALETTE),
+    "hay_block": (HAY_BLOCK, HAY_PALETTE),
 }
 
 

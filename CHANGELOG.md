@@ -79,6 +79,28 @@ fitting template icons beside the bare one. `export_pack.py` zips a pack folder 
 at the root, and is what the plugin's *Export Pack...* runs. `preview_material.py` takes `--pack`
 more than once, for a piece whose two halves are two folders.
 
+**Forty-one parts.** Twenty-one new parts, so every socket has at least two answers and six
+themes reach across the suit: antlers, bandolier, beast head, buckled belt, chain of office,
+claws, coronet, garters, head fins, mantle, pelt, puttees, quiver, scale shins, scale skirt,
+streamers and wraps by hand, then nasal, spire, antennae and horsetail through the bridge below.
+`docs/plans/part-variety.md` is the candidate list they came from.
+
+**Authoring from an agent.** `tools/mcp` is an MCP server in front of Blockbench's own MCP
+plugin: an *authoring* profile of its tools, piece-level tools (`armorpieces_open`, `_new`,
+`_check`, `_paint`, `_save`, `_part`, `_set_part`, `_pieces`, `_close`), and after every editing
+call the same check every shipped part passes, appended to the reply - clearance and shared
+planes from `trace_geometry.py`, unpainted faces and stray paint from the sheet checks, together
+in the new `tools/check_part.py`, which also runs by hand over a shipped part, a pack piece or
+the piece open in Blockbench. `armorpieces_paint` paints whole faces by name, shaded, in one call.
+The plugin publishes the open piece after each edit for that check, drops the bridge's empty undo
+entries, and gained a scripting surface for it. `.claude/agents/part-author.md` is the profile
+for one session per part; `docs/plans/briefs/` holds the briefs and each session's lessons.
+
+**Whole-texel nets.** A box's UV net is whole texels, rounded up, everywhere: the mod hands
+vanilla the rounded size and shrinks each axis back with a per-axis deformation, so a 2.1-wide
+face no longer shares a texel column with its neighbour in game, and the plugin lays cubes out
+the same way. Whole sizes plus inflate remain the cleaner way to a sub-texel thickness.
+
 ## 0.2.0
 
 **Fittings.** A part can take a second material. A fitting names a region of the part - a mask
