@@ -49,3 +49,6 @@ __pycache__/
 # Vanilla assets extracted from the game jar for the Blockbench rigs (tools/vanilla_assets.py).
 # Mojang's files, not ours to redistribute - same rule as the modpage texture cache above.
 tools/.mcassets/
+
+# The Blockbench bridge (tools/mcp) is a Node package; its installed modules are not ours.
+tools/mcp/node_modules/

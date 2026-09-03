@@ -89,7 +89,9 @@ chests first; the summary line says where the part is found. An empty list is no
 mod's format is box UV only, so the plugin keeps it that way: a cube added, converted or
 resized is laid out in free space on the texture, the paint on its faces moves with them, and
 the texture grows when it is full. All of that lands in the same undo step as the edit. Cubes
-do not rotate — the mod's cube has no rotation — so a tilt is a rotated bone.
+do not rotate — the mod's cube has no rotation — so a tilt is a rotated bone. A cube's size
+may be fractional; its unwrap is always whole texels, rounded up, in the plugin, the checks and
+the game alike, so a 2.1 × 11.4 × 0.9 cube paints as 3 × 12 × 1 and no two faces share a texel.
 
 **Saving.** Save exports the geometry through `bb_geo.py`, writes the master, static layer and
 masks back to their files, writes the template recipe, and — for a part whose master lives in
@@ -109,6 +111,17 @@ and sprint cycles, with an empty group sitting exactly where the layer will draw
 `python tools/bb_rig.py --all` regenerates them; the skin, armor and palette textures they
 reference are extracted from the game jar by `tools/vanilla_assets.py` on first use and are never
 committed. `bb_geo.py` converts `.bbmodel` to the mod's geometry and back.
+
+**From an agent.** The same editor drives from an MCP client through `tools/mcp`, a small server
+in front of Blockbench's own MCP plugin: it serves the tools a part author uses (an *authoring*
+profile of the plugin's ninety-odd), adds `armorpieces_open`, `_new`, `_check`, `_save`, `_part`,
+`_set_part`, `_pieces` and `_close`, and after every editing call appends the check every shipped
+part passes - clearance and shared planes from `trace_geometry.py`, unpainted faces and stray or
+coloured paint from `sync_decoration_masters.py`, together in `tools/check_part.py` - so the reply
+that placed a cube on the helmet shell says so. Save refuses while problems stand unless told
+otherwise. `tools/mcp/README.md` has the setup and what the model is told; `check_part.py` runs
+the same report by hand over a shipped part (`check_part.py antlers`, `--all`), a pack piece, or
+the piece open in Blockbench (`--status`).
 
 ## By hand
 

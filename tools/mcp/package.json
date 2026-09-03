@@ -1,0 +1,16 @@
+{
+  "name": "armorpieces-blockbench-bridge",
+  "version": "0.1.0",
+  "description": "MCP proxy in front of the Blockbench MCP Server plugin: an authoring profile of its tools, the Armor Pieces plugin's checks after every edit, and the piece-level tools an agent needs.",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "armorpieces-bridge": "server.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0"
+  }
+}
