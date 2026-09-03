@@ -244,8 +244,21 @@ def compare_neighbours(subject_boxes, others, shell=None):
     return [t for _, t in sorted(set(lines))]
 
 
-def report(geo_path, anchor_name, anchors):
-    geo = json.loads(Path(geo_path).read_text(encoding="utf-8"))
+def analyse(geo, anchor_name, anchors, stem):
+    """Measure one geometry against the body, its shells and its bone-mates, and return the findings
+    as data. `report` prints them; check_part.py serialises them. Every number the printed report
+    ever showed is in here, so the two can never disagree about a part.
+
+    The dict:
+      stem, anchor, bone, offset     what was measured, and where
+      log                            the bone chain, one line per bone, in the parent bone's frame
+      envelope {lo, hi}, reach       the part's extent, +Y down, and its furthest corner
+      past [(label, [x, y, z])]      how far it protrudes past the body box and each shell
+      pair_span {span, over}         for a mirrored anchor, the pair's width across the figure
+      buried, flagged                faces on a surface: notes, and the COPLANAR lines that need a decision
+      mates, clash                   the other parts on the bone, and the cross-part findings
+      ok                             no flagged line
+    """
     spec = anchors[anchor_name]
     primary = spec["attachments"][0]
     bone = primary["part"]
@@ -253,22 +266,17 @@ def report(geo_path, anchor_name, anchors):
 
     log, cubes = [], []
     for b in geo["bones"]:
-        walk(b, offset, ((1, 0, 0), (0, 1, 0), (0, 0, 1)), cubes, 0, log)
-
-    print(f"{Path(geo_path).stem}  ->  anchor {anchor_name} on {bone} at {offset}")
-    print("\n".join(log))
+        walk(b, offset, IDENT, cubes, 0, log)
 
     pts = [c for _, corners, _ in cubes for c in corners]
     lo = [min(p[a] for p in pts) for a in range(3)]
     hi = [max(p[a] for p in pts) for a in range(3)]
-    print("  envelope  " + "  ".join(f"{AXES[a]} {lo[a]:6.2f} ..{hi[a]:6.2f}" for a in range(3)))
     reach = max(math.dist(p, offset) for p in pts)
-    print(f"  reach from the anchor: {reach:.2f}")
 
-    for label, slo, shi in shells_for(bone):
-        out = [max(slo[a] - lo[a], hi[a] - shi[a]) for a in range(3)]
-        print(f"  past {label:11s} " + "  ".join(f"{AXES[a]} {out[a]:+6.2f}" for a in range(3)))
+    shells = shells_for(bone)
+    past = [(label, [max(slo[a] - lo[a], hi[a] - shi[a]) for a in range(3)]) for label, slo, shi in shells]
 
+    pair_span = None
     if len(spec["attachments"]) == 2 and spec["attachments"][1]["mirror"]:
         # The pair is antisymmetric about the FIGURE's centreline, not about the bone's own origin,
         # and for a limb those are not the same place: the arm bones sit at world x = +-5 and the leg
@@ -277,8 +285,7 @@ def report(geo_path, anchor_name, anchors):
         # torso parts whose bones sit at x = 0 - which is why it survived being written.
         pivot_x = BODY[bone][0][0]
         span = 2 * max(abs(pivot_x + lo[0]), abs(pivot_x + hi[0]))
-        print(f"  pair spans {span:.2f} across the figure "
-              f"({'over' if span > 18 else 'within'} the 18 the shoulders span)")
+        pair_span = {"span": span, "over": span > 18}
 
     # The shell that matters is the part's OWN piece's, because that is the only one guaranteed to be
     # there: a decoration renders exactly when its armor piece is worn, and any other layer may be
@@ -286,7 +293,6 @@ def report(geo_path, anchor_name, anchors):
     # other layer is printed as a note - usually it is the burial trick working, which is why the
     # circlet and the horns both put faces on the head box on purpose.
     own = spec["armor_type"].lower()
-    shells = shells_for(bone)
     flagged, buried = set(), set()
     for label, slo, shi in shells:
         for a in range(3):
@@ -301,23 +307,60 @@ def report(geo_path, anchor_name, anchors):
                             else:
                                 buried.add(f"  note: {name}'s {AXES[a]} face at {pv:g} lies on the "
                                            f"{label} surface")
-    for h in sorted(buried) + sorted(flagged):
-        print(h)
 
     subject_boxes = [(n, [min(c[a] for c in corners) for a in range(3)],
                          [max(c[a] for c in corners) for a in range(3)])
                      for n, corners, _ in cubes]
-    others = neighbours(Path(geo_path).stem, anchor_name, bone, anchors)
+    others = neighbours(stem, anchor_name, bone, anchors)
     own_shell = next(((slo, shi) for lbl, slo, shi in shells if lbl == own), None)
     clash = compare_neighbours(subject_boxes, others, own_shell)
-    if others:
-        mates = sorted({label for label, _, _, _ in others})
-        print(f"  shares {bone} with: {', '.join(mates)}")
-        for line in clash:
-            print(line)
-        if not clash:
-            print("    all clear by more than half a unit")
-    return not flagged
+
+    return {
+        "stem": stem,
+        "anchor": anchor_name,
+        "bone": bone,
+        "offset": list(offset),
+        "cubes": len(cubes),
+        "log": log,
+        "envelope": {"lo": lo, "hi": hi},
+        "reach": reach,
+        "past": past,
+        "pair_span": pair_span,
+        "buried": sorted(buried),
+        "flagged": sorted(flagged),
+        "mates": sorted({label for label, _, _, _ in others}),
+        "clash": clash,
+        "ok": not flagged,
+    }
+
+
+def format_report(r):
+    """The printed report, line by line, from what analyse() measured."""
+    lines = [f"{r['stem']}  ->  anchor {r['anchor']} on {r['bone']} at {tuple(r['offset'])}"]
+    lines.append("\n".join(r["log"]))
+    lo, hi = r["envelope"]["lo"], r["envelope"]["hi"]
+    lines.append("  envelope  " + "  ".join(f"{AXES[a]} {lo[a]:6.2f} ..{hi[a]:6.2f}" for a in range(3)))
+    lines.append(f"  reach from the anchor: {r['reach']:.2f}")
+    for label, out in r["past"]:
+        lines.append(f"  past {label:11s} " + "  ".join(f"{AXES[a]} {out[a]:+6.2f}" for a in range(3)))
+    if r["pair_span"]:
+        span = r["pair_span"]["span"]
+        lines.append(f"  pair spans {span:.2f} across the figure "
+                     f"({'over' if r['pair_span']['over'] else 'within'} the 18 the shoulders span)")
+    lines.extend(r["buried"] + r["flagged"])
+    if r["mates"]:
+        lines.append(f"  shares {r['bone']} with: {', '.join(r['mates'])}")
+        lines.extend(r["clash"])
+        if not r["clash"]:
+            lines.append("    all clear by more than half a unit")
+    return lines
+
+
+def report(geo_path, anchor_name, anchors):
+    geo = json.loads(Path(geo_path).read_text(encoding="utf-8"))
+    r = analyse(geo, anchor_name, anchors, Path(geo_path).stem)
+    print("\n".join(format_report(r)))
+    return r["ok"]
 
 
 def anchor_of(stem):

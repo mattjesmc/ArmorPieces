@@ -57,9 +57,8 @@ STATIC_SUFFIX = "_static"
 FACES = ("up", "down", "east", "north", "west", "south")
 
 
-def check_master(path: Path) -> tuple[Image.Image, list[str]]:
-    """Open a master and report anything the loader would read differently than intended."""
-    image = Image.open(path)
+def master_warnings(image: Image.Image, stem: str) -> list[str]:
+    """What the loader would read differently than intended about a master, given the image."""
     warnings: list[str] = []
 
     rgba = image.convert("RGBA")
@@ -73,14 +72,20 @@ def check_master(path: Path) -> tuple[Image.Image, list[str]]:
     if coloured:
         warnings.append(
             f"{coloured} opaque pixel(s) are not grey - the loader reads only the red channel as "
-            f"shading, so put colour in {path.stem}{STATIC_SUFFIX}.png instead"
+            f"shading, so put colour in {stem}{STATIC_SUFFIX}.png instead"
         )
-    return image, warnings
+    return warnings
+
+
+def check_master(path: Path) -> tuple[Image.Image, list[str]]:
+    """Open a master and report anything the loader would read differently than intended."""
+    image = Image.open(path)
+    return image, master_warnings(image, path.stem)
 
 
 def net(size):
-    """A cube's box-UV net in whole pixels. Rounds up, the way Blockbench does - the sash's knot is
-    4.9 units tall on purpose and unwraps to 5 rows."""
+    """A cube's box-UV net in whole pixels: every texel a face can sample, rounded up. The game maps
+    UV from the float size (a 4.9-tall face samples 4.9 rows), so the sash's knot needs 5 painted."""
     return tuple(int(math.ceil(v - 1e-9)) for v in size)
 
 
@@ -100,39 +105,32 @@ def face_rects(size, uv):
     }
 
 
-def check_geometry(name: str, master: Image.Image) -> list[str]:
-    """Report a master that no longer covers the faces of the geometry it is painted for.
-
-    An empty face is not always a defect - the feathering cuts three of its own on purpose, each the
-    buried half of a coincident pair, because a transparent pixel writes no depth and that is the
-    cheapest way to keep two coplanar faces from z-fighting. So this names what it finds and leaves
-    the judgement to the painter, which knows which of its faces are cut and asserts it."""
-    path = GEO / f"{name}.json"
-    if not path.is_file():
-        return [f"no geometry at {path.relative_to(ROOT)} - nothing to check the net against"]
-
-    doc = json.loads(path.read_text(encoding="utf-8"))
-    warnings: list[str] = []
-    if (doc["texture_width"], doc["texture_height"]) != master.size:
-        warnings.append(f"{path.name} is {doc['texture_width']}x{doc['texture_height']}, "
-                        f"the master is {master.size[0]}x{master.size[1]}")
-        return warnings
-
-    cubes = []
+def geometry_cubes(doc) -> list[tuple[str, int, dict]]:
+    """Every cube of a geometry document in file order, as (bone name, index within the bone, cube)."""
+    out = []
 
     def walk(bone):
-        cubes.extend(bone.get("cubes", []))
+        for i, cube in enumerate(bone.get("cubes", [])):
+            out.append((bone.get("name", "?"), i, cube))
         for child in bone.get("children", []):
             walk(child)
 
     for bone in doc["bones"]:
         walk(bone)
+    return out
 
+
+def face_coverage(doc, master: Image.Image):
+    """Which faces of a geometry the master leaves empty, and how much paint lies outside every face.
+
+    Returns (empty, outside): `empty` is a list of (cube index, bone name, index in bone, face) for
+    every face rectangle with no opaque pixel in it; `outside` counts the opaque pixels no face
+    samples. Both assume the sheet and the geometry agree on size - check that first."""
     px = master.convert("RGBA").load()
     width, height = master.size
     covered = set()
     empty = []
-    for index, cube in enumerate(cubes):
+    for index, (bone, i, cube) in enumerate(geometry_cubes(doc)):
         for face, (x, y, w, h) in face_rects(cube["size"], cube["uv"]).items():
             seen = 0
             for py in range(y, y + h):
@@ -141,26 +139,50 @@ def check_geometry(name: str, master: Image.Image) -> list[str]:
                         covered.add((pxl, py))
                         seen += px[pxl, py][3] > 0
             if not seen:
-                empty.append(f"cube {index}.{face}")
+                empty.append((index, bone, i, face))
 
     outside = sum(1 for y in range(height) for x in range(width)
                   if px[x, y][3] and (x, y) not in covered)
+    return empty, outside
+
+
+def check_geometry_doc(doc, master: Image.Image, label: str) -> list[str]:
+    """Report a master that no longer covers the faces of the geometry it is painted for.
+
+    An empty face is not always a defect - the feathering cuts three of its own on purpose, each the
+    buried half of a coincident pair, because a transparent pixel writes no depth and that is the
+    cheapest way to keep two coplanar faces from z-fighting. So this names what it finds and leaves
+    the judgement to the painter, which knows which of its faces are cut and asserts it."""
+    warnings: list[str] = []
+    if (doc["texture_width"], doc["texture_height"]) != master.size:
+        warnings.append(f"{label} is {doc['texture_width']}x{doc['texture_height']}, "
+                        f"the master is {master.size[0]}x{master.size[1]}")
+        return warnings
+
+    empty, outside = face_coverage(doc, master)
     if empty:
-        warnings.append(f"{len(empty)} face(s) of {path.name} have no opaque pixel and will render "
-                        f"as holes unless they are cut on purpose: {', '.join(empty)}")
+        names = [f"cube {index}.{face}" for index, _, _, face in empty]
+        warnings.append(f"{len(empty)} face(s) of {label} have no opaque pixel and will render "
+                        f"as holes unless they are cut on purpose: {', '.join(names)}")
     if outside:
         warnings.append(f"{outside} opaque pixel(s) lie outside every face rectangle of "
-                        f"{path.name} - the master and the model disagree about the shape")
+                        f"{label} - the master and the model disagree about the shape")
     return warnings
 
 
-def check_static(path: Path, master: Image.Image) -> list[str]:
-    """Report a static layer that does not line up with the master it belongs to."""
-    warnings: list[str] = []
-    layer = Image.open(path)
-    if layer.size != master.size:
-        sys.exit(f"{path.name}: static layer is {layer.size}, master is {master.size} - they must match")
+def check_geometry(name: str, master: Image.Image) -> list[str]:
+    """check_geometry_doc over the shipped geometry of a part, by name."""
+    path = GEO / f"{name}.json"
+    if not path.is_file():
+        return [f"no geometry at {path.relative_to(ROOT)} - nothing to check the net against"]
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    return check_geometry_doc(doc, master, path.name)
 
+
+def static_warnings(layer: Image.Image, master: Image.Image, name: str) -> list[str]:
+    """A static layer that does not line up with the master it belongs to."""
+    if layer.size != master.size:
+        return [f"{name}: static layer is {layer.size}, master is {master.size} - they must match"]
     static_px = layer.convert("RGBA").load()
     master_px = master.convert("RGBA").load()
     width, height = master.size
@@ -171,17 +193,23 @@ def check_static(path: Path, master: Image.Image) -> list[str]:
         if static_px[x, y][3] and not master_px[x, y][3]
     )
     if orphans:
-        warnings.append(f"{orphans} static pixel(s) lie outside the master's silhouette and will not draw")
-    return warnings
+        return [f"{orphans} static pixel(s) lie outside the master's silhouette and will not draw"]
+    return []
 
 
-def check_mask(path: Path, master: Image.Image) -> list[str]:
-    """Report a fitting mask that the loader would read differently than intended."""
-    warnings: list[str] = []
-    mask = Image.open(path)
+def check_static(path: Path, master: Image.Image) -> list[str]:
+    """Report a static layer that does not line up with the master it belongs to."""
+    layer = Image.open(path)
+    if layer.size != master.size:
+        sys.exit(f"{path.name}: static layer is {layer.size}, master is {master.size} - they must match")
+    return static_warnings(layer, master, path.name)
+
+
+def mask_warnings(mask: Image.Image, master: Image.Image, name: str) -> list[str]:
+    """A fitting mask that the loader would read differently than intended."""
     if mask.size != master.size:
-        sys.exit(f"{path.name}: mask is {mask.size}, master is {master.size} - they must match")
-
+        return [f"{name}: mask is {mask.size}, master is {master.size} - they must match"]
+    warnings: list[str] = []
     mask_px = mask.convert("RGBA").load()
     master_px = master.convert("RGBA").load()
     width, height = master.size
@@ -197,13 +225,21 @@ def check_mask(path: Path, master: Image.Image) -> list[str]:
             if not (r == g == b):
                 coloured += 1
     if not opaque:
-        warnings.append(f"{path.name} is entirely transparent - the fitting will change nothing")
+        warnings.append(f"{name} is entirely transparent - the fitting will change nothing")
     if orphans:
-        warnings.append(f"{orphans} pixel(s) of {path.name} lie outside the master's silhouette and will not draw")
+        warnings.append(f"{orphans} pixel(s) of {name} lie outside the master's silhouette and will not draw")
     if coloured:
-        warnings.append(f"{coloured} pixel(s) of {path.name} are not grey - a mask is shading, and the "
+        warnings.append(f"{coloured} pixel(s) of {name} are not grey - a mask is shading, and the "
                         f"loader reads only its red channel")
     return warnings
+
+
+def check_mask(path: Path, master: Image.Image) -> list[str]:
+    """Report a fitting mask that the loader would read differently than intended."""
+    mask = Image.open(path)
+    if mask.size != master.size:
+        sys.exit(f"{path.name}: mask is {mask.size}, master is {master.size} - they must match")
+    return mask_warnings(mask, master, path.name)
 
 
 def companions(name: str) -> list[Path]:
