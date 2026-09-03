@@ -1,5 +1,6 @@
 package com.mattjesmc.armorpieces.decoration.fitting.builtin;
 
+import com.mattjesmc.armorpieces.decoration.MaterialIcons;
 import com.mattjesmc.armorpieces.decoration.fitting.Fitting;
 import com.mattjesmc.armorpieces.decoration.fitting.FittingColour;
 import com.mattjesmc.armorpieces.decoration.fitting.FittingValue;
@@ -66,6 +67,12 @@ public record MaterialFitting(
         @Override
         public Component name() {
             return this.material.value().description();
+        }
+
+        /** Whatever provides the material - the same ingot or gem that was set into the fitting. */
+        @Override
+        public ItemStack icon() {
+            return MaterialIcons.forTrimMaterial(this.material);
         }
     }
 

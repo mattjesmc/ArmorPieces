@@ -1,6 +1,7 @@
 package com.mattjesmc.armorpieces.decoration.fitting;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * What a filled {@link Fitting} holds: the gem in the gemstone, the dye in the inlay, the banner on
@@ -19,4 +20,17 @@ import net.minecraft.network.chat.Component;
 public interface FittingValue {
     /** The value's name for a tooltip - "Emerald", "Red", "Red Banner" - styled with its colour. */
     Component name();
+
+    /**
+     * An item standing for the value, for a screen with a slot to fill: the emerald behind
+     * "Emerald", the dye behind "Red", the banner itself. Never a stack to be taken - only ever
+     * drawn.
+     *
+     * <p>The one thing besides the name that a value says about itself, and optional for the same
+     * reason the name is not: a fitting type from another mod may have nothing item-shaped to point
+     * at, and an empty stack means the screen falls back to the value's colour instead.
+     */
+    default ItemStack icon() {
+        return ItemStack.EMPTY;
+    }
 }

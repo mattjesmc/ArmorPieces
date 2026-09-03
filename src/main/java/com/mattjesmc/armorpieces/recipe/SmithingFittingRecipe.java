@@ -135,14 +135,35 @@ public class SmithingFittingRecipe extends SimpleSmithingRecipe {
         final ItemStack additionItem,
         final @Nullable Holder<Fitting> only
     ) {
+        return applyFitting(baseItem, additionItem, only, null);
+    }
+
+    /**
+     * The same application, narrowed to one socket.
+     *
+     * <p>{@code onlyAnchor} is the socket the advanced smithing table is working on, or null for
+     * every socket on the piece, which is what the table itself and every other caller ask for. The
+     * routing is otherwise untouched: the item still decides which fitting of that part takes it,
+     * and an item that fits nothing there is still no recipe at all.
+     *
+     * <p>This exists because the smithing table has nowhere to say which part it means and the
+     * advanced table does - a row is selected there. Narrowing here rather than in the menu keeps
+     * the rule in one place; see {@code AdvancedSmithingMenu#assemble}.
+     */
+    public static ItemStack applyFitting(
+        final ItemStack baseItem,
+        final ItemStack additionItem,
+        final @Nullable Holder<Fitting> only,
+        final @Nullable DecorationAnchor onlyAnchor
+    ) {
         final ArmorDecorations existing = baseItem.get(ModDataComponents.DECORATIONS);
         if (existing == null || existing.isEmpty()) {
             return ItemStack.EMPTY;
         }
 
         final ArmorDecorations result = additionItem.isEmpty()
-            ? clearFittings(existing, only)
-            : setFitting(existing, additionItem, only);
+            ? clearFittings(existing, only, onlyAnchor)
+            : setFitting(existing, additionItem, only, onlyAnchor);
         if (result == existing) {
             return ItemStack.EMPTY;
         }
@@ -166,11 +187,15 @@ public class SmithingFittingRecipe extends SimpleSmithingRecipe {
     private static ArmorDecorations setFitting(
         final ArmorDecorations existing,
         final ItemStack additionItem,
-        final @Nullable Holder<Fitting> only
+        final @Nullable Holder<Fitting> only,
+        final @Nullable DecorationAnchor onlyAnchor
     ) {
         ArmorDecorations result = existing;
         for (final var mapping : existing.entries().entrySet()) {
             final DecorationAnchor anchor = mapping.getKey();
+            if (onlyAnchor != null && onlyAnchor != anchor) {
+                continue;
+            }
             final DecorationEntry entry = mapping.getValue();
             // The part's own order decides which fitting is offered the item first, and the first to
             // accept it is the only one on that part that gets it. A named template offers it to its
@@ -199,11 +224,15 @@ public class SmithingFittingRecipe extends SimpleSmithingRecipe {
      * nothing to route by: the item is what names a fitting, and its absence names them all. A
      * named template has said which, and takes out only that.
      */
-    private static ArmorDecorations clearFittings(final ArmorDecorations existing, final @Nullable Holder<Fitting> only) {
+    private static ArmorDecorations clearFittings(
+        final ArmorDecorations existing,
+        final @Nullable Holder<Fitting> only,
+        final @Nullable DecorationAnchor onlyAnchor
+    ) {
         ArmorDecorations result = existing;
         for (final var mapping : existing.entries().entrySet()) {
             final DecorationEntry entry = mapping.getValue();
-            if (entry.fittings().isEmpty()) {
+            if (entry.fittings().isEmpty() || (onlyAnchor != null && onlyAnchor != mapping.getKey())) {
                 continue;
             }
             if (only == null) {

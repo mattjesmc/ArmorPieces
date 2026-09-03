@@ -2,11 +2,15 @@ package com.mattjesmc.armorpieces.menu;
 
 import com.mattjesmc.armorpieces.decoration.ArmorDecorations;
 import com.mattjesmc.armorpieces.decoration.DecorationAnchor;
+import com.mattjesmc.armorpieces.decoration.DecorationEntry;
+import com.mattjesmc.armorpieces.decoration.fitting.Fitting;
+import com.mattjesmc.armorpieces.recipe.SmithingFittingRecipe;
 import com.mattjesmc.armorpieces.registry.ModBlocks;
 import com.mattjesmc.armorpieces.registry.ModDataComponents;
 import com.mattjesmc.armorpieces.registry.ModMenus;
 import java.util.List;
 import java.util.Optional;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
@@ -22,6 +26,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipePropertySet;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.SmithingRecipe;
 import net.minecraft.world.item.crafting.SmithingRecipeInput;
 import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.Level;
@@ -34,10 +39,14 @@ import org.jspecify.annotations.Nullable;
  * <p>Three things the vanilla smithing table cannot do, and nothing it can do differently:
  *
  * <ul>
- *   <li><b>Taking a part off.</b> A socket's cross button empties that socket. The smithing table
+ *   <li><b>Taking a part off.</b> Remove empties whatever is selected: a whole part out of its
+ *       socket, one fitting out of the part sitting in it, or the piece's trim. The smithing table
  *       has no ingredient that means "nothing", so a filled socket there stays filled until another
- *       part replaces it; this is the one place a part comes off. Nothing is refunded - the template
- *       was spent putting it on, as a trim's template is.</li>
+ *       part replaces it; this is the one place any of the three comes off. Nothing is refunded -
+ *       the template was spent putting it on, as a trim's template is.</li>
+ *   <li><b>Saying where.</b> A row of the selected piece can be worked on rather than the piece as
+ *       a whole, and then a fitting goes into that socket alone instead of into every part on the
+ *       piece that takes it. See {@link #assemble}.</li>
  *   <li><b>Seeing the set.</b> The four display slots are worn together by the preview stand, so a
  *       crest is judged against the spaulders below it rather than alone.</li>
  *   <li><b>Working on a piece in place.</b> Apply writes the result back into the display slot
@@ -82,21 +91,42 @@ public class AdvancedSmithingMenu extends AbstractContainerMenu {
     private static final int USE_ROW_SLOT_START = 34;
     private static final int USE_ROW_SLOT_END = 43;
 
-    /** Slot positions, shared with the screen so the background art and the slots agree. */
+    /**
+     * Slot positions, shared with the screen so the background art and the slots agree. The sheet
+     * itself is drawn from these same numbers - see {@code tools/gen_smithing_gui.py}.
+     */
     public static final int DISPLAY_X = 8;
-    public static final int DISPLAY_Y = 17;
-    public static final int ROW_HEIGHT = 18;
-    public static final int TEMPLATE_X = 44;
-    public static final int MATERIAL_X = 62;
-    public static final int INPUT_Y = 93;
-    public static final int INVENTORY_Y = 130;
+    /**
+     * Where the piece being worked on stands instead: out of the column and hard against the box,
+     * in the gap its own select arrow had. The arrow is dropped while it is there - the piece has
+     * already been picked, and the slot standing in the arrow's place says so better than an arrow
+     * pointing at it did. The other three keep theirs, so another piece is always one click away.
+     */
+    public static final int DISPLAY_SELECTED_X = 34;
+    public static final int DISPLAY_Y = 20;
+    /** Two more than a slot is tall, so a row's ground shows above and below what stands on it. */
+    public static final int ROW_HEIGHT = 20;
+    /** The smithing table's own two slots, under the stand in the right-hand column. */
+    public static final int TEMPLATE_X = 187;
+    public static final int MATERIAL_X = 205;
+    public static final int INPUT_Y = 151;
+    public static final int INVENTORY_Y = 138;
+
+    /** The most rows a piece can list: four sockets - the chestplate's - and the trim under them. */
+    public static final int MAX_ROWS = 5;
+    /** The most fitting slots a row has room for. Shipped parts declare at most two. */
+    public static final int MAX_FITTINGS = 3;
 
     // ---- button ids, sent as vanilla container-button clicks ------------------------------------
     /** {@code SELECT + i} selects display slot {@code i}. */
     public static final int BUTTON_SELECT = 0;
     public static final int BUTTON_APPLY = 4;
-    /** {@code REMOVE + anchor.ordinal()} empties that socket on the selected piece. */
-    public static final int BUTTON_REMOVE = 8;
+    /** Empties whatever is selected - a socket, one fitting on it, or the trim. */
+    public static final int BUTTON_REMOVE = 5;
+    /** {@code SELECT_ROW + row} works on that row of the selected piece, part and all. */
+    public static final int BUTTON_SELECT_ROW = 8;
+    /** {@code SELECT_FITTING + row * MAX_FITTINGS + slot} works on one fitting of one row. */
+    public static final int BUTTON_SELECT_FITTING = 16;
 
     /** The smithing table's own sound cue, {@code Level.levelEvent} id. */
     private static final int SMITHING_TABLE_USE_EVENT = 1044;
@@ -132,6 +162,16 @@ public class AdvancedSmithingMenu extends AbstractContainerMenu {
     };
     /** Index into {@link #DISPLAY_SLOTS} of the piece being worked on, or -1 for none. */
     private final DataSlot selected = DataSlot.standalone();
+    /**
+     * Which row of the selected piece is being worked on - a socket, or the trim row under them -
+     * or -1 while the piece is being worked on as a whole.
+     */
+    private final DataSlot selectedRow = DataSlot.standalone();
+    /**
+     * Which fitting of that row, as an index into the part's own fitting order, or -1 for the part
+     * itself. Only ever set together with a socket row.
+     */
+    private final DataSlot selectedFitting = DataSlot.standalone();
     private Runnable updateListener = () -> {};
 
     public AdvancedSmithingMenu(final int containerId, final Inventory inventory) {
@@ -183,6 +223,8 @@ public class AdvancedSmithingMenu extends AbstractContainerMenu {
         this.addStandardInventorySlots(inventory, 8, INVENTORY_Y);
 
         this.addDataSlot(this.selected).set(-1);
+        this.addDataSlot(this.selectedRow).set(-1);
+        this.addDataSlot(this.selectedFitting).set(-1);
     }
 
     // ---- what the screen reads ------------------------------------------------------------------
@@ -204,6 +246,91 @@ public class AdvancedSmithingMenu extends AbstractContainerMenu {
         return index < 0 || this.display.getItem(index).isEmpty()
             ? List.of()
             : DecorationAnchor.forSlot(DISPLAY_SLOTS.get(index));
+    }
+
+    /**
+     * The rows the selected piece lists: one per socket, then the trim under them. Zero while
+     * nothing is selected - the trim row belongs to a piece, not to the empty table.
+     */
+    public int rowCount() {
+        final List<DecorationAnchor> anchors = this.selectedAnchors();
+        return anchors.isEmpty() ? 0 : anchors.size() + 1;
+    }
+
+    /** Whether {@code row} is the trim row - the last one, under the sockets. */
+    public boolean isTrimRow(final int row) {
+        final List<DecorationAnchor> anchors = this.selectedAnchors();
+        return !anchors.isEmpty() && row == anchors.size();
+    }
+
+    /** The socket {@code row} names, or {@code null} for the trim row and for no row at all. */
+    public @Nullable DecorationAnchor anchorAt(final int row) {
+        final List<DecorationAnchor> anchors = this.selectedAnchors();
+        return row >= 0 && row < anchors.size() ? anchors.get(row) : null;
+    }
+
+    /** The parts on the selected piece. */
+    public ArmorDecorations selectedDecorations() {
+        return this.selectedStack().getOrDefault(ModDataComponents.DECORATIONS, ArmorDecorations.EMPTY);
+    }
+
+    /** What sits in {@code row}'s socket, or {@code null} if it is empty or is not a socket. */
+    public @Nullable DecorationEntry entryAt(final int row) {
+        final DecorationAnchor anchor = this.anchorAt(row);
+        return anchor == null ? null : this.selectedDecorations().get(anchor);
+    }
+
+    /**
+     * The fittings {@code row}'s part declares, in its own order - the slots the row draws beside
+     * the part. Empty for an empty socket and for the trim row, and never longer than
+     * {@link #MAX_FITTINGS}, which is what bounds the button ids.
+     */
+    public List<Holder<Fitting>> fittingsAt(final int row) {
+        final DecorationEntry entry = this.entryAt(row);
+        if (entry == null) {
+            return List.of();
+        }
+        final List<Holder<Fitting>> fittings = entry.decoration().value().fittings();
+        return fittings.size() <= MAX_FITTINGS ? fittings : fittings.subList(0, MAX_FITTINGS);
+    }
+
+    /** The row being worked on, or -1. */
+    public int selectedRow() {
+        return this.selectedRow.get();
+    }
+
+    /** The fitting of that row being worked on, or -1 for the row's part itself. */
+    public int selectedFitting() {
+        return this.selectedFitting.get();
+    }
+
+    /** The socket being worked on, or {@code null} while a whole piece or the trim row is. */
+    public @Nullable DecorationAnchor selectedAnchor() {
+        return this.anchorAt(this.selectedRow.get());
+    }
+
+    /**
+     * Whether Remove would take something off. A socket row with a part in it, a fitting with
+     * something set in it, or the trim row on a trimmed piece; nothing else.
+     */
+    public boolean canRemove() {
+        final int row = this.selectedRow.get();
+        if (row < 0 || row >= this.rowCount()) {
+            return false;
+        }
+        if (this.isTrimRow(row)) {
+            return this.selectedStack().has(DataComponents.TRIM);
+        }
+        final DecorationEntry entry = this.entryAt(row);
+        if (entry == null) {
+            return false;
+        }
+        final int fitting = this.selectedFitting.get();
+        if (fitting < 0) {
+            return true;
+        }
+        final List<Holder<Fitting>> fittings = this.fittingsAt(row);
+        return fitting < fittings.size() && entry.fitting(fittings.get(fitting)) != null;
     }
 
     /** Whether the server found a smithing recipe for the current template, material and piece. */
@@ -235,9 +362,15 @@ public class AdvancedSmithingMenu extends AbstractContainerMenu {
         if (buttonId == BUTTON_APPLY) {
             return this.apply();
         }
-        final int anchorIndex = buttonId - BUTTON_REMOVE;
-        if (anchorIndex >= 0 && anchorIndex < DecorationAnchor.values().length) {
-            return this.remove(DecorationAnchor.values()[anchorIndex]);
+        if (buttonId == BUTTON_REMOVE) {
+            return this.remove();
+        }
+        if (buttonId >= BUTTON_SELECT_ROW && buttonId < BUTTON_SELECT_ROW + MAX_ROWS) {
+            return this.selectRow(buttonId - BUTTON_SELECT_ROW, -1);
+        }
+        final int fittingId = buttonId - BUTTON_SELECT_FITTING;
+        if (fittingId >= 0 && fittingId < MAX_ROWS * MAX_FITTINGS) {
+            return this.selectRow(fittingId / MAX_FITTINGS, fittingId % MAX_FITTINGS);
         }
         return false;
     }
@@ -247,27 +380,94 @@ public class AdvancedSmithingMenu extends AbstractContainerMenu {
             return false;
         }
         this.selected.set(index);
+        // A row belongs to the piece it was picked on; the new piece starts with none picked, so
+        // Apply is back to treating it as a whole and Remove has nothing to act on.
+        this.selectedRow.set(-1);
+        this.selectedFitting.set(-1);
         this.refresh();
         return true;
     }
 
     /**
-     * Empties one socket of the selected piece. Both sides run this; it needs nothing the client
-     * lacks, and the piece is a plain component edit - see {@link ArmorDecorations#without}.
+     * Works on one row of the selected piece, and on one fitting of it when {@code fitting} is not
+     * -1. This is what Apply routes a fitting by and what Remove empties, so it is refused for a row
+     * the piece does not have, or a fitting the part in it does not declare.
      */
-    private boolean remove(final DecorationAnchor anchor) {
-        final int index = this.selected.get();
-        final ItemStack piece = this.selectedStack();
-        if (piece.isEmpty()) {
+    private boolean selectRow(final int row, final int fitting) {
+        if (row < 0 || row >= this.rowCount() || fitting >= this.fittingsAt(row).size()) {
             return false;
         }
-        final ArmorDecorations decorations = piece.get(ModDataComponents.DECORATIONS);
-        if (decorations == null) {
+        if (this.selectedRow.get() == row && this.selectedFitting.get() == fitting) {
             return false;
+        }
+        this.selectedRow.set(row);
+        this.selectedFitting.set(fitting);
+        this.refresh();
+        return true;
+    }
+
+    /**
+     * Empties whatever is selected. Both sides run this; it needs nothing the client lacks, and the
+     * piece is a plain component edit either way - see {@link ArmorDecorations#without}.
+     *
+     * <p>Three things can be taken off, and the selection says which: a whole part out of its
+     * socket, one fitting out of the part sitting in it, or the piece's trim. The trim is here for
+     * the reason removal is here at all - a smithing table has no ingredient meaning "nothing", so
+     * this is the one place a trim comes off, and nothing is refunded, exactly as with a part.
+     */
+    private boolean remove() {
+        final int index = this.selected.get();
+        final int row = this.selectedRow.get();
+        final ItemStack piece = this.selectedStack();
+        if (piece.isEmpty() || row < 0 || row >= this.rowCount()) {
+            return false;
+        }
+        final ItemStack edited = this.isTrimRow(row) ? withoutTrim(piece) : this.withoutPart(piece, row);
+        if (edited.isEmpty()) {
+            return false;
+        }
+        this.display.setItem(index, edited);
+        return true;
+    }
+
+    /** The piece without its trim, or empty if it had none. */
+    private static ItemStack withoutTrim(final ItemStack piece) {
+        if (!piece.has(DataComponents.TRIM)) {
+            return ItemStack.EMPTY;
+        }
+        final ItemStack edited = piece.copy();
+        edited.remove(DataComponents.TRIM);
+        return edited;
+    }
+
+    /**
+     * The piece with the selected row's part - or the selected fitting of it - taken off, or empty
+     * if there was nothing there to take.
+     */
+    private ItemStack withoutPart(final ItemStack piece, final int row) {
+        final DecorationAnchor anchor = this.anchorAt(row);
+        final ArmorDecorations decorations = piece.get(ModDataComponents.DECORATIONS);
+        if (anchor == null || decorations == null) {
+            return ItemStack.EMPTY;
+        }
+        final int fitting = this.selectedFitting.get();
+        if (fitting >= 0) {
+            final DecorationEntry entry = decorations.get(anchor);
+            final List<Holder<Fitting>> fittings = this.fittingsAt(row);
+            if (entry == null || fitting >= fittings.size()) {
+                return ItemStack.EMPTY;
+            }
+            final DecorationEntry emptied = entry.withoutFitting(fittings.get(fitting));
+            if (emptied == entry) {
+                return ItemStack.EMPTY;
+            }
+            final ItemStack edited = piece.copy();
+            edited.set(ModDataComponents.DECORATIONS, decorations.with(anchor, emptied));
+            return edited;
         }
         final Optional<ArmorDecorations> remaining = decorations.without(anchor);
         if (remaining.isEmpty()) {
-            return false;
+            return ItemStack.EMPTY;
         }
         final ItemStack edited = piece.copy();
         if (remaining.get().isEmpty()) {
@@ -277,8 +477,7 @@ public class AdvancedSmithingMenu extends AbstractContainerMenu {
         } else {
             edited.set(ModDataComponents.DECORATIONS, remaining.get());
         }
-        this.display.setItem(index, edited);
-        return true;
+        return edited;
     }
 
     /**
@@ -325,9 +524,39 @@ public class AdvancedSmithingMenu extends AbstractContainerMenu {
             new SmithingRecipeInput(this.inputs.getItem(0), base, this.inputs.getItem(1));
         return serverLevel.recipeAccess()
             .getRecipeFor(RecipeType.SMITHING, input, serverLevel)
-            .map(recipe -> recipe.value().assemble(input))
+            .map(recipe -> this.assemble(recipe.value(), input))
             .filter(result -> !result.isEmpty() && fitsSlot(result, DISPLAY_SLOTS.get(index)))
             .orElse(ItemStack.EMPTY);
+    }
+
+    /**
+     * The matched recipe's own result, except that a fitting goes where the table says it goes.
+     *
+     * <p>{@link SmithingFittingRecipe} routes by the item alone, because the smithing table has
+     * nowhere to say more: a gem lands in the gemstone of every part on the piece that has one. This
+     * table does have somewhere to say more - the row that is selected - so it narrows the same rule
+     * to that socket, and to that one fitting when a fitting slot is what is picked. Nothing else
+     * about the recipe changes: it is still the recipe manager that decided a recipe matched, and a
+     * pack that turned this one off has turned it off here.
+     *
+     * <p>Narrowed only while a socket row is selected. With the piece selected as a whole - which is
+     * how it starts - the recipe's own routing stands, and one gem still fits every part that takes
+     * one.
+     */
+    private ItemStack assemble(final SmithingRecipe recipe, final SmithingRecipeInput input) {
+        final DecorationAnchor anchor = this.selectedAnchor();
+        if (anchor == null || !(recipe instanceof SmithingFittingRecipe)) {
+            return recipe.assemble(input);
+        }
+        // The template's own choice wins over the selected slot: it is the more specific statement
+        // of the two, and a template that names a fitting is asking for exactly that one.
+        Holder<Fitting> only = input.template().get(ModDataComponents.FITTING);
+        if (only == null) {
+            final int fitting = this.selectedFitting.get();
+            final List<Holder<Fitting>> fittings = this.fittingsAt(this.selectedRow.get());
+            only = fitting >= 0 && fitting < fittings.size() ? fittings.get(fitting) : null;
+        }
+        return SmithingFittingRecipe.applyFitting(input.base(), input.addition(), only, anchor);
     }
 
     private static boolean fitsSlot(final ItemStack stack, final EquipmentSlot slot) {
@@ -347,7 +576,26 @@ public class AdvancedSmithingMenu extends AbstractContainerMenu {
         if (current < 0 || this.display.getItem(current).isEmpty()) {
             this.selected.set(this.firstDisplayed());
         }
+        this.clampSelection();
         this.refresh();
+    }
+
+    /**
+     * Drops a row or fitting selection the piece no longer supports - it was on a piece that has
+     * been taken out, or on a part that has just been swapped for one with fewer fittings. Left
+     * standing, it would aim Apply and Remove at something that is not there.
+     */
+    private void clampSelection() {
+        final int row = this.selectedRow.get();
+        if (row < 0) {
+            return;
+        }
+        if (row >= this.rowCount()) {
+            this.selectedRow.set(-1);
+            this.selectedFitting.set(-1);
+        } else if (this.selectedFitting.get() >= this.fittingsAt(row).size()) {
+            this.selectedFitting.set(-1);
+        }
     }
 
     private int firstDisplayed() {
@@ -361,6 +609,7 @@ public class AdvancedSmithingMenu extends AbstractContainerMenu {
 
     /** Re-evaluates Apply on the server and lets the screen know something moved. */
     private void refresh() {
+        this.layOutDisplaySlots();
         if (this.level instanceof ServerLevel) {
             final ItemStack result = this.findResult();
             if (!ItemStack.matches(result, this.preview.getItem(0))) {
@@ -368,6 +617,27 @@ public class AdvancedSmithingMenu extends AbstractContainerMenu {
             }
         }
         this.updateListener.run();
+    }
+
+    /**
+     * Puts the display slots where the selection says they go: the piece being worked on out beside
+     * the box, the rest in the column. See {@link #DISPLAY_SELECTED_X}.
+     *
+     * <p>A slot's position is final, so moving one means putting another in its place, at the same
+     * index and over the same container - the slot's identity to everything but the eye. Only the
+     * client draws slots, but both sides run this: a menu whose halves disagree about anything is a
+     * menu that will be debugged later.
+     */
+    private void layOutDisplaySlots() {
+        for (int i = 0; i < DISPLAY_SLOTS.size(); i++) {
+            final int index = DISPLAY_SLOT_START + i;
+            final int x = i == this.selected.get() ? DISPLAY_SELECTED_X : DISPLAY_X;
+            if (this.slots.get(index).x != x) {
+                final Slot moved = new DisplaySlot(this.display, i, x, DISPLAY_Y + i * ROW_HEIGHT);
+                moved.index = index;
+                this.slots.set(index, moved);
+            }
+        }
     }
 
     @Override

@@ -20,6 +20,7 @@
 <a href="https://github.com/mattjesmc/ArmorPieces">GitHub</a> &nbsp;•&nbsp; <a href="https://github.com/mattjesmc/ArmorPieces/issues">Issues</a> &nbsp;•&nbsp; <a href="https://github.com/mattjesmc/ArmorPieces/blob/main/CHANGELOG.md">Changelog</a></p>
 
 ---
+<a id="about"></a>
 
 ## About
 
@@ -46,6 +47,7 @@ a texture, no code, and a pack can add its own the same way - from Blockbench, i
 own.
 
 ---
+<a id="features"></a>
 
 ## Features
 
@@ -53,12 +55,13 @@ own.
 - **Coloured by vanilla trim materials** — One grayscale master per part is mapped onto each material's own palette at load time. A new trim material costs a part no new art at all.
 - **Fittings** — A part can declare places for a second material — `gemstone`, `guard`, `inlay`, `banner` — and a fitting template sets one: gems and metals by trim material, inlays by dye, banners from a banner made at a loom. There is a template per fitting, each with its own look and recipe, and the template with the third slot empty takes its fitting out again. Fittings are data too — a pack's new fitting gets its template from a recipe — and an effect can be gated on one.
 - **Found in the world** — Every shipped part turns up in a few of the world's chests — wings in end cities, horns in bastions, the circlet in ancient cities — and a part names its own tables in its data file, which the mod adds it to as they load, the one thing a datapack cannot do for itself. A loot function puts a part on a piece of armor a table drops, gem and all.
-- **Taking parts off** — The advanced smithing table, crafted from a smithing table, an armor stand and two iron ingots, holds a whole set worn by a stand at once, lists each piece's sockets, and empties one with a click — the one way a part ever comes off. Its own template and material slots run the smithing table's recipes, with the result on the stand before it is paid for.
+- **Taking parts off** — The advanced smithing table, crafted from a smithing table, an armor stand and two iron ingots, holds a whole set worn by a stand at once and lists each piece's sockets, its fittings and its trim as rows of icons. Pick one and Remove empties it — the one way a part, a fitting or a trim ever comes off. Its own template and material slots run the smithing table's recipes, with the result on the stand before it is paid for, and a fitting goes into the socket that is picked rather than into every part that takes one.
 - **One smithing recipe per socket, forever** — The part rides on the template item as a component, so a pack hands out a template and needs no recipe of its own. And any recipe the mod ships can be switched off by overriding its file with `{"type": "armorpieces:disabled"}` — a part that is found rather than made, a server without fittings.
 - **Optional behaviour** — A part may carry effects — attributes, mob effects, a projectile dodge, gliding — configured in the same JSON file. `pinions` is a cut-down elytra that actually flies.
 - **A Blockbench plugin for making parts** — Opens a part on the vanilla player wearing real armor, walk cycle and all. Master, static layer and fitting masks are painted in place, any trim material previews live with its fittings filled or empty, the name, sockets, fittings, effects and loot are a dialog, and Save writes every file the pack needs — into your own datapack and resource pack, which it makes, finds and zips for you.
 
 ---
+<a id="gallery"></a>
 
 ## Gallery
 
@@ -83,6 +86,7 @@ own.
 </p>
 
 ---
+<a id="recipes"></a>
 
 ## Recipes
 
@@ -195,6 +199,7 @@ own.
 </details>
 
 ---
+<a id="dependencies"></a>
 
 ## Dependencies
 
@@ -205,12 +210,14 @@ own.
 | [Fabric API](https://modrinth.com/mod/fabric-api) | — | Dynamic registries, resource reload, render layers |
 
 ---
+<a id="incompatibilities"></a>
 
 ## Incompatibilities
 
 **None known.** No conflicts have been reported.
 
 ---
+<a id="installation"></a>
 
 ## Installation
 
@@ -219,6 +226,7 @@ own.
 3. Install it on both sides — the client draws the parts, the server owns their behaviour.
 
 ---
+<a id="adding-a-part"></a>
 
 ## Adding a part
 
@@ -234,6 +242,7 @@ The [authoring guide](https://github.com/mattjesmc/ArmorPieces/blob/main/docs/au
 it behaviour — attributes, mob effects, a dodge, gliding — from the same JSON file.
 
 ---
+<a id="working-on-it"></a>
 
 ## Working on it
 
@@ -254,6 +263,7 @@ The rigs, the `/armorpieces stage` command and the plugin's Save path are descri
 shipped part.
 
 ---
+<a id="faq"></a>
 
 ## FAQ
 
@@ -267,14 +277,14 @@ No. A piece carries its trim and its parts at once.
 <details>
 <summary><b>How do I put a gem in the circlet?</b></summary>
 
-Craft a gemstone fitting template (an amethyst block in a ring of paper), then smithing table: template, the decorated helmet, and the gem. Every part on the piece is offered the item, so one gem fills the stone of each part that has one. The same template with the third slot empty takes the gem out again. A guard template does the same for metals, an inlay template for dyes, a banner template for banners. Re-applying a part at its own socket template keeps what is set in it, so changing a circlet's metal does not cost the gem.
+Craft a gemstone fitting template (an amethyst block in a ring of paper), then smithing table: template, the decorated helmet, and the gem. Every part on the piece is offered the item, so one gem fills the stone of each part that has one — or of the one socket picked, at the advanced smithing table. The same template with the third slot empty takes the gem out again. A guard template does the same for metals, an inlay template for dyes, a banner template for banners. Re-applying a part at its own socket template keeps what is set in it, so changing a circlet's metal does not cost the gem.
 
 </details>
 
 <details>
 <summary><b>How do I take a part off?</b></summary>
 
-At the advanced smithing table. Put the piece in one of its four slots, pick the socket in the list and click the cross. What was in the part's fittings goes with it.
+At the advanced smithing table. Put the piece in one of its four slots, pick the socket's row and click Remove. What was in the part's fittings goes with it. Picking one of the fitting icons beside the part takes just that fitting out, and the trim row under the sockets takes the trim off.
 
 </details>
 
@@ -293,6 +303,7 @@ You need the mod installed, but adding a part takes no Java — a datapack and a
 </details>
 
 ---
+<a id="license"></a>
 
 ## License
 

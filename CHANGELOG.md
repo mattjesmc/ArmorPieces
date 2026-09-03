@@ -53,14 +53,21 @@ field but the type is ignored.
 **The advanced smithing table.** A block, crafted from a smithing table, an armor stand and two
 iron ingots, that shows a set of armor and lets a part come off again. Four display slots hold a
 helmet, a chestplate, leggings and boots, all worn at once by an armor stand that can be turned by
-dragging; a button beside each slot selects the piece to work on, and the selected piece's sockets
-are listed head to toe, each filled one showing its part as the template that put it there, with
-the part's material and fittings on hover, and a cross that empties the socket - the one way a part
-is ever taken off, since the smithing table has no ingredient that means "nothing". Below the list
+dragging; an arrow beside each slot picks the piece to work on, and the picked one steps out of the
+column to stand against the list of what it wears. That list is a row per socket, head to toe, with
+the piece's trim under them: a filled row shows its part as the template that put it there, wearing
+a half-size icon of the material it is made of, and beside it one place per fitting that part
+declares. An empty place wears the grey hint of the template that would fill it, as the smithing
+table shows a faint template in its own empty slot, and the table's template slot wears the hint of
+whatever is picked, so what to go and find is named in the slot it has to be dropped into. Clicking
+a part or a fitting works on it - its row lights up and a frame closes around it - and Remove
+empties whatever is picked, a part, one fitting of it, or the trim: the one way any of the three is
+ever taken off, since the smithing table has no ingredient that means "nothing". Below the list
 sit the smithing table's own template and material slots with the selected piece standing in for
 the base: Apply runs the ordinary smithing recipe lookup and writes the result back into the
 display slot, so a socket template puts a part on, a fitting template sets a stone, and a vanilla
-trim template trims, while a recipe a pack has turned off stays off - and the stand wears the
+trim template trims, while a recipe a pack has turned off stays off, and a fitting goes into the
+socket that is picked rather than into every part that takes one - and the stand wears the
 result before Apply is pressed, as the smithing table's stand does. Nothing is kept in the block;
 everything goes back to the player when the menu closes, whether it was opened at the block or by
 `/armorpieces table`.

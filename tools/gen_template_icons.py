@@ -11,6 +11,12 @@ tooltip, and the four silhouettes group the twelve templates into four families 
 Authored as pixel art rather than drawn procedurally: at this size every pixel is a decision, and a
 generator that "draws a helmet" would only be a worse way of writing the same ten strings.
 
+Each icon also gets a hint of itself, written as a GUI sprite under `container/slot/`: what the
+advanced smithing table draws in a socket or fitting slot that is still empty, the way the vanilla
+smithing table shows a faint template in its own empty template slot. It is the icon with its card
+taken off and its subject knocked out - see `hint` - and it is derived from the icon rather than
+authored beside it, so the two can never drift apart.
+
 Usage:
     python tools/gen_template_icons.py           # write the PNGs
     python tools/gen_template_icons.py --sheet   # also write a magnified contact sheet to inspect
@@ -25,6 +31,12 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "src" / "main" / "resources" / "assets" / "armorpieces" / "textures" / "item"
+# The hint form of the same icon, for the slot it belongs in while that slot is empty - vanilla's
+# own `container/slot/smithing_template_armor_trim`, one file per template instead of one for all.
+GHOST_OUT = (ROOT / "src" / "main" / "resources" / "assets" / "armorpieces" / "textures"
+             / "gui" / "sprites" / "container" / "slot")
+# Vanilla draws every empty-slot hint in this one flat grey, on the 139 grey a slot's floor is.
+GHOST = (0x55, 0x55, 0x55, 0xFF)
 
 PALETTE = {
     ".": (0, 0, 0, 0),
@@ -291,25 +303,61 @@ def render(anchor: str) -> Image.Image:
     return img
 
 
+def hint(anchor: str) -> Image.Image:
+    """
+    The icon as the empty slot wears it: the same art with its card taken off and its subject
+    knocked out of it.
+
+    Both of the card's borders go - the dark outline and the lit bevel inside it - which leaves the
+    10x10 recess alone. That recess becomes the darker grey vanilla paints an empty-slot hint in,
+    the armor piece is cut clean out of it so the slot's own floor shows through the hole, and the
+    amber that names the socket stays exactly as it is. So the hint is the icon inverted, which is
+    why it is still read as that icon: the shape is the same shape, and the one spot of colour is
+    the one thing that told the twelve of them apart.
+    """
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    px = img.load()
+    for y, row in enumerate(INLAY[anchor]):
+        for x, ch in enumerate(row):
+            if ch in "+*":
+                px[x + 3, y + 3] = PALETTE[ch]
+            elif ch == ".":
+                px[x + 3, y + 3] = GHOST
+    return img
+
+
+def icon_name(anchor: str) -> str:
+    """crest -> crest_template; fitting_gemstone -> fitting_template_gemstone."""
+    if anchor.startswith("fitting_"):
+        return f"fitting_template_{anchor[len('fitting_'):]}"
+    return f"{anchor}_template"
+
+
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
+    GHOST_OUT.mkdir(parents=True, exist_ok=True)
     images = {}
     for anchor in INLAY:
         img = render(anchor)
-        # crest -> crest_template.png; fitting_gemstone -> fitting_template_gemstone.png, the name
-        # the item model's select case points at.
-        name = (f"fitting_template_{anchor[len('fitting_'):]}" if anchor.startswith("fitting_")
-                else f"{anchor}_template")
+        # The name the item model's select case points at, and the sprite the screen asks for by
+        # the same name - see AdvancedSmithingScreen.
+        name = icon_name(anchor)
         img.save(OUT / f"{name}.png")
+        hint(anchor).save(GHOST_OUT / f"{name}.png")
         images[anchor] = img
     print(f"wrote {len(images)} icons to {OUT}")
+    print(f"wrote {len(images)} hints to {GHOST_OUT}")
 
     if "--sheet" in sys.argv:
         scale, pad = 8, 2
-        sheet = Image.new("RGBA", (len(images) * (16 + pad) * scale, 16 * scale), (24, 24, 28, 255))
-        for i, img in enumerate(images.values()):
-            sheet.paste(img.resize((16 * scale, 16 * scale), Image.NEAREST),
-                        (i * (16 + pad) * scale, 0), img.resize((16 * scale, 16 * scale), Image.NEAREST))
+        pitch = (16 + pad) * scale
+        # The hints go on the row below, on the 139 grey of the slot floor they are drawn on.
+        sheet = Image.new("RGBA", (len(images) * pitch, 2 * pitch), (24, 24, 28, 255))
+        sheet.paste((139, 139, 139, 255), (0, pitch, sheet.width, sheet.height))
+        for i, anchor in enumerate(images):
+            for row, img in enumerate((images[anchor], hint(anchor))):
+                big = img.resize((16 * scale, 16 * scale), Image.NEAREST)
+                sheet.paste(big, (i * pitch, row * pitch), big)
         path = ROOT / "tools" / "template_icons_preview.png"
         sheet.save(path)
         print(f"sheet: {path}  ({', '.join(images)})")

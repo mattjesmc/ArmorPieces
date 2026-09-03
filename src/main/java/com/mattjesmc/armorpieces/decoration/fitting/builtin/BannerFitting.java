@@ -1,5 +1,6 @@
 package com.mattjesmc.armorpieces.decoration.fitting.builtin;
 
+import com.mattjesmc.armorpieces.decoration.MaterialIcons;
 import com.mattjesmc.armorpieces.decoration.fitting.Fitting;
 import com.mattjesmc.armorpieces.decoration.fitting.FittingValue;
 import com.mojang.serialization.Codec;
@@ -105,6 +106,16 @@ public record BannerFitting(
         public Component name() {
             return Component.translatable("block.minecraft." + this.base.getName() + "_banner")
                 .withStyle(Style.EMPTY.withColor(this.base.getTextColor()));
+        }
+
+        /** The banner itself, patterns and all, so a slot shows the flag rather than its colour. */
+        @Override
+        public ItemStack icon() {
+            final ItemStack banner = MaterialIcons.forBanner(this.base);
+            if (!banner.isEmpty() && !this.layers.equals(BannerPatternLayers.EMPTY)) {
+                banner.set(DataComponents.BANNER_PATTERNS, this.layers);
+            }
+            return banner;
         }
     }
 

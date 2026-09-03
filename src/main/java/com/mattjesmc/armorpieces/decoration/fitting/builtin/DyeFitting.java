@@ -1,5 +1,6 @@
 package com.mattjesmc.armorpieces.decoration.fitting.builtin;
 
+import com.mattjesmc.armorpieces.decoration.MaterialIcons;
 import com.mattjesmc.armorpieces.decoration.fitting.Fitting;
 import com.mattjesmc.armorpieces.decoration.fitting.FittingColour;
 import com.mattjesmc.armorpieces.decoration.fitting.FittingValue;
@@ -53,6 +54,11 @@ public record DyeFitting(Component description, Optional<Component> customIngred
         public Component name() {
             return Component.translatable("color.minecraft." + this.colour.getName())
                 .withStyle(Style.EMPTY.withColor(this.colour.getTextColor()));
+        }
+
+        @Override
+        public ItemStack icon() {
+            return MaterialIcons.forDye(this.colour);
         }
     }
 

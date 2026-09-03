@@ -78,9 +78,11 @@ sections:
       - title: Taking parts off
         description: >-
           The advanced smithing table, crafted from a smithing table, an armor stand and two iron
-          ingots, holds a whole set worn by a stand at once, lists each piece's sockets, and empties
-          one with a click — the one way a part ever comes off. Its own template and material slots
-          run the smithing table's recipes, with the result on the stand before it is paid for.
+          ingots, holds a whole set worn by a stand at once and lists each piece's sockets, its
+          fittings and its trim as rows of icons. Pick one and Remove empties it — the one way a
+          part, a fitting or a trim ever comes off. Its own template and material slots run the
+          smithing table's recipes, with the result on the stand before it is paid for, and a
+          fitting goes into the socket that is picked rather than into every part that takes one.
       - title: One smithing recipe per socket, forever
         description: >-
           The part rides on the template item as a component, so a pack hands out a template and needs
@@ -157,15 +159,18 @@ sections:
         a: >-
           Craft a gemstone fitting template (an amethyst block in a ring of paper), then smithing
           table: template, the decorated helmet, and the gem. Every part on the piece is offered the
-          item, so one gem fills the stone of each part that has one. The same template with the
+          item, so one gem fills the stone of each part that has one — or of the one socket picked,
+          at the advanced smithing table. The same template with the
           third slot empty takes the gem out again. A guard template does the same for metals, an
           inlay template for dyes, a banner template for banners. Re-applying a part at its own
           socket template keeps what is set in it, so changing a circlet's metal does not cost the
           gem.
       - q: How do I take a part off?
         a: >-
-          At the advanced smithing table. Put the piece in one of its four slots, pick the socket
-          in the list and click the cross. What was in the part's fittings goes with it.
+          At the advanced smithing table. Put the piece in one of its four slots, pick the socket's
+          row and click Remove. What was in the part's fittings goes with it. Picking one of the
+          fitting icons beside the part takes just that fitting out, and the trim row under the
+          sockets takes the trim off.
       - q: Can two parts share a socket?
         a: >-
           No — applying a new crest replaces the crest. Several parts may be *available* for one socket
