@@ -53,21 +53,14 @@ field but the type is ignored.
 **The advanced smithing table.** A block, crafted from a smithing table, an armor stand and two
 iron ingots, that shows a set of armor and lets a part come off again. Four display slots hold a
 helmet, a chestplate, leggings and boots, all worn at once by an armor stand that can be turned by
-dragging; an arrow beside each slot picks the piece to work on, and the picked one steps out of the
-column to stand against the list of what it wears. That list is a row per socket, head to toe, with
-the piece's trim under them: a filled row shows its part as the template that put it there, wearing
-a half-size icon of the material it is made of, and beside it one place per fitting that part
-declares. An empty place wears the grey hint of the template that would fill it, as the smithing
-table shows a faint template in its own empty slot, and the table's template slot wears the hint of
-whatever is picked, so what to go and find is named in the slot it has to be dropped into. Clicking
-a part or a fitting works on it - its row lights up and a frame closes around it - and Remove
-empties whatever is picked, a part, one fitting of it, or the trim: the one way any of the three is
-ever taken off, since the smithing table has no ingredient that means "nothing". Below the list
+dragging; a button beside each slot selects the piece to work on, and the selected piece's sockets
+are listed head to toe, each filled one showing its part as the template that put it there, with
+the part's material and fittings on hover, and a cross that empties the socket - the one way a part
+is ever taken off, since the smithing table has no ingredient that means "nothing". Below the list
 sit the smithing table's own template and material slots with the selected piece standing in for
 the base: Apply runs the ordinary smithing recipe lookup and writes the result back into the
 display slot, so a socket template puts a part on, a fitting template sets a stone, and a vanilla
-trim template trims, while a recipe a pack has turned off stays off, and a fitting goes into the
-socket that is picked rather than into every part that takes one - and the stand wears the
+trim template trims, while a recipe a pack has turned off stays off - and the stand wears the
 result before Apply is pressed, as the smithing table's stand does. Nothing is kept in the block;
 everything goes back to the player when the menu closes, whether it was opened at the block or by
 `/armorpieces table`.
@@ -86,11 +79,18 @@ fitting template icons beside the bare one. `export_pack.py` zips a pack folder 
 at the root, and is what the plugin's *Export Pack...* runs. `preview_material.py` takes `--pack`
 more than once, for a piece whose two halves are two folders.
 
-**Forty-one parts.** Twenty-one new parts, so every socket has at least two answers and six
-themes reach across the suit: antlers, bandolier, beast head, buckled belt, chain of office,
-claws, coronet, garters, head fins, mantle, pelt, puttees, quiver, scale shins, scale skirt,
-streamers and wraps by hand, then nasal, spire, antennae and horsetail through the bridge below.
-`docs/plans/part-variety.md` is the candidate list they came from.
+**Eighty-four parts.** Sixty-four new parts - every candidate in
+`docs/plans/part-variety.md`, so each of the twelve sockets has at least six answers and the six
+themes reach across the whole suit. Antlers, bandolier, beast head, buckled belt, chain of
+office, claws, coronet, garters, head fins, mantle, pelt, puttees, quiver, scale shins, scale
+skirt, streamers and wraps were authored by hand; nasal, spire, antennae, horsetail, girdle,
+knee studs, wing cases, talons, aerials, carapace, pendant, dorsal fin, swim fins, bangles, bone
+mask, epaulettes, pouch belt, thigh sheath, padding, bedroll, ears, fang necklace, shin spikes,
+spine ridge, cord, loin panels, winged cops, rowel spurs, comb, cheek guards, spiked pauldrons,
+buckler, laurel, scarf, cuffs, boot cuffs, browband, tusks, fanged cop, bells, lames, ruff,
+chain belt, anklets, cloak, fauld and mail fringe came through the bridge below, one session per
+part. Cloak is the first part after Banner to carry a real banner design: the `banner` fitting
+is geometry rather than a mask, so its cloth is a single cube in a bone named `banner`.
 
 **Authoring from an agent.** `tools/mcp` is an MCP server in front of Blockbench's own MCP
 plugin: an *authoring* profile of its tools, piece-level tools (`armorpieces_open`, `_new`,
