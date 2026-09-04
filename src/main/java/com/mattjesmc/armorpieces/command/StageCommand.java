@@ -8,7 +8,10 @@ import com.mattjesmc.armorpieces.decoration.DecorationEntry;
 import com.mattjesmc.armorpieces.decoration.fitting.Fitting;
 import com.mattjesmc.armorpieces.decoration.fitting.FittingValue;
 import com.mattjesmc.armorpieces.menu.AdvancedSmithingMenu;
+import com.mattjesmc.armorpieces.recipe.SmithingSkinRecipe;
 import com.mattjesmc.armorpieces.registry.ModDataComponents;
+import com.mattjesmc.armorpieces.skin.ArmorSkin;
+import com.mattjesmc.armorpieces.skin.ArmorSkinValue;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -68,7 +71,7 @@ import org.jspecify.annotations.Nullable;
  * on the stage the moment they load, which is the only way a preview of a data-driven system can
  * avoid lying about what the system contains.
  *
- * <p>Five modes, four of them a different slice of the same cross product:
+ * <p>Six modes, five of them a different slice of the same cross product:
  *
  * <ul>
  *   <li>{@code parts} - one stand per (socketed part x material). The default view: every part in
@@ -82,7 +85,11 @@ import org.jspecify.annotations.Nullable;
  *       rows, everything the fitting takes across the columns, that fitting filled. The other three
  *       modes leave every fitting empty, which is the part as the socket recipe first makes it; this
  *       is where the masks and the cloth are judged.</li>
- *   <li>{@code clear} - removes what the other four placed, by tag.</li>
+ *   <li>{@code skins} - one stand per (skin x base armor set): every skin down the rows, every
+ *       armor material across the columns, each suit wearing the skin. The only mode whose columns
+ *       are the ARMOR rather than the trim, because a skin takes its colours from the armor's own
+ *       texture and has no trim material of its own.</li>
+ *   <li>{@code clear} - removes what the other five placed, by tag.</li>
  * </ul>
  *
  * <p>Nothing here goes through {@link com.mattjesmc.armorpieces.recipe.SmithingDecorationRecipe}'s
@@ -150,6 +157,12 @@ public final class StageCommand {
                     .then(Commands.argument("decoration",
                             ResourceArgument.resource(context, ArmorPiecesRegistries.ARMOR_DECORATION))
                         .executes(ctx -> stageFittings(ctx.getSource(), decorationArgument(ctx)))))
+                .then(Commands.literal("skins")
+                    .executes(c -> stageSkins(c.getSource(), null))
+                    .then(Commands.argument("skin",
+                            ResourceArgument.resource(context, ArmorPiecesRegistries.ARMOR_SKIN))
+                        .executes(c -> stageSkins(c.getSource(),
+                            ResourceArgument.getResource(c, "skin", ArmorPiecesRegistries.ARMOR_SKIN)))))
                 .then(Commands.literal("clear")
                     .executes(ctx -> clear(ctx.getSource())))
                 // Not stands but numbers: rolls a loot table and counts what the mod put in it, so
@@ -378,6 +391,67 @@ public final class StageCommand {
      * selector has. In practice that is the stage you are standing in front of; a grid left in a far
      * corner of the world clears when you go back to it.
      */
+    /**
+     * One stand per (skin x base armor set), wearing that skin on a whole suit of that armor.
+     *
+     * <p>The one view the other modes cannot give, because every one of them varies the TRIM
+     * material and holds the armor still. A skin has no trim material: its colours are taken from
+     * the armor's own texture, so the axis that matters is the armor, and the question this answers
+     * is the one the feature stands or falls on - does a skinned iron helmet still read as iron
+     * beside a skinned gold one, and does the pattern survive a material whose own texture is nearly
+     * flat.
+     *
+     * <p>Armor that refuses a skin is staged unskinned rather than skipped, because seeing chainmail
+     * standing plain in the row is the answer to "why is nothing happening to my chainmail".
+     */
+    private static int stageSkins(final CommandSourceStack source, final @Nullable Holder<ArmorSkin> only) {
+        final List<Holder<ArmorSkin>> rows = only != null
+            ? List.of(only)
+            : source.registryAccess().lookupOrThrow(ArmorPiecesRegistries.ARMOR_SKIN)
+                .listElements()
+                .<Holder<ArmorSkin>>map(holder -> holder)
+                .toList();
+        final List<BaseArmor> bases = baseArmors();
+        if (rows.isEmpty() || bases.isEmpty()) {
+            return nothingToStage(source);
+        }
+        if (tooMany(source, rows.size() * bases.size())) {
+            return 0;
+        }
+
+        final Layout layout = Layout.inFrontOf(source);
+        for (int column = 0; column < bases.size(); column++) {
+            layout.label(column, -1.0, bases.get(column).name());
+        }
+
+        int placed = 0;
+        for (int row = 0; row < rows.size(); row++) {
+            final Holder<ArmorSkin> skin = rows.get(row);
+            layout.label(-1.0, row, skin.value().description());
+            for (int column = 0; column < bases.size(); column++) {
+                final BaseArmor base = bases.get(column);
+                final Map<ArmorType, ItemStack> worn = new EnumMap<>(ArmorType.class);
+                for (final ArmorType type : ARMOR_TYPES) {
+                    final ItemStack piece = base.piece(type);
+                    if (piece.isEmpty()) {
+                        continue;
+                    }
+                    // The recipe's own rule, not a second one: a piece it refuses is worn plain.
+                    if (SmithingSkinRecipe.isSkinnable(piece)) {
+                        piece.set(ModDataComponents.SKIN, new ArmorSkinValue(skin));
+                    }
+                    worn.put(type, piece);
+                }
+                if (worn.isEmpty()) {
+                    continue;
+                }
+                layout.stand(column, row, worn, skin.value().description());
+                placed++;
+            }
+        }
+        return finish(source, placed);
+    }
+
     private static int clear(final CommandSourceStack source) {
         final List<? extends Entity> staged = source.getLevel().getEntities(
             EntityTypeTest.<Entity, Entity>forClass(Entity.class),

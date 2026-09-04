@@ -9,6 +9,7 @@ import com.mattjesmc.armorpieces.decoration.fitting.FittingValue;
 import com.mattjesmc.armorpieces.menu.AdvancedSmithingMenu;
 import com.mattjesmc.armorpieces.registry.ModDataComponents;
 import com.mattjesmc.armorpieces.registry.ModItems;
+import com.mattjesmc.armorpieces.skin.ArmorSkinValue;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -59,7 +60,8 @@ import org.jspecify.annotations.Nullable;
  * in the slot's own grey and at its own height, so the box reads as that slot opened up. The neck
  * moves with the selection, so the box is drawn here rather than baked into the sheet.
  *
- * <p>A row is one socket of the selected piece, or - last, under them - its trim. The rows are not
+ * <p>A row is one socket of the selected piece, or - last, under them - the piece's own row: its
+ * trim, and beside it its skin. The rows are not
  * slots (a part in a socket is not an item to be picked up) so they are drawn by hand: the part as
  * the socket template that carries it, then one place per fitting the part declares, empty or
  * filled. The columns are fixed, so the parts line up down the box. Every
@@ -100,6 +102,9 @@ public class AdvancedSmithingScreen extends AbstractContainerScreen<AdvancedSmit
     /** The trim row borrows the smithing table's hint: it is the same template, asked for twice. */
     private static final Identifier TRIM_HINT =
         Identifier.withDefaultNamespace(SLOT_HINTS + "smithing_template_armor_trim");
+    /** The skin's place, beside the trim: the skin template's own icon, knocked out. */
+    private static final Identifier SKIN_HINT =
+        Identifier.fromNamespaceAndPath(ArmorPieces.MOD_ID, SLOT_HINTS + "skin_template");
     /**
      * The fittings with a hint of their own, mirroring the cases in {@code items/fitting_template.json}:
      * a pack's own fitting is asked for with the plain card there and with the plain hint here.
@@ -184,6 +189,7 @@ public class AdvancedSmithingScreen extends AbstractContainerScreen<AdvancedSmit
     private static final Component SELECT = Component.translatable("container.armorpieces.advanced_smithing.select");
     private static final Component HINT = Component.translatable("container.armorpieces.advanced_smithing.hint");
     private static final Component TRIM = Component.translatable("container.armorpieces.advanced_smithing.trim");
+    private static final Component SKIN = Component.translatable("container.armorpieces.advanced_smithing.skin");
     private static final Component EMPTY_SOCKET = Component.translatable("container.armorpieces.advanced_smithing.empty")
         .withStyle(ChatFormatting.GRAY);
 
@@ -396,10 +402,10 @@ public class AdvancedSmithingScreen extends AbstractContainerScreen<AdvancedSmit
         if (row < 0 || row >= this.menu.rowCount()) {
             return null;
         }
-        if (this.menu.isTrimRow(row)) {
-            return TRIM_HINT;
-        }
         final int fitting = this.menu.selectedFitting();
+        if (this.menu.isTrimRow(row)) {
+            return fitting < 0 ? TRIM_HINT : SKIN_HINT;
+        }
         if (fitting < 0) {
             return socketHint(this.menu.anchorAt(row));
         }
@@ -479,6 +485,7 @@ public class AdvancedSmithingScreen extends AbstractContainerScreen<AdvancedSmit
             final int part = this.leftPos + columnX(0);
             if (trim) {
                 this.extractTrimSlot(graphics, part, y, picked == 0);
+                this.extractSkinSlot(graphics, this.leftPos + columnX(1), y, picked == 1);
             } else {
                 // The icon is the socket template carrying this part - the very item that put it
                 // there, and the one the creative tab and the recipe book show for it.
@@ -533,6 +540,26 @@ public class AdvancedSmithingScreen extends AbstractContainerScreen<AdvancedSmit
         this.extractSlot(graphics, x, y, TRIM_HINT, selected, bare,
             MaterialIcons.forTrimMaterial(trim.material()),
             colourOf(trim.material().value().description()));
+    }
+
+    /**
+     * The skin's place, beside the trim on the same row: the template that would put this skin on,
+     * which is the very item the creative tab and the recipe book show for it.
+     *
+     * <p>No badge under it, unlike every other place here. A skin has no second material to show -
+     * its colour comes out of the armor it is on - and the piece standing on the right is already
+     * wearing the answer.
+     */
+    private void extractSkinSlot(
+        final GuiGraphicsExtractor graphics,
+        final int x,
+        final int y,
+        final boolean selected
+    ) {
+        final ArmorSkinValue skin = this.menu.selectedSkin();
+        this.extractSlot(graphics, x, y, SKIN_HINT, selected,
+            skin == null ? ItemStack.EMPTY : ModItems.skinTemplateFor(skin.skin()),
+            ItemStack.EMPTY, 0);
     }
 
     /**
@@ -600,7 +627,11 @@ public class AdvancedSmithingScreen extends AbstractContainerScreen<AdvancedSmit
         final int slot = hit.slot();
         final DecorationEntry entry = this.menu.entryAt(row);
         final List<Component> lines = new ArrayList<>();
-        if (slot > 0) {
+        if (slot > 0 && this.menu.isSkinPlace(row, slot - 1)) {
+            final ArmorSkinValue skin = this.menu.selectedSkin();
+            lines.add(skin == null ? EMPTY_SOCKET : skin.description());
+            lines.add(SKIN.copy().withStyle(ChatFormatting.DARK_GRAY));
+        } else if (slot > 0) {
             final Holder<Fitting> fitting = this.menu.fittingsAt(row).get(slot - 1);
             final FittingValue value = entry == null ? null : entry.fitting(fitting);
             if (value == null) {
@@ -642,7 +673,7 @@ public class AdvancedSmithingScreen extends AbstractContainerScreen<AdvancedSmit
      */
     private @Nullable Icon iconAt(final double mouseX, final double mouseY) {
         for (int row = 0; row < this.menu.rowCount(); row++) {
-            final int slots = 1 + this.menu.fittingsAt(row).size();
+            final int slots = 1 + this.menu.placesAt(row);
             final int y = AdvancedSmithingMenu.DISPLAY_Y + row * AdvancedSmithingMenu.ROW_HEIGHT;
             for (int slot = 0; slot < slots; slot++) {
                 if (this.isHovering(columnX(slot) + 1, y, ICON_SIZE, ICON_SIZE, mouseX, mouseY)) {

@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces:mail",
+  "description": {
+    "translate": "skin.armorpieces.mail"
+  },
+  "loot": [
+    {
+      "table": "minecraft:chests/simple_dungeon",
+      "weight": 1,
+      "chance": 0.05
+    }
+  ]
+}

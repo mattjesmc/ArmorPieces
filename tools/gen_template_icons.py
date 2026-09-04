@@ -226,6 +226,22 @@ INLAY = {
     # No armor silhouette, because they go on any of them. The bare one, which fits anything, is a
     # cut gem in an amber setting; the four named ones each show the thing that fills them - the
     # gem alone, a metal ring, a dye drop, a banner on its pole - inside the same card.
+    # The skin is not a socket: what it changes is the armor's own surface, every texel of it. So
+    # the amber that names a place on the other icons runs right around the piece here - the whole
+    # outside is what a skin is - and the armor shows through the middle unchanged, because a skin
+    # moves nothing.
+    "skin": [
+        "..........",
+        "..........",
+        "...****...",
+        "..**aa**..",
+        ".**aaaa**.",
+        ".**.aa.**.",
+        ".**aaaa**.",
+        ".**....**.",
+        ".*+....+*.",
+        "..........",
+    ],
     "fitting": [
         "..........",
         "....**....",

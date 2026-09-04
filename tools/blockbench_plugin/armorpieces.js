@@ -55,6 +55,7 @@
 	// Ramps from preview_material.py, keyed by material and by static colour. Session-wide: a
 	// material's ramp never changes, and a static colour's ramp depends only on the colour.
 	const ramps = { material: {}, static: {} };
+	const skinLights = {};
 
 	// ---- per-project state --------------------------------------------------------------------
 
@@ -1621,7 +1622,7 @@
 			probe.getContext('2d').drawImage(texture.canvas, 0, 0);
 			if (!foldCanvasToGreyscale(probe)) return;
 			texture.edit(function (canvas) { foldCanvasToGreyscale(canvas); }, { no_undo: true });
-			Blockbench.showQuickMessage((texture.id === 'part' ? 'Master' : 'Mask')
+			Blockbench.showQuickMessage((texture.id === 'part' ? 'Master' : texture.id)
 				+ ' is greyscale - colour folded to value', 1500);
 		} finally {
 			greyscaleGuard = false;
@@ -1629,7 +1630,9 @@
 	}
 
 	function onEditTexture(data) {
-		if (!data || !data.texture || !isWorkspace()) return;
+		if (!data || !data.texture) return;
+		if (isSkinWorkspace()) return onSkinEditTexture(data);
+		if (!isWorkspace()) return;
 		const id = data.texture.id;
 		if (!isSheetId(id)) return;
 		if (isGreyId(id) && foldsMaster() && data.canvas) foldCanvasToGreyscale(data.canvas);
@@ -1643,6 +1646,7 @@
 	}
 
 	function onFinishEdit(data) {
+		if (isSkinWorkspace()) return onSkinFinishEdit(data);
 		if (!isWorkspace()) return;
 		const aspects = (data && data.aspects) || {};
 		const textures = aspects.textures || [];
@@ -1663,6 +1667,11 @@
 	 * now for the common case and once more after the reload has had time to draw.
 	 */
 	function onUndoRedo() {
+		if (isSkinWorkspace()) {
+			publishSkin('undo');
+			setTimeout(function () { refreshSkinPreview(); publishSkin('undo'); }, 200);
+			return;
+		}
 		if (!isWorkspace()) return;
 		syncSheetSize();
 		refreshPreview(true);
@@ -3334,6 +3343,442 @@
 		writeCurrent(null);
 	}
 
+	// ---- armor skins ---------------------------------------------------------------------------
+
+	/*
+	 * A skin is the armor's OWN texture - not a part hung on a socket and not a trim painted over
+	 * one. It is a greyscale pair on vanilla's grid, `humanoid` and `humanoid_leggings`, coloured
+	 * per armor material at load time from a ramp derived from that material's own texture
+	 * (tools/bake_skin.py). Nothing is modelled: the geometry is vanilla's four armor shells, and
+	 * the only thing an author decides is what is painted on them.
+	 *
+	 * So it gets a workspace of its own rather than a mode of the piece one. `bb_rig.py --skin`
+	 * builds the same figure a part is judged on, wearing all four slots at their real inflate,
+	 * with the ARMOR cubes unlocked and their two sheets linked to tools/skin_masters/<name>/.
+	 * Everything the piece workspace does about bones, fittings, effects and recipes is absent here
+	 * on purpose; what is shared is the loop - open, paint, look, check, save - and the status the
+	 * bridge checks after every edit.
+	 *
+	 * The sheets are painted as ASCII rather than with a brush. A 64x32 sheet is thirty-two lines
+	 * of sixteen greys and a dot for transparent, which is small enough to read back in full and to
+	 * write in one call, and it is the form an agent can actually be accurate in - a rivet line is
+	 * a row of characters, not eleven brush strokes.
+	 */
+	const SKIN_SHEETS = ['humanoid', 'humanoid_leggings'];
+	const SKIN_LEVELS = '0123456789abcdef';
+	const SKIN_CLEAR = '.';
+	const SKIN_KEEP = ' ';
+	// 256-entry lookup tables from bake_skin.py, per material. A material's ramp never changes.
+	const skinRamps = {};
+
+	function skinsRoot() {
+		const root = repoRoot();
+		return root ? path.join(root, 'tools', 'skin_masters') : null;
+	}
+
+	function skinList() {
+		const root = skinsRoot();
+		if (!root) return [];
+		return subdirs(root)
+			.filter(function (dir) { return fs.existsSync(path.join(dir, SKIN_SHEETS[0] + '.png')); })
+			.map(function (dir) { return { name: path.basename(dir), dir: dir }; });
+	}
+
+	function currentSkin() {
+		return (Project && Project[ID + '_skin']) || null;
+	}
+
+	function isSkinWorkspace() {
+		return !!(Project && currentSkin());
+	}
+
+	function isSkinSheet(id) {
+		return SKIN_SHEETS.indexOf(id) >= 0;
+	}
+
+	function skinSheets() {
+		return Texture.all.filter(function (t) { return isSkinSheet(t.id); });
+	}
+
+	/* Which sheet a cube is painted from: the leggings shells have their own, everything else shares. */
+	function skinSheetOf(cube) {
+		return /_leggings$/.test(cube.name) ? 'humanoid_leggings' : 'humanoid';
+	}
+
+	function skinCubes() {
+		return Cube.all.filter(function (c) { return !c.locked; });
+	}
+
+	function openSkin(name, options) {
+		options = options || {};
+		const existing = ModelProject.all.find(function (p) {
+			return p[ID + '_skin'] && p[ID + '_skin'].name === name;
+		});
+		if (existing && !options.reload) {
+			if (existing !== Project) existing.select();
+			publishSkin('select');
+			return {
+				skin: name, reused: true,
+				unsaved_edits: existing.undo ? existing.undo.index - (existing[ID + '_saved_index'] || 0) : 0,
+			};
+		}
+		const entry = skinList().find(function (s) { return s.name === name; });
+		if (!entry) {
+			throw new Error('no skin ' + name + ' under ' + skinsRoot() + '; known: ' +
+				skinList().map(function (s) { return s.name; }).join(', ') +
+				' (python tools/skin_sheets.py --new <name> starts one)');
+		}
+		if (existing) {
+			const unsaved = existing.undo.index !== (existing[ID + '_saved_index'] || 0);
+			if (unsaved && !options.discard) {
+				throw new Error(name + ' is open with unsaved edits, and reloading it reads the ' +
+					'sheets back off disk: save it first, or pass discard: true');
+			}
+			existing.undo.history.length = 0;
+			existing.undo.index = 0;
+			const old = existing;
+			setTimeout(function () { old.close(true); }, 50);
+		}
+
+		const out = tempDir();
+		tool('bb_rig.py', ['--skin', entry.dir, '--out-dir', out]);
+		const file = path.join(out, 'skin_' + name + '.bbmodel');
+		const content = JSON.parse(fs.readFileSync(file, 'utf8'));
+		Codecs.project.load(content, { path: file, content: content });
+
+		Project[ID + '_skin'] = entry;
+		Project[ID + '_skin_material'] = '';
+		Project[ID + '_saved_index'] = 0;
+		Project.name = 'skin ' + name;
+		// The rig is scratch, like a piece's: Save Skin puts the sheets back, saving the project
+		// would put a rig where the masters live.
+		Project.save_path = '';
+		Project.export_path = '';
+		publishSkin('open');
+		Blockbench.showQuickMessage('Skin ' + name, 2000);
+		return { skin: name, reused: false, dir: entry.dir };
+	}
+
+	function closeSkin(discard) {
+		if (!isSkinWorkspace()) throw new Error('no skin is open');
+		const unsaved = Project.undo.index !== (Project[ID + '_saved_index'] || 0);
+		if (unsaved && !discard) throw new Error('unsaved edits: save first, or close with discard: true');
+		const closing = Project;
+		const name = currentSkin().name;
+		setTimeout(function () { closing.close(true); }, 50);
+		return { closed: name };
+	}
+
+	function saveSkin() {
+		const skin = currentSkin();
+		if (!skin) throw new Error('no skin is open');
+		const written = [];
+		// Both sheets are linked files under tools/skin_masters/<name>, so save() writes them back
+		// where they came from - the same bargain a part's master makes.
+		for (const sheet of skinSheets()) {
+			sheet.save();
+			written.push(path.join(skin.dir, sheet.id + '.png'));
+		}
+		Project[ID + '_saved_index'] = Project.undo.index;
+		if (Project.undo.current_save) Project[ID + '_save_in_edit'] = true;
+		publishSkin('save');
+		Blockbench.showQuickMessage('Saved skin ' + skin.name, 2500);
+		return { skin: skin.name, wrote: written };
+	}
+
+	/* One sheet as rows of characters. See the section comment for the alphabet. */
+	function skinAscii(sheetId) {
+		const sheet = tex(sheetId);
+		if (!sheet) throw new Error('no sheet "' + sheetId + '"; a skin has ' + SKIN_SHEETS.join(', '));
+		const canvas = sheet.canvas;
+		const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+		const rows = [];
+		for (let y = 0; y < canvas.height; y++) {
+			let row = '';
+			for (let x = 0; x < canvas.width; x++) {
+				const i = (y * canvas.width + x) * 4;
+				if (!data[i + 3]) {
+					row += SKIN_CLEAR;
+					continue;
+				}
+				const value = data[i] === data[i + 1] && data[i + 1] === data[i + 2] ? data[i]
+					: Math.round(data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114);
+				row += SKIN_LEVELS[Math.max(0, Math.min(15, Math.round(value / 17)))];
+			}
+			rows.push(row);
+		}
+		return rows;
+	}
+
+	/*
+	 * Stamp rows onto one sheet, in one undo step. A dot clears, a level character paints that
+	 * grey, a space leaves the texel alone - so a stamp over one net does not have to redraw the
+	 * sheet around it. Anything off the sheet is an error rather than a silent crop: a stamp that
+	 * lands half outside is a mistake about where a net is, and swallowing it would hide it.
+	 */
+	/* The texels one stamp describes. Validated in full before anything is painted, so a typo in
+	   the last row leaves the sheet as it was rather than half redrawn. */
+	function skinJobs(sheetId, rows, at, opts) {
+		if (!isSkinWorkspace()) throw new Error('no skin is open');
+		const sheet = tex(sheetId);
+		if (!sheet) throw new Error('no sheet "' + sheetId + '"; a skin has ' + SKIN_SHEETS.join(', '));
+		if (!Array.isArray(rows) || !rows.length) throw new Error('rows is a list of strings');
+		const ox = Math.floor((at && at[0]) || 0);
+		const oy = Math.floor((at && at[1]) || 0);
+		const width = sheet.canvas.width, height = sheet.canvas.height;
+
+		// Validated in full before anything is painted, so a typo in the last row leaves the sheet
+		// as it was rather than half redrawn.
+		let jobs = [];
+		for (let r = 0; r < rows.length; r++) {
+			const row = String(rows[r]);
+			for (let c = 0; c < row.length; c++) {
+				const char = row[c];
+				if (char === SKIN_KEEP) continue;
+				const x = ox + c, y = oy + r;
+				if (x < 0 || y < 0 || x >= width || y >= height) {
+					throw new Error('row ' + r + ' column ' + c + ' lands at ' + x + ',' + y +
+						', off a ' + width + 'x' + height + ' sheet');
+				}
+				if (char === SKIN_CLEAR) {
+					jobs.push({ x: x, y: y, value: null });
+					continue;
+				}
+				const level = SKIN_LEVELS.indexOf(char);
+				if (level < 0) {
+					throw new Error('unknown character "' + char + '" at row ' + r + ' column ' + c +
+						': "." clears, " " keeps, "0"-"9" and "a"-"f" are the greys');
+				}
+				jobs.push({ x: x, y: y, value: level * 17 });
+			}
+		}
+
+		/* shade_only: a skin pinned to a silhouette is drawn on vanilla's own outline, so a stamp
+		   may change what a texel IS but never whether there is one. Paint aimed at a clear texel
+		   is dropped rather than refused - the stamp is a rectangle, the armor is not. */
+		let skipped = 0;
+		if (opts && opts.shade_only) {
+			const alpha = sheet.canvas.getContext('2d').getImageData(0, 0, width, height).data;
+			const kept = [];
+			for (const job of jobs) {
+				if (job.value !== null && alpha[(job.y * width + job.x) * 4 + 3] > 0) kept.push(job);
+				else skipped++;
+			}
+			jobs = kept;
+		}
+		return { sheet: sheet, id: sheetId, at: [ox, oy], rows: rows.length, jobs: jobs, skipped: skipped };
+	}
+
+	function applySkinJobs(sheet, jobs) {
+		sheet.edit(function (canvas) {
+			const ctx = canvas.getContext('2d');
+			for (const job of jobs) {
+				ctx.clearRect(job.x, job.y, 1, 1);
+				if (job.value === null) continue;
+				ctx.fillStyle = 'rgb(' + job.value + ',' + job.value + ',' + job.value + ')';
+				ctx.fillRect(job.x, job.y, 1, 1);
+			}
+		}, { no_undo: true });
+	}
+
+	function paintSkin(sheetId, rows, at) {
+		const stamp = skinJobs(sheetId, rows, at);
+		Undo.initEdit({ textures: [stamp.sheet], bitmap: true });
+		applySkinJobs(stamp.sheet, stamp.jobs);
+		Undo.finishEdit('Paint skin');
+		return { sheet: sheetId, at: stamp.at, rows: stamp.rows, texels: stamp.jobs.length };
+	}
+
+	/* Many stamps in ONE undo entry, and so in one bridge call. A skin is a face at a time by
+	   nature, and a call per face is where a session's turns go: every one of them carries the
+	   whole context again. Two or three calls draw a skin. */
+	function paintSkinMany(stamps) {
+		if (!Array.isArray(stamps) || !stamps.length) throw new Error('stamps is a list of stamps');
+		const order = [], bySheet = {};
+		let texels = 0, skipped = 0;
+		for (let i = 0; i < stamps.length; i++) {
+			const stamp = stamps[i];
+			let got;
+			try {
+				got = skinJobs(stamp.sheet || SKIN_SHEETS[0], stamp.rows, stamp.at, stamp);
+			} catch (e) {
+				throw new Error('stamp ' + i + (stamp.where ? ' (' + stamp.where + ')' : '') +
+					': ' + e.message);
+			}
+			if (!bySheet[got.id]) { bySheet[got.id] = { sheet: got.sheet, jobs: [] }; order.push(got.id); }
+			for (const job of got.jobs) bySheet[got.id].jobs.push(job);
+			texels += got.jobs.length;
+			skipped += got.skipped || 0;
+		}
+		Undo.initEdit({ textures: order.map(function (id) { return bySheet[id].sheet; }), bitmap: true });
+		for (const id of order) applySkinJobs(bySheet[id].sheet, bySheet[id].jobs);
+		Undo.finishEdit('Paint skin');
+		return { sheets: order, stamps: stamps.length, texels: texels, skipped: skipped };
+	}
+
+	/* The material's 256-entry table, from bake_skin.py. Asked for once per material per session. */
+	function skinRamp(material) {
+		if (!skinRamps[material]) {
+			const data = JSON.parse(tool('bake_skin.py', ['--ramps', '--material', material]));
+			if (!data[material]) throw new Error('no ramp for ' + material);
+			skinRamps[material] = data[material];
+			skinLights[material] = (data.lightmaps || {})[material] || null;
+		}
+		return skinRamps[material];
+	}
+
+	function skinPreviewId(sheetId) {
+		return 'preview_' + sheetId;
+	}
+
+	/* One sheet through one ramp, into a canvas: the bake, in the viewport. */
+	function compositeSkin(target, sheet, lut, light) {
+		target.width = sheet.canvas.width;
+		target.height = sheet.canvas.height;
+		const ctx = target.getContext('2d');
+		const image = sheet.canvas.getContext('2d').getImageData(0, 0, target.width, target.height);
+		const data = image.data;
+		for (let i = 0; i < data.length; i += 4) {
+			if (!data[i + 3]) continue;
+			let value = data[i] === data[i + 1] && data[i + 1] === data[i + 2] ? data[i]
+				: Math.round(data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114);
+			/* Vanilla's own lighting, mixed back over the pattern - see bake_skin.lightmap. */
+			if (light) {
+				const texel = i / 4;
+				const row = light[Math.floor(texel / target.width)];
+				if (row) value += row[texel % target.width] || 0;
+			}
+			const colour = lut[Math.max(0, Math.min(255, value))];
+			data[i] = colour[0];
+			data[i + 1] = colour[1];
+			data[i + 2] = colour[2];
+		}
+		ctx.putImageData(image, 0, 0);
+	}
+
+	function pointArmorAt(bySheet) {
+		for (const cube of skinCubes()) {
+			const texture = bySheet[skinSheetOf(cube)];
+			if (!texture) continue;
+			for (const face of Object.keys(cube.faces)) cube.faces[face].texture = texture.uuid;
+		}
+		Canvas.updateAllFaces();
+	}
+
+	/*
+	 * Show the skin as an armor material would render it, or as the greyscale it is authored in.
+	 * The preview textures are internal and never saved; the brush and the ASCII painter always
+	 * land on the masters, and the preview is recomposited from them after every edit.
+	 */
+	function setSkinMaterial(material) {
+		if (!isSkinWorkspace()) throw new Error('no skin is open');
+		material = (material || '').trim();
+		const byId = {};
+		if (!material || material === 'none') {
+			for (const sheet of SKIN_SHEETS) byId[sheet] = tex(sheet);
+			Project[ID + '_skin_material'] = '';
+			pointArmorAt(byId);
+			return { material: '' };
+		}
+		const lut = skinRamp(material);
+		const lights = skinLights[material] || {};
+		for (const sheetId of SKIN_SHEETS) {
+			const sheet = tex(sheetId);
+			if (!sheet) continue;
+			let preview = tex(skinPreviewId(sheetId));
+			if (!preview) {
+				const scratch = document.createElement('canvas');
+				compositeSkin(scratch, sheet, lut, lights[sheetId]);
+				preview = new Texture({
+					name: skinPreviewId(sheetId), id: skinPreviewId(sheetId), internal: true,
+					uv_width: sheet.uv_width, uv_height: sheet.uv_height,
+				}).fromDataURL(scratch.toDataURL('image/png')).add(false);
+			} else {
+				compositeSkin(preview.canvas, sheet, lut, lights[sheetId]);
+				const own = preview.getOwnMaterial();
+				if (own && own.map) own.map.needsUpdate = true;
+			}
+			byId[sheetId] = preview;
+		}
+		Project[ID + '_skin_material'] = material;
+		pointArmorAt(byId);
+		return { material: material };
+	}
+
+	function refreshSkinPreview() {
+		const material = Project && Project[ID + '_skin_material'];
+		if (!material) return;
+		let lut;
+		try {
+			lut = skinRamp(material);
+		} catch (err) {
+			return;
+		}
+		const lights = skinLights[material] || {};
+		for (const sheetId of SKIN_SHEETS) {
+			const sheet = tex(sheetId);
+			const preview = tex(skinPreviewId(sheetId));
+			if (!sheet || !preview) continue;
+			compositeSkin(preview.canvas, sheet, lut, lights[sheetId]);
+			const own = preview.getOwnMaterial();
+			if (own && own.map) own.map.needsUpdate = true;
+		}
+	}
+
+	/* What the bridge checks after every edit: the two sheets as they are right now, and a meta
+	 * that says they are a skin's rather than a piece's. check_skin.py --status reads this. */
+	function publishSkin(reason) {
+		if (!isSkinWorkspace()) return null;
+		try {
+			const dir = statusDir();
+			const skin = currentSkin();
+			const files = {};
+			for (const sheetId of SKIN_SHEETS) {
+				const texture = tex(sheetId);
+				if (!texture) continue;
+				const png = sheetPng(texture, function () { publishSkin('load'); });
+				if (!png) continue;
+				fs.writeFileSync(path.join(dir, sheetId + '.png'), png);
+				files[sheetId] = sheetId + '.png';
+			}
+			Project[ID + '_seq'] = (Project[ID + '_seq'] || 0) + 1;
+			fs.writeFileSync(path.join(dir, 'meta.json'), JSON.stringify({
+				kind: 'skin',
+				seq: Project[ID + '_seq'],
+				time: Date.now(),
+				reason: reason,
+				project: Project.uuid,
+				skin: skin.name,
+				dir: skin.dir,
+				sheets: files,
+				material: Project[ID + '_skin_material'] || '',
+				unsaved_edits: Project.undo.index - (Project[ID + '_saved_index'] || 0),
+			}), 'utf8');
+			writeCurrent(Project.uuid);
+			return dir;
+		} catch (err) {
+			console.error('[armorpieces] skin status', err);
+			return null;
+		}
+	}
+
+	/* The skin half of the texture hooks, so the piece ones stay about pieces. */
+	function onSkinEditTexture(data) {
+		if (!isSkinSheet(data.texture.id)) return;
+		if (Settings.get(ID + '_greyscale') && data.canvas) foldCanvasToGreyscale(data.canvas);
+		refreshSkinPreview();
+	}
+
+	function onSkinFinishEdit(data) {
+		const aspects = (data && data.aspects) || {};
+		const textures = (aspects.textures || []).filter(function (t) { return isSkinSheet(t.id); });
+		for (const texture of textures) {
+			if (Settings.get(ID + '_greyscale')) enforceGreyscale(texture);
+		}
+		if (textures.length) refreshSkinPreview();
+		publishSkin((data && data.message) || 'edit');
+	}
+
 	// ---- status for the bridge ----------------------------------------------------------------
 
 	/*
@@ -3389,7 +3834,7 @@
 	 * got there yet, so until then the image itself is used, and a sheet still loading is
 	 * published again the moment it lands. Returns null for that last case.
 	 */
-	function sheetPng(texture) {
+	function sheetPng(texture, republish) {
 		const fromCanvas = function (canvas) {
 			const url = canvas.toDataURL('image/png');
 			return Buffer.from(url.slice(url.indexOf(',') + 1), 'base64');
@@ -3410,7 +3855,9 @@
 			const owner = Project;
 			img.addEventListener('load', function () {
 				img[ID + '_republish'] = false;
-				if (Project === owner) publishStatus('load', { model: false, sheets: [texture] });
+				if (Project !== owner) return;
+				if (republish) republish();
+				else publishStatus('load', { model: false, sheets: [texture] });
 			}, { once: true });
 		}
 		return null;
@@ -3611,6 +4058,44 @@
 				icon: 'add_box',
 				click: newPiece,
 			});
+			const openSkinAction = new Action(ID + '_open_skin', {
+				name: 'Open Armor Skin...',
+				description: 'Paint the armor texture itself on the player rig.',
+				icon: 'texture',
+				click: function () {
+					const list = skinList();
+					if (!list.length) {
+						Blockbench.showMessageBox({
+							title: 'No skins',
+							message: 'A skin is a greyscale pair under tools/skin_masters/<name>. ' +
+								'Start one with: python tools/skin_sheets.py --new <name>',
+						});
+						return;
+					}
+					const choices = {};
+					for (const skin of list) choices[skin.name] = skin.name;
+					new Dialog({
+						id: ID + '_pick_skin',
+						title: 'Open Armor Skin',
+						form: { skin: { label: 'Skin', type: 'select', options: choices, value: list[0].name } },
+						onConfirm: function (form) {
+							this.hide();
+							try {
+								openSkin(form.skin);
+							} catch (err) {
+								Blockbench.showMessageBox({ title: 'Could not open', message: String(err.message || err) });
+							}
+						},
+					}).show();
+				},
+			});
+			const saveSkinAction = new Action(ID + '_save_skin', {
+				name: 'Save Armor Skin',
+				description: 'Write both sheets back to tools/skin_masters.',
+				icon: 'save',
+				condition: function () { return isSkinWorkspace(); },
+				click: function () { saveSkin(); },
+			});
 			const packs = new Action(ID + '_packs', {
 				name: 'Packs...',
 				description: 'The folders your own packs are in.',
@@ -3637,9 +4122,11 @@
 				name: 'Armor Pieces',
 				description: 'Browse, edit and preview Armor Pieces.',
 				icon: 'shield',
-				children: [open, create, save, '_', packs, createPack, exportZip],
+				children: [open, create, save, '_', openSkinAction, saveSkinAction, '_',
+					packs, createPack, exportZip],
 			});
-			registered.push(open, save, create, packs, createPack, exportZip, menu);
+			registered.push(open, save, create, openSkinAction, saveSkinAction,
+				packs, createPack, exportZip, menu);
 			MenuBar.addAction(menu, 'tools');
 			registered.push(Blockbench.addCSS(PACKS_DIALOG_CSS));
 
@@ -3822,6 +4309,19 @@
 					return { centre: s.recipe_focus, ring: s.recipe_ring, craftable: s.recipe_craftable !== false };
 				},
 				publish: function () { return publishStatus('api', { model: true, sheets: 'all' }); },
+				// Armor skins: the armor's own texture, a workspace of its own. See the section
+				// comment in this file, and tools/skin_sheets.py for the nets these sheets carry.
+				skins: skinList,
+				openSkin: openSkin,
+				closeSkin: closeSkin,
+				saveSkin: saveSkin,
+				skinAscii: skinAscii,
+				paintSkin: paintSkin,
+				paintSkinMany: paintSkinMany,
+				setSkinMaterial: setSkinMaterial,
+				currentSkin: currentSkin,
+				isSkinWorkspace: isSkinWorkspace,
+				publishSkin: function () { return publishSkin('api'); },
 				statusDir: function () { return isWorkspace() ? statusDir() : null; },
 				currentPiece: currentPiece,
 				displayName: function () { return displayName(currentPiece(), partData()); },

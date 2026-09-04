@@ -57,6 +57,12 @@ public final class ModCreativeTabs {
                             .ifPresent(fittings -> fittings.listElements()
                                 .forEach(fitting -> output.accept(ModItems.fittingTemplateFor(fitting))));
                         output.accept(new ItemStack(ModItems.fittingTemplate()));
+                        // Then the skins, which are not parts at all: one template per entry of
+                        // armorpieces:armor_skin, a pack's included, walked the same way.
+                        parameters.holders()
+                            .lookup(ArmorPiecesRegistries.ARMOR_SKIN)
+                            .ifPresent(skins -> skins.listElements()
+                                .forEach(skin -> output.accept(ModItems.skinTemplateFor(skin))));
                     }))
                 .build());
         ArmorPieces.LOGGER.info("[Armor Pieces] Registered creative tab.");

@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces:gothic",
+  "description": {
+    "translate": "skin.armorpieces.gothic"
+  },
+  "loot": [
+    {
+      "table": "minecraft:chests/woodland_mansion",
+      "weight": 1,
+      "chance": 0.05
+    }
+  ]
+}

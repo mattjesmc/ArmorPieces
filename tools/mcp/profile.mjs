@@ -110,8 +110,19 @@ the plugin lays out every added or resized cube on the sheet and moves its paint
 set UV offsets. Sheets: \`part\` is the master (greyscale = shading on the material ramp),
 \`part_static\` keeps real colour, \`part_<fitting>\` is one greyscale mask per masked fitting.
 
+The other thing this bridge opens is an ARMOR SKIN: the armor's own texture rather than a part hung
+on it. That workspace is the same figure with the armor UNLOCKED and painted by one greyscale pair,
+\`humanoid\` (helmet, chestplate, boots) and \`humanoid_leggings\` (belt, legs), both 64x32 on
+vanilla's grid. Nothing is modelled - the geometry is vanilla's four shells - so the tools are
+armorpieces_skins / _open_skin / _skin_sheet / _skin_paint / _skin_material / _skin_check /
+_save_skin / _close_skin, and the sheets are read and written as rows of characters (\`.\`
+transparent, \`0\`-\`9\` and \`a\`-\`f\` the sixteen greys). A texel's value is a position on the
+material's ramp, so \`0\` is that material's deepest shadow and \`f\` its brightest highlight; a
+master drawn inside a narrow band comes out flat on every material. A skin never paints a visor -
+the face opening is what the brow parts are for.
+
 After every editing call the reply ends with an [armorpieces] block: the same checks every shipped
-part passes (tools/check_part.py). A line marked "!" is a PROBLEM that needs a decision before
+part passes (tools/check_part.py), or tools/check_skin.py when a skin is open. A line marked "!" is a PROBLEM that needs a decision before
 saving - a face lying on the part's own armor shell (move it: it will z-fight), a plane shared with
 another part, a face with no paint behind it (paint it, or leave it cut on purpose and say so),
 paint outside every face, colour on a greyscale sheet. "-" lines are notes (buried faces, hull

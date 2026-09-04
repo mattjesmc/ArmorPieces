@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces:milanese",
+  "description": {
+    "translate": "skin.armorpieces.milanese"
+  },
+  "loot": [
+    {
+      "table": "minecraft:chests/shipwreck_treasure",
+      "weight": 1,
+      "chance": 0.05
+    }
+  ]
+}

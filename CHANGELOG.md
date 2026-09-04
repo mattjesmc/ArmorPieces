@@ -2,6 +2,22 @@
 
 ## 0.3.0
 
+**Armor skins.** A third template family beside the socket templates and the fitting templates. A
+skin is the armor's *own* texture - what the plate is, rather than what is bolted to it or painted
+over it - so a piece, a trim and a skin are three independent choices on one piece of armor.
+Thirteen ship: plate, mail, gambeson, gothic, milanese, brigandine, scale, lamellar, and then
+lorica, varangian, hoplite, samurai and runic. Each is one greyscale master pair on vanilla's own
+armor grid, recoloured at load through eight shades taken from *that armor material's* vanilla
+texture, with vanilla's own panel edges and shadows mixed back over it - so a skinned iron helmet
+still reads as iron, and a modded armor material is skinned for free from the texture it already
+ships. A skin is applied at the advanced smithing table with the piece's own **reforging material**
+in the addition slot, asked of the armor item itself rather than of a table the mod maintains:
+re-skinning is re-forging, and it costs the metal the piece is made of. Chainmail takes no skin -
+its ramp is dead and its identity is the weave - and says so through a tag a pack can disagree
+with. Leather's dyeable layer takes the skin, so dye still multiplies into it; trims are drawn
+after the base layer as they always were, and are unaffected. A skin never paints a visor: the
+face opening is the shape the `brow` parts are drawn to sit in.
+
 **Found in the world.** A part can name the loot tables it turns up in, and the mod adds it to
 them as they load - the one thing a datapack cannot do for itself, since it can only replace a
 vanilla table whole. The `loot` list on the part's data file is rows of table, weight and chance:

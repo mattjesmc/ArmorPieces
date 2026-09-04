@@ -96,7 +96,7 @@ def parse_anchors(path=ANCHOR_SRC):
     return anchors
 
 
-def ref_cube(box, pivot, uid, color, texture_index):
+def ref_cube(box, pivot, uid, color, texture_index, locked=True):
     """One locked reference box, in absolute Blockbench coordinates.
 
     `box` is an mc_humanoid box dict; `pivot` is its bone's pivot in entity space. Box UV is driven
@@ -112,7 +112,7 @@ def ref_cube(box, pivot, uid, color, texture_index):
         "name": box["name"],
         "box_uv": True,
         "rescale": False,
-        "locked": True,
+        "locked": locked,
         "render_order": "default",
         "allow_mirror_modeling": False,
         "from": [num(-hi[0]), num(24.0 - hi[1]), num(lo[2])],
@@ -129,7 +129,7 @@ def ref_cube(box, pivot, uid, color, texture_index):
     }
 
 
-def build_reference(anchor_name, slim=False, texture_index=None):
+def build_reference(anchor_name, slim=False, texture_index=None, paint_armor=False):
     """The locked player wearing all four armor slots, as (elements, groups, bone_uuids).
 
     One group per posed bone, not one group per layer. That is the change that makes the rig worth
@@ -146,28 +146,31 @@ def build_reference(anchor_name, slim=False, texture_index=None):
     elements = []
     by_bone: dict[str, list[str]] = {bone: [] for bone in mc_humanoid.BONES}
 
-    def add(box, layer, color):
+    def add(box, layer, color, locked=True):
         uid = det_uuid(f"rig/{anchor_name}/{layer}/{box['name']}")
         pivot = mc_humanoid.BONES[box["bone"]]
-        elements.append(ref_cube(box, pivot, uid, color, texture_index.get(box["tex_key"], 0)))
+        elements.append(ref_cube(box, pivot, uid, color, texture_index.get(box["tex_key"], 0), locked))
         by_bone[box["bone"]].append(uid)
 
     for box in mc_humanoid.player_boxes(slim):
         add(dict(box, tex_key="skin"), "skin", COLOR_BODY)
     for slot, spec in mc_humanoid.ARMOR_SLOTS.items():
         for box in mc_humanoid.armor_boxes(slot):
-            add(dict(box, tex_key=spec["texture"]), slot, COLOR_ARMOR)
+            # A skin rig is the one case where the armor is the thing being worked on: its cubes
+            # are unlocked so the brush reaches them, and the bone groups above them have to be
+            # unlocked too, since a locked group locks its subtree.
+            add(dict(box, tex_key=spec["texture"]), slot, COLOR_ARMOR, locked=not paint_armor)
 
     groups, bone_uuids = [], {}
     for bone, pivot in mc_humanoid.BONES.items():
         guid = det_uuid(f"rig/{anchor_name}/bone/{bone}")
         bone_uuids[bone] = guid
         groups.append(make_group(bone, guid, flip_point(list(pivot)), [0, 0, 0], by_bone[bone],
-                                 locked=True, color=COLOR_BODY))
+                                 locked=not paint_armor, color=COLOR_BODY))
 
     groups.append(make_group("reference", det_uuid(f"rig/{anchor_name}/reference"),
                              flip_point([0.0, 0.0, 0.0]), [0, 0, 0], list(bone_uuids.values()),
-                             locked=True, color=COLOR_BODY))
+                             locked=not paint_armor, color=COLOR_BODY))
     return elements, groups, bone_uuids
 
 
@@ -257,6 +260,60 @@ def build_textures(anchor_name, material, slim, out_dir, master=None):
                 key, companion, det_uuid(f"rig/{anchor_name}/texture/{key}"), companion_uv, out_dir))
 
     return textures, index, part_texture
+
+
+def build_skin_textures(skin_dir, slim, out_dir):
+    """A skin rig's three textures: the player's skin, and the skin's own two authored sheets.
+
+    The armor cubes sample the sheets being painted rather than Mojang's - that is the whole
+    difference between this and a part rig. The ids are the names the game gives the folders those
+    sheets end up in, `humanoid` and `humanoid_leggings`, which is also what skin_sheets.py calls
+    them; `skin` stays the player's own."""
+    skin_dir = Path(skin_dir)
+    specs = [
+        ("skin", ASSETS / "skin" / ("slim_steve.png" if slim else "wide_steve.png"), (64, 64), "skin"),
+        ("humanoid", skin_dir / "humanoid.png", (64, 32), "armor"),
+        ("humanoid_leggings", skin_dir / "humanoid_leggings.png", (64, 32), "armor_leggings"),
+    ]
+    textures, index = [], {}
+    for i, (name, path, uv, key) in enumerate(specs):
+        index[key] = i
+        textures.append(texture_entry(name, path, det_uuid(f"skin/{skin_dir.name}/texture/{name}"),
+                                      uv, out_dir))
+    return textures, index
+
+
+def build_skin_rig(skin_dir, out_dir=RIG_DIR, slim=False, animate=True):
+    """The player wearing all four armor slots, with the armor unlocked and painted by a skin.
+
+    There is no `part` group and no anchor: a skin is not hung anywhere, it IS the armor. What the
+    rig buys is the same thing it buys a part author - the sheets are seen on the body, at the real
+    inflate of all four slots at once, so a boot drawn over the leggings or a helmet that swallows
+    the face is visible while it is being drawn rather than in game afterwards."""
+    skin_dir = Path(skin_dir)
+    out_dir = Path(out_dir)
+    textures, index = build_skin_textures(skin_dir, slim, out_dir)
+    elements, groups, bone_uuids = build_reference(f"skin_{skin_dir.name}", slim, index,
+                                                   paint_armor=True)
+
+    animations = None
+    if animate:
+        animations = [
+            build_animation(f"skin_{skin_dir.name}", "walk", mc_humanoid.WALK_AMPLITUDE, bone_uuids),
+            build_animation(f"skin_{skin_dir.name}", "sprint", mc_humanoid.SPRINT_AMPLITUDE, bone_uuids),
+        ]
+
+    model = build_bbmodel({"bones": [], "texture_width": 64, "texture_height": 32},
+                          f"skin_{skin_dir.name}", (0.0, 0.0, 0.0), (elements, groups),
+                          textures=textures, animations=animations, model_format="free")
+
+    # build_bbmodel always emits the part group; a skin has no part, so it goes rather than sitting
+    # in the outliner as an empty thing to wonder about.
+    part_uuid = det_uuid(f"skin_{skin_dir.name}/{PART_GROUP}")
+    model["groups"] = [g for g in model["groups"] if g["uuid"] != part_uuid]
+    model["outliner"] = [n for n in model["outliner"]
+                         if not (isinstance(n, dict) and n.get("uuid") == part_uuid)]
+    return model
 
 
 def keyframe(uid, time, rotation):
@@ -374,6 +431,9 @@ def main():
                     help="omit the walk and sprint cycles")
     ap.add_argument("--list-anchors", action="store_true",
                     help="print the anchor table as JSON and exit, for tooling to read")
+    ap.add_argument("--skin", type=Path,
+                    help="build a SKIN rig instead: the figure wearing the master pair in this "
+                         "folder (tools/skin_masters/<name>), armor unlocked and paintable")
     args = ap.parse_args()
 
     if args.list_anchors:
@@ -390,6 +450,15 @@ def main():
     if not (ASSETS / "skin").is_dir():
         print("no vanilla asset cache; extracting it first")
         vanilla_assets.extract(vanilla_assets.find_jar(vanilla_assets.minecraft_version()))
+
+    if args.skin:
+        args.out_dir.mkdir(parents=True, exist_ok=True)
+        model = build_skin_rig(args.skin, out_dir=args.out_dir, slim=args.slim,
+                               animate=not args.no_animation)
+        out = args.out_dir / f"skin_{args.skin.name}.bbmodel"
+        out.write_text(json.dumps(model, indent=2) + "\n", encoding="utf-8")
+        print(f"skin {args.skin.name} -> {out}")
+        return
 
     anchors = parse_anchors()
     names = list(anchors) if args.all else args.anchors

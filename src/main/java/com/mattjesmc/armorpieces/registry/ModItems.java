@@ -6,6 +6,9 @@ import com.mattjesmc.armorpieces.decoration.DecorationAnchor;
 import com.mattjesmc.armorpieces.decoration.fitting.Fitting;
 import com.mattjesmc.armorpieces.item.DecorationTemplateItem;
 import com.mattjesmc.armorpieces.item.FittingTemplateItem;
+import com.mattjesmc.armorpieces.item.SkinTemplateItem;
+import com.mattjesmc.armorpieces.skin.ArmorSkin;
+import com.mattjesmc.armorpieces.skin.ArmorSkinValue;
 import java.util.EnumMap;
 import java.util.Map;
 import net.minecraft.core.Holder;
@@ -20,7 +23,7 @@ import net.minecraft.world.item.Rarity;
 
 /**
  * The mod's items: exactly one smithing template per {@link DecorationAnchor}, plus the one fitting
- * template, and nothing else.
+ * template and the one skin template, and nothing else.
  *
  * <p>The count is bounded by the anchor enum on purpose. Registering an item per PART would make the
  * part list compiled-in and undo the whole datapack story; registering one per SOCKET costs the same
@@ -29,12 +32,15 @@ import net.minecraft.world.item.Rarity;
  * is carried on the stack - see {@link DecorationTemplateItem}.
  *
  * <p>The fitting template is one item for every fitting there will ever be, because the ITEM placed
- * beside it decides where it goes - see {@link FittingTemplateItem}.
+ * beside it decides where it goes - see {@link FittingTemplateItem}. The skin template is one item
+ * for every skin, for the plainer reason that skins are a datapack registry - see
+ * {@link SkinTemplateItem}.
  */
 public final class ModItems {
     private static final Map<DecorationAnchor, DecorationTemplateItem> TEMPLATES =
         new EnumMap<>(DecorationAnchor.class);
     private static FittingTemplateItem fittingTemplate;
+    private static SkinTemplateItem skinTemplate;
 
     private ModItems() {}
 
@@ -53,8 +59,15 @@ public final class ModItems {
             BuiltInRegistries.ITEM,
             fittingKey,
             new FittingTemplateItem(new Item.Properties().setId(fittingKey).rarity(Rarity.UNCOMMON)));
+        final ResourceKey<Item> skinKey = ResourceKey.create(
+            Registries.ITEM, Identifier.fromNamespaceAndPath(ArmorPieces.MOD_ID, "skin_template"));
+        skinTemplate = Registry.register(
+            BuiltInRegistries.ITEM,
+            skinKey,
+            new SkinTemplateItem(new Item.Properties().setId(skinKey).rarity(Rarity.UNCOMMON)));
         ArmorPieces.LOGGER.info(
-            "[Armor Pieces] Registered {} decoration templates and the fitting template.", TEMPLATES.size());
+            "[Armor Pieces] Registered {} decoration templates, the fitting template and the skin template.",
+            TEMPLATES.size());
     }
 
     /** The template that sets a second material into a part already on the armor. */
@@ -69,6 +82,21 @@ public final class ModItems {
     public static ItemStack fittingTemplateFor(final Holder<Fitting> fitting) {
         final ItemStack stack = new ItemStack(fittingTemplate);
         stack.set(ModDataComponents.FITTING, fitting);
+        return stack;
+    }
+
+    /** The template that reskins a piece of armor. */
+    public static SkinTemplateItem skinTemplate() {
+        return skinTemplate;
+    }
+
+    /**
+     * A skin template naming one skin - the stack a recipe with the component in its result
+     * produces, and the one the creative tab and a loot table hand out.
+     */
+    public static ItemStack skinTemplateFor(final Holder<ArmorSkin> skin) {
+        final ItemStack stack = new ItemStack(skinTemplate);
+        stack.set(ModDataComponents.SKIN, new ArmorSkinValue(skin));
         return stack;
     }
 

@@ -4,6 +4,7 @@ import com.mattjesmc.armorpieces.ArmorPieces;
 import com.mattjesmc.armorpieces.decoration.ArmorDecoration;
 import com.mattjesmc.armorpieces.decoration.ArmorDecorations;
 import com.mattjesmc.armorpieces.decoration.fitting.Fitting;
+import com.mattjesmc.armorpieces.skin.ArmorSkinValue;
 import net.fabricmc.fabric.api.item.v1.ItemComponentTooltipProviderRegistry;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
@@ -45,6 +46,21 @@ public final class ModDataComponents {
      */
     public static DataComponentType<Holder<Fitting>> FITTING;
 
+    /**
+     * The skin - the armor's own texture - carried by BOTH the skin template that applies it and the
+     * armor wearing it. One component for both, because a skin is one thing either way: unlike a
+     * part, which is a template's choice on the way in and a socket's occupant afterwards, a skin
+     * neither has a place to sit in nor anything to sit beside.
+     *
+     * <p>On the armor it is the only thing a skinned piece carries, and that is the invariant this
+     * component exists to keep: {@code minecraft:equippable} is left exactly as vanilla wrote it, so
+     * a skinned piece with this mod stripped out is plain armor again, and a trim over it still
+     * darkens on matching material because the trim is still keyed on vanilla's own asset id. The
+     * substitution is made at render time and nowhere else - see
+     * {@code com.mattjesmc.armorpieces.client.mixin.EquipmentLayerRendererMixin}.
+     */
+    public static DataComponentType<ArmorSkinValue> SKIN;
+
     private ModDataComponents() {}
 
     public static void register() {
@@ -73,12 +89,25 @@ public final class ModDataComponents {
                 .build()
         );
 
+        SKIN = Registry.register(
+            BuiltInRegistries.DATA_COMPONENT_TYPE,
+            Identifier.fromNamespaceAndPath(ArmorPieces.MOD_ID, "skin"),
+            DataComponentType.<ArmorSkinValue>builder()
+                .persistent(ArmorSkinValue.CODEC)
+                .networkSynchronized(ArmorSkinValue.STREAM_CODEC)
+                .build()
+        );
+
         // Vanilla only asks the ITEM for its tooltip lines, and vanilla armor has never heard of us -
         // so DECORATIONS being a TooltipProvider is not by itself enough to make a decorated helmet
         // list what it is wearing. This registers the component as a provider for every item, which is
         // the only way to get the line onto an item we did not register. Placed after the trim line so
         // decorations read as a continuation of it rather than as a competing feature.
         ItemComponentTooltipProviderRegistry.addAfter(DataComponents.TRIM, DECORATIONS);
+        // The skin goes above the parts and below the trim: the three lines then read outward from
+        // the armor itself - what the plate IS, what is painted on it, what is bolted to it. The
+        // line only shows on armor; the template says its skin in its own name. See ArmorSkinValue.
+        ItemComponentTooltipProviderRegistry.addAfter(DataComponents.TRIM, SKIN);
 
         ArmorPieces.LOGGER.info("[Armor Pieces] Registered data components.");
     }

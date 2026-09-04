@@ -95,6 +95,34 @@ The four runs of 2026-09-03 (nasal, spire, antennae, horsetail) went from 76 tur
 workarounds to about 20 bridge calls and two paint calls per part; the briefs' Lessons sections
 record what each one found.
 
+## Running a skin session
+
+An **armor skin** is the other thing this bridge opens: the armor's own texture rather than a part
+hung on it - one greyscale pair, `humanoid` and `humanoid_leggings`, 64x32 on vanilla's grid, under
+`tools/skin_masters/<name>/`. Nothing is modelled, so the tools are different ones:
+`armorpieces_skins`, `_open_skin`, `_skin_sheet`, `_skin_paint`, `_skin_material`, `_skin_check`,
+`_save_skin`, `_close_skin`, and the check after every edit is `tools/check_skin.py`.
+
+The sheets are read and written as ASCII - `.` transparent, `0`-`9` and `a`-`f` the sixteen greys, a
+space for "leave this texel alone" - and a paint call is addressed by net and face
+(`region: "chest", face: "front"`), so a stamp that would run off the face is refused instead of
+landing somewhere wrong. `armorpieces_skin_material iron` shows the bake in the viewport, live.
+
+Same shape as a part session: one fresh session per skin, sequentially, a brief under
+`docs/plans/briefs/skins/<skin>.md`, and
+
+```
+claude -p --agent skin-author --model <model> --dangerously-skip-permissions \
+  "Draw the Armor Pieces armor skin described in docs/plans/briefs/skins/<skin>.md. Read the brief,
+   then draw it through the Blockbench bridge tools. Blockbench is running with the plugins loaded.
+   When it is saved clean and the checks pass, fill in the brief's Lessons section and give a short
+   final report."
+```
+
+`python tools/skin_sheets.py --regions` prints the seven nets and every face rectangle;
+`--vanilla netherite` prints a vanilla pair as a drawing to work from; `python tools/bake_skin.py
+--report` prints what each armor material's ramp comes out as.
+
 ## Reading the check
 
 ```

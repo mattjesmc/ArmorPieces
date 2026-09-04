@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces:gambeson",
+  "description": {
+    "translate": "skin.armorpieces.gambeson"
+  },
+  "loot": [
+    {
+      "table": "minecraft:chests/village/village_armorer",
+      "weight": 1,
+      "chance": 0.08
+    }
+  ]
+}

@@ -4,6 +4,7 @@ import com.mattjesmc.armorpieces.ArmorPieces;
 import com.mattjesmc.armorpieces.client.fitting.FittingRenderers;
 import com.mattjesmc.armorpieces.client.geometry.DecorationGeometryManager;
 import com.mattjesmc.armorpieces.client.screen.AdvancedSmithingScreen;
+import com.mattjesmc.armorpieces.client.texture.ArmorSkinTextureManager;
 import com.mattjesmc.armorpieces.client.texture.DecorationTextureManager;
 import com.mattjesmc.armorpieces.registry.ModMenus;
 import net.fabricmc.api.ClientModInitializer;
@@ -27,6 +28,12 @@ public class ArmorPiecesClient implements ClientModInitializer {
         // reads the trim palettes every pack declares. Colouring itself happens on first use.
         ResourceManagerHelper.get(PackType.CLIENT_RESOURCES)
             .registerReloadListener(DecorationTextureManager.instance());
+
+        // Indexes every skin sheet any pack ships. A skin is baked against the armor material it is
+        // worn on, so nothing can be coloured until a piece is actually drawn - see
+        // ArmorSkinTextureManager.
+        ResourceManagerHelper.get(PackType.CLIENT_RESOURCES)
+            .registerReloadListener(ArmorSkinTextureManager.instance());
 
         // The one fitting type that draws rather than colours. A mod's own goes through the same door.
         FittingRenderers.registerBuiltins();

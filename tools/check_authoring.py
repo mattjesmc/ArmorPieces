@@ -15,6 +15,9 @@ the claim that opening a part and saving it unchanged changes nothing:
              weight, chance, in that order and of those types - so a save reproduces it
   grids      no two shaped recipes in the pack share a crafting grid: every template is the same
              ring of paper, so two parts given one centre item is one unobtainable part, silently
+  skins      every data/<ns>/armorpieces/armor_skin/<skin>.json re-serialises to its own bytes,
+             its loot rows are in the part's own three-key shape, and both of its master sheets are
+             actually in the resource pack - a skin with no art draws as plain armor and says nothing
   recipes    every data/<ns>/recipe/template_<part>.json in the plugin's shape - the ring pattern,
              switched on or off with `armorpieces:disabled` - re-serialises to its own bytes from
              the two items and the switch the panel reads out of it, so a save reproduces the file
@@ -184,6 +187,70 @@ def check_fitting_recipes(pack: Path) -> list[str]:
     return failures
 
 
+def check_skins(pack: Path, assets: Path) -> list[str]:
+    """Every skin: its data file, its two sheets, and its template recipe.
+
+    A skin is the third template family and it round-trips like the other two - the data file
+    re-serialises to its own bytes, its loot rows are in the same three-key shape a part's are, and
+    `recipe/skin_template_<skin>.json` is the same ring of paper with the skin on the result's
+    `armorpieces:skin` component. What is checked here and nowhere else is that the ART EXISTS: a
+    skin whose master pair is missing is a skin the game silently draws as plain armor, because the
+    bake has nothing to colour and vanilla's own texture stands.
+    """
+    failures: list[str] = []
+    for data in sorted(pack.glob("data/*/armorpieces/armor_skin/*.json")):
+        namespace, skin = data.parents[2].name, data.stem
+        text = data.read_text(encoding="utf8")
+        parsed = json.loads(text)
+        if json.dumps(parsed, indent=2) + "\n" != text:
+            failures.append(f"skin {data.name}: would be reformatted by a save")
+        for index, row in enumerate(parsed.get("loot", [])):
+            if not _loot_row_ok(row):
+                failures.append(f"skin {data.name}: loot row {index} would be rewritten by a save")
+        asset = parsed.get("asset_id") or ""
+        if ":" not in asset:
+            failures.append(f"skin {data.name}: asset_id {asset!r} is not a namespaced id")
+            continue
+        asset_ns, asset_path = asset.split(":", 1)
+        for sheet in ("humanoid", "humanoid_leggings"):
+            png = assets / "assets" / asset_ns / "textures" / "entity" / "skin" / asset_path / f"{sheet}.png"
+            if not png.exists():
+                failures.append(f"skin {data.name}: no {sheet}.png at {png} - it would draw as plain armor")
+        print(f"skin {data.name}: ok")
+
+        recipe_file = pack / "data" / namespace / "recipe" / f"skin_template_{skin}.json"
+        if not recipe_file.exists():
+            continue
+        recipe_text = recipe_file.read_text(encoding="utf8")
+        try:
+            recipe = json.loads(recipe_text)
+        except ValueError:
+            failures.append(f"recipe {recipe_file.name}: not valid JSON")
+            continue
+        craftable = recipe.get("type") != DISABLED_TYPE
+        key = recipe.get("key") or {}
+        focus, ring = _ingredient_id(key.get("F")), _ingredient_id(key.get("#"))
+        if (craftable and recipe.get("type") != "minecraft:crafting_shaped")                 or recipe.get("pattern") != RING_PATTERN or not focus or not ring:
+            print(f"recipe {recipe_file.name}: hand-made, left alone")
+            continue
+        rewrite = dict(recipe)
+        rewrite.update({
+            "type": "minecraft:crafting_shaped" if craftable else DISABLED_TYPE,
+            "pattern": RING_PATTERN,
+            "key": {"#": ring, "F": focus},
+            "result": {
+                "id": "armorpieces:skin_template",
+                "components": {"armorpieces:skin": f"{namespace}:{skin}"},
+            },
+        })
+        rewrite.setdefault("category", "equipment")
+        if json.dumps(rewrite, indent=2) + "\n" != recipe_text:
+            failures.append(f"recipe {recipe_file.name}: would be rewritten by a save")
+            continue
+        print(f"recipe {recipe_file.name}: ok ({'off' if not craftable else 'on'})")
+    return failures
+
+
 def _shaped_signature(recipe: dict):
     """What the crafting grid sees of a shaped recipe: the pattern and the ingredient under each
     key. Two recipes with the same signature are one recipe to the game - it hands out whichever
@@ -225,8 +292,9 @@ def check_pack(pack: Path, assets: Path | None = None) -> list[str]:
     failures: list[str] = []
     data_files = sorted(pack.glob("data/*/armorpieces/armor_decoration/*.json"))
     geometry_files = sorted(assets.glob("assets/*/armorpieces/decoration/*.json"))
-    if not data_files and not geometry_files:
-        return [f"{pack}: no parts found"]
+    skin_files = sorted(pack.glob("data/*/armorpieces/armor_skin/*.json"))
+    if not data_files and not geometry_files and not skin_files:
+        return [f"{pack}: no parts or skins found"]
 
     for geometry in geometry_files:
         if not bb_geo.roundtrip(geometry):
@@ -249,6 +317,7 @@ def check_pack(pack: Path, assets: Path | None = None) -> list[str]:
             if not _loot_row_ok(row):
                 failures.append(f"data {data.name}: loot row {index} would be rewritten by a save")
         print(f"data {data.name}: ok")
+    failures.extend(check_skins(pack, assets))
     failures.extend(check_recipes(pack, data_files))
     failures.extend(check_fitting_recipes(pack))
     failures.extend(check_recipe_collisions(pack))

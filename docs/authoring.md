@@ -1,7 +1,8 @@
 # Authoring parts
 
 A part is two files and a PNG, plus a line in your language file for the name. None of it is code.
-Namespace them however you like; every namespace is scanned.
+Namespace them however you like; every namespace is scanned. [Skins](#skins) — the armor's own
+texture rather than something worn on it — are authored the same way and are two PNGs and a file.
 
 There are two ways to make them:
 
@@ -347,14 +348,74 @@ From then on `"type": "examplemod:blink_away"` works on any part in anybody's da
 context carries the whole entry, so an effect can scale with the material it was applied in.
 Effects are synced to the client, because `canGlide` runs on both sides.
 
+## Skins
+
+A skin is the third kind of template, and it says a different thing about a piece of armor than a
+part does. A part is geometry hung on the body; a trim is vanilla's accent painted over the armor's
+texture; a **skin is the armor's own texture** — what the plate *is*, rather than what is bolted to
+it or painted over it. Nothing about a skin changes a silhouette, so every part, every trim and
+every socket carries on exactly as it did.
+
+A skin is **two greyscale sheets, one data file and a recipe**:
+
+    assets/<ns>/textures/entity/skin/<skin>/humanoid.png            64x32, on vanilla's armor grid
+    assets/<ns>/textures/entity/skin/<skin>/humanoid_leggings.png   64x32, the leggings twin
+    data/<ns>/armorpieces/armor_skin/<skin>.json                    asset_id, description, loot
+    data/<ns>/recipe/skin_template_<skin>.json                      the ring of paper, as a part's is
+
+```json
+{
+  "asset_id": "examplemod:carapace",
+  "description": { "translate": "skin.examplemod.carapace" },
+  "loot": [ { "table": "minecraft:chests/jungle_temple", "weight": 1, "chance": 0.05 } ]
+}
+```
+
+Two files, not two per material. **The colour comes from the armor, not from the skin**: the sheets
+are drawn in the sixteen greys, and the client recolours them through eight shades taken from that
+armor material's own vanilla texture, deepened so the master's form has somewhere to live, with
+vanilla's own lighting mixed back over the top. So a skinned iron helmet still reads as iron beside
+an unskinned one, and an armor material added by another mod is skinned the moment it is installed —
+the only thing wanted from it is the equipment texture it already ships. `SkinBake` is the
+arithmetic and `python tools/bake_skin.py --report` prints what each material gives you.
+
+Two consequences worth knowing before you draw:
+
+- **Shade in bands four to five levels apart.** A level is a position on an eight-stop ramp and most
+  materials repeat stops, so a step of one or two levels can bake to the same colour on iron.
+  `python tools/bake_skin.py --levels` prints what every level buys on every material, and
+  `--pair 6 a` checks the pair you fancy.
+- **A skin never paints a visor, and never paints the raised helmet shell.** The face window is what
+  the `brow` sockets need, and the `hat` net at UV 32,0 sits exactly where those parts do — vanilla
+  paints neither, and a skin that did would bury seven parts.
+
+A pack may ship `<sheet>_<material>.png` beside the pair — `humanoid_netherite.png` — and that art
+is used as it is for that one material, which is the same escape hatch a part has.
+
+Authoring is the same loop parts have, with its own tools: `python tools/skin_sheets.py <skin>`
+prints a sheet as ASCII to work from (`--vanilla netherite` prints vanilla's own),
+`python tools/bb_rig.py --skin <skin>` builds the Blockbench rig, the plugin's skin workspace paints
+it on the real figure with a live material preview, `python tools/check_skin.py <skin>` is the check
+every shipped skin passes, and `python tools/sync_skin_masters.py <skin> [--as <name>]` installs the
+pair into the resources.
+
+**Wearing one.** Skin template + the armor + *the armor's own reforging material* — an iron ingot
+for iron, a diamond for diamond, a turtle scute for the turtle helmet. Re-skinning is re-forging, so
+it costs the metal the piece is made of; the mod does not keep a table of that, it asks the piece
+what repairs it, which is right for armor it has never heard of. Leave the third slot empty and the
+skin comes off. Armor listed in `#armorpieces:unskinnable_armor` refuses skins outright — vanilla
+chainmail is in it, because the weave is its whole identity and it has no metal of its own.
+
 ## Judging the result in game
 
 `/armorpieces stage` (permission level 2) puts a part next to the others on armor stands, read from
 the registries, so a pack's parts appear alongside the shipped ones: `parts [<part>]` puts one stand
 per part × material, `bases [<armor item>]` repeats that for every base armor set, `full` dresses
 complete sets with every socket filled, `fittings [<part>]` shows every fitting filled with
-everything it takes, one block per fitting with the part's materials down the rows, and `clear`
-removes them. `loot <table> [rolls]` is numbers rather than stands: it rolls the table, a
+everything it takes, one block per fitting with the part's materials down the rows,
+`skins [<skin>]` puts every skin down the rows and every armor material across the columns — the
+one view whose columns are the armor rather than the trim, because that is the axis a skin's colour
+comes from — and `clear` removes them. `loot <table> [rolls]` is numbers rather than stands: it rolls the table, a
 thousand times unless told otherwise, and counts what the mod put in it — templates by part,
 decorated armor by what it wears — against everything else the table dropped, so a chance and a
 weight can be judged without opening a thousand chests.

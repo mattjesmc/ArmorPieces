@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces:plate",
+  "description": {
+    "translate": "skin.armorpieces.plate"
+  },
+  "loot": [
+    {
+      "table": "minecraft:chests/stronghold_crossing",
+      "weight": 1,
+      "chance": 0.06
+    }
+  ]
+}

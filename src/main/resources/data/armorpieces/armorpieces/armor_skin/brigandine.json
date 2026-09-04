@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces:brigandine",
+  "description": {
+    "translate": "skin.armorpieces.brigandine"
+  },
+  "loot": [
+    {
+      "table": "minecraft:chests/pillager_outpost",
+      "weight": 1,
+      "chance": 0.06
+    }
+  ]
+}

@@ -73,16 +73,48 @@ async function upstream() {
   return c;
 }
 
+/**
+ * A picture costs about (width x height) / 750 tokens and, unlike a tool's text, it is re-sent on
+ * every turn for the rest of the session: Blockbench's ~1020x946 viewport is ~1300 tokens a look, so
+ * the six looks a skin needs outweigh every text reply in the session put together. shrink_shot.py
+ * crops to the figure BEFORE resizing - half the viewport is empty ground, and empty ground costs
+ * the same as armor - which brings a look to ~120 tokens with more resolution on the figure than
+ * before. 0 keeps them whole.
+ */
+const SHOT_MAX = Number(process.env.ARMORPIECES_SHOT_MAX ?? 384);
+
+async function shrinkImages(result) {
+  const parts = result?.content ?? [];
+  if (!SHOT_MAX || !parts.some((p) => p.type === "image" && p.data)) return result;
+  const content = [];
+  for (const part of parts) {
+    if (part.type !== "image" || !part.data) {
+      content.push(part);
+      continue;
+    }
+    const file = join(TEMP, `shot-${process.pid}.png`);
+    try {
+      mkdirSync(TEMP, { recursive: true });
+      writeFileSync(file, Buffer.from(part.data, "base64"));
+      const { error } = await run([join(ROOT, "tools", "shrink_shot.py"), file, String(SHOT_MAX)]);
+      content.push(error ? part : { ...part, data: readFileSync(file).toString("base64") });
+    } catch {
+      content.push(part);
+    }
+  }
+  return { ...result, content };
+}
+
 async function callUpstream(name, args) {
   const attempt = async () => (await upstream()).callTool({ name, arguments: args ?? {} });
   try {
-    return await attempt();
+    return await shrinkImages(await attempt());
   } catch (e) {
     // The plugin drops a session after its inactivity timeout; a fresh connection is the fix.
     if (/session|not found|closed|ECONN|fetch failed|404|400/i.test(String(e?.message))) {
       log(`reconnecting after: ${e.message}`);
       client = null;
-      return await attempt();
+      return await shrinkImages(await attempt());
     }
     throw e;
   }
@@ -155,9 +187,14 @@ function run(args, { timeout = 90_000 } = {}) {
   });
 }
 
-/** check_part.py over the active piece: the report as data, or a string when it could not run. */
+/**
+ * The check over whatever is active: check_part.py for a piece, check_skin.py for an armor skin.
+ * The plugin says which in meta.kind, so one code path serves both and every editing call gets the
+ * check that applies to it. The report comes back as data, or as a string when it could not run.
+ */
 async function runCheck(meta) {
-  const args = [join(ROOT, "tools", "check_part.py"), "--status", meta.dir, "--json", "--brief"];
+  const script = meta.kind === "skin" ? "check_skin.py" : "check_part.py";
+  const args = [join(ROOT, "tools", script), "--status", meta.dir, "--json", "--brief"];
   const { stdout, stderr } = await run(args);
   const line = stdout.trim().split("\n").pop() ?? "";
   try {
@@ -168,6 +205,12 @@ async function runCheck(meta) {
 }
 
 function header(meta) {
+  if (meta.kind === "skin") {
+    const skinBits = [];
+    if (meta.unsaved_edits) skinBits.push(`${meta.unsaved_edits} unsaved edit(s)`);
+    skinBits.push(meta.material ? `shown on ${meta.material}` : "shown as the greyscale master");
+    return `skin ${meta.skin} · ${skinBits.join(" · ")}`;
+  }
   const bits = [];
   if (meta.unsaved_edits) bits.push(`${meta.unsaved_edits} unsaved edit(s)`);
   if (meta.part_dirty) bits.push("part data changed, unsaved");
@@ -181,8 +224,9 @@ function header(meta) {
  */
 async function settled(meta, ms = 2000) {
   const until = Date.now() + ms;
+  const first = meta.kind === "skin" ? "humanoid.png" : "master.png";
   while (Date.now() < until) {
-    if (existsSync(join(meta.dir, "master.png"))) {
+    if (existsSync(join(meta.dir, first))) {
       await new Promise((r) => setTimeout(r, 120));
       return readMeta() ?? meta;
     }
@@ -270,6 +314,73 @@ async function withCheck(name, seqBefore, result) {
 }
 
 const reply = (text, isError = false) => ({ content: [{ type: "text", text }], isError });
+
+// --- armor skins -----------------------------------------------------------------------------------
+
+const SKIN_SHEETS = ["humanoid", "humanoid_leggings"];
+
+/**
+ * The nets of the two skin sheets and their face rectangles, from skin_sheets.py - which reads them
+ * out of mc_humanoid, which transcribed them from the game. Asked for once: they change when
+ * Minecraft's armor mesh does, not while a session runs.
+ */
+let regionCache = null;
+
+async function skinRegions() {
+  if (regionCache) return regionCache;
+  const { stdout, stderr } = await run([join(ROOT, "tools", "skin_sheets.py"), "--regions", "--json"]);
+  try {
+    regionCache = JSON.parse(stdout.trim().split("\n").pop());
+  } catch {
+    throw new Error(`could not read the sheet nets: ${(stderr || stdout).trim().split("\n").pop()}`);
+  }
+  return regionCache;
+}
+
+/**
+ * What a step between two master levels actually buys after the bake (bake_skin.py --contrast).
+ * Vanilla's armor textures repeat colours, so a shading step that reads in greyscale can come
+ * out identical on iron - the first skin drawn here lost a whole pass to exactly that. Asked
+ * for once: it changes when the vanilla textures do.
+ */
+let contrastCache = null;
+
+async function contrastText() {
+  if (contrastCache) return contrastCache;
+  try {
+    const { stdout } = await run([join(ROOT, "tools", "bake_skin.py"), "--contrast", "--rule"]);
+    contrastCache = stdout.trim();
+  } catch {
+    contrastCache = "contrast: shade in bands 4-5 levels apart (bake_skin.py --contrast).";
+  }
+  return contrastCache;
+}
+
+/** The net legend as lines, so a session sees where every face is without opening a file. */
+async function legendText() {
+  const table = await skinRegions();
+  const lines = [];
+  for (const sheet of SKIN_SHEETS) {
+    lines.push(`nets on ${sheet} (face x,y w x h):`);
+    for (const region of Object.values(table)) {
+      if (region.sheet !== sheet) continue;
+      const faces = Object.entries(region.faces)
+        .map(([face, r]) => `${face} ${r[0]},${r[1]} ${r[2]}x${r[3]}`).join("  ");
+      const both = region.both_sides ? ", both sides" : "";
+      lines.push(`  ${region.region} (${region.slot}, inflate ${region.inflate}${both}): ${faces}`);
+    }
+  }
+  return lines.join("\n");
+}
+
+/** A sheet's rows with a column ruler, which is what makes a coordinate readable at a glance. */
+function sheetText(sheet, rows) {
+  const width = rows[0]?.length ?? 64;
+  const tens = "    " + Array.from({ length: width }, (_, x) => (x % 10 === 0 ? String((x / 10) % 10) : " ")).join("");
+  const ones = "    " + Array.from({ length: width }, (_, x) => String(x % 10)).join("");
+  return [`${sheet} (${width}x${rows.length})`, tens, ones,
+    ...rows.map((row, y) => `${String(y).padStart(3)} ${row}`)].join("\n");
+}
 
 // --- the armorpieces_* tools ---------------------------------------------------------------------
 
@@ -545,6 +656,303 @@ const OWN = {
     },
     async execute({ discard }) {
       const out = await evalIn(`window.armorpieces_api.close(${!!discard})`);
+      return reply(JSON.stringify(out));
+    },
+  },
+
+  armorpieces_skins: {
+    description:
+      "Every armor skin under tools/skin_masters - a skin is the armor's OWN texture, one greyscale " +
+      "pair on vanilla's grid, coloured per material at load time - plus which are open in tabs and " +
+      "whether they carry unsaved edits.",
+    inputSchema: { type: "object", properties: {}, additionalProperties: false },
+    async execute() {
+      const data = await evalIn(
+        `(function () { var api = window.armorpieces_api;` +
+        ` var open = ModelProject.all.filter(function (p) { return p.armorpieces_skin; }).map(function (p) {` +
+        ` return { name: p.armorpieces_skin.name, active: p === Project,` +
+        ` unsaved_edits: p.undo ? p.undo.index - (p.armorpieces_saved_index || 0) : 0 }; });` +
+        ` return { skins: api.skins(), open: open }; })()`,
+      );
+      const lines = data.skins.length
+        ? ["skins: " + data.skins.map((s) => s.name).join(", ")]
+        : ["no skins yet - python tools/skin_sheets.py --new <name> starts one"];
+      lines.push(data.open.length
+        ? "open: " + data.open.map((o) => `${o.name}${o.active ? " (active)" : ""}${o.unsaved_edits ? ` [${o.unsaved_edits} unsaved]` : ""}`).join("; ")
+        : "open: none");
+      return reply(lines.join("\n"));
+    },
+  },
+
+  armorpieces_open_skin: {
+    description:
+      "Open an armor skin as the active tab: the vanilla player wearing all four armor slots, at " +
+      "their real inflate, painted by the skin's own two sheets. Nothing is modelled here - the " +
+      "geometry is vanilla's - so the whole job is what is painted on `humanoid` (helmet, " +
+      "chestplate, boots) and `humanoid_leggings` (belt and legs). The reply carries the net " +
+      "legend, every face rectangle, and the check.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        skin: { type: "string", description: "A folder name under tools/skin_masters." },
+        discard: { type: "boolean", default: false, description: "Drop unsaved edits when reloading." },
+        reload: { type: "boolean", default: false, description: "Rebuild the rig and re-read both sheets from disk." },
+      },
+      required: ["skin"],
+      additionalProperties: false,
+    },
+    async execute({ skin, discard, reload }) {
+      const opts = JSON.stringify({ discard: !!discard, reload: !!reload });
+      const out = await evalIn(
+        `window.armorpieces_api.openSkin(${JSON.stringify(skin)}, ${opts})`,
+      );
+      await dropScratch();
+      let meta = readMeta();
+      if (meta) meta = await settled(meta);
+      const check = meta ? await checkText(meta) : "(no status published - is the Armor Pieces plugin loaded?)";
+      return reply(`${JSON.stringify(out)}\n${await legendText()}\n${await contrastText()}\n${check}`);
+    },
+  },
+
+  armorpieces_skin_sheet: {
+    description:
+      "Read a skin's sheet back as it stands, as rows of characters with a column ruler: `.` is " +
+      "transparent, `0`-`9` and `a`-`f` are the sixteen greys (level i is the value 17i). Both " +
+      "sheets unless one is named. This is the sheet Blockbench is showing, unsaved edits included.",
+    inputSchema: {
+      type: "object",
+      properties: { sheet: { type: "string", description: "`humanoid` or `humanoid_leggings`; default both." } },
+      additionalProperties: false,
+    },
+    async execute({ sheet }) {
+      const wanted = sheet ? [sheet] : SKIN_SHEETS;
+      const parts = [];
+      for (const id of wanted) {
+        const rows = await evalIn(`window.armorpieces_api.skinAscii(${JSON.stringify(id)})`);
+        parts.push(sheetText(id, rows));
+      }
+      return reply(parts.join("\n\n"));
+    },
+  },
+
+  armorpieces_skin_paint: {
+    description:
+      "Paint one skin sheet by stamping rows of characters, in one undo step. `.` clears a texel, " +
+      "`0`-`9` and `a`-`f` paint that grey, and a SPACE leaves the texel alone - so a stamp over " +
+      "one net does not disturb the sheet around it. Place it either with `at` [x, y] or, better, " +
+      "with `region` and `face`, which puts row 0 column 0 on that face's top-left texel and " +
+      "refuses rows that would run off it. The value is a position on the material's ramp, not a " +
+      "colour: `0` is the material's deepest shadow and `f` its brightest highlight, and a master " +
+      "that only uses the middle comes out flat on every material. The reply ends with the check.\n" +
+      "Paint a whole sheet in ONE call with `stamps`: a list of {region, face, rows}, or {region, " +
+      "face, fill} for a flat field, or both together - the rows land over the fill, so a base and " +
+      "its detail are one stamp and the whole skin is two or three calls. A call per face is how " +
+      "a session spends its turns on nothing.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        sheet: { type: "string", default: "humanoid", description: "`humanoid` or `humanoid_leggings`." },
+        rows: { type: "array", items: { type: "string" }, description: "One string per texel row." },
+        region: { type: "string", description: "helmet, helmet_raised, chest, arm, boot, waist or leg." },
+        face: { type: "string", description: "front, back, right, left, top or bottom - the wearer's own." },
+        fill: { type: "string", description: "One character: paint the whole face this level first." },
+        at: {
+          type: "array", minItems: 2, maxItems: 2, items: { type: "integer" },
+          description: "Sheet texel the first character lands on. Ignored when region/face is given.",
+        },
+        stamps: {
+          type: "array",
+          description: "Many stamps in one call and one undo step - this is how a skin is painted. " +
+            "Each is {region, face, rows} or {region, face, fill} or both; they are applied in order, " +
+            "so a later stamp draws over an earlier one.",
+          items: {
+            type: "object",
+            properties: {
+              sheet: { type: "string", description: "`humanoid` or `humanoid_leggings`." },
+              region: { type: "string" },
+              face: { type: "string" },
+              rows: { type: "array", items: { type: "string" } },
+              fill: { type: "string" },
+              shade_only: {
+                type: "boolean",
+                description: "Change values but never the silhouette: paint aimed at a clear " +
+                  "texel is dropped. On by default for a skin pinned to a vanilla silhouette.",
+              },
+              tile: {
+                type: "array", items: { type: "string" },
+                description: "A small pattern repeated over the whole face - a weave, a quilt, " +
+                  "a scale course. With `shift`, each row starts n texels further along, which " +
+                  "is a brick bond.",
+              },
+              shift: { type: "integer", description: "Texels to offset each successive row of the tile." },
+              at: { type: "array", minItems: 2, maxItems: 2, items: { type: "integer" } },
+            },
+            additionalProperties: false,
+          },
+        },
+      },
+      additionalProperties: false,
+    },
+    async execute({ sheet, rows, region, face, at, fill, stamps }) {
+      const table = await skinRegions();
+      // A pinned skin is drawn on vanilla's own outline (skin_sheets.py --seed), so every stamp
+      // shades by default and the silhouette cannot be lost to a stray rectangle.
+      const open = readMeta();
+      const pinned = !!open?.skin && existsSync(join(ROOT, "tools", "skin_masters", open.skin, "silhouette"));
+      const list = stamps?.length ? stamps : [{ sheet, rows, region, face, at, fill }];
+      const jobs = [];
+      const drawn = [];
+      for (let i = 0; i < list.length; i++) {
+        const stamp = list[i];
+        const sheetId = stamp.sheet ?? sheet ?? "humanoid";
+        const label = stamp.region ? `${stamp.region}.${stamp.face}` : `stamp ${i}`;
+        let origin = stamp.at ?? [0, 0];
+        let rect = null;
+        if (stamp.region) {
+          const net = table[stamp.region];
+          if (!net) return reply(`${label}: no net "${stamp.region}"; the sheets carry ${Object.keys(table).join(", ")}`, true);
+          if (net.sheet !== sheetId) return reply(`${label}: ${stamp.region} is on ${net.sheet}, not ${sheetId}`, true);
+          rect = net.faces[stamp.face];
+          if (!rect) return reply(`${label}: no face "${stamp.face}" on ${stamp.region}; one of ${Object.keys(net.faces).join(", ")}`, true);
+          origin = [rect[0], rect[1]];
+        }
+        const shade = stamp.shade_only ?? pinned;
+        const flat = stamp.fill === undefined || stamp.fill === null || stamp.fill === "" ? null : String(stamp.fill);
+        if (flat !== null) {
+          if (!rect) return reply(`${label}: fill needs region and face - it covers exactly one face`, true);
+          if (flat.length !== 1) return reply(`${label}: fill is one character, not "${flat}"`, true);
+          jobs.push({ sheet: sheetId, at: origin, where: `${label} fill`, shade_only: shade,
+            rows: Array.from({ length: rect[3] }, () => flat.repeat(rect[2])) });
+        }
+        const tile = (stamp.tile ?? []).filter((r) => r.length);
+        if (tile.length) {
+          if (!rect) return reply(`${label}: tile needs region and face - it covers exactly one face`, true);
+          const shift = stamp.shift ?? 0;
+          const mod = (a, n) => ((a % n) + n) % n;
+          jobs.push({ sheet: sheetId, at: origin, where: `${label} tile`,
+            shade_only: shade,
+            rows: Array.from({ length: rect[3] }, (_, y) => {
+              const line = tile[mod(y, tile.length)];
+              return Array.from({ length: rect[2] }, (_, x) => line[mod(x - shift * y, line.length)]).join("");
+            }) });
+        }
+        const stampRows = stamp.rows ?? [];
+        if (stampRows.length) {
+          if (rect && (stampRows.length > rect[3] || stampRows.some((r) => r.length > rect[2]))) {
+            return reply(
+              `${label}: ${stampRows.length}x${Math.max(...stampRows.map((r) => r.length))} does not fit ` +
+              `${stamp.region}.${stamp.face}, which is ${rect[2]}x${rect[3]} at ${rect[0]},${rect[1]}`, true);
+          }
+          jobs.push({ sheet: sheetId, at: origin, where: label, rows: stampRows, shade_only: shade });
+        } else if (flat === null && !tile.length) {
+          return reply(`${label}: nothing to paint - give rows, fill or tile`, true);
+        }
+        drawn.push(label);
+      }
+      const seqBefore = readMeta()?.seq;
+      const out = await evalIn(`window.armorpieces_api.paintSkinMany(${JSON.stringify(jobs)})`);
+      const listed = drawn.slice(0, 12).join(", ") + (drawn.length > 12 ? `, +${drawn.length - 12} more` : "");
+      return await withCheck("armorpieces_skin_paint", seqBefore,
+        reply(`Painted ${out.texels} texel(s) on ${out.sheets.join(" + ")} in ${drawn.length} stamp(s): ` +
+          `${listed}.${out.skipped ? ` ${out.skipped} landed off the silhouette and were dropped ` +
+            `(this skin is pinned to vanilla's outline).` : ""}`));
+    },
+  },
+
+  armorpieces_skin_material: {
+    description:
+      "Show the open skin as one armor material would render it, or go back to the greyscale it is " +
+      "authored in. The colours are that material's own, taken out of its vanilla texture by " +
+      "tools/bake_skin.py - so this is the bake, in the viewport. The brush and the painter always " +
+      "land on the greyscale master either way. Look at a skin on at least iron, gold and " +
+      "netherite before saving it: they are the light, the saturated and the dark end of the range.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        material: {
+          type: "string",
+          description: "iron, gold, diamond, netherite, copper, chainmail, turtle_scute, leather, " +
+            "or `none` for the greyscale master.",
+        },
+      },
+      required: ["material"],
+      additionalProperties: false,
+    },
+    async execute({ material }) {
+      const out = await evalIn(
+        `(function () { var api = window.armorpieces_api;` +
+        ` var r = api.setSkinMaterial(${JSON.stringify(material)}); api.publishSkin(); return r; })()`,
+      );
+      const text = out.material
+        ? `Showing the skin on ${out.material}.`
+        : "Showing the greyscale master.";
+      // The point of switching material is to LOOK at it, so the picture comes back with the
+      // switch rather than costing a second round trip.
+      try {
+        const shot = await callUpstream("capture_screenshot", {});
+        return { content: [{ type: "text", text }, ...(shot?.content ?? [])] };
+      } catch (e) {
+        return reply(`${text} capture_screenshot to look at it (${e.message}).`);
+      }
+    },
+  },
+
+  armorpieces_skin_check: {
+    description:
+      "The full check of the open skin, as tools/check_skin.py prints it: coverage face by face, " +
+      "the value range and how many of the eight ramp shades it reaches, then the problems and " +
+      "notes. Lines marked ! need a decision before saving.",
+    inputSchema: {
+      type: "object",
+      properties: { brief: { type: "boolean", default: false, description: "Only the compact block." } },
+      additionalProperties: false,
+    },
+    async execute({ brief }) {
+      const meta = readMeta();
+      if (!meta || meta.kind !== "skin") {
+        return reply("No skin is open in the Armor Pieces plugin. armorpieces_open_skin one first.", true);
+      }
+      return reply(await checkText(meta, !brief));
+    },
+  },
+
+  armorpieces_save_skin: {
+    description:
+      "Write both sheets back to tools/skin_masters/<skin>. Refused while the check reports " +
+      "problems, unless `force` is true - say why each is acceptable in that case.",
+    inputSchema: {
+      type: "object",
+      properties: { force: { type: "boolean", default: false, description: "Save despite problems." } },
+      additionalProperties: false,
+    },
+    async execute({ force }) {
+      const meta = readMeta();
+      if (!meta || meta.kind !== "skin") return reply("No skin is open in the Armor Pieces plugin.", true);
+      const report = await runCheck(meta);
+      if (typeof report !== "string" && !report.ok && !force) {
+        return reply(
+          `Not saved: ${report.problems.length} problem(s) need a decision first.\n${report.text}\n` +
+          `Fix them, or call again with force: true and say why each is acceptable.`,
+          true,
+        );
+      }
+      const out = await evalIn("window.armorpieces_api.saveSkin()");
+      const lines = [`Saved skin ${out.skin}: ${out.wrote.join(", ")}.`];
+      if (typeof report === "string") lines.push(report);
+      else if (!report.ok) lines.push(`Saved with problems standing:\n${report.text}`);
+      return reply(lines.join("\n"));
+    },
+  },
+
+  armorpieces_close_skin: {
+    description: "Close the open skin's tab. Refused with unsaved edits unless `discard` is true.",
+    inputSchema: {
+      type: "object",
+      properties: { discard: { type: "boolean", default: false } },
+      additionalProperties: false,
+    },
+    async execute({ discard }) {
+      const out = await evalIn(`window.armorpieces_api.closeSkin(${!!discard})`);
       return reply(JSON.stringify(out));
     },
   },

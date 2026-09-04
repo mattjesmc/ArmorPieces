@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces:lamellar",
+  "description": {
+    "translate": "skin.armorpieces.lamellar"
+  },
+  "loot": [
+    {
+      "table": "minecraft:chests/desert_pyramid",
+      "weight": 1,
+      "chance": 0.05
+    }
+  ]
+}

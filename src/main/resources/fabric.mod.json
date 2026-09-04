@@ -15,6 +15,12 @@
       "com.mattjesmc.armorpieces.client.ArmorPiecesClient"
     ]
   },
+  "mixins": [
+    {
+      "config": "armorpieces.client.mixins.json",
+      "environment": "client"
+    }
+  ],
   "depends": {
     "fabricloader": ">=0.19.3",
     "minecraft": "~26.2",

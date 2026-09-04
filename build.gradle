@@ -45,10 +45,23 @@ dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
+    // The bake test only. JUnit is a build-time dependency and ships in nothing.
+    testImplementation "org.junit.jupiter:junit-jupiter:5.10.2"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.10.2"
+
     // This mod genuinely needs Fabric API: DynamicRegistries (the decoration registry),
     // ResourceManagerHelper (the geometry loader) and LivingEntityRenderLayerRegistrationCallback
     // (the render layer) are all Fabric API.
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+}
+
+// One test, and it is the one the skin feature cannot do without: the mod bakes a skin in Java and
+// tools/bake_skin.py bakes it in Python, and the two must agree texel for texel or a skin looks one
+// way in Blockbench and another in game. SkinBakeTest holds the Java half to
+// docs/plans/skin-bake-reference.json, which the Python half writes.
+test {
+    useJUnitPlatform()
+    testLogging { exceptionFormat = 'full' }
 }
 
 // fabric.mod.json carries ${version}; expand it from the mod's own version.

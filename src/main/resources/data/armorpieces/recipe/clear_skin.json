@@ -1,0 +1,5 @@
+{
+  "type": "armorpieces:smithing_skin",
+  "template": "armorpieces:skin_template",
+  "base": "#armorpieces:skinnable_armor"
+}
