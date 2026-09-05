@@ -11,17 +11,12 @@ tooltip, and the four silhouettes group the twelve templates into four families 
 Authored as pixel art rather than drawn procedurally: at this size every pixel is a decision, and a
 generator that "draws a helmet" would only be a worse way of writing the same ten strings.
 
-The SKIN templates are the exception, and they are not drawn at all: a skin template's icon IS the
-skin - the front of its chestplate, lifted straight off the sheet that ships, levelled into the
-card's own range and set in the recess. A skin is the armor's own surface, so a swatch of that
-surface is not a symbol for the thing, it is the thing, and it cannot drift from what the player
-will actually be wearing. It also means a skin added later gets its icon by existing.
-
-Drawing them by hand was tried first and thrown out. Thirteen emblems in one palette at 10x10 come
-out as thirteen grey lattices, and the ones whose identity is a CULTURE rather than a construction
-cannot be drawn at that size at all - a spangenhelm needs more texels than the recess has. What a
-skin does NOT need is the socket icons' other half: one skin template goes on any of the four
-pieces, so there is no place to point at and no armor silhouette to point at it on.
+The SKIN templates are not here, and the reason is worth knowing: a skin template's icon IS the
+skin - a swatch of that skin's own chestplate - and a skin can come from a PACK, which no file
+written here could ever have art for. So the game draws those in
+`client/item/SkinTemplateIcon.java`, off a sprite source, and picks between them with a model type
+of its own. The cloths below stayed here because a cloth's icon is its mask's SHAPE and the two
+shipped masks are the mod's own.
 
 Each icon also gets a hint of itself, written as a GUI sprite under `container/slot/`: what the
 advanced smithing table draws in a socket or fitting slot that is still empty, the way the vanilla
@@ -335,110 +330,20 @@ INLAY = {
 
 
 # ---------------------------------------------------------------------------
-# The skins: a swatch of the skin's own chestplate, not an emblem for it. See the module docstring.
-
-SKIN_SHEETS = (ROOT / "src" / "main" / "resources" / "assets" / "armorpieces" / "textures"
-               / "entity" / "skin")
-SKIN_MODELS = ROOT / "src" / "main" / "resources" / "assets" / "armorpieces" / "models" / "item"
-SKIN_ITEM = (ROOT / "src" / "main" / "resources" / "assets" / "armorpieces" / "items"
-             / "skin_template.json")
-
-# The band the card's own art occupies, from the armor's shadow to its lit edge. Every swatch is
-# levelled into it: a master that lives in the middle of the ramp would otherwise come out as ten
-# shades of one grey, and thirteen of those are one icon thirteen times.
-SWATCH_LO, SWATCH_HI = 0x4A, 0xE8
-
-
-def skins() -> list[str]:
-    """Every skin with art in the resources. The icons follow what ships, not a list kept here."""
-    if not SKIN_SHEETS.is_dir():
-        return []
-    return sorted(d.name for d in SKIN_SHEETS.iterdir() if (d / "humanoid.png").exists())
-
-
-def swatch(skin: str) -> Image.Image:
-    """The top ten rows of the chest's front face, greyscale, levelled to the card's range.
-
-    The face is 8 wide and 12 tall and the recess is 10x10, so ten of the twelve rows are taken and
-    NOTHING is resampled: a scaled sheet is a blurred sheet, and at sixteen pixels blur is the one
-    thing a swatch cannot afford. The rows kept are the top ones - the collar, the shoulders and the
-    breast, which is where a skin says most about itself; the hem is under a belt half the time.
-    """
-    x, y, width, _ = skin_sheets.rect_of("chest", "front")
-    sheet = Image.open(SKIN_SHEETS / skin / "humanoid.png").convert("RGBA")
-    face = sheet.crop((x, y, x + width, y + 10))
-    px = face.load()
-    values = [round(0.299 * r + 0.587 * g + 0.114 * b)
-              for row in range(face.height) for col in range(face.width)
-              for r, g, b, a in [px[col, row]] if a]
-    low, span = (min(values), max(1, max(values) - min(values))) if values else (0, 1)
-    out = Image.new("RGBA", face.size, (0, 0, 0, 0))
-    dst = out.load()
-    for row in range(face.height):
-        for col in range(face.width):
-            r, g, b, a = px[col, row]
-            if not a:
-                continue
-            grey = round(0.299 * r + 0.587 * g + 0.114 * b)
-            level = SWATCH_LO + round((grey - low) / span * (SWATCH_HI - SWATCH_LO))
-            dst[col, row] = (level, level, level, 255)
-    return out
-
-
-def render_skin(skin: str) -> Image.Image:
-    """The card with the skin's swatch in its recess, on the recess grey where the face is not."""
-    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
-    px = img.load()
-    for y, row in enumerate(CARD):
-        for x, ch in enumerate(row):
-            px[x, y] = PALETTE[ch]
-    art = swatch(skin)
-    src_px = art.load()
-    ox, oy = 3 + (10 - art.width) // 2, 3 + (10 - art.height) // 2
-    for y in range(art.height):
-        for x in range(art.width):
-            r, g, b, a = src_px[x, y]
-            if a:
-                px[ox + x, oy + y] = (r, g, b, 255)
-    return img
-
-
-def write_skin_models(names: list[str]) -> None:
-    """One model per skin and the select that picks between them.
-
-    One item carries every skin and chooses its look off the `armorpieces:skin` component, exactly
-    as the fitting template chooses off `armorpieces:fitting`. Written here rather than by hand so
-    that a new skin needs no JSON: draw it, sync it, run this. A pack's own skin cannot add a case -
-    `minecraft:select` does not merge - so it falls back to the generic `skin_template` icon.
-    """
-    for skin in names:
-        model = {"parent": "minecraft:item/generated",
-                 "textures": {"layer0": f"armorpieces:item/skin_template_{skin}"}}
-        (SKIN_MODELS / f"skin_template_{skin}.json").write_text(
-            json.dumps(model, indent=2) + "\n", encoding="utf8")
-    select = {"model": {
-        "type": "minecraft:select",
-        "property": "minecraft:component",
-        "component": "armorpieces:skin",
-        "cases": [{"when": f"armorpieces:{skin}",
-                   "model": {"type": "minecraft:model",
-                             "model": f"armorpieces:item/skin_template_{skin}"}}
-                  for skin in names],
-        "fallback": {"type": "minecraft:model", "model": "armorpieces:item/skin_template"},
-    }}
-    SKIN_ITEM.write_text(json.dumps(select, indent=2) + "\n", encoding="utf8")
-
-
-# ---------------------------------------------------------------------------
 # The cloths: the garment's own CUT, not an emblem for it. Same reasoning as the skins - a skin is a
 # surface, so its icon is a swatch of that surface; a cloth is a SHAPE, the one thing its mask's
 # alpha says, so its icon is that shape read off the same mask that ships. A tunic's collar gap and
 # a tabard's open flanks are the whole difference between them, and both are visible at 8x10.
 
+ITEM_MODELS = ROOT / "src" / "main" / "resources" / "assets" / "armorpieces" / "models" / "item"
 CLOTH_MASKS = (ROOT / "src" / "main" / "resources" / "assets" / "armorpieces" / "textures"
                / "entity" / "cloth")
 CLOTH_ITEM = (ROOT / "src" / "main" / "resources" / "assets" / "armorpieces" / "items"
               / "cloth_template.json")
+
+# The band the card's own art occupies, from the armor's shadow to its lit edge. A cut is levelled
+# into it, so a mask drawn in the middle of the ramp is not ten shades of one grey.
+SWATCH_LO, SWATCH_HI = 0x4A, 0xE8
 
 
 def cloths() -> list[str]:
@@ -504,7 +409,7 @@ def write_cloth_models(names: list[str]) -> None:
     for cloth in names:
         model = {"parent": "minecraft:item/generated",
                  "textures": {"layer0": f"armorpieces:item/cloth_template_{cloth}"}}
-        (SKIN_MODELS / f"cloth_template_{cloth}.json").write_text(
+        (ITEM_MODELS / f"cloth_template_{cloth}.json").write_text(
             json.dumps(model, indent=2) + "\n", encoding="utf8")
     select = {"model": {
         "type": "minecraft:select",
@@ -578,16 +483,8 @@ def main() -> None:
     print(f"wrote {len(images)} icons to {OUT}")
     print(f"wrote {len(images)} hints to {GHOST_OUT}")
 
-    # The skins have no hint of their own: the advanced table has ONE skin place, and the generic
-    # `skin_template` hint is what an empty one shows.
-    skins_shipped = {skin: render_skin(skin) for skin in skins()}
-    for skin, img in skins_shipped.items():
-        img.save(OUT / f"skin_template_{skin}.png")
-    write_skin_models(list(skins_shipped))
-    print(f"wrote {len(skins_shipped)} skin icons to {OUT}, with their models and the select")
-
-    # The cloths, on the same terms as the skins: one place in the advanced table, so the generic
-    # `cloth_template` hint is what an empty one shows and none of these needs its own.
+    # The cloths have no hint of their own: the advanced table has ONE cloth place, so the generic
+    # `cloth_template` hint is what an empty one shows.
     cloths_shipped = {cloth: render_cloth(cloth) for cloth in cloths()}
     for cloth, img in cloths_shipped.items():
         img.save(OUT / f"cloth_template_{cloth}.png")
@@ -598,15 +495,15 @@ def main() -> None:
         scale, pad = 8, 2
         pitch = (16 + pad) * scale
         # The hints go on the row below, on the 139 grey of the slot floor they are drawn on, and
-        # the skins on a third row under both.
-        width = max(len(images), len(skins_shipped)) * pitch
+        # the cloths on a third row under both.
+        width = max(len(images), len(cloths_shipped)) * pitch
         sheet = Image.new("RGBA", (width, 3 * pitch), (24, 24, 28, 255))
         sheet.paste((139, 139, 139, 255), (0, pitch, width, 2 * pitch))
         for i, anchor in enumerate(images):
             for row, img in enumerate((images[anchor], hint(anchor))):
                 big = img.resize((16 * scale, 16 * scale), Image.NEAREST)
                 sheet.paste(big, (i * pitch, row * pitch), big)
-        for i, img in enumerate(skins_shipped.values()):
+        for i, img in enumerate(cloths_shipped.values()):
             big = img.resize((16 * scale, 16 * scale), Image.NEAREST)
             sheet.paste(big, (i * pitch, 2 * pitch), big)
         path = ROOT / "tools" / "template_icons_preview.png"

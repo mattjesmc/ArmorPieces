@@ -918,8 +918,10 @@ const OWN = {
 
   armorpieces_save_skin: {
     description:
-      "Write both sheets back to tools/skin_masters/<skin>. Refused while the check reports " +
-      "problems, unless `force` is true - say why each is acceptable in that case.",
+      "Write both sheets back to tools/skin_masters/<skin> and install the pair into the mod's " +
+      "resources with sync_skin_masters.py, whose report is returned. The template's icon needs " +
+      "nothing: the game draws it from the sheet. Refused while the check reports problems, " +
+      "unless `force` is true - say why each is acceptable in that case.",
     inputSchema: {
       type: "object",
       properties: { force: { type: "boolean", default: false, description: "Save despite problems." } },
@@ -938,6 +940,7 @@ const OWN = {
       }
       const out = await evalIn("window.armorpieces_api.saveSkin()");
       const lines = [`Saved skin ${out.skin}: ${out.wrote.join(", ")}.`];
+      if (out.report) lines.push(out.report);
       if (typeof report === "string") lines.push(report);
       else if (!report.ok) lines.push(`Saved with problems standing:\n${report.text}`);
       return reply(lines.join("\n"));

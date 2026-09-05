@@ -3,6 +3,8 @@ package com.mattjesmc.armorpieces.client;
 import com.mattjesmc.armorpieces.ArmorPieces;
 import com.mattjesmc.armorpieces.client.fitting.FittingRenderers;
 import com.mattjesmc.armorpieces.client.geometry.DecorationGeometryManager;
+import com.mattjesmc.armorpieces.client.item.SkinTemplateIconSource;
+import com.mattjesmc.armorpieces.client.item.SkinTemplateItemModel;
 import com.mattjesmc.armorpieces.client.screen.AdvancedSmithingScreen;
 import com.mattjesmc.armorpieces.client.texture.ArmorSkinTextureManager;
 import com.mattjesmc.armorpieces.client.texture.ClothTextureManager;
@@ -12,11 +14,13 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityRenderLayerRegistrationCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.SpriteSourceRegistry;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
+import net.minecraft.client.renderer.item.ItemModels;
 import net.minecraft.server.packs.PackType;
 
 @Environment(EnvType.CLIENT)
@@ -41,6 +45,16 @@ public class ArmorPiecesClient implements ClientModInitializer {
         // piece is actually drawn - see ClothTextureManager.
         ResourceManagerHelper.get(PackType.CLIENT_RESOURCES)
             .registerReloadListener(ClothTextureManager.instance());
+
+        // The skin template's icon, which is the skin itself: a sprite source draws one per skin that
+        // exists and stitches it onto the item atlas, and a model type picks between them off the
+        // component. Neither is a vanilla-shaped thing to do, and both are the sanctioned route to it -
+        // SpriteSourceRegistry is Fabric API's, and ItemModels.ID_MAPPER is opened up by its transitive
+        // access wideners, as MenuScreens.register below is. The reason for doing it at all is that
+        // `minecraft:select` cases cannot be merged from another pack, so a select could only ever
+        // carry the skins the MOD ships. See SkinTemplateItemModel.
+        SpriteSourceRegistry.register(SkinTemplateIconSource.ID, SkinTemplateIconSource.MAP_CODEC);
+        ItemModels.ID_MAPPER.put(SkinTemplateItemModel.ID, SkinTemplateItemModel.Unbaked.MAP_CODEC);
 
         // The one fitting type that draws rather than colours. A mod's own goes through the same door.
         FittingRenderers.registerBuiltins();

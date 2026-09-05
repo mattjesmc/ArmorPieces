@@ -3479,11 +3479,25 @@
 			sheet.save();
 			written.push(path.join(skin.dir, sheet.id + '.png'));
 		}
+
+		// A skin is authored under tools/skin_masters and loaded from the resources, and its
+		// template's icon is a swatch of the chest front off the sheet that ships - so a pair
+		// written and left there is a skin the game cannot wear and the hotbar cannot draw. Save
+		// therefore runs the same two scripts the command line does: the sync installs the pair and
+		// is also what checks it, and the icon pass redraws every skin icon, its model and the
+		// select that picks between them. That is the bargain a part's master already makes on save
+		// (see sync_decoration_masters above); the difference is that a skin's icon draws itself, so
+		// there is a second script behind it.
+		let report = tool('sync_skin_masters.py', [skin.name]).trim();
+		const icons = tool('gen_template_icons.py', ['--skins']).trim();
+		report = [report, icons].filter(Boolean).join('\n');
+		if (report) console.log('[armorpieces] ' + report);
+
 		Project[ID + '_saved_index'] = Project.undo.index;
 		if (Project.undo.current_save) Project[ID + '_save_in_edit'] = true;
 		publishSkin('save');
-		Blockbench.showQuickMessage('Saved skin ' + skin.name, 2500);
-		return { skin: skin.name, wrote: written };
+		Blockbench.showQuickMessage('Saved skin ' + skin.name + ' - sheets, installed', 2500);
+		return { skin: skin.name, wrote: written, report: report };
 	}
 
 	/* One sheet as rows of characters. See the section comment for the alphabet. */
