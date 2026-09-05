@@ -16,7 +16,9 @@ re-skinning is re-forging, and it costs the metal the piece is made of. Chainmai
 its ramp is dead and its identity is the weave - and says so through a tag a pack can disagree
 with. Leather's dyeable layer takes the skin, so dye still multiplies into it; trims are drawn
 after the base layer as they always were, and are unaffected. A skin never paints a visor: the
-face opening is the shape the `brow` parts are drawn to sit in.
+face opening is the shape the `brow` parts are drawn to sit in. Every skin's template wears its own
+icon, and the icon is the skin: the front of that skin's own chestplate, greyed and set in the
+template card, so a hotbar of them says which look is which without a tooltip being read.
 
 **Found in the world.** A part can name the loot tables it turns up in, and the mod adds it to
 them as they load - the one thing a datapack cannot do for itself, since it can only replace a
@@ -90,8 +92,13 @@ The New Fitting dialog takes the template's "Ingredients:" words and its two rec
 writes the fitting's template recipe with the definition. `check_authoring.py` round-trips every
 part's template recipe, switched on or off, the way it does the data files, checks every loot row
 is in the shape the dialog writes, and checks every fitting's template recipe; given two folders it
-checks a piece split over a datapack and a resource pack. `gen_template_icons.py` draws the four
-fitting template icons beside the bare one. `export_pack.py` zips a pack folder with its contents
+checks a piece split over a datapack and a resource pack, and it checks that a skin's select
+case and its icon name each other, since a case with no texture draws the missing-texture chequer
+and a texture with no case is art nothing can show. `gen_template_icons.py` draws the four
+fitting template icons beside the bare one, and cuts every skin template's icon out of that skin's
+own sheet - writing the icon, the item model and the `minecraft:select` case together, so a skin
+drawn later gets all three by existing and there is no JSON to write by hand.
+`export_pack.py` zips a pack folder with its contents
 at the root, and is what the plugin's *Export Pack...* runs. `preview_material.py` takes `--pack`
 more than once, for a piece whose two halves are two folders.
 
