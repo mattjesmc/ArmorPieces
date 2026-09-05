@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.At;
 
 /**
  * Draws a skinned or clothed piece of armor with a texture of ours instead of the material's own -
- * the one place either is applied, and the mod's only mixin.
+ * the one place either is applied.
  *
  * <p>The alternative was to rewrite the piece's {@code minecraft:equippable} component and point its
  * asset id at art of ours, which needs no mixin at all. It was rejected for two things it would

@@ -7,6 +7,7 @@ import com.mattjesmc.armorpieces.client.texture.DecorationTextureManager;
 import com.mattjesmc.armorpieces.decoration.ArmorDecoration;
 import com.mattjesmc.armorpieces.decoration.ArmorDecorations;
 import com.mattjesmc.armorpieces.decoration.DecorationAnchor;
+import com.mattjesmc.armorpieces.decoration.DecorationAnchor.HumanoidPart;
 import com.mattjesmc.armorpieces.decoration.DecorationEntry;
 import com.mattjesmc.armorpieces.decoration.fitting.Fitting;
 import com.mattjesmc.armorpieces.decoration.fitting.FittingValue;
@@ -35,6 +36,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.item.equipment.EquipmentAsset;
 import net.minecraft.world.item.equipment.EquipmentAssets;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Draws the decorative parts on worn armor.
@@ -81,19 +83,41 @@ public class ArmorDecorationLayer<S extends HumanoidRenderState, M extends Human
         if (state.isInvisible) {
             return;
         }
-        this.submitForSlot(poseStack, collector, lightCoords, state, state.headEquipment, EquipmentSlot.HEAD);
-        this.submitForSlot(poseStack, collector, lightCoords, state, state.chestEquipment, EquipmentSlot.CHEST);
-        this.submitForSlot(poseStack, collector, lightCoords, state, state.legsEquipment, EquipmentSlot.LEGS);
-        this.submitForSlot(poseStack, collector, lightCoords, state, state.feetEquipment, EquipmentSlot.FEET);
+        final int overlayCoords = LivingEntityRenderer.getOverlayCoords(state, 0.0F);
+        final M model = this.getParentModel();
+        submitForSlot(poseStack, collector, lightCoords, overlayCoords, state.outlineColor,
+            model, state.headEquipment, EquipmentSlot.HEAD, null);
+        submitForSlot(poseStack, collector, lightCoords, overlayCoords, state.outlineColor,
+            model, state.chestEquipment, EquipmentSlot.CHEST, null);
+        submitForSlot(poseStack, collector, lightCoords, overlayCoords, state.outlineColor,
+            model, state.legsEquipment, EquipmentSlot.LEGS, null);
+        submitForSlot(poseStack, collector, lightCoords, overlayCoords, state.outlineColor,
+            model, state.feetEquipment, EquipmentSlot.FEET, null);
     }
 
-    private void submitForSlot(
+    /**
+     * Draws every part on one worn item, in the frame the humanoid model is already posed in.
+     *
+     * <p>Static, and taking the few numbers it needs rather than a render state, because the entity
+     * pass is not the only caller: first person draws one arm with no render state in sight and no
+     * layers running at all (see {@link com.mattjesmc.armorpieces.client.mixin.AvatarRendererMixin}).
+     * Everything below the render state - which sockets exist, how a part is coloured, where an
+     * attachment sits - is identical in both, and this is where that shared half begins.
+     *
+     * @param limb when non-null, draw only the attachments hanging from THIS body part. The entity
+     *             pass passes null and draws the whole body; first person names one arm, because
+     *             one arm is all that is on screen.
+     */
+    public static void submitForSlot(
         final PoseStack poseStack,
         final SubmitNodeCollector collector,
         final int lightCoords,
-        final S state,
+        final int overlayCoords,
+        final int outlineColor,
+        final HumanoidModel<?> model,
         final ItemStack itemStack,
-        final EquipmentSlot slot
+        final EquipmentSlot slot,
+        final @Nullable HumanoidPart limb
     ) {
         final ArmorDecorations decorations = itemStack.get(ModDataComponents.DECORATIONS);
         if (decorations == null || decorations.isEmpty()) {
@@ -105,7 +129,6 @@ public class ArmorDecorationLayer<S extends HumanoidRenderState, M extends Human
         final Equippable equippable = itemStack.get(DataComponents.EQUIPPABLE);
         final ResourceKey<EquipmentAsset> assetKey =
             equippable == null ? NO_ASSET : equippable.assetId().orElse(NO_ASSET);
-        final int overlayCoords = LivingEntityRenderer.getOverlayCoords(state, 0.0F);
 
         for (final var mapping : decorations.entries().entrySet()) {
             final DecorationAnchor anchor = mapping.getKey();
@@ -115,19 +138,22 @@ public class ArmorDecorationLayer<S extends HumanoidRenderState, M extends Human
             if (anchor.slot() != slot) {
                 continue;
             }
-            this.submitDecoration(poseStack, collector, lightCoords, overlayCoords, state, anchor, mapping.getValue(), assetKey);
+            submitDecoration(poseStack, collector, lightCoords, overlayCoords, outlineColor,
+                model, anchor, mapping.getValue(), assetKey, limb);
         }
     }
 
-    private void submitDecoration(
+    private static void submitDecoration(
         final PoseStack poseStack,
         final SubmitNodeCollector collector,
         final int lightCoords,
         final int overlayCoords,
-        final S state,
+        final int outlineColor,
+        final HumanoidModel<?> model,
         final DecorationAnchor anchor,
         final DecorationEntry entry,
-        final ResourceKey<EquipmentAsset> assetKey
+        final ResourceKey<EquipmentAsset> assetKey,
+        final @Nullable HumanoidPart limb
     ) {
         final ArmorDecoration decoration = entry.decoration().value();
         final Identifier assetId = decoration.assetId();
@@ -168,9 +194,13 @@ public class ArmorDecorationLayer<S extends HumanoidRenderState, M extends Human
         // cached from then on.
         final var renderType = RenderTypes.armorCutoutNoCull(
             DecorationTextureManager.instance().resolve(assetId, entry.materialSuffix(assetKey), masks));
-        final M model = this.getParentModel();
 
         for (final DecorationAnchor.Attachment attachment : anchor.attachments()) {
+            // A caller drawing one limb wants the half of a mirrored pair that belongs to it, and
+            // nothing at all from a socket that hangs somewhere else.
+            if (limb != null && attachment.part() != limb) {
+                continue;
+            }
             poseStack.pushPose();
             // Enter the parent part's frame: its animated translation and rotation, exactly as
             // ModelPart.render would apply before drawing its own cubes.
@@ -183,11 +213,11 @@ public class ArmorDecorationLayer<S extends HumanoidRenderState, M extends Human
                 // half of a pair lights and draws identically to the original.
                 poseStack.scale(-1.0F, 1.0F, 1.0F);
             }
-            collector.submitModelPart(geometry, poseStack, renderType, lightCoords, overlayCoords, null, -1, null, state.outlineColor);
+            collector.submitModelPart(geometry, poseStack, renderType, lightCoords, overlayCoords, null, -1, null, outlineColor);
             // Fittings that draw, in the same frame, over the bones the pass above left out.
             for (final Drawn fitting : drawn) {
                 fitting.renderer().submit(new FittingRenderer.Context(
-                    poseStack, collector, lightCoords, overlayCoords, state.outlineColor, full, fitting.fitting(), fitting.value()));
+                    poseStack, collector, lightCoords, overlayCoords, outlineColor, full, fitting.fitting(), fitting.value()));
             }
             poseStack.popPose();
         }
@@ -195,7 +225,7 @@ public class ArmorDecorationLayer<S extends HumanoidRenderState, M extends Human
 
     private record Drawn(FittingRenderer renderer, Fitting fitting, FittingValue value) {}
 
-    private static ModelPart resolvePart(final HumanoidModel<?> model, final DecorationAnchor.HumanoidPart part) {
+    private static ModelPart resolvePart(final HumanoidModel<?> model, final HumanoidPart part) {
         return switch (part) {
             case HEAD -> model.head;
             case BODY -> model.body;

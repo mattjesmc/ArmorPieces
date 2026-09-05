@@ -85,6 +85,14 @@ sections:
         description: >-
           One grayscale master per part is mapped onto each material's own palette at load time.
           A new trim material costs a part no new art at all.
+      - title: On your own hands, in first person
+        description: >-
+          Vanilla draws a bare sleeve on the first-person hand and nothing else — not armor, not a
+          trim — so the one view you spend the whole game in is the one that never showed what you
+          were wearing. Pauldrons and vambraces show there now, on the same player model the world
+          sees, swinging with the arm through every animation the hand already has. They are close to
+          the camera and they are meant to be: set `first_person_parts` to `false` in
+          `config/armorpieces.json` if you would rather keep the view clear.
       - title: Fourteen armor skins
         description: >-
           The one thing here that changes the armor itself rather than adding to it — plate, gothic,
@@ -246,6 +254,13 @@ sections:
         a: >-
           No — applying a new crest replaces the crest. Several parts may be *available* for one socket
           (`horns` and `helm_wings` both fit `horns`); the choice is the expressive act.
+      - q: The parts on my hands are in the way. Can I turn them off?
+        a: >-
+          Yes. Set `"first_person_parts": false` in `config/armorpieces.json` and restart the game —
+          the file writes itself on first launch. Only the first-person hand is affected; your parts
+          are still on your body, and still on everyone else's. It is the mod's only setting, and
+          deliberately so: everything else about a part is pack data rather than a preference, and
+          nothing in that file changes what an item *does*, so it never has to match the server's.
       - q: Do I need the mod to add parts?
         a: >-
           You need the mod installed, but adding a part takes no Java — a datapack and a resource pack.
@@ -300,6 +315,9 @@ custom_sections:
         look, name and recipe, instead of one template that guessed.
       - **Any recipe the mod ships can be switched off** by overriding its file with
         `{"type": "armorpieces:disabled"}`.
+      - **Parts on the first-person hand.** Vanilla shows a bare sleeve there and no armor at all;
+        pauldrons and vambraces now ride the hand you actually spend the game looking at.
+        `first_person_parts` in `config/armorpieces.json` turns it off — the mod's first setting.
       - **Blockbench, for your pack.** The plugin no longer assumes content lives in this repository:
         it opens a part on the vanilla player wearing real armor, paints master, static layer and
         fitting masks in place, previews any trim material live, and on Save writes every file into

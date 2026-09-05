@@ -9,6 +9,7 @@ import com.mattjesmc.armorpieces.client.screen.AdvancedSmithingScreen;
 import com.mattjesmc.armorpieces.client.texture.ArmorSkinTextureManager;
 import com.mattjesmc.armorpieces.client.texture.ClothTextureManager;
 import com.mattjesmc.armorpieces.client.texture.DecorationTextureManager;
+import com.mattjesmc.armorpieces.config.ArmorPiecesConfig;
 import com.mattjesmc.armorpieces.registry.ModMenus;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
@@ -27,6 +28,10 @@ import net.minecraft.server.packs.PackType;
 public class ArmorPiecesClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
+        // First, because everything below it may end up asking what the player chose. Client-side
+        // only, and deliberately so - see ArmorPiecesConfig.
+        ArmorPiecesConfig.load();
+
         ResourceManagerHelper.get(PackType.CLIENT_RESOURCES)
             .registerReloadListener(DecorationGeometryManager.instance());
         // Indexes which parts ship a master and which ship hand-authored per-material overrides, and
