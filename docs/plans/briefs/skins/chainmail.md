@@ -90,8 +90,9 @@ for a session that has to be held to a shape, and this one cannot leave it.
 ## Done means
 
 `python tools/check_skin.py chainmail` clean — it is; `python tools/check_authoring.py` clean — it
-is; installed with `sync_skin_masters.py`, a data file, a template recipe (`minecraft:chain` in a
-ring of paper) and a lang line. Looked at baked on iron, gold, netherite and on chainmail itself as
-flat sheets. **Not yet looked at in 3D**: the skin half of the Blockbench bridge was not exposed to
-the session that made this, so the one check still owed is a look at it on the figure — most of all
-the crown, which is the one value in the master that argues with the family.
+is; installed with `sync_skin_masters.py`, a data file, a template recipe
+(`minecraft:chainmail_helmet` in a ring of paper) and a lang line. Looked at baked on iron, gold,
+netherite and on chainmail itself as flat sheets. **Not yet looked at in 3D**: the skin half of
+the Blockbench bridge was not exposed to the session that made this, so the one check still owed
+is a look at it on the figure — most of all the crown, which is the one value in the master that
+argues with the family.

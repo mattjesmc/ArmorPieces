@@ -8,7 +8,7 @@
   ],
   "key": {
     "#": "minecraft:paper",
-    "F": "minecraft:chain"
+    "F": "minecraft:chainmail_helmet"
   },
   "result": {
     "id": "armorpieces:skin_template",
