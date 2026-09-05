@@ -1,6 +1,6 @@
 ![Armor Pieces](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/banners/header.png)
 
-*Parts, skins and cloth for armor — because someone else at spawn is wearing your diamond set.*
+*Pieces, skins and cloth for armor — because someone else at spawn is wearing your diamond set.*
 
 [![GitHub release](https://img.shields.io/github/v/release/mattjesmc/ArmorPieces?style=for-the-badge&logo=github&logoColor=white&label=Release&color=5b21b6)](https://github.com/mattjesmc/ArmorPieces/releases/latest) ![Loaders](https://img.shields.io/badge/Loader-Fabric-5b21b6?style=for-the-badge) ![Minecraft versions](https://img.shields.io/badge/Minecraft-26.2-5b21b6?style=for-the-badge) [![License](https://img.shields.io/badge/License-All_Rights_Reserved-5b21b6?style=for-the-badge)](https://github.com/mattjesmc/ArmorPieces/blob/main/LICENSE)
 
@@ -13,24 +13,28 @@
 ## About
 
 You know the one. You walk into spawn in your best diamond and the first person you see is
-wearing the same helmet, the same chestplate, the same Sentry trim in the same netherite. Vanilla
-can build 1,568,239,201 armor sets, which sounds like plenty right up until it happens to you
-twice in a week.
+wearing the same helmet, the same chestplate, the same Sentry trim in the same netherite.
+Vanilla can build 1,568,239,201 unique sets of diamond armor, which sounds like plenty right
+up until this happens to you twice in a week.
 
-Armor Pieces takes that number to **3 × 10⁸⁴** — more than thirty thousand unique diamond sets
-for every atom in the observable universe. Diamond is one of seven armor materials.
+We'll make sure that never happens again! Armor Pieces takes that number to **3 × 10⁸⁴**
+— more than thirty thousand unique diamond sets for every atom in the observable universe.
 
 It gives one piece of armor **four layers of decoration, each an independent choice**:
-a **part** hung on a socket, a **skin** that changes what the plate itself is made of, a **cloth**
-worn over the chest, and vanilla's own **trim** underneath them all. Every one of them is applied
-at a smithing table, and none of them replaces another - a helmet can carry a skin, a trim, a
-crest, a browband and a pair of horns at once.
 
-**Ninety-one parts, over twelve sockets.** `crest`, `brow`, `horns`, `pauldrons`, `back`,
+- a **piece** hung on a socket,
+- a **skin** that changes what the plate itself is made of,
+- a **cloth** worn over the chest,
+- and vanilla's own **trim** underneath them all.
+
+Every one of them is applied at a smithing table, and none of them replaces another - a helmet
+can carry a skin, a trim, a crest, a browband and a pair of horns at once.
+
+**Ninety-one pieces, over twelve sockets.** `crest`, `brow`, `horns`, `pauldrons`, `back`,
 `collar`, `vambraces`, `belt`, `tassets`, `knees`, `spurs`, `greaves` - a plume on the helmet,
-spaulders on the shoulders, a sash on the belt, spurs on the heels. Parts are real geometry hung
-on the body, not paint on the texture. A socket holds one part and every socket has at least six
-to choose from, so the choice is the expressive act. Each part is applied with a trim material and
+spaulders on the shoulders, a sash on the belt, spurs on the heels. Pieces are real geometry hung
+on the body, not paint on the texture. A socket holds one piece and every socket has at least six
+to choose from, so the choice is the expressive act. Each piece is applied with a trim material and
 takes that material's colour.
 
 **Fourteen armor skins.** A skin is the armor's *own* texture - what the plate is, rather than
@@ -45,26 +49,26 @@ at a loom - so the heraldry is yours rather than a list the mod maintains. It is
 armor's texture rather than hung off it, so it clips nothing and the plate's own rivets and edges
 read through it.
 
-**Fittings.** Some parts have a second colour, set separately: a gem in the circlet, a metal
+**Fittings.** Some pieces have a second colour, set separately: a gem in the circlet, a metal
 buckle and a dyed strap on the sash, a dyed inlay on the greaves, a banner on the back banner.
 One more smithing step, one template per fitting, and the item decides where it goes.
 
-Most of it is **found rather than made**. Thirty parts have a crafting recipe, the ones where
-the item is plainly the part or what it is made of; the rest turn up in the chests that suit them,
+Most of it is **found rather than made**. Thirty pieces have a crafting recipe, the ones where
+the item is plainly the piece or what it is made of; the rest turn up in the chests that suit them,
 each theme in its own kind of structure, with the skins and the fitting templates alongside. An
-**advanced smithing table** shows a whole set worn by a stand and takes a part, a fitting, a
+**advanced smithing table** shows a whole set worn by a stand and takes a piece, a fitting, a
 trim, a skin or a cloth off again, which the smithing table cannot.
 
-Every part, skin and cloth is a datapack entry, a model and a texture, no code - and a pack adds
+Every piece, skin and cloth is a datapack entry, a model and a texture, no code - and a pack adds
 its own the same way, from Blockbench, in folders of its own.
 
 ---
 
 ## New in 0.3.0
 
-The release that turned a set of parts into a wardrobe.
+The release that turned a set of pieces into a wardrobe.
 
-- **Seventy-one new parts — ninety-one in total.** Every one of the twelve sockets now has at
+- **Seventy-one new pieces — ninety-one in total.** Every one of the twelve sockets now has at
   least six answers, and the six themes reach across the whole suit. Among them a family of
   seven flat **visor styles** on the `brow` socket, whose sights are real openings with your
   own face behind them rather than paint.
@@ -74,30 +78,30 @@ The release that turned a set of parts into a wardrobe.
   gets one free.
 - **Cloth.** A fourth layer: a **Tunic** or a **Tabard** over a chestplate, wearing the design
   of any banner you make at a loom, painted into the armor's texture rather than hung off it.
-- **Most parts are now found rather than crafted.** A **loot group** is one file naming a
-  category of vanilla tables and a tag of parts found in them; six ship, one per theme —
+- **Most pieces are now found rather than crafted.** A **loot group** is one file naming a
+  category of vanilla tables and a tag of pieces found in them; six ship, one per theme —
   knightly gear in strongholds and trial chambers, beast trophies in bastions, court jewellery
-  in mansions and ancient cities, tidal parts in shipwrecks and ocean ruins, and so on. Skins
+  in mansions and ancient cities, tidal pieces in shipwrecks and ocean ruins, and so on. Skins
   are divided over the same six, and a fitting template turns up in all of them.
-- **The chance belongs to the table, not to the part.** One pool per table, rolled once: a
-  chest's odds of holding something of ours stay put however many parts are added. Another part
+- **The chance belongs to the table, not to the piece.** One pool per table, rolled once: a
+  chest's odds of holding something of ours stay put however many pieces are added. Another piece
   changes *which* one you find, never how often.
 - **The advanced smithing table.** Crafted from a smithing table, an armor stand and two iron
   ingots. It holds a whole set worn by a stand and lists each piece's sockets and fittings as
   rows of icons, with its trim, its skin and its cloth on a row of its own — and Remove is the
   one way any of them ever comes off.
 - **Thirty recipes, not ninety-one.** A template recipe now ships only where the centre
-  item is plainly the part or what it is made of — a bell for the bells, a goat horn for the
+  item is plainly the piece or what it is made of — a bell for the bells, a goat horn for the
   horns. The rest are found.
 - **One template per fitting.** *Gemstone*, *Guard*, *Inlay* and *Banner*, each with its own
   look, name and recipe, instead of one template that guessed.
 - **Any recipe the mod ships can be switched off** by overriding its file with
   `{"type": "armorpieces:disabled"}`.
-- **Parts on the first-person hand.** Vanilla shows a bare sleeve there and no armor at all;
+- **Pieces on the first-person hand.** Vanilla shows a bare sleeve there and no armor at all;
   pauldrons and vambraces now ride the hand you actually spend the game looking at.
   `first_person_parts` in `config/armorpieces.json` turns it off — the mod's first setting.
 - **Blockbench, for your pack.** The plugin no longer assumes content lives in this repository:
-  it opens a part on the vanilla player wearing real armor, paints master, static layer and
+  it opens a piece on the vanilla player wearing real armor, paints master, static layer and
   fitting masks in place, previews any trim material live, and on Save writes every file into
   *your* datapack and resource pack — which it makes, finds and zips for you.
 
@@ -105,17 +109,17 @@ The release that turned a set of parts into a wardrobe.
 
 ## Features
 
-- **Twelve sockets, one part at a time** — `crest`, `brow`, `horns`, `pauldrons`, `back`, `collar`, `vambraces`, `belt`, `tassets`, `knees`, `spurs`, `greaves`. A socket holds one part, so a new crest replaces the crest — and with ninety-one parts every socket has at least six to choose from. Seven of the sockets are mirrored pairs, so spaulders means both shoulders.
-- **Coloured by vanilla trim materials** — One grayscale master per part is mapped onto each material's own palette at load time. A new trim material costs a part no new art at all.
+- **Twelve sockets, one piece at a time** — `crest`, `brow`, `horns`, `pauldrons`, `back`, `collar`, `vambraces`, `belt`, `tassets`, `knees`, `spurs`, `greaves`. A socket holds one piece, so a new crest replaces the crest — and with ninety-one pieces every socket has at least six to choose from. Seven of the sockets are mirrored pairs, so spaulders means both shoulders.
+- **Coloured by vanilla trim materials** — One grayscale master per piece is mapped onto each material's own palette at load time. A new trim material costs a piece no new art at all.
 - **On your own hands, in first person** — Vanilla draws a bare sleeve on the first-person hand and nothing else — not armor, not a trim — so the one view you spend the whole game in is the one that never showed what you were wearing. Pauldrons and vambraces show there now, on the same player model the world sees, swinging with the arm through every animation the hand already has. They are close to the camera and they are meant to be — and there is a setting to turn them off, if you would rather keep the view clear.
 - **Fourteen armor skins** — The one thing here that changes the armor itself rather than adding to it — plate, gothic, milanese, mail, chainmail, lorica, runic, hoplite, samurai, gambeson, brigandine, varangian, scale, lamellar. One greyscale master pair on vanilla's own armor grid, recoloured at load through eight shades taken from *that armor material's* vanilla texture, with vanilla's own panel edges and shadows mixed back over it. A skinned iron helmet still reads as iron, gold still reads as gold, and a modded armor material is skinned for free from the texture it already ships. Applied at the advanced smithing table with the piece's own reforging material — re-skinning is re-forging, and it costs the metal the piece is made of.
-- **Cloth over the chest** — A **Tunic** or a **Tabard**, applied with a cloth template and a banner, and the design is the banner's — sixteen dyes crossed with every pattern layer, made at a loom, so the heraldry is a player's choice rather than a list the mod keeps. It is painted into the armor's own texture rather than hung off it, so it moves with the armor, clips nothing, and the plate's rivets and edges read *through* it. It sits over the skin, under every part and under the trim. One greyscale cut mask ships the whole feature; there is no per-material art and no per-banner art.
-- **Fittings** — A part can declare places for a second material — `gemstone`, `guard`, `inlay`, `banner` — and a fitting template sets one: gems and metals by trim material, inlays by dye, banners from a banner made at a loom. There is a template per fitting, each with its own look and recipe, and the template with the third slot empty takes its fitting out again. Fittings are data too — a pack's new fitting gets its template from a recipe — and an effect can be gated on one.
-- **Found in the world** — Most parts are found rather than crafted, each theme in the structures that suit it — knightly gear in strongholds and trial chambers, beast trophies in bastions, court jewellery in mansions and ancient cities, tidal parts in shipwrecks and ocean ruins. A **loot group** is one file naming a category of tables and the tag of parts found in them, so a pack adds a whole look to the world at once, or drops one part into one chest from its own data file — the one thing a datapack cannot do for itself, since it can only replace a vanilla table whole. Armor **skins** are found the same way, divided over the same groups, and a **fitting template** turns up in every one of them. The odds belong to the table, so a chest's chance of holding something stays put however many parts are added. A loot function puts a part on a piece of armor a table drops, gem and all.
-- **Taking parts off** — The advanced smithing table, crafted from a smithing table, an armor stand and two iron ingots, holds a whole set worn by a stand at once and lists each piece's sockets and their fittings as rows of icons, with the piece's own row under them — its trim, its skin and, on a chestplate, its cloth. Pick one and Remove empties it — the one way a part, a fitting, a trim, a skin or a cloth ever comes off. An empty place shows a hint of the template that would fill it. Its own template and material slots run the smithing table's recipes, with the result on the stand before it is paid for, and a fitting goes into the socket that is picked rather than into every part that takes one.
-- **One smithing recipe per socket, forever** — The part rides on the template item as a component, so a pack hands out a template and needs no recipe of its own. And any recipe the mod ships can be switched off by overriding its file with `{"type": "armorpieces:disabled"}` — a part that is found rather than made, a server without fittings.
-- **Optional behaviour** — A part may carry effects — attributes, mob effects, a projectile dodge, gliding — configured in the same JSON file. `pinions` is a cut-down elytra that actually flies.
-- **A Blockbench plugin for making parts** — Opens a part on the vanilla player wearing real armor, walk cycle and all. Master, static layer and fitting masks are painted in place, any trim material previews live with its fittings filled or empty, the name, sockets, fittings, effects and loot are a dialog, and Save writes every file the pack needs — into your own datapack and resource pack, which it makes, finds and zips for you.
+- **Cloth over the chest** — A **Tunic** or a **Tabard**, applied with a cloth template and a banner, and the design is the banner's — sixteen dyes crossed with every pattern layer, made at a loom, so the heraldry is a player's choice rather than a list the mod keeps. It is painted into the armor's own texture rather than hung off it, so it moves with the armor, clips nothing, and the plate's rivets and edges read *through* it. It sits over the skin, under every piece and under the trim. One greyscale cut mask ships the whole feature; there is no per-material art and no per-banner art.
+- **Fittings** — A piece can declare places for a second material — `gemstone`, `guard`, `inlay`, `banner` — and a fitting template sets one: gems and metals by trim material, inlays by dye, banners from a banner made at a loom. There is a template per fitting, each with its own look and recipe, and the template with the third slot empty takes its fitting out again. Fittings are data too — a pack's new fitting gets its template from a recipe — and an effect can be gated on one.
+- **Found in the world** — Most pieces are found rather than crafted, each theme in the structures that suit it — knightly gear in strongholds and trial chambers, beast trophies in bastions, court jewellery in mansions and ancient cities, tidal pieces in shipwrecks and ocean ruins. A **loot group** is one file naming a category of tables and the tag of pieces found in them, so a pack adds a whole look to the world at once, or drops one piece into one chest from its own data file — the one thing a datapack cannot do for itself, since it can only replace a vanilla table whole. Armor **skins** are found the same way, divided over the same groups, and a **fitting template** turns up in every one of them. The odds belong to the table, so a chest's chance of holding something stays put however many pieces are added. A loot function puts a piece on the armor a table drops, gem and all.
+- **Taking pieces off** — The advanced smithing table, crafted from a smithing table, an armor stand and two iron ingots, holds a whole set worn by a stand at once and lists each piece's sockets and their fittings as rows of icons, with the piece's own row under them — its trim, its skin and, on a chestplate, its cloth. Pick one and Remove empties it — the one way a piece, a fitting, a trim, a skin or a cloth ever comes off. An empty place shows a hint of the template that would fill it. Its own template and material slots run the smithing table's recipes, with the result on the stand before it is paid for, and a fitting goes into the socket that is picked rather than into every piece that takes one.
+- **One smithing recipe per socket, forever** — The piece rides on the template item as a component, so a pack hands out a template and needs no recipe of its own. And any recipe the mod ships can be switched off by overriding its file with `{"type": "armorpieces:disabled"}` — a piece that is found rather than made, a server without fittings.
+- **Optional behaviour** — A piece may carry effects — attributes, mob effects, a projectile dodge, gliding — configured in the same JSON file. `pinions` is a cut-down elytra that actually flies.
+- **A Blockbench plugin for making pieces** — Opens a piece on the vanilla player wearing real armor, walk cycle and all. Master, static layer and fitting masks are painted in place, any trim material previews live with its fittings filled or empty, the name, sockets, fittings, effects and loot are a dialog, and Save writes every file the pack needs — into your own datapack and resource pack, which it makes, finds and zips for you.
 
 ---
 
@@ -125,9 +129,9 @@ The release that turned a set of parts into a wardrobe.
 
 *The six themed sets, every socket filled — knightly, court, beast, wayfarer, tidal, carapace*
 
-![Sixty sets with nothing about them chosen — armor, skin, cloth, part, material and every fitting rolled](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/gallery/wardrobe.png)
+![Sixty sets with nothing about them chosen — armor, skin, cloth, piece, material and every fitting rolled](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/gallery/wardrobe.png)
 
-*Sixty sets with nothing about them chosen — armor, skin, cloth, part, material and every fitting rolled*
+*Sixty sets with nothing about them chosen — armor, skin, cloth, piece, material and every fitting rolled*
 
 ![Fourteen armor skins on one diamond suit — the plate itself changed, not something hung on it](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/gallery/skins.png)
 
@@ -150,8 +154,8 @@ plus untrimmed, is **199** states per piece — and **1,568,239,201** for a set 
 
 Now count that same diamond set with this mod installed. Each piece keeps all 199 of its trims
 and gains a skin
-(fourteen, or bare), a part in each of its sockets, each part in one of eleven materials, each
-part's fittings filled or left empty — a gem from seven, a metal from four, an inlay from
+(fourteen, or bare), a piece in each of its sockets, each piece in one of eleven materials, each
+piece's fittings filled or left empty — a gem from seven, a metal from four, an inlay from
 sixteen dyes — and the chestplate a tunic or a tabard on top.
 
 | | Vanilla diamond | With Armor Pieces |
@@ -168,7 +172,7 @@ in the Earth. Some smaller ways to hold it:
 - **The boots alone** come to 1,187,185,245 arrangements: three quarters of every trimmed
   diamond set vanilla can build, on your feet.
 - **The helmet alone** is 1,169 times vanilla's entire four-piece space.
-- **Shape alone**, before a single colour is chosen — which part sits in which socket, and
+- **Shape alone**, before a single colour is chosen — which piece sits in which socket, and
   nothing else — is 368,709,304,320 distinct silhouettes. 235 times vanilla's fully trimmed
   space, in pure geometry.
 - Pick a set a second and you exhaust vanilla in fifty years. You exhaust this one in
@@ -264,21 +268,21 @@ Nobody at spawn is wearing yours.
 
 1. Install [Fabric Loader](https://fabricmc.net/use/) 0.19.3+ on Minecraft 26.2 (Java 25).
 2. Drop this mod and Fabric API into `mods/`.
-3. Install it on both sides — the client draws the parts, the server owns their behaviour.
+3. Install it on both sides — the client draws the pieces, the server owns their behaviour.
 
 ---
 
-## Adding a part
+## Adding a piece
 
-A part is two files and a PNG, plus a line in your language file for the name — none of it
+A piece is two files and a PNG, plus a line in your language file for the name — none of it
 code, and any namespace will do. Two ways to make them:
 
-- **In Blockbench**, with the [Armor Pieces plugin](https://github.com/mattjesmc/ArmorPieces/blob/main/tools/blockbench_plugin/armorpieces.js). It opens a part on the vanilla
+- **In Blockbench**, with the [Armor Pieces plugin](https://github.com/mattjesmc/ArmorPieces/blob/main/tools/blockbench_plugin/armorpieces.js). It opens a piece on the vanilla
   player wearing real armor, paints the textures in place, previews any trim material, and
   writes every file on Save.
 - **By hand**, writing the datapack entry, the geometry and the grayscale master yourself.
 
-The [authoring guide](https://github.com/mattjesmc/ArmorPieces/blob/main/docs/authoring.md) covers both, along with fittings, handing a part out, and giving
+The [authoring guide](https://github.com/mattjesmc/ArmorPieces/blob/main/docs/authoring.md) covers both, along with fittings, handing a piece out, and giving
 it behaviour — attributes, mob effects, a dodge, gliding — from the same JSON file.
 
 ---
@@ -293,14 +297,14 @@ it behaviour — attributes, mob effects, a dodge, gliding — from the same JSO
 | `client/` | the render layer, the geometry loader and bake cache, the per-material palette, the skin and cloth bakes, the advanced table's screen |
 | `skin/`, `cloth/` | the datapack registries behind an armor skin and a cloth, and the components a piece carries them in |
 | `recipe/`, `item/`, `registry/`, `command/` | smithing, the twelve socket templates and the fitting, skin and cloth templates, the creative tab, `/armorpieces stage` |
-| `loot/`, `block/`, `menu/` | parts in loot tables and the `set_decoration` function; the advanced smithing table and its menu |
-| `tools/` | Blockbench rigs (`bb_rig.py`, with the vanilla figure and walk cycle from `mc_humanoid.py`), `.bbmodel` ↔ geometry (`bb_geo.py`), master and mask painting and install (`paint_<part>_master.py`, `fitting_mask.py`, `sync_decoration_masters.py`), a material and fitting preview outside the game (`preview_material.py`), template and recipe icons, `export_pack.py` for zipping a pack, `trace_geometry.py` for measuring a part against the body, the skin masters and their bake, check and install (`skin_sheets.py`, `bake_skin.py`, `check_skin.py`, `sync_skin_masters.py`), and the checks a shipped part and skin pass (`check_part.py`, `check_authoring.py`) |
+| `loot/`, `block/`, `menu/` | pieces in loot tables and the `set_decoration` function; the advanced smithing table and its menu |
+| `tools/` | Blockbench rigs (`bb_rig.py`, with the vanilla figure and walk cycle from `mc_humanoid.py`), `.bbmodel` ↔ geometry (`bb_geo.py`), master and mask painting and install (`paint_<part>_master.py`, `fitting_mask.py`, `sync_decoration_masters.py`), a material and fitting preview outside the game (`preview_material.py`), template and recipe icons, `export_pack.py` for zipping a pack, `trace_geometry.py` for measuring a piece against the body, the skin masters and their bake, check and install (`skin_sheets.py`, `bake_skin.py`, `check_skin.py`, `sync_skin_masters.py`), and the checks a shipped piece and skin pass (`check_part.py`, `check_authoring.py`) |
 | `tools/blockbench_plugin/` | the Blockbench plugin — see the [authoring guide](https://github.com/mattjesmc/ArmorPieces/blob/main/docs/authoring.md) |
-| `tools/decoration_masters/` | the grayscale masters — the source of truth for every part's art |
+| `tools/decoration_masters/` | the grayscale masters — the source of truth for every piece's art |
 
 The rigs, the `/armorpieces stage` command and the plugin's Save path are described in the
 [authoring guide](https://github.com/mattjesmc/ArmorPieces/blob/main/docs/authoring.md); `tools/check_authoring.py` runs the plugin's round trip over every
-shipped part.
+shipped piece.
 
 ---
 
@@ -312,7 +316,7 @@ match the server's.
 
 | Key | Default | What it does |
 | --- | --- | --- |
-| `first_person_parts` | `true` | Draws the parts on your arms — pauldrons and vambraces — on the first-person hand as well as on your body. Vanilla shows a bare sleeve there and no armor at all. They sit close to the camera; `false` keeps the view clear. |
+| `first_person_parts` | `true` | Draws the pieces on your arms — pauldrons and vambraces — on the first-person hand as well as on your body. Vanilla shows a bare sleeve there and no armor at all. They sit close to the camera; `false` keeps the view clear. |
 
 A change takes effect on the next launch. A key you leave out takes its default and is written
 back, so a setting added by a later version turns up in the file you already have — and a file
@@ -323,37 +327,37 @@ else.
 
 ## FAQ
 
-**Does a part replace the armor trim?**
+**Does a piece replace the armor trim?**
 
-No. A piece carries its trim and its parts at once.
+No. Armor carries its trim and its pieces at once.
 
 **How do I put a gem in the circlet?**
 
-Craft a gemstone fitting template (an amethyst block in a ring of paper), then smithing table: template, the decorated helmet, and the gem. Every part on the piece is offered the item, so one gem fills the stone of each part that has one — or of the one socket picked, at the advanced smithing table. The same template with the third slot empty takes the gem out again. A guard template does the same for metals, an inlay template for dyes, a banner template for banners. Re-applying a part at its own socket template keeps what is set in it, so changing a circlet's metal does not cost the gem.
+Craft a gemstone fitting template (an amethyst block in a ring of paper), then smithing table: template, the decorated helmet, and the gem. Every piece on the armor is offered the item, so one gem fills the stone of each piece that has one — or of the one socket picked, at the advanced smithing table. The same template with the third slot empty takes the gem out again. A guard template does the same for metals, an inlay template for dyes, a banner template for banners. Re-applying a piece at its own socket template keeps what is set in it, so changing a circlet's metal does not cost the gem.
 
-**How do I take a part off?**
+**How do I take a piece off?**
 
-At the advanced smithing table. Put the piece in one of its four slots, pick the socket's row and click Remove. What was in the part's fittings goes with it. Picking one of the fitting icons beside the part takes just that fitting out, and the piece's own row under the sockets holds its trim, its skin and — on a chestplate — its cloth, each taken off the same way.
+At the advanced smithing table. Put the armor in one of its four slots, pick the socket's row and click Remove. What was in the piece's fittings goes with it. Picking one of the fitting icons beside the piece takes just that fitting out, and the armor's own row under the sockets holds its trim, its skin and — on a chestplate — its cloth, each taken off the same way.
 
-**Can two parts share a socket?**
+**Can two pieces share a socket?**
 
-No — applying a new crest replaces the crest. Several parts may be *available* for one socket (`horns` and `helm_wings` both fit `horns`); the choice is the expressive act.
+No — applying a new crest replaces the crest. Several pieces may be *available* for one socket (`horns` and `helm_wings` both fit `horns`); the choice is the expressive act.
 
-**The parts on my hands are in the way. Can I turn them off?**
+**The pieces on my hands are in the way. Can I turn them off?**
 
-Yes. Set `"first_person_parts": false` in `config/armorpieces.json` and restart the game — the file writes itself on first launch. Only the first-person hand is affected; your parts are still on your body, and still on everyone else's. It is the mod's only setting, and deliberately so: everything else about a part is pack data rather than a preference, and nothing in that file changes what an item *does*, so it never has to match the server's.
+Yes. Set `"first_person_parts": false` in `config/armorpieces.json` and restart the game — the file writes itself on first launch. Only the first-person hand is affected; your pieces are still on your body, and still on everyone else's. It is the mod's only setting, and deliberately so: everything else about a piece is pack data rather than a preference, and nothing in that file changes what an item *does*, so it never has to match the server's.
 
-**Do I need the mod to add parts?**
+**Do I need the mod to add pieces?**
 
-You need the mod installed, but adding a part takes no Java — a datapack and a resource pack. Only a brand-new *effect* type needs code. The [authoring guide](https://github.com/mattjesmc/ArmorPieces/blob/main/docs/authoring.md) walks through it.
+You need the mod installed, but adding a piece takes no Java — a datapack and a resource pack. Only a brand-new *effect* type needs code. The [authoring guide](https://github.com/mattjesmc/ArmorPieces/blob/main/docs/authoring.md) walks through it.
 
 ---
 
 ## Bugs and issues
 
-Something broken, something clipping, a part that sits wrong on a body it should fit — the
+Something broken, something clipping, a piece that sits wrong on a body it should fit — the
 [issue tracker](https://github.com/mattjesmc/ArmorPieces/issues) is the place for it. So is a
-request: a socket, a part, a skin or a fitting that is not there yet.
+request: a socket, a piece, a skin or a fitting that is not there yet.
 
 No GitHub account, and would rather not make one? The comment section on the CurseForge or
 Modrinth page reaches me just as well.
@@ -379,4 +383,4 @@ in writing and covers the distribution it describes.
 
 ---
 
-Every part in this mod is the same two files and a PNG a pack of your own would write.
+Every piece in this mod is the same two files and a PNG a pack of your own would write.
