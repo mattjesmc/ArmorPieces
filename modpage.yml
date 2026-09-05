@@ -28,16 +28,18 @@ badges:
 sections:
   about: |
     You know the one. You walk into spawn in your best diamond and the first person you see is
-    wearing the same helmet, the same chestplate, the same Sentry trim in the same netherite. Vanilla
-    can build 1,568,239,201 armor sets, which sounds like plenty right up until it happens to you
-    twice in a week.
-
-    Armor Pieces takes that number to **3 × 10⁸⁴** — more than thirty thousand unique diamond sets
-    for every atom in the observable universe. Diamond is one of seven armor materials.
+    wearing the same helmet, the same chestplate, the same Sentry trim in the same netherite. 
+    Vanilla can build 1,568,239,201 unique sets of diamond armor, which sounds like plenty right 
+    up until this happens to you twice in a week.
+    
+    We'll make sure that never happens again! Armor Pieces takes that number to **3 × 10⁸⁴** 
+    — more than thirty thousand unique diamond sets for every atom in the observable universe.
 
     It gives one piece of armor **four layers of decoration, each an independent choice**:
-    a **part** hung on a socket, a **skin** that changes what the plate itself is made of, a **cloth**
-    worn over the chest, and vanilla's own **trim** underneath them all. Every one of them is applied
+     - a **piece** hung on a socket, 
+     - a **skin** that changes what the plate itself is made of, 
+     - a **cloth** worn over the chest, and vanilla's own 
+     - **trim** underneath them all. Every one of them is applied
     at a smithing table, and none of them replaces another - a helmet can carry a skin, a trim, a
     crest, a browband and a pair of horns at once.
 
@@ -75,11 +77,11 @@ sections:
 
   features:
     items:
-      - title: Twelve sockets, one part at a time
+      - title: Twelve sockets, one piece at a time
         description: >-
           `crest`, `brow`, `horns`, `pauldrons`, `back`, `collar`, `vambraces`, `belt`, `tassets`,
-          `knees`, `spurs`, `greaves`. A socket holds one part, so a new crest replaces the crest —
-          and with ninety-one parts every socket has at least six to choose from. Seven of the
+          `knees`, `spurs`, `greaves`. A socket holds one piece, so a new crest replaces the crest —
+          and with ninety-one pieces every socket has at least six to choose from. Seven of the
           sockets are mirrored pairs, so spaulders means both shoulders.
       - title: Coloured by vanilla trim materials
         description: >-
