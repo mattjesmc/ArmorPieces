@@ -4,6 +4,7 @@ import com.mattjesmc.armorpieces.ArmorPieces;
 import com.mattjesmc.armorpieces.cloth.Cloth;
 import com.mattjesmc.armorpieces.decoration.effect.DecorationEffect;
 import com.mattjesmc.armorpieces.decoration.fitting.Fitting;
+import com.mattjesmc.armorpieces.loot.LootGroup;
 import com.mattjesmc.armorpieces.skin.ArmorSkin;
 import com.mojang.serialization.MapCodec;
 import net.fabricmc.fabric.api.event.registry.DynamicRegistries;
@@ -12,7 +13,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 
-/** The mod's registries: four loaded from datapacks, two filled in by code. */
+/** The mod's registries: five loaded from datapacks, two filled in by code. */
 public final class ArmorPiecesRegistries {
     /**
      * Decorative parts, loaded from {@code data/<ns>/armorpieces/armor_decoration/}.
@@ -52,6 +53,18 @@ public final class ArmorPiecesRegistries {
      */
     public static final ResourceKey<Registry<Cloth>> CLOTH =
         ResourceKey.createRegistryKey(Identifier.fromNamespaceAndPath(ArmorPieces.MOD_ID, "cloth"));
+
+    /**
+     * Loot groups - a category of loot tables and the templates found in it, loaded from
+     * {@code data/<ns>/armorpieces/loot_group/}.
+     *
+     * <p>The one registry here that is NOT synced, because it is the one the client has no use for:
+     * a group decides what a chest holds as it is filled on the server, and by the time a template
+     * reaches a player it is an ordinary stack with an ordinary component on it. Sending ninety
+     * parts' worth of group membership to every client would buy nothing.
+     */
+    public static final ResourceKey<Registry<LootGroup>> LOOT_GROUP =
+        ResourceKey.createRegistryKey(Identifier.fromNamespaceAndPath(ArmorPieces.MOD_ID, "loot_group"));
 
     /**
      * Effect types - the kinds of behaviour a part is allowed to have.
@@ -95,5 +108,8 @@ public final class ArmorPiecesRegistries {
         // Cloths, likewise, depend on nothing - a garment is cut out of the armor's own net and
         // has no opinion about what it is worn over.
         DynamicRegistries.registerSynced(CLOTH, Cloth.DIRECT_CODEC);
+        // Loot groups last: a group holds tags of the three registries above, so it is the one
+        // thing here that reads the others. Unsynced - see the field.
+        DynamicRegistries.register(LOOT_GROUP, LootGroup.DIRECT_CODEC);
     }
 }

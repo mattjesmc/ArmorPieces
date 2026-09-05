@@ -1,0 +1,22 @@
+{
+  "chance": 0.08,
+  "tables": [
+    "minecraft:chests/village/village_armorer",
+    "minecraft:chests/village/village_tannery",
+    "minecraft:chests/village/village_shepherd",
+    "minecraft:chests/village/village_taiga_house",
+    "minecraft:chests/village/village_snowy_house",
+    {
+      "table": "minecraft:chests/igloo_chest",
+      "chance": 0.15
+    },
+    "minecraft:chests/shipwreck_supply",
+    "minecraft:chests/ruined_portal"
+  ],
+  "parts": "#armorpieces:wayfarer",
+  "skins": [
+    "armorpieces:gambeson",
+    "armorpieces:brigandine"
+  ],
+  "fittings": "#armorpieces:common"
+}

@@ -6,11 +6,16 @@ import com.mattjesmc.armorpieces.cloth.ClothValue;
 import com.mattjesmc.armorpieces.decoration.ArmorDecoration;
 import com.mattjesmc.armorpieces.decoration.ArmorPiecesRegistries;
 import com.mattjesmc.armorpieces.decoration.DecorationLoot;
+import com.mattjesmc.armorpieces.decoration.fitting.Fitting;
 import com.mattjesmc.armorpieces.registry.ModDataComponents;
 import com.mattjesmc.armorpieces.registry.ModItems;
 import com.mattjesmc.armorpieces.skin.ArmorSkin;
 import com.mattjesmc.armorpieces.skin.ArmorSkinValue;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.IntFunction;
 import net.fabricmc.fabric.api.loot.v3.LootTableEvents;
 import net.fabricmc.fabric.api.loot.v3.LootTableSource;
 import net.minecraft.core.Holder;
@@ -19,35 +24,47 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
+import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
 import net.minecraft.world.level.storage.loot.functions.SetComponentsFunction;
 import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 
 /**
- * Puts parts and skins into loot tables: the {@code loot} list on a part's or a skin's data file,
- * made real.
+ * Puts parts, skins, cloths and fitting templates into loot tables: the {@code loot} list on a data
+ * file and the {@link LootGroup} files, made real. All four template families are found the same
+ * way, through the same pool; a fitting is the one that has only the group route.
  *
- * <p>Runs as each loot table is loaded, on world start and on {@code /reload} alike, and walks the
- * whole {@code armorpieces:armor_decoration} registry looking for parts that name the table. The
- * registry is there to walk because loot tables are the last thing loaded: they are built against
- * the full registry access, dynamic registries included, and the event hands that access over.
+ * <p>Runs as each loot table is loaded, on world start and on {@code /reload} alike. The registries
+ * are there to walk because loot tables are the last thing loaded: they are built against the full
+ * registry access, dynamic registries included, and the event hands that access over.
  *
- * <p>What it adds is one pool per table, rolled once, with an entry per part - the part's socket
- * template carrying the part as {@code armorpieces:decoration}, exactly the stack the creative tab
- * holds, so the thing found in the chest is the thing the smithing table takes. Each entry has its
- * own weight and its own {@code random_chance} condition; see {@link DecorationLoot} for what the
- * two numbers mean under this shape. The table's own pools are untouched: a chest that would have
- * held a diamond still holds it, with or without a part beside it.
+ * <p><b>One pool per table, rolled once, with ONE {@code random_chance} on the pool.</b> Everything
+ * that reaches the table - by naming it on its own data file, or by being tagged into a group that
+ * names it - is an entry in that single pool, and the weights decide which one is placed. Two
+ * consequences, and they are the design:
  *
- * <p>Skins ride in the same pool, from the same {@code loot} list and through the same two numbers -
- * a skin is found the way a part is, and it costs no code of its own to be. One pool rather than two
- * because the pool rolls ONCE: a chest that offered a part and a skin from separate pools could hand
- * out both, and a skin template is a whole look for a whole suit rather than one more trinket.
+ * <ul>
+ *   <li><b>The odds are a property of the table.</b> "An end city treasure chest holds a part one
+ *       time in six" stays true as parts are added; a ninety-first part changes WHICH part is found,
+ *       never how often. The rejected alternative, a chance per entry, gives the table
+ *       {@code 1-∏(1-c)} - measured at 0.28 over four entries on {@code pillager_outpost}, and
+ *       climbing to near-certainty once a whole theme's worth of parts names one table.</li>
+ *   <li><b>A chest never holds two of ours.</b> One roll over one pool, however many groups and
+ *       rows fed it.</li>
+ * </ul>
  *
- * <p>Nothing here is specific to the mod's own parts. A pack's part that names a table is added to
- * it the same way, which is the whole reason this is done in Java: a datapack can replace a vanilla
- * table but cannot add to one, and two packs that both replace {@code chests/ancient_city} cannot
- * both win.
+ * <p>Where the chance comes from, when several sources name one table: the highest of them. A table
+ * in a generous group and a mean one is generous, and the mean group's members simply ride along.
+ * A member offered twice - tagged into two groups, or tagged and named on its own file - is ONE
+ * entry at the best weight it was offered, never two.
+ *
+ * <p>The table's own pools are untouched throughout: a chest that would have held a diamond still
+ * holds it, with or without a template beside it.
+ *
+ * <p>Nothing here is specific to the mod's own parts. A pack's part that names a table, or that is
+ * tagged into a group, is added the same way - which is the whole reason this is done in Java: a
+ * datapack can replace a vanilla table but cannot add to one, and two packs that both replace
+ * {@code chests/ancient_city} cannot both win.
  */
 public final class DecorationLootTables {
     private DecorationLootTables() {}
@@ -70,68 +87,150 @@ public final class DecorationLootTables {
             warnOnce();
             return;
         }
+        final List<Holder.Reference<ArmorSkin>> skins = all(registries, ArmorPiecesRegistries.ARMOR_SKIN);
+        final List<Holder.Reference<Cloth>> cloths = all(registries, ArmorPiecesRegistries.CLOTH);
 
-        LootPool.Builder pool = null;
-        int entries = 0;
+        final Offers offers = new Offers();
+
+        // 1. The exact route: a table named on the part's, skin's or cloth's own data file. One
+        //    part, one table, its own chance and weight - which is what a hand-placed "wings in end
+        //    cities" is, and what a pack writes when it wants no group at all.
         for (final Holder.Reference<ArmorDecoration> part : parts.listElements().toList()) {
             for (final DecorationLoot drop : part.value().loot()) {
-                if (!drop.table().equals(key)) {
-                    continue;
+                if (drop.table().equals(key)) {
+                    offers.offer(part, drop.chance(), drop.weight(), partEntry(part));
                 }
-                if (pool == null) {
-                    pool = LootPool.lootPool().setRolls(ConstantValue.exactly(1.0f));
-                }
-                pool.add(LootItem.lootTableItem(ModItems.template(part.value().primaryAnchor()))
-                    .setWeight(drop.weight())
-                    .when(LootItemRandomChanceCondition.randomChance(drop.chance()))
-                    .apply(SetComponentsFunction.setComponent(ModDataComponents.DECORATION, part)));
-                entries++;
             }
         }
-        // Skins, into the same pool, from the same field. A skin registry that is somehow absent is
-        // not worth a second warning: the parts' one has already been given.
-        for (final Holder.Reference<ArmorSkin> skin : registries.lookup(ArmorPiecesRegistries.ARMOR_SKIN)
-            .map(lookup -> lookup.listElements().toList())
-            .orElse(List.of())) {
+        for (final Holder.Reference<ArmorSkin> skin : skins) {
             for (final DecorationLoot drop : skin.value().loot()) {
-                if (!drop.table().equals(key)) {
-                    continue;
+                if (drop.table().equals(key)) {
+                    offers.offer(skin, drop.chance(), drop.weight(), skinEntry(skin));
                 }
-                if (pool == null) {
-                    pool = LootPool.lootPool().setRolls(ConstantValue.exactly(1.0f));
-                }
-                pool.add(LootItem.lootTableItem(ModItems.skinTemplate())
-                    .setWeight(drop.weight())
-                    .when(LootItemRandomChanceCondition.randomChance(drop.chance()))
-                    .apply(SetComponentsFunction.setComponent(
-                        ModDataComponents.SKIN, new ArmorSkinValue(skin))));
-                entries++;
             }
         }
-        // Cloths, into the same pool again, from the same field.
-        for (final Holder.Reference<Cloth> cloth : registries.lookup(ArmorPiecesRegistries.CLOTH)
-            .map(lookup -> lookup.listElements().toList())
-            .orElse(List.of())) {
+        for (final Holder.Reference<Cloth> cloth : cloths) {
             for (final DecorationLoot drop : cloth.value().loot()) {
-                if (!drop.table().equals(key)) {
-                    continue;
+                if (drop.table().equals(key)) {
+                    offers.offer(cloth, drop.chance(), drop.weight(), clothEntry(cloth));
                 }
-                if (pool == null) {
-                    pool = LootPool.lootPool().setRolls(ConstantValue.exactly(1.0f));
-                }
-                pool.add(LootItem.lootTableItem(ModItems.clothTemplate())
-                    .setWeight(drop.weight())
-                    .when(LootItemRandomChanceCondition.randomChance(drop.chance()))
-                    .apply(SetComponentsFunction.setComponent(
-                        ModDataComponents.CLOTH, ClothValue.of(cloth))));
-                entries++;
             }
         }
-        if (pool != null) {
-            table.withPool(pool);
-            ArmorPieces.LOGGER.debug(
-                "[Armor Pieces] Added {} template(s) to loot table {}", entries, key.identifier());
+
+        // 2. The route that scales: a group naming this table, and everything tagged into it.
+        for (final Holder.Reference<LootGroup> holder : all(registries, ArmorPiecesRegistries.LOOT_GROUP)) {
+            final LootGroup group = holder.value();
+            final Optional<Float> chance = group.chanceFor(key);
+            if (chance.isEmpty()) {
+                continue;
+            }
+            final float c = chance.get();
+            for (final Holder<ArmorDecoration> part : group.parts()) {
+                offers.offer(part, c, group.weight(), partEntry(part));
+            }
+            for (final Holder<ArmorSkin> skin : group.skins()) {
+                offers.offer(skin, c, group.weight(), skinEntry(skin));
+            }
+            for (final Holder<Cloth> cloth : group.cloths()) {
+                offers.offer(cloth, c, group.weight(), clothEntry(cloth));
+            }
+            for (final Holder<Fitting> fitting : group.fittings()) {
+                offers.offer(fitting, c, group.weight(), fittingEntry(fitting));
+            }
         }
+
+        if (offers.isEmpty()) {
+            return;
+        }
+        table.withPool(offers.pool());
+        ArmorPieces.LOGGER.debug(
+            "[Armor Pieces] Added {} template(s) to loot table {} at chance {}",
+            offers.size(), key.identifier(), offers.chance);
+    }
+
+    /** The socket template that carries this part - exactly the stack the creative tab holds. */
+    private static IntFunction<LootPoolEntryContainer.Builder<?>> partEntry(final Holder<ArmorDecoration> part) {
+        return weight -> LootItem.lootTableItem(ModItems.template(part.value().primaryAnchor()))
+            .setWeight(weight)
+            .apply(SetComponentsFunction.setComponent(ModDataComponents.DECORATION, part));
+    }
+
+    private static IntFunction<LootPoolEntryContainer.Builder<?>> skinEntry(final Holder<ArmorSkin> skin) {
+        return weight -> LootItem.lootTableItem(ModItems.skinTemplate())
+            .setWeight(weight)
+            .apply(SetComponentsFunction.setComponent(ModDataComponents.SKIN, new ArmorSkinValue(skin)));
+    }
+
+    private static IntFunction<LootPoolEntryContainer.Builder<?>> clothEntry(final Holder<Cloth> cloth) {
+        return weight -> LootItem.lootTableItem(ModItems.clothTemplate())
+            .setWeight(weight)
+            .apply(SetComponentsFunction.setComponent(ModDataComponents.CLOTH, ClothValue.of(cloth)));
+    }
+
+    /**
+     * The fitting template naming one fitting. Only ever reached from a group - see
+     * {@link LootGroup#fittings()} for why a fitting has no {@code loot} field of its own.
+     */
+    private static IntFunction<LootPoolEntryContainer.Builder<?>> fittingEntry(final Holder<Fitting> fitting) {
+        return weight -> LootItem.lootTableItem(ModItems.fittingTemplate())
+            .setWeight(weight)
+            .apply(SetComponentsFunction.setComponent(ModDataComponents.FITTING, fitting));
+    }
+
+    /** Every entry of one of the mod's registries, or none at all if it is somehow absent. */
+    private static <T> List<Holder.Reference<T>> all(
+        final HolderLookup.Provider registries,
+        final ResourceKey<net.minecraft.core.Registry<T>> key
+    ) {
+        return registries.lookup(key)
+            .map(lookup -> lookup.listElements().toList())
+            .orElse(List.of());
+    }
+
+    /**
+     * The one pool being built for one table, and the rule for what happens when the same thing is
+     * offered twice: the highest chance any source asked for, and one entry per member at the best
+     * weight it was offered. Insertion-ordered so the pool is written the same way every load.
+     */
+    private static final class Offers {
+        private final Map<Holder<?>, Offer> members = new LinkedHashMap<>();
+        private float chance;
+
+        void offer(
+            final Holder<?> member,
+            final float chance,
+            final int weight,
+            final IntFunction<LootPoolEntryContainer.Builder<?>> entry
+        ) {
+            this.chance = Math.max(this.chance, chance);
+            final Offer existing = this.members.get(member);
+            if (existing == null || weight > existing.weight) {
+                this.members.put(member, new Offer(weight, entry));
+            }
+        }
+
+        boolean isEmpty() {
+            return this.members.isEmpty();
+        }
+
+        int size() {
+            return this.members.size();
+        }
+
+        LootPool.Builder pool() {
+            final LootPool.Builder pool = LootPool.lootPool().setRolls(ConstantValue.exactly(1.0f));
+            // At 1 the condition is the identity and vanilla would roll it anyway; leaving it off
+            // keeps "always" readable in the built table.
+            if (this.chance < 1.0f) {
+                pool.when(LootItemRandomChanceCondition.randomChance(this.chance));
+            }
+            for (final Offer offer : this.members.values()) {
+                pool.add(offer.entry.apply(offer.weight));
+            }
+            return pool;
+        }
+
+        private record Offer(int weight, IntFunction<LootPoolEntryContainer.Builder<?>> entry) {}
     }
 
     private static boolean warned;

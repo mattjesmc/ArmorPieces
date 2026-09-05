@@ -1,0 +1,31 @@
+{
+  "chance": 0.1,
+  "tables": [
+    "minecraft:chests/stronghold_corridor",
+    "minecraft:chests/stronghold_crossing",
+    "minecraft:chests/simple_dungeon",
+    "minecraft:chests/pillager_outpost",
+    {
+      "table": "minecraft:chests/trial_chambers/reward",
+      "chance": 0.18
+    },
+    {
+      "table": "minecraft:chests/trial_chambers/reward_rare",
+      "chance": 0.25
+    },
+    {
+      "table": "minecraft:chests/woodland_mansion",
+      "chance": 0.15
+    }
+  ],
+  "parts": "#armorpieces:knightly",
+  "skins": [
+    "armorpieces:plate",
+    "armorpieces:gothic",
+    "armorpieces:milanese",
+    "armorpieces:mail",
+    "armorpieces:chainmail",
+    "armorpieces:lorica"
+  ],
+  "fittings": "#armorpieces:common"
+}

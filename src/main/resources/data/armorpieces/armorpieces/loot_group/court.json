@@ -1,0 +1,27 @@
+{
+  "chance": 0.1,
+  "tables": [
+    {
+      "table": "minecraft:chests/woodland_mansion",
+      "chance": 0.18
+    },
+    {
+      "table": "minecraft:chests/ancient_city",
+      "chance": 0.15
+    },
+    {
+      "table": "minecraft:chests/end_city_treasure",
+      "chance": 0.15
+    },
+    "minecraft:chests/desert_pyramid",
+    "minecraft:chests/village/village_temple",
+    "minecraft:chests/village/village_cartographer"
+  ],
+  "parts": "#armorpieces:court",
+  "skins": [
+    "armorpieces:runic",
+    "armorpieces:hoplite",
+    "armorpieces:samurai"
+  ],
+  "fittings": "#armorpieces:common"
+}
