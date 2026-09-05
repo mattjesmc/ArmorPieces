@@ -96,9 +96,11 @@ leather and purple on blue. `#armorpieces:clothable_armor` ships chest armor and
 recipe still accepts leg armor, so a pack that wants a hem ships a `humanoid_leggings.png` mask and
 edits the tag, with no code changed. Head and foot armor are refused outright, because a helmet
 draws on the humanoid sheet but its model does not sample the torso's UVs. There is no drape - a
-garment that hangs is geometry, which is a part, and this is deliberately the other thing - and a
-cloth is not on the advanced smithing table yet; taking one off works there through the empty
-addition, as a skin's does.
+garment that hangs is geometry, which is a part, and this is deliberately the other thing. On the
+advanced smithing table a cloth has a place of its own, last on the piece's own row beside the trim
+and the skin and drawn only on a piece that may wear one, so a garment goes on and comes off there
+the way everything else does; at a plain smithing table taking one off is the empty addition, as a
+skin's is.
 
 **Found in the world.** Most parts are found rather than crafted, and the mod puts them into
 vanilla's tables as those load - the one thing a datapack cannot do for itself, since it can only
@@ -188,19 +190,35 @@ makes a part loot-only (`recipe/template_circlet.json`), a server fitting-free
 field but the type is ignored.
 
 **The advanced smithing table.** A block, crafted from a smithing table, an armor stand and two
-iron ingots, that shows a set of armor and lets a part come off again. Four display slots hold a
-helmet, a chestplate, leggings and boots, all worn at once by an armor stand that can be turned by
-dragging; a button beside each slot selects the piece to work on, and the selected piece's sockets
-are listed head to toe, each filled one showing its part as the template that put it there, with
-the part's material and fittings on hover, and a cross that empties the socket - the one way a part
-is ever taken off, since the smithing table has no ingredient that means "nothing". Below the list
-sit the smithing table's own template and material slots with the selected piece standing in for
-the base: Apply runs the ordinary smithing recipe lookup and writes the result back into the
-display slot, so a socket template puts a part on, a fitting template sets a stone, and a vanilla
-trim template trims, while a recipe a pack has turned off stays off - and the stand wears the
-result before Apply is pressed, as the smithing table's stand does. Nothing is kept in the block;
-everything goes back to the player when the menu closes, whether it was opened at the block or by
-`/armorpieces table`.
+iron ingots, that shows a set of armor and lets what is on it come off again. Four display slots
+hold a helmet, a chestplate, leggings and boots, all worn at once by an armor stand that can be
+turned by dragging; an arrow beside each slot picks the piece to work on, and a box opens out of
+that slot - a neck running back into it in the slot's own grey, at the slot's own height - listing
+what that piece wears. A row is one socket, drawn as the socket template that carries the part with
+one place after it per fitting that part declares; the last row is the piece's own - its trim,
+beside it its skin, and on a chestplate its cloth, which is the only place here that is not on
+every piece. Every filled icon wears a half-size second icon in its corner naming what it is made
+of - the ingot behind a gold pauldron, the emerald in its stone - which is the one thing a template
+icon alone never said, and the socket a row means is in its tooltip rather than written beside it.
+An empty place shows a hint of the template that would fill it rather than an empty frame, the way
+the vanilla smithing table shows a faint template in its own template slot; the frame is spent on
+the selection instead, and the empty template slot under the stand wears the hint of whatever is
+picked, so the question the picking raises is answered in the slot the answer goes into. Clicking
+an icon works on it: Apply then puts a fitting into that socket alone rather than into every part
+on the piece that takes one, and Remove empties whatever is picked - a part, one of its fittings,
+the trim, the skin or the cloth - which is the one way any of them is ever taken off, since the
+smithing table has no ingredient that means "nothing". Nothing is refunded; the template was spent
+putting it on, as a trim's is. Apply itself is deliberately not a new rule: the template and
+material slots plus the selected piece go to the ordinary smithing recipe lookup, so a socket
+template puts a part on, a fitting template sets a stone, a skin template with the piece's own
+reforging material reforges it, a cloth template with a banner clothes it, and a vanilla trim
+template trims, while a recipe a pack has turned off stays off. The result is written back into the
+display slot rather than into a result slot, so a helmet takes a part, then a stone, then another
+part without being picked up in between, and the stand wears it before Apply is pressed, as the
+smithing table's stand does. The box is always the size of the longest list a piece can have - the
+chestplate's four sockets and its own row - so it does not jump as pieces are picked. Nothing is
+kept in the block; everything goes back to the player when the menu closes, whether it was opened
+at the block or by `/armorpieces table`.
 
 **A gallery on the stage.** `/armorpieces stage` gains three modes that are for the picture rather
 than the check. Its older modes are each a cross product with one axis free, which is what makes

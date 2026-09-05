@@ -64,8 +64,8 @@ One more smithing step, one template per fitting, and the item decides where it 
 Most of it is **found rather than made**. Thirty parts have a crafting recipe, the ones where
 the item is plainly the part or what it is made of; the rest turn up in the chests that suit them,
 each theme in its own kind of structure, with the skins and the fitting templates alongside. An
-**advanced smithing table** shows a whole set worn by a stand and takes a part, a fitting or a
-trim off again, which the smithing table cannot.
+**advanced smithing table** shows a whole set worn by a stand and takes a part, a fitting, a
+trim, a skin or a cloth off again, which the smithing table cannot.
 
 Every part, skin and cloth is a datapack entry, a model and a texture, no code - and a pack adds
 its own the same way, from Blockbench, in folders of its own.
@@ -96,8 +96,9 @@ The release that turned a set of parts into a wardrobe.
   chest's odds of holding something of ours stay put however many parts are added. Another part
   changes *which* one you find, never how often.
 - **The advanced smithing table.** Crafted from a smithing table, an armor stand and two iron
-  ingots. It holds a whole set worn by a stand and lists each piece's sockets, fittings and trim
-  as rows of icons — and Remove is the one way a part, a fitting or a trim ever comes off.
+  ingots. It holds a whole set worn by a stand and lists each piece's sockets and fittings as
+  rows of icons, with its trim, its skin and its cloth on a row of its own — and Remove is the
+  one way any of them ever comes off.
 - **Thirty recipes, not ninety-one.** A template recipe now ships only where the centre
   item is plainly the part or what it is made of — a bell for the bells, a goat horn for the
   horns. The rest are found.
@@ -125,7 +126,7 @@ The release that turned a set of parts into a wardrobe.
 - **Cloth over the chest** — A **Tunic** or a **Tabard**, applied with a cloth template and a banner, and the design is the banner's — sixteen dyes crossed with every pattern layer, made at a loom, so the heraldry is a player's choice rather than a list the mod keeps. It is painted into the armor's own texture rather than hung off it, so it moves with the armor, clips nothing, and the plate's rivets and edges read *through* it. It sits over the skin, under every part and under the trim. One greyscale cut mask ships the whole feature; there is no per-material art and no per-banner art.
 - **Fittings** — A part can declare places for a second material — `gemstone`, `guard`, `inlay`, `banner` — and a fitting template sets one: gems and metals by trim material, inlays by dye, banners from a banner made at a loom. There is a template per fitting, each with its own look and recipe, and the template with the third slot empty takes its fitting out again. Fittings are data too — a pack's new fitting gets its template from a recipe — and an effect can be gated on one.
 - **Found in the world** — Most parts are found rather than crafted, each theme in the structures that suit it — knightly gear in strongholds and trial chambers, beast trophies in bastions, court jewellery in mansions and ancient cities, tidal parts in shipwrecks and ocean ruins. A **loot group** is one file naming a category of tables and the tag of parts found in them, so a pack adds a whole look to the world at once, or drops one part into one chest from its own data file — the one thing a datapack cannot do for itself, since it can only replace a vanilla table whole. Armor **skins** are found the same way, divided over the same groups, and a **fitting template** turns up in every one of them. The odds belong to the table, so a chest's chance of holding something stays put however many parts are added. A loot function puts a part on a piece of armor a table drops, gem and all.
-- **Taking parts off** — The advanced smithing table, crafted from a smithing table, an armor stand and two iron ingots, holds a whole set worn by a stand at once and lists each piece's sockets, its fittings and its trim as rows of icons. Pick one and Remove empties it — the one way a part, a fitting or a trim ever comes off. Its own template and material slots run the smithing table's recipes, with the result on the stand before it is paid for, and a fitting goes into the socket that is picked rather than into every part that takes one.
+- **Taking parts off** — The advanced smithing table, crafted from a smithing table, an armor stand and two iron ingots, holds a whole set worn by a stand at once and lists each piece's sockets and their fittings as rows of icons, with the piece's own row under them — its trim, its skin and, on a chestplate, its cloth. Pick one and Remove empties it — the one way a part, a fitting, a trim, a skin or a cloth ever comes off. An empty place shows a hint of the template that would fill it. Its own template and material slots run the smithing table's recipes, with the result on the stand before it is paid for, and a fitting goes into the socket that is picked rather than into every part that takes one.
 - **One smithing recipe per socket, forever** — The part rides on the template item as a component, so a pack hands out a template and needs no recipe of its own. And any recipe the mod ships can be switched off by overriding its file with `{"type": "armorpieces:disabled"}` — a part that is found rather than made, a server without fittings.
 - **Optional behaviour** — A part may carry effects — attributes, mob effects, a projectile dodge, gliding — configured in the same JSON file. `pinions` is a cut-down elytra that actually flies.
 - **A Blockbench plugin for making parts** — Opens a part on the vanilla player wearing real armor, walk cycle and all. Master, static layer and fitting masks are painted in place, any trim material previews live with its fittings filled or empty, the name, sockets, fittings, effects and loot are a dialog, and Save writes every file the pack needs — into your own datapack and resource pack, which it makes, finds and zips for you.
@@ -153,6 +154,11 @@ The release that turned a set of parts into a wardrobe.
 <p align="center">
   <img src="docs/assets/gallery/fittings.png" alt="One circlet, seven gems — the fitting takes a second material">
   <br><sub><i>One circlet, seven gems — the fitting takes a second material</i></sub>
+</p>
+
+<p align="center">
+  <img src="docs/assets/gallery/table.png" alt="The advanced smithing table, holding the whole court suit beside it — the chestplate's sockets and their fittings as rows of icons, its own trim, skin and cloth under them, and Remove, the one way any of it comes off again">
+  <br><sub><i>The advanced smithing table, holding the whole court suit beside it — the chestplate's sockets and their fittings as rows of icons, its own trim, skin and cloth under them, and Remove, the one way any of it comes off again</i></sub>
 </p>
 
 ---
@@ -386,10 +392,11 @@ it behaviour — attributes, mob effects, a dodge, gliding — from the same JSO
 | Where | What |
 | --- | --- |
 | `decoration/` | anchors, the datapack registry entry, the item component, the effect hooks |
-| `client/` | the render layer, the geometry loader and bake cache, the per-material palette |
-| `recipe/`, `item/`, `registry/`, `command/` | smithing, the twelve socket templates and the fitting template, the creative tab, `/armorpieces stage` |
+| `client/` | the render layer, the geometry loader and bake cache, the per-material palette, the skin and cloth bakes, the advanced table's screen |
+| `skin/`, `cloth/` | the datapack registries behind an armor skin and a cloth, and the components a piece carries them in |
+| `recipe/`, `item/`, `registry/`, `command/` | smithing, the twelve socket templates and the fitting, skin and cloth templates, the creative tab, `/armorpieces stage` |
 | `loot/`, `block/`, `menu/` | parts in loot tables and the `set_decoration` function; the advanced smithing table and its menu |
-| `tools/` | Blockbench rigs (`bb_rig.py`, with the vanilla figure and walk cycle from `mc_humanoid.py`), `.bbmodel` ↔ geometry (`bb_geo.py`), master and mask painting and install (`paint_<part>_master.py`, `fitting_mask.py`, `sync_decoration_masters.py`), a material and fitting preview outside the game (`preview_material.py`), template and recipe icons, `export_pack.py` for zipping a pack, `trace_geometry.py` for measuring a part against the body |
+| `tools/` | Blockbench rigs (`bb_rig.py`, with the vanilla figure and walk cycle from `mc_humanoid.py`), `.bbmodel` ↔ geometry (`bb_geo.py`), master and mask painting and install (`paint_<part>_master.py`, `fitting_mask.py`, `sync_decoration_masters.py`), a material and fitting preview outside the game (`preview_material.py`), template and recipe icons, `export_pack.py` for zipping a pack, `trace_geometry.py` for measuring a part against the body, the skin masters and their bake, check and install (`skin_sheets.py`, `bake_skin.py`, `check_skin.py`, `sync_skin_masters.py`), and the checks a shipped part and skin pass (`check_part.py`, `check_authoring.py`) |
 | `tools/blockbench_plugin/` | the Blockbench plugin — see the [authoring guide](https://github.com/mattjesmc/ArmorPieces/blob/main/docs/authoring.md) |
 | `tools/decoration_masters/` | the grayscale masters — the source of truth for every part's art |
 
@@ -437,7 +444,7 @@ Craft a gemstone fitting template (an amethyst block in a ring of paper), then s
 <details>
 <summary><b>How do I take a part off?</b></summary>
 
-At the advanced smithing table. Put the piece in one of its four slots, pick the socket's row and click Remove. What was in the part's fittings goes with it. Picking one of the fitting icons beside the part takes just that fitting out, and the trim row under the sockets takes the trim off.
+At the advanced smithing table. Put the piece in one of its four slots, pick the socket's row and click Remove. What was in the part's fittings goes with it. Picking one of the fitting icons beside the part takes just that fitting out, and the piece's own row under the sockets holds its trim, its skin and — on a chestplate — its cloth, each taken off the same way.
 
 </details>
 

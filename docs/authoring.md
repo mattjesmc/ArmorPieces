@@ -139,11 +139,13 @@ committed. `bb_geo.py` converts `.bbmodel` to the mod's geometry and back.
 **From an agent.** The same editor drives from an MCP client through `tools/mcp`, a small server
 in front of Blockbench's own MCP plugin: it serves the tools a part author uses (an *authoring*
 profile of the plugin's ninety-odd), adds `armorpieces_open`, `_new`, `_check`, `_save`, `_part`,
-`_set_part`, `_pieces` and `_close`, and after every editing call appends the check every shipped
+`_set_part`, `_pieces` and `_close` — with the skin workspace's own set beside them,
+`armorpieces_skins`, `_open_skin`, `_skin_sheet`, `_skin_paint`, `_skin_material`, `_skin_check`,
+`_save_skin` and `_close_skin` — and after every editing call appends the check every shipped
 part passes - clearance and shared planes from `trace_geometry.py`, unpainted faces and stray or
-coloured paint from `sync_decoration_masters.py`, together in `tools/check_part.py` - so the reply
-that placed a cube on the helmet shell says so. Save refuses while problems stand unless told
-otherwise. `tools/mcp/README.md` has the setup and what the model is told; `check_part.py` runs
+coloured paint from `sync_decoration_masters.py`, together in `tools/check_part.py`, and
+`tools/check_skin.py` for a skin - so the reply that placed a cube on the helmet shell says so.
+Save refuses while problems stand unless told otherwise. `tools/mcp/README.md` has the setup and what the model is told; `check_part.py` runs
 the same report by hand over a shipped part (`check_part.py antlers`, `--all`), a pack piece, or
 the piece open in Blockbench (`--status`).
 
@@ -611,17 +613,38 @@ off. What may wear one is `#armorpieces:clothable_armor`, which ships chest armo
 
 ## Judging the result in game
 
-`/armorpieces stage` (permission level 2) puts a part next to the others on armor stands, read from
-the registries, so a pack's parts appear alongside the shipped ones: `parts [<part>]` puts one stand
-per part × material, `bases [<armor item>]` repeats that for every base armor set, `full` dresses
-complete sets with every socket filled, `fittings [<part>]` shows every fitting filled with
-everything it takes, one block per fitting with the part's materials down the rows,
-`skins [<skin>]` puts every skin down the rows and every armor material across the columns — the
-one view whose columns are the armor rather than the trim, because that is the axis a skin's colour
-comes from — and `clear` removes them. `loot <table> [rolls]` is numbers rather than stands: it rolls the table, a
-thousand times unless told otherwise, and counts what the mod put in it — templates by part,
-decorated armor by what it wears — against everything else the table dropped, so a chance and a
-weight can be judged without opening a thousand chests.
+`/armorpieces stage` (permission level 2) puts parts on armor stands in front of you, read from the
+registries, so a pack's parts appear alongside the shipped ones.
+
+Three of its modes are galleries — a picture of the whole thing rather than a comparison — and each
+takes a seed as its last argument, reported back so a roll worth keeping can be asked for again.
+`pieces [<seed>]` puts every part in the game down exactly once, a row per socket, each on its own
+randomly dressed and skinned suit with something in every fitting it declares: useless for comparing
+two parts and exactly right for a picture of all of them. `random [<count>] [<seed>]` dresses whole
+sets with nothing about them chosen — armor, skin, cloth, part, material and every fitting rolled —
+which is the fastest way to find two parts that each read well and cannot be worn at once.
+`set [<name>]` stages the six sets written out by hand, one per theme the parts were authored in, or
+one of them alone; there is no randomness in it, so the same command gives the same picture on any
+world, and a set naming a part, skin or cloth the loaded data does not have is staged without it
+rather than refusing.
+
+The other modes are grids, each holding everything still but one axis. `bases [<armor item>]` puts
+every (part, socket) pair down the rows and every trim material across the columns, one block per
+base armor set — the third axis is the point, since a material's texture suffix is resolved against
+the *armor's* equipment asset, so gold parts on gold armor draw from `gold_darker` and the same part
+on iron does not. `fittings [<part>]` shows every fitting filled with everything it takes, one block
+per fitting with the part's materials down the rows. `skins [<skin>]` puts every skin down the rows
+and every armor material across the columns — the one view whose columns are the armor rather than
+the trim, because that is the axis a skin's colour comes from. `clear` removes them all.
+
+`loot <table> [rolls]` is numbers rather than stands: it rolls the table, a thousand times unless
+told otherwise, and counts what the mod put in it — templates by part, decorated armor by what it
+wears — against everything else the table dropped, so a chance and a weight can be judged without
+opening a thousand chests.
+
+`/armorpieces table` opens the advanced smithing table wherever you stand, behind the same
+permission level and for the same reason: a piece can be dressed and undressed — Remove is the one
+way a part, a fitting, a trim, a skin or a cloth ever comes off — without the block being placed.
 
 The loop between the editor and the game has one thing every author trips on once. Textures and
 geometry are resources: F3+T reloads them, and the change is on the stand a moment after Save.
