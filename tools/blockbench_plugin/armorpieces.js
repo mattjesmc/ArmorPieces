@@ -315,7 +315,12 @@
 	 * the same either way; where a browser is refused, the caller says so and offers the link.
 	 */
 	function fetchBytes(url, done, fail) {
-		if (isApp) {
+		// Plain http is allowed only on this machine - a library served by `npm run serve` while
+		// the site is being worked on - and goes through the page's fetch below even on the
+		// desktop, because Blockbench's plugin require offers https and not http. That server
+		// sends the CORS header the page needs, so it is the same path the browser build takes.
+		const local = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//i.test(url);
+		if (isApp && !local) {
 			if (!/^https:\/\//i.test(url)) return fail(new Error('Only https URLs can be fetched: ' + url));
 			const follow = function (target, left) {
 				https.get(target, { headers: { 'user-agent': 'armorpieces-blockbench' } }, function (res) {
