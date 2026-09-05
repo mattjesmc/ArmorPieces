@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:barbute",
+  "description": {
+    "translate": "decoration.armorpieces.barbute"
+  },
+  "anchors": [
+    "brow"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ]
+}

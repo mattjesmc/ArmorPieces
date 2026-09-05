@@ -116,27 +116,57 @@ own.
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__clear_fitting.gif" alt="Smithing Fitting recipe for Clear Fitting"><br><sub>Clear Fitting <i>(Smithing Fitting)</i></sub></td>
 </tr>
 <tr>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__cloth_template_tabard.png" alt="Crafting recipe for Cloth Template Tabard"><br><sub>Cloth Template Tabard</sub></td>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__cloth_template_tunic.png" alt="Crafting recipe for Cloth Template Tunic"><br><sub>Cloth Template Tunic</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__fitting_template_banner.png" alt="Crafting recipe for Fitting Template Banner"><br><sub>Fitting Template Banner</sub></td>
+</tr>
+<tr>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__fitting_template_gemstone.png" alt="Crafting recipe for Fitting Template Gemstone"><br><sub>Fitting Template Gemstone</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__fitting_template_guard.png" alt="Crafting recipe for Fitting Template Guard"><br><sub>Fitting Template Guard</sub></td>
-</tr>
-<tr>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__fitting_template_inlay.gif" alt="Crafting recipe for Fitting Template Inlay"><br><sub>Fitting Template Inlay</sub></td>
-<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_aerials.png" alt="Crafting recipe for Template Aerials"><br><sub>Template Aerials</sub></td>
-<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_anklets.png" alt="Crafting recipe for Template Anklets"><br><sub>Template Anklets</sub></td>
 </tr>
 <tr>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_brigandine.png" alt="Crafting recipe for Skin Template Brigandine"><br><sub>Skin Template Brigandine</sub></td>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_chainmail.png" alt="Crafting recipe for Skin Template Chainmail"><br><sub>Skin Template Chainmail</sub></td>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_gambeson.png" alt="Crafting recipe for Skin Template Gambeson"><br><sub>Skin Template Gambeson</sub></td>
+</tr>
+<tr>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_gothic.png" alt="Crafting recipe for Skin Template Gothic"><br><sub>Skin Template Gothic</sub></td>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_hoplite.png" alt="Crafting recipe for Skin Template Hoplite"><br><sub>Skin Template Hoplite</sub></td>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_lamellar.png" alt="Crafting recipe for Skin Template Lamellar"><br><sub>Skin Template Lamellar</sub></td>
+</tr>
+<tr>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_lorica.png" alt="Crafting recipe for Skin Template Lorica"><br><sub>Skin Template Lorica</sub></td>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_mail.png" alt="Crafting recipe for Skin Template Mail"><br><sub>Skin Template Mail</sub></td>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_milanese.png" alt="Crafting recipe for Skin Template Milanese"><br><sub>Skin Template Milanese</sub></td>
+</tr>
+<tr>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_plate.png" alt="Crafting recipe for Skin Template Plate"><br><sub>Skin Template Plate</sub></td>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_runic.png" alt="Crafting recipe for Skin Template Runic"><br><sub>Skin Template Runic</sub></td>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_samurai.png" alt="Crafting recipe for Skin Template Samurai"><br><sub>Skin Template Samurai</sub></td>
+</tr>
+<tr>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_scale.png" alt="Crafting recipe for Skin Template Scale"><br><sub>Skin Template Scale</sub></td>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_varangian.png" alt="Crafting recipe for Skin Template Varangian"><br><sub>Skin Template Varangian</sub></td>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_aerials.png" alt="Crafting recipe for Template Aerials"><br><sub>Template Aerials</sub></td>
+</tr>
+<tr>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_anklets.png" alt="Crafting recipe for Template Anklets"><br><sub>Template Anklets</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_antennae.png" alt="Crafting recipe for Template Antennae"><br><sub>Template Antennae</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_antlers.png" alt="Crafting recipe for Template Antlers"><br><sub>Template Antlers</sub></td>
-<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_bandolier.png" alt="Crafting recipe for Template Bandolier"><br><sub>Template Bandolier</sub></td>
 </tr>
 <tr>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_bandolier.png" alt="Crafting recipe for Template Bandolier"><br><sub>Template Bandolier</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_bangles.png" alt="Crafting recipe for Template Bangles"><br><sub>Template Bangles</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_banner.png" alt="Crafting recipe for Template Banner"><br><sub>Template Banner</sub></td>
-<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_beast_head.png" alt="Crafting recipe for Template Beast Head"><br><sub>Template Beast Head</sub></td>
 </tr>
 <tr>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_barbute.png" alt="Crafting recipe for Template Barbute"><br><sub>Template Barbute</sub></td>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_beast_head.png" alt="Crafting recipe for Template Beast Head"><br><sub>Template Beast Head</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_bedroll.png" alt="Crafting recipe for Template Bedroll"><br><sub>Template Bedroll</sub></td>
+</tr>
+<tr>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_bellows_visor.png" alt="Crafting recipe for Template Bellows Visor"><br><sub>Template Bellows Visor</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_bells.png" alt="Crafting recipe for Template Bells"><br><sub>Template Bells</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_bone_mask.png" alt="Crafting recipe for Template Bone Mask"><br><sub>Template Bone Mask</sub></td>
 </tr>
@@ -181,86 +211,93 @@ own.
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_feathering.png" alt="Crafting recipe for Template Feathering"><br><sub>Template Feathering</sub></td>
 </tr>
 <tr>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_frog_mouth.png" alt="Crafting recipe for Template Frog Mouth"><br><sub>Template Frog Mouth</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_garters.png" alt="Crafting recipe for Template Garters"><br><sub>Template Garters</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_girdle.png" alt="Crafting recipe for Template Girdle"><br><sub>Template Girdle</sub></td>
-<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_gorget.png" alt="Crafting recipe for Template Gorget"><br><sub>Template Gorget</sub></td>
 </tr>
 <tr>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_gorget.png" alt="Crafting recipe for Template Gorget"><br><sub>Template Gorget</sub></td>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_great_helm.png" alt="Crafting recipe for Template Great Helm"><br><sub>Template Great Helm</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_greaves.png" alt="Crafting recipe for Template Greaves"><br><sub>Template Greaves</sub></td>
+</tr>
+<tr>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_head_fins.png" alt="Crafting recipe for Template Head Fins"><br><sub>Template Head Fins</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_heel_wings.png" alt="Crafting recipe for Template Heel Wings"><br><sub>Template Heel Wings</sub></td>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_helm_wings.png" alt="Crafting recipe for Template Helm Wings"><br><sub>Template Helm Wings</sub></td>
 </tr>
 <tr>
-<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_helm_wings.png" alt="Crafting recipe for Template Helm Wings"><br><sub>Template Helm Wings</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_horns.png" alt="Crafting recipe for Template Horns"><br><sub>Template Horns</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_horsetail.png" alt="Crafting recipe for Template Horsetail"><br><sub>Template Horsetail</sub></td>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_knee_studs.png" alt="Crafting recipe for Template Knee Studs"><br><sub>Template Knee Studs</sub></td>
 </tr>
 <tr>
-<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_knee_studs.png" alt="Crafting recipe for Template Knee Studs"><br><sub>Template Knee Studs</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_lames.png" alt="Crafting recipe for Template Lames"><br><sub>Template Lames</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_laurel.png" alt="Crafting recipe for Template Laurel"><br><sub>Template Laurel</sub></td>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_loin_panels.png" alt="Crafting recipe for Template Loin Panels"><br><sub>Template Loin Panels</sub></td>
 </tr>
 <tr>
-<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_loin_panels.png" alt="Crafting recipe for Template Loin Panels"><br><sub>Template Loin Panels</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_mail_fringe.png" alt="Crafting recipe for Template Mail Fringe"><br><sub>Template Mail Fringe</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_mantle.png" alt="Crafting recipe for Template Mantle"><br><sub>Template Mantle</sub></td>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_mittens.png" alt="Crafting recipe for Template Mittens"><br><sub>Template Mittens</sub></td>
 </tr>
 <tr>
-<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_mittens.png" alt="Crafting recipe for Template Mittens"><br><sub>Template Mittens</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_nasal.png" alt="Crafting recipe for Template Nasal"><br><sub>Template Nasal</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_padding.png" alt="Crafting recipe for Template Padding"><br><sub>Template Padding</sub></td>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_pelt.png" alt="Crafting recipe for Template Pelt"><br><sub>Template Pelt</sub></td>
 </tr>
 <tr>
-<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_pelt.png" alt="Crafting recipe for Template Pelt"><br><sub>Template Pelt</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_pendant.png" alt="Crafting recipe for Template Pendant"><br><sub>Template Pendant</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_pinions.png" alt="Crafting recipe for Template Pinions"><br><sub>Template Pinions</sub></td>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_poleyns.png" alt="Crafting recipe for Template Poleyns"><br><sub>Template Poleyns</sub></td>
 </tr>
 <tr>
-<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_poleyns.png" alt="Crafting recipe for Template Poleyns"><br><sub>Template Poleyns</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_pouch_belt.png" alt="Crafting recipe for Template Pouch Belt"><br><sub>Template Pouch Belt</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_puttees.png" alt="Crafting recipe for Template Puttees"><br><sub>Template Puttees</sub></td>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_quiver.png" alt="Crafting recipe for Template Quiver"><br><sub>Template Quiver</sub></td>
 </tr>
 <tr>
-<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_quiver.png" alt="Crafting recipe for Template Quiver"><br><sub>Template Quiver</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_rowel_spurs.png" alt="Crafting recipe for Template Rowel Spurs"><br><sub>Template Rowel Spurs</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_ruff.png" alt="Crafting recipe for Template Ruff"><br><sub>Template Ruff</sub></td>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_sallet_slit.png" alt="Crafting recipe for Template Sallet Slit"><br><sub>Template Sallet Slit</sub></td>
 </tr>
 <tr>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_sash.png" alt="Crafting recipe for Template Sash"><br><sub>Template Sash</sub></td>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_savoyard.png" alt="Crafting recipe for Template Savoyard"><br><sub>Template Savoyard</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_scale_shins.png" alt="Crafting recipe for Template Scale Shins"><br><sub>Template Scale Shins</sub></td>
-<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_scale_skirt.png" alt="Crafting recipe for Template Scale Skirt"><br><sub>Template Scale Skirt</sub></td>
 </tr>
 <tr>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_scale_skirt.png" alt="Crafting recipe for Template Scale Skirt"><br><sub>Template Scale Skirt</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_scarf.png" alt="Crafting recipe for Template Scarf"><br><sub>Template Scarf</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_shin_spikes.png" alt="Crafting recipe for Template Shin Spikes"><br><sub>Template Shin Spikes</sub></td>
-<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_spaulders.png" alt="Crafting recipe for Template Spaulders"><br><sub>Template Spaulders</sub></td>
 </tr>
 <tr>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_spaulders.png" alt="Crafting recipe for Template Spaulders"><br><sub>Template Spaulders</sub></td>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_spectacle_visor.png" alt="Crafting recipe for Template Spectacle Visor"><br><sub>Template Spectacle Visor</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_spiked_pauldrons.png" alt="Crafting recipe for Template Spiked Pauldrons"><br><sub>Template Spiked Pauldrons</sub></td>
+</tr>
+<tr>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_spine_ridge.png" alt="Crafting recipe for Template Spine Ridge"><br><sub>Template Spine Ridge</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_spire.png" alt="Crafting recipe for Template Spire"><br><sub>Template Spire</sub></td>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_spurs.png" alt="Crafting recipe for Template Spurs"><br><sub>Template Spurs</sub></td>
 </tr>
 <tr>
-<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_spurs.png" alt="Crafting recipe for Template Spurs"><br><sub>Template Spurs</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_streamers.png" alt="Crafting recipe for Template Streamers"><br><sub>Template Streamers</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_swim_fins.png" alt="Crafting recipe for Template Swim Fins"><br><sub>Template Swim Fins</sub></td>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_talons.png" alt="Crafting recipe for Template Talons"><br><sub>Template Talons</sub></td>
 </tr>
 <tr>
-<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_talons.png" alt="Crafting recipe for Template Talons"><br><sub>Template Talons</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_tassets.png" alt="Crafting recipe for Template Tassets"><br><sub>Template Tassets</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_thigh_sheath.png" alt="Crafting recipe for Template Thigh Sheath"><br><sub>Template Thigh Sheath</sub></td>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_tusks.png" alt="Crafting recipe for Template Tusks"><br><sub>Template Tusks</sub></td>
 </tr>
 <tr>
-<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_tusks.png" alt="Crafting recipe for Template Tusks"><br><sub>Template Tusks</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_vambraces.png" alt="Crafting recipe for Template Vambraces"><br><sub>Template Vambraces</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_visor.png" alt="Crafting recipe for Template Visor"><br><sub>Template Visor</sub></td>
+<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_wing_cases.png" alt="Crafting recipe for Template Wing Cases"><br><sub>Template Wing Cases</sub></td>
 </tr>
 <tr>
-<td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_wing_cases.png" alt="Crafting recipe for Template Wing Cases"><br><sub>Template Wing Cases</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_wing_roots.png" alt="Crafting recipe for Template Wing Roots"><br><sub>Template Wing Roots</sub></td>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_winged_cops.png" alt="Crafting recipe for Template Winged Cops"><br><sub>Template Winged Cops</sub></td>
-</tr>
-<tr>
 <td align="center" width="33%"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_wraps.png" alt="Crafting recipe for Template Wraps"><br><sub>Template Wraps</sub></td>
 </tr>
 </table>

@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:frog_mouth",
+  "description": {
+    "translate": "decoration.armorpieces.frog_mouth"
+  },
+  "anchors": [
+    "brow"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ]
+}

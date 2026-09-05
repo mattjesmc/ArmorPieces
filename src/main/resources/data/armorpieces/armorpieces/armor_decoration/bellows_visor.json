@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:bellows_visor",
+  "description": {
+    "translate": "decoration.armorpieces.bellows_visor"
+  },
+  "anchors": [
+    "brow"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ]
+}

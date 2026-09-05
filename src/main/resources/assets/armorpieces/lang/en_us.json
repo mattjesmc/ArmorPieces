@@ -173,5 +173,19 @@
   "skin.armorpieces.hoplite": "Hoplite",
   "skin.armorpieces.samurai": "Samurai",
   "skin.armorpieces.runic": "Runic",
-  "container.armorpieces.advanced_smithing.skin": "Skin"
+  "skin.armorpieces.chainmail": "Chainmail",
+  "item.armorpieces.clothed": "Cloth",
+  "item.armorpieces.cloth_template": "Cloth Smithing Template",
+  "item.armorpieces.cloth_template.applies_to": "Chestplates",
+  "item.armorpieces.cloth_template.ingredients": "A Banner",
+  "cloth.armorpieces.tunic": "Tunic",
+  "cloth.armorpieces.tabard": "Tabard",
+  "container.armorpieces.advanced_smithing.skin": "Skin",
+  "decoration.armorpieces.barbute": "Barbute",
+  "decoration.armorpieces.sallet_slit": "Sallet Slit",
+  "decoration.armorpieces.bellows_visor": "Bellows Visor",
+  "decoration.armorpieces.great_helm": "Great Helm",
+  "decoration.armorpieces.savoyard": "Savoyard",
+  "decoration.armorpieces.frog_mouth": "Frog-Mouth",
+  "decoration.armorpieces.spectacle_visor": "Spectacle Visor"
 }

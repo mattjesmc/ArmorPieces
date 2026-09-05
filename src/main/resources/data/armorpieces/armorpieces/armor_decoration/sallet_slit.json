@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:sallet_slit",
+  "description": {
+    "translate": "decoration.armorpieces.sallet_slit"
+  },
+  "anchors": [
+    "brow"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ]
+}

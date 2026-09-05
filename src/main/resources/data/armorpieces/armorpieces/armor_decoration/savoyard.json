@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:savoyard",
+  "description": {
+    "translate": "decoration.armorpieces.savoyard"
+  },
+  "anchors": [
+    "brow"
+  ],
+  "fittings": [
+    "armorpieces:gemstone"
+  ]
+}

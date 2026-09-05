@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:spectacle_visor",
+  "description": {
+    "translate": "decoration.armorpieces.spectacle_visor"
+  },
+  "anchors": [
+    "brow"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ]
+}

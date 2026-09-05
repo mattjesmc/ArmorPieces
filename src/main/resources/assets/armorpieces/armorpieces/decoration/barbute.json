@@ -1,0 +1,32 @@
+{
+  "texture_width": 64,
+  "texture_height": 32,
+  "bones": [
+    {
+      "name": "mask",
+      "pivot": [
+        0,
+        0,
+        0
+      ],
+      "cubes": [
+        {
+          "origin": [
+            -4,
+            -3,
+            -1.35
+          ],
+          "size": [
+            8,
+            7,
+            0.25
+          ],
+          "uv": [
+            12,
+            0
+          ]
+        }
+      ]
+    }
+  ]
+}

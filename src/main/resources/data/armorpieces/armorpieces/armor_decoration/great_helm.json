@@ -1,0 +1,12 @@
+{
+  "asset_id": "armorpieces:great_helm",
+  "description": {
+    "translate": "decoration.armorpieces.great_helm"
+  },
+  "anchors": [
+    "brow"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ]
+}
