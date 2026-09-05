@@ -116,7 +116,7 @@ The release that turned a set of parts into a wardrobe.
 
 - **Twelve sockets, one part at a time** — `crest`, `brow`, `horns`, `pauldrons`, `back`, `collar`, `vambraces`, `belt`, `tassets`, `knees`, `spurs`, `greaves`. A socket holds one part, so a new crest replaces the crest — and with ninety-one parts every socket has at least six to choose from. Seven of the sockets are mirrored pairs, so spaulders means both shoulders.
 - **Coloured by vanilla trim materials** — One grayscale master per part is mapped onto each material's own palette at load time. A new trim material costs a part no new art at all.
-- **On your own hands, in first person** — Vanilla draws a bare sleeve on the first-person hand and nothing else — not armor, not a trim — so the one view you spend the whole game in is the one that never showed what you were wearing. Pauldrons and vambraces show there now, on the same player model the world sees, swinging with the arm through every animation the hand already has. They are close to the camera and they are meant to be: set `first_person_parts` to `false` in `config/armorpieces.json` if you would rather keep the view clear.
+- **On your own hands, in first person** — Vanilla draws a bare sleeve on the first-person hand and nothing else — not armor, not a trim — so the one view you spend the whole game in is the one that never showed what you were wearing. Pauldrons and vambraces show there now, on the same player model the world sees, swinging with the arm through every animation the hand already has. They are close to the camera and they are meant to be — and there is a setting to turn them off, if you would rather keep the view clear.
 - **Fourteen armor skins** — The one thing here that changes the armor itself rather than adding to it — plate, gothic, milanese, mail, chainmail, lorica, runic, hoplite, samurai, gambeson, brigandine, varangian, scale, lamellar. One greyscale master pair on vanilla's own armor grid, recoloured at load through eight shades taken from *that armor material's* vanilla texture, with vanilla's own panel edges and shadows mixed back over it. A skinned iron helmet still reads as iron, gold still reads as gold, and a modded armor material is skinned for free from the texture it already ships. Applied at the advanced smithing table with the piece's own reforging material — re-skinning is re-forging, and it costs the metal the piece is made of.
 - **Cloth over the chest** — A **Tunic** or a **Tabard**, applied with a cloth template and a banner, and the design is the banner's — sixteen dyes crossed with every pattern layer, made at a loom, so the heraldry is a player's choice rather than a list the mod keeps. It is painted into the armor's own texture rather than hung off it, so it moves with the armor, clips nothing, and the plate's rivets and edges read *through* it. It sits over the skin, under every part and under the trim. One greyscale cut mask ships the whole feature; there is no per-material art and no per-banner art.
 - **Fittings** — A part can declare places for a second material — `gemstone`, `guard`, `inlay`, `banner` — and a fitting template sets one: gems and metals by trim material, inlays by dye, banners from a banner made at a loom. There is a template per fitting, each with its own look and recipe, and the template with the third slot empty takes its fitting out again. Fittings are data too — a pack's new fitting gets its template from a recipe — and an effect can be gated on one.
@@ -392,6 +392,24 @@ it behaviour — attributes, mob effects, a dodge, gliding — from the same JSO
 The rigs, the `/armorpieces stage` command and the plugin's Save path are described in the
 [authoring guide](https://github.com/mattjesmc/ArmorPieces/blob/main/docs/authoring.md); `tools/check_authoring.py` runs the plugin's round trip over every
 shipped part.
+
+---
+<a id="configuration"></a>
+
+## Configuration
+
+One file, written for you on first launch: `config/armorpieces.json`. It is read on the client
+and by the client alone — every setting in it moves pixels and nothing else, so it never has to
+match the server's.
+
+| Key | Default | What it does |
+| --- | --- | --- |
+| `first_person_parts` | `true` | Draws the parts on your arms — pauldrons and vambraces — on the first-person hand as well as on your body. Vanilla shows a bare sleeve there and no armor at all. They sit close to the camera; `false` keeps the view clear. |
+
+A change takes effect on the next launch. A key you leave out takes its default and is written
+back, so a setting added by a later version turns up in the file you already have — and a file
+that does not parse is left alone and the defaults used, so a typo costs a log line and nothing
+else.
 
 ---
 <a id="faq"></a>

@@ -91,8 +91,8 @@ sections:
           trim — so the one view you spend the whole game in is the one that never showed what you
           were wearing. Pauldrons and vambraces show there now, on the same player model the world
           sees, swinging with the arm through every animation the hand already has. They are close to
-          the camera and they are meant to be: set `first_person_parts` to `false` in
-          `config/armorpieces.json` if you would rather keep the view clear.
+          the camera and they are meant to be — and there is a setting to turn them off, if you would
+          rather keep the view clear.
       - title: Fourteen armor skins
         description: >-
           The one thing here that changes the armor itself rather than adding to it — plate, gothic,
@@ -229,6 +229,20 @@ sections:
     1. Install [Fabric Loader](https://fabricmc.net/use/) 0.19.3+ on Minecraft 26.2 (Java 25).
     2. Drop this mod and Fabric API into `mods/`.
     3. Install it on both sides — the client draws the parts, the server owns their behaviour.
+
+  configuration: |
+    One file, written for you on first launch: `config/armorpieces.json`. It is read on the client
+    and by the client alone — every setting in it moves pixels and nothing else, so it never has to
+    match the server's.
+
+    | Key | Default | What it does |
+    | --- | --- | --- |
+    | `first_person_parts` | `true` | Draws the parts on your arms — pauldrons and vambraces — on the first-person hand as well as on your body. Vanilla shows a bare sleeve there and no armor at all. They sit close to the camera; `false` keeps the view clear. |
+
+    A change takes effect on the next launch. A key you leave out takes its default and is written
+    back, so a setting added by a later version turns up in the file you already have — and a file
+    that does not parse is left alone and the defaults used, so a typo costs a log line and nothing
+    else.
 
   faq:
     items:
