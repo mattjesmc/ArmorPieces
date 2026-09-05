@@ -83,6 +83,21 @@ result before Apply is pressed, as the smithing table's stand does. Nothing is k
 everything goes back to the player when the menu closes, whether it was opened at the block or by
 `/armorpieces table`.
 
+**A gallery on the stage.** `/armorpieces stage` gains three modes that are for the picture rather
+than the check. Its older modes are each a cross product with one axis free, which is what makes
+them readable and what makes them drab - a row of identical stands in eleven colours, on plain iron,
+with every fitting empty - and there is no longer a shot of the mod in them. `stage pieces` puts
+every part in the game down exactly once, a row per socket, each on its own randomly dressed suit:
+some armor, some skin over it, some colour, and something in every fitting the part declares.
+`stage random [count]` builds whole sets the same way, nothing about them chosen - base, skin,
+cloth, part, material and fittings all rolled - which is also the fastest way to find two parts that
+cannot be worn at once. Both report the seed they used and take it back, so a stage worth
+photographing can be built again after a texture is fixed. `stage set [<name>]` is the opposite:
+six sets written out by hand, one per theme the parts were authored in - Knight Errant, High Court,
+Wild Hunt, Far Road, Deep Tide, Chitin - each filling all twelve sockets, staged the same way every
+time. `stage parts` and `stage full` are gone, being what the first two replace; `bases`, `fittings`,
+`skins`, `loot` and `clear` are unchanged.
+
 **Tools.** The Blockbench panel gains a *Craftable* switch beside the two recipe items: off, Save
 writes the recipe with its type swapped and the pattern and items kept, so the choices survive
 until it is switched back on, and the summary line says *not craftable*. The Part dialog gains a

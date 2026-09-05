@@ -1,27 +1,36 @@
 package com.mattjesmc.armorpieces.command;
 
+import com.mattjesmc.armorpieces.ArmorPieces;
+import com.mattjesmc.armorpieces.cloth.Cloth;
+import com.mattjesmc.armorpieces.cloth.ClothValue;
 import com.mattjesmc.armorpieces.decoration.ArmorDecoration;
 import com.mattjesmc.armorpieces.decoration.ArmorDecorations;
 import com.mattjesmc.armorpieces.decoration.ArmorPiecesRegistries;
 import com.mattjesmc.armorpieces.decoration.DecorationAnchor;
+import com.mattjesmc.armorpieces.decoration.MaterialIcons;
 import com.mattjesmc.armorpieces.decoration.DecorationEntry;
 import com.mattjesmc.armorpieces.decoration.fitting.Fitting;
 import com.mattjesmc.armorpieces.decoration.fitting.FittingValue;
 import com.mattjesmc.armorpieces.menu.AdvancedSmithingMenu;
+import com.mattjesmc.armorpieces.recipe.SmithingClothRecipe;
 import com.mattjesmc.armorpieces.recipe.SmithingSkinRecipe;
 import com.mattjesmc.armorpieces.registry.ModDataComponents;
 import com.mattjesmc.armorpieces.skin.ArmorSkin;
 import com.mattjesmc.armorpieces.skin.ArmorSkinValue;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.LongArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
@@ -37,13 +46,16 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.equipment.ArmorType;
@@ -51,6 +63,8 @@ import net.minecraft.world.item.equipment.EquipmentAsset;
 import net.minecraft.world.item.equipment.EquipmentAssets;
 import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.item.equipment.trim.TrimMaterial;
+import net.minecraft.world.item.equipment.trim.TrimMaterials;
+import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -71,26 +85,44 @@ import org.jspecify.annotations.Nullable;
  * on the stage the moment they load, which is the only way a preview of a data-driven system can
  * avoid lying about what the system contains.
  *
- * <p>Six modes, five of them a different slice of the same cross product:
+ * <p>The modes fall into two halves. The <b>grids</b> are each a different slice of one cross
+ * product, and answer a question about the data:
  *
  * <ul>
- *   <li>{@code parts} - one stand per (socketed part x material). The default view: every part in
- *       every colour, each on the single armor piece that owns its socket.</li>
- *   <li>{@code bases} - that same block repeated for every base armor set, because the base's
- *       equipment asset is what selects a material's darker variant (gold on gold), and that
- *       resolution is invisible until the two stand side by side.</li>
- *   <li>{@code full} - one stand per (material x variant) wearing a complete set with every socket
- *       filled, which is where parts that overlap at the joints show themselves.</li>
+ *   <li>{@code bases} - every (socketed part x material), that block repeated for every base armor
+ *       set, because the base's equipment asset is what selects a material's darker variant (gold on
+ *       gold), and that resolution is invisible until the two stand side by side.</li>
  *   <li>{@code fittings} - one block per (socketed part x fitting): the part's materials down the
- *       rows, everything the fitting takes across the columns, that fitting filled. The other three
- *       modes leave every fitting empty, which is the part as the socket recipe first makes it; this
- *       is where the masks and the cloth are judged.</li>
+ *       rows, everything the fitting takes across the columns, that fitting filled. One fitting at a
+ *       time, so a stand shows exactly one thing that was not there before; this is where the masks
+ *       and the cloth are judged.</li>
  *   <li>{@code skins} - one stand per (skin x base armor set): every skin down the rows, every
- *       armor material across the columns, each suit wearing the skin. The only mode whose columns
+ *       armor material across the columns, each suit wearing the skin. The only grid whose columns
  *       are the ARMOR rather than the trim, because a skin takes its colours from the armor's own
  *       texture and has no trim material of its own.</li>
- *   <li>{@code clear} - removes what the other five placed, by tag.</li>
  * </ul>
+ *
+ * <p>The <b>gallery</b> modes are for the picture rather than the check. A grid holds everything
+ * still but one axis, which is what makes it readable and what makes it drab: eleven identical
+ * stands in eleven colours, on plain iron, with every fitting empty. A gallery stand is instead
+ * dressed the way a player would dress it - a skinned suit, a part in some colour, something in
+ * every fitting - and the variety is the point.
+ *
+ * <ul>
+ *   <li>{@code pieces} - every part in the game exactly once, a row per socket, each on its own
+ *       randomly dressed suit. The one shot that shows the whole catalogue.</li>
+ *   <li>{@code random} - complete sets, every socket filled, nothing about them chosen: base armor,
+ *       skin, cloth, part, material and every fitting all rolled.</li>
+ *   <li>{@code set} - one of {@link #SETS}, the hand-built thematic sets, exactly as written.
+ *       Unlike everything else here it is not a query over the data but a picture of it, and it is
+ *       the same picture every time, which is what a page's screenshot needs.</li>
+ * </ul>
+ *
+ * <p>{@code clear} removes what any of them placed, by tag, and {@code loot} rolls a table rather
+ * than placing anything.
+ *
+ * <p>Every gallery mode takes a {@code seed} and reports the one it used, so a shot worth keeping
+ * can be taken again after a texture is fixed. Nothing else about a stage is remembered.
  *
  * <p>Nothing here goes through {@link com.mattjesmc.armorpieces.recipe.SmithingDecorationRecipe}'s
  * ingredient rules - a stage is not a crafting shortcut - but it does honour the one rule that
@@ -141,17 +173,27 @@ public final class StageCommand {
         dispatcher.register(Commands.literal("armorpieces")
             .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
             .then(Commands.literal("stage")
-                .then(Commands.literal("parts")
-                    .executes(ctx -> stageParts(ctx.getSource(), null))
-                    .then(Commands.argument("decoration",
-                            ResourceArgument.resource(context, ArmorPiecesRegistries.ARMOR_DECORATION))
-                        .executes(ctx -> stageParts(ctx.getSource(), decorationArgument(ctx)))))
+                // The gallery modes. Each takes an optional seed as its LAST argument, so the
+                // shortest form is always the interesting one and the seed is what you add once a
+                // roll came out worth keeping.
+                .then(Commands.literal("pieces")
+                    .executes(ctx -> stagePieces(ctx.getSource(), freshSeed(ctx.getSource())))
+                    .then(Commands.argument("seed", LongArgumentType.longArg())
+                        .executes(ctx -> stagePieces(ctx.getSource(), LongArgumentType.getLong(ctx, "seed")))))
+                .then(Commands.literal("random")
+                    .executes(ctx -> stageRandom(ctx.getSource(), 1, freshSeed(ctx.getSource())))
+                    .then(Commands.argument("count", IntegerArgumentType.integer(1, MAX_STANDS))
+                        .executes(ctx -> stageRandom(ctx.getSource(),
+                            IntegerArgumentType.getInteger(ctx, "count"), freshSeed(ctx.getSource())))
+                        .then(Commands.argument("seed", LongArgumentType.longArg())
+                            .executes(ctx -> stageRandom(ctx.getSource(),
+                                IntegerArgumentType.getInteger(ctx, "count"),
+                                LongArgumentType.getLong(ctx, "seed"))))))
+                .then(setNode())
                 .then(Commands.literal("bases")
                     .executes(ctx -> stageBases(ctx.getSource(), null))
                     .then(Commands.argument("base", ItemArgument.item(context))
                         .executes(ctx -> stageBases(ctx.getSource(), ItemArgument.getItem(ctx, "base")))))
-                .then(Commands.literal("full")
-                    .executes(ctx -> stageFull(ctx.getSource())))
                 .then(Commands.literal("fittings")
                     .executes(ctx -> stageFittings(ctx.getSource(), null))
                     .then(Commands.argument("decoration",
@@ -199,30 +241,8 @@ public final class StageCommand {
     // ---- modes ----------------------------------------------------------------------------------
 
     /**
-     * Every (part, socket) pair down the rows, every trim material across the columns, each stand
-     * wearing only the one piece that owns the socket.
-     *
-     * <p>Rows are pairs rather than parts because a part may declare several sockets, and a spike
-     * that sits in both the crest and the heels looks like two different objects depending on which
-     * one it is in. Listing it twice is the honest count of what the data can produce.
-     */
-    private static int stageParts(final CommandSourceStack source, final @Nullable Holder<ArmorDecoration> only) {
-        final List<Slot> rows = slots(source, only);
-        final List<Holder.Reference<TrimMaterial>> materials = materials(source);
-        final BaseArmor base = defaultBase();
-        if (rows.isEmpty() || materials.isEmpty() || base == null) {
-            return nothingToStage(source);
-        }
-        if (tooMany(source, rows.size() * materials.size())) {
-            return 0;
-        }
-
-        final Layout layout = Layout.inFrontOf(source);
-        return finish(source, placeBlock(layout, 0.0, rows, materials, base));
-    }
-
-    /**
-     * The {@code parts} block, repeated once per base armor set.
+     * Every (part, socket) pair down the rows, every trim material across the columns, one block per
+     * base armor set.
      *
      * <p>The third axis is the point rather than thoroughness for its own sake: a material's texture
      * suffix is resolved against the ARMOR's equipment asset (see {@link DecorationEntry#texture}),
@@ -258,60 +278,6 @@ public final class StageCommand {
             layout.label(-2.0, row - 1.0, base.name());
             placed += placeBlock(layout, row, fitting, materials, base);
             row += fitting.size() + BLOCK_GAP;
-        }
-        return finish(source, placed);
-    }
-
-    /**
-     * One fully decorated set per (material, variant) - every socket on all four pieces filled at
-     * once, which is the only view in which parts can be seen to collide.
-     *
-     * <p>"Variant" exists because sockets hold a different number of parts: the crest has two and the
-     * belt one, so a single fully-decorated stand can never show them all. Variant <i>n</i> takes the
-     * <i>n</i>th part in every socket, wrapping where a socket has run out, so the row count is the
-     * largest socket's part count and every part appears on at least one stand.
-     */
-    private static int stageFull(final CommandSourceStack source) {
-        final Map<DecorationAnchor, List<Holder.Reference<ArmorDecoration>>> parts = partsByAnchor(source);
-        final List<Holder.Reference<TrimMaterial>> materials = materials(source);
-        final BaseArmor base = defaultBase();
-        if (parts.isEmpty() || materials.isEmpty() || base == null) {
-            return nothingToStage(source);
-        }
-        final int variants = parts.values().stream().mapToInt(List::size).max().orElse(0);
-        if (tooMany(source, variants * materials.size())) {
-            return 0;
-        }
-
-        final Layout layout = Layout.inFrontOf(source);
-        for (int column = 0; column < materials.size(); column++) {
-            layout.label(column, -1.0, materials.get(column).value().description());
-        }
-
-        int placed = 0;
-        for (int variant = 0; variant < variants; variant++) {
-            layout.label(-1.0, variant, Component.translatable("commands.armorpieces.stage.variant", variant + 1));
-            for (int column = 0; column < materials.size(); column++) {
-                final Holder.Reference<TrimMaterial> material = materials.get(column);
-                final Map<ArmorType, ItemStack> worn = new EnumMap<>(ArmorType.class);
-                for (final ArmorType type : ARMOR_TYPES) {
-                    final ItemStack piece = base.piece(type);
-                    if (!piece.isEmpty()) {
-                        worn.put(type, piece);
-                    }
-                }
-                for (final var socket : parts.entrySet()) {
-                    final ItemStack piece = worn.get(socket.getKey().armorType());
-                    if (piece != null) {
-                        // Wrapping: a socket with fewer parts than the widest one repeats its own
-                        // list rather than sitting empty, so no stand is left half dressed.
-                        final List<Holder.Reference<ArmorDecoration>> fitting = socket.getValue();
-                        decorate(piece, socket.getKey(), fitting.get(variant % fitting.size()), material);
-                    }
-                }
-                layout.stand(column, variant, worn, material.value().description());
-                placed++;
-            }
         }
         return finish(source, placed);
     }
@@ -460,6 +426,536 @@ public final class StageCommand {
         source.sendSuccess(() -> Component.translatable("commands.armorpieces.stage.cleared", staged.size()), true);
         return staged.size();
     }
+
+    // ---- gallery --------------------------------------------------------------------------------
+
+    /**
+     * Every part in the game exactly once, a row per socket, each on its own randomly dressed suit.
+     *
+     * <p>The grid modes each hold everything still but one axis; this one holds nothing still but
+     * the part. A stand is a whole skinned suit of some armor, in some colour, with something in
+     * every fitting the part declares - the way a player would actually be wearing it - and the only
+     * thing the row and column say is which part it is showing. That makes it useless for comparing
+     * two parts and exactly right for a picture of all of them.
+     *
+     * <p>A row is a SOCKET rather than a part, so the twelve rows are the twelve sockets and a part
+     * that declared two would appear in both. None does today; the layout does not assume it.
+     */
+    private static int stagePieces(final CommandSourceStack source, final long seed) {
+        final Wardrobe wardrobe = new Wardrobe(source, seed);
+        if (wardrobe.isEmpty()) {
+            return nothingToStage(source);
+        }
+        if (tooMany(source, wardrobe.parts.values().stream().mapToInt(List::size).sum())) {
+            return 0;
+        }
+
+        final Layout layout = Layout.inFrontOf(source);
+        int placed = 0;
+        int row = 0;
+        for (final var socket : wardrobe.parts.entrySet()) {
+            layout.label(-1.0, row, socketName(socket.getKey()));
+            final List<Holder.Reference<ArmorDecoration>> parts = socket.getValue();
+            for (int column = 0; column < parts.size(); column++) {
+                final Map<ArmorType, ItemStack> worn = wardrobe.suit(false);
+                wardrobe.dress(worn, socket.getKey(), parts.get(column));
+                layout.stand(column, row, worn, parts.get(column).value().description());
+                placed++;
+            }
+            row++;
+        }
+        return finish(source, placed, seed);
+    }
+
+    /**
+     * Complete sets with nothing about them chosen: base armor, skin, cloth, and in every socket a
+     * part, its material and each of its fittings, all rolled.
+     *
+     * <p>What {@code pieces} is for the catalogue this is for the system - the question it answers is
+     * not "does this part look right" but "does a set of this mod, assembled the way the game will
+     * assemble it out of a chest, hold together". Most of the failures it finds are collisions: two
+     * parts that each read well and cannot be worn at once.
+     */
+    private static int stageRandom(final CommandSourceStack source, final int count, final long seed) {
+        final Wardrobe wardrobe = new Wardrobe(source, seed);
+        if (wardrobe.isEmpty()) {
+            return nothingToStage(source);
+        }
+        if (tooMany(source, count)) {
+            return 0;
+        }
+
+        final Layout layout = Layout.inFrontOf(source);
+        for (int column = 0; column < count; column++) {
+            final Map<ArmorType, ItemStack> worn = wardrobe.suit(true);
+            for (final var socket : wardrobe.parts.entrySet()) {
+                wardrobe.dress(worn, socket.getKey(), wardrobe.pick(socket.getValue()));
+            }
+            layout.stand(column, 0.0, worn, Component.translatable("commands.armorpieces.stage.random.name", column + 1));
+        }
+        return finish(source, count, seed);
+    }
+
+    /**
+     * One stand per hand-built set, in a row, each captioned with its name.
+     *
+     * <p>No randomness anywhere: the same command gives the same picture on any world, which is what
+     * a page's screenshots are for. A set naming a part, skin or cloth the loaded data does not have
+     * says so and is staged without it, rather than refusing - a pack that disables a part should not
+     * take a gallery command down with it.
+     */
+    private static int stageSets(final CommandSourceStack source, final List<GallerySet> sets) {
+        final Layout layout = Layout.inFrontOf(source);
+        int placed = 0;
+        for (int column = 0; column < sets.size(); column++) {
+            final GallerySet set = sets.get(column);
+            final Map<ArmorType, ItemStack> worn = set.wear(source);
+            if (worn.isEmpty()) {
+                continue;
+            }
+            layout.label(column, -1.0, set.title());
+            layout.stand(column, 0.0, worn, set.title());
+            placed++;
+        }
+        if (placed == 0) {
+            return nothingToStage(source);
+        }
+        return finish(source, placed);
+    }
+
+    /** {@code set} with a child literal per {@link #SETS} entry, and no argument for all of them. */
+    private static LiteralArgumentBuilder<CommandSourceStack> setNode() {
+        final LiteralArgumentBuilder<CommandSourceStack> node = Commands.literal("set")
+            .executes(ctx -> stageSets(ctx.getSource(), SETS));
+        for (final GallerySet set : SETS) {
+            node.then(Commands.literal(set.name()).executes(ctx -> stageSets(ctx.getSource(), List.of(set))));
+        }
+        return node;
+    }
+
+    /** A seed for a roll nobody asked to reproduce - reported back, so it can be asked for later. */
+    private static long freshSeed(final CommandSourceStack source) {
+        return source.getLevel().getRandom().nextLong();
+    }
+
+    private static Component socketName(final DecorationAnchor anchor) {
+        return Component.translatable("anchor.armorpieces." + anchor.getSerializedName());
+    }
+
+    /**
+     * Everything a randomly dressed stand is drawn from, and the one {@link RandomSource} behind all
+     * of it.
+     *
+     * <p>One instance per command, so a seed reproduces a whole grid and not merely one stand: the
+     * rolls are consumed in layout order, and the same seed against the same loaded data gives the
+     * same ninety-one stands. Adding a part shifts everything after it, which is the honest
+     * behaviour - the picture is of the data, and the data changed.
+     *
+     * <p>Pools are read from the registries for the reason the grids' axes are (see the class
+     * documentation), and a fitting's values are found by offering it every item in the game, which
+     * is expensive enough to be worth remembering across the ninety-one stands that ask for it.
+     */
+    private static final class Wardrobe {
+        private final RandomSource random;
+        private final List<Holder.Reference<TrimMaterial>> materials;
+        private final List<BaseArmor> bases;
+        private final List<Holder.Reference<ArmorSkin>> skins;
+        private final List<Holder.Reference<Cloth>> cloths;
+        private final Map<DecorationAnchor, List<Holder.Reference<ArmorDecoration>>> parts;
+        private final Map<Holder<Fitting>, List<FittingValue>> values = new HashMap<>();
+
+        Wardrobe(final CommandSourceStack source, final long seed) {
+            this.random = RandomSource.create(seed);
+            this.materials = materials(source);
+            // Full sets only. A base that covers three slots would leave a stand bare-legged, and
+            // the point of a gallery stand is that it looks like something someone is wearing.
+            this.bases = baseArmors().stream()
+                .filter(base -> ARMOR_TYPES.stream().allMatch(base::has))
+                .toList();
+            this.skins = source.registryAccess().lookupOrThrow(ArmorPiecesRegistries.ARMOR_SKIN).listElements().toList();
+            this.cloths = source.registryAccess().lookupOrThrow(ArmorPiecesRegistries.CLOTH).listElements().toList();
+            this.parts = partsByAnchor(source);
+        }
+
+        boolean isEmpty() {
+            return this.materials.isEmpty() || this.bases.isEmpty() || this.parts.isEmpty();
+        }
+
+        /**
+         * A whole suit of one random armor set, skinned, with every socket still empty.
+         *
+         * <p>{@code clothed} is a permission rather than an instruction, and only about a third of
+         * the suits given it take one up: a tabard is a big flat shape over the torso, and every
+         * stand wearing one would hide the three chest sockets in exactly the mode meant to show
+         * them. Armor that refuses a skin or a cloth is worn plain, by the recipes' own tests
+         * rather than a second set of rules here.
+         */
+        Map<ArmorType, ItemStack> suit(final boolean clothed) {
+            final BaseArmor base = pick(this.bases);
+            final Holder<ArmorSkin> skin = this.skins.isEmpty() ? null : pick(this.skins);
+            final ClothValue cloth = !clothed || this.cloths.isEmpty() || this.random.nextInt(3) != 0
+                ? null
+                : new ClothValue(pick(this.cloths), pickDye(), BannerPatternLayers.EMPTY);
+
+            final Map<ArmorType, ItemStack> worn = new EnumMap<>(ArmorType.class);
+            for (final ArmorType type : ARMOR_TYPES) {
+                final ItemStack piece = base.piece(type);
+                if (piece.isEmpty()) {
+                    continue;
+                }
+                if (skin != null && SmithingSkinRecipe.isSkinnable(piece)) {
+                    piece.set(ModDataComponents.SKIN, new ArmorSkinValue(skin));
+                }
+                if (cloth != null && SmithingClothRecipe.isClothable(piece)) {
+                    piece.set(ModDataComponents.CLOTH, cloth);
+                }
+                worn.put(type, piece);
+            }
+            return worn;
+        }
+
+        /** One part into one socket of a suit, in a random material, with every fitting filled. */
+        void dress(
+            final Map<ArmorType, ItemStack> worn,
+            final DecorationAnchor anchor,
+            final Holder.Reference<ArmorDecoration> part
+        ) {
+            final ItemStack piece = worn.get(anchor.armorType());
+            if (piece == null) {
+                return;
+            }
+            decorate(piece, anchor, part, pick(this.materials));
+            for (final Holder<Fitting> fitting : part.value().fittings()) {
+                final List<FittingValue> options =
+                    this.values.computeIfAbsent(fitting, held -> fittingValues(held.value()));
+                if (!options.isEmpty()) {
+                    fit(piece, anchor, fitting, pick(options));
+                }
+            }
+        }
+
+        <T> T pick(final List<T> from) {
+            return from.get(this.random.nextInt(from.size()));
+        }
+
+        private DyeColor pickDye() {
+            final DyeColor[] colours = DyeColor.values();
+            return colours[this.random.nextInt(colours.length)];
+        }
+    }
+
+    // ---- the thematic sets ----------------------------------------------------------------------
+
+    /**
+     * A set written out rather than queried: the armor to wear it on, the skin over that, an
+     * optional cloth, and a part with its material and its fittings in every socket.
+     *
+     * <p>Deliberately in Java and not in a datapack, which is the opposite of every other list in
+     * this class. A datapack entry is for what the GAME contains, and these are not part of the
+     * game - nothing hands one out, nothing crafts one, no player will ever see the name. They are
+     * six screenshots, whose only job is to keep looking like themselves while the parts around them
+     * change, and a registry for them would be a public surface that has to be kept, documented and
+     * synced for the sake of an author's private furniture.
+     */
+    private record GallerySet(
+        String name,
+        ResourceKey<EquipmentAsset> base,
+        ResourceKey<ArmorSkin> skin,
+        @Nullable SetCloth cloth,
+        List<SetSocket> sockets
+    ) {
+        Component title() {
+            return Component.translatable("commands.armorpieces.stage.set." + this.name);
+        }
+
+        /**
+         * The four dressed stacks, or an empty map if the base armor itself is gone.
+         *
+         * <p>Every other lookup is allowed to miss: a part, a skin or a cloth this set names and the
+         * loaded data has not got is reported and skipped, and the rest of the set is still worth
+         * looking at. The base is not, because without it there is nothing to hang anything on.
+         */
+        Map<ArmorType, ItemStack> wear(final CommandSourceStack source) {
+            final BaseArmor armor = baseArmors().stream()
+                .filter(candidate -> candidate.asset().equals(this.base))
+                .findFirst()
+                .orElse(null);
+            if (armor == null) {
+                missing(source, this.base.identifier());
+                return Map.of();
+            }
+            final Holder<ArmorSkin> worn = find(source, ArmorPiecesRegistries.ARMOR_SKIN, this.skin);
+            final ClothValue cloth = this.cloth == null ? null : this.cloth.resolve(source);
+
+            final Map<ArmorType, ItemStack> suit = new EnumMap<>(ArmorType.class);
+            for (final ArmorType type : ARMOR_TYPES) {
+                final ItemStack piece = armor.piece(type);
+                if (piece.isEmpty()) {
+                    continue;
+                }
+                if (worn != null && SmithingSkinRecipe.isSkinnable(piece)) {
+                    piece.set(ModDataComponents.SKIN, new ArmorSkinValue(worn));
+                }
+                if (cloth != null && SmithingClothRecipe.isClothable(piece)) {
+                    piece.set(ModDataComponents.CLOTH, cloth);
+                }
+                suit.put(type, piece);
+            }
+            this.sockets.forEach(socket -> socket.dress(source, suit));
+            return suit;
+        }
+    }
+
+    /** A garment in one flat colour. No patterns: a set's colour is its own, not a banner's. */
+    private record SetCloth(ResourceKey<Cloth> cloth, DyeColor colour) {
+        @Nullable ClothValue resolve(final CommandSourceStack source) {
+            final Holder<Cloth> found = find(source, ArmorPiecesRegistries.CLOTH, this.cloth);
+            return found == null ? null : new ClothValue(found, this.colour, BannerPatternLayers.EMPTY);
+        }
+    }
+
+    /**
+     * One socket of a set: the part, its material, and the ITEMS that fill its fittings.
+     *
+     * <p>Items rather than fitting values, and offered through {@link Fitting#accept} in the part's
+     * own fitting order - which is precisely what
+     * {@link com.mattjesmc.armorpieces.recipe.SmithingFittingRecipe} does with a bare template. A set
+     * therefore says "an emerald and a gold ingot" the way a player would hand them over, and never
+     * has to name a fitting or know the shape of the value it stores, so a part whose fittings are
+     * reordered or retyped keeps working here.
+     */
+    private record SetSocket(
+        DecorationAnchor anchor,
+        ResourceKey<ArmorDecoration> part,
+        ResourceKey<TrimMaterial> material,
+        List<SetItem> fittings
+    ) {
+        void dress(final CommandSourceStack source, final Map<ArmorType, ItemStack> suit) {
+            final ItemStack piece = suit.get(this.anchor.armorType());
+            final Holder<ArmorDecoration> decoration =
+                find(source, ArmorPiecesRegistries.ARMOR_DECORATION, this.part);
+            final Holder<TrimMaterial> trim = find(source, Registries.TRIM_MATERIAL, this.material);
+            if (piece == null || decoration == null || trim == null) {
+                return;
+            }
+            decorate(piece, this.anchor, decoration, trim);
+            for (final SetItem filler : this.fittings) {
+                final ItemStack offered = filler.stack(source);
+                for (final Holder<Fitting> fitting : decoration.value().fittings()) {
+                    final Optional<FittingValue> value = fitting.value().accept(offered);
+                    if (value.isPresent()) {
+                        fit(piece, this.anchor, fitting, value.get());
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * One item a set hands to a part's fittings, named by what it IS rather than by an item field.
+     *
+     * <p>There is no {@code dyed(DyeColor.RED)} to point at: a dye, a banner and the thing that provides a
+     * trim material are all found by walking the item registry, which is exactly what
+     * {@link MaterialIcons} does - and cannot be done while this class is still being initialised,
+     * which is when {@link #SETS} is built. So a set says "purple dye" and the item is looked up when
+     * the set is staged. An item nothing in the game provides comes back empty, no fitting accepts
+     * it, and the part is simply staged unfitted.
+     */
+    private sealed interface SetItem {
+        ItemStack stack(CommandSourceStack source);
+
+        /** For a {@code gemstone} or a {@code guard}: the ingot or the gem the material comes in. */
+        record Material(ResourceKey<TrimMaterial> material) implements SetItem {
+            @Override
+            public ItemStack stack(final CommandSourceStack source) {
+                final Holder<TrimMaterial> found = find(source, Registries.TRIM_MATERIAL, this.material);
+                return found == null ? ItemStack.EMPTY : MaterialIcons.forTrimMaterial(found);
+            }
+        }
+
+        /** For an {@code inlay}. */
+        record Dye(DyeColor colour) implements SetItem {
+            @Override
+            public ItemStack stack(final CommandSourceStack source) {
+                return MaterialIcons.forDye(this.colour);
+            }
+        }
+
+        /** For a {@code banner}: a plain banner, so the cloth takes the colour and no design. */
+        record Banner(DyeColor colour) implements SetItem {
+            @Override
+            public ItemStack stack(final CommandSourceStack source) {
+                return MaterialIcons.forBanner(this.colour);
+            }
+        }
+    }
+
+    /** A registry entry a set names, or null with a message saying which one is not loaded. */
+    private static <T> @Nullable Holder<T> find(
+        final CommandSourceStack source,
+        final ResourceKey<Registry<T>> registry,
+        final ResourceKey<T> key
+    ) {
+        final Holder<T> found = source.registryAccess().lookupOrThrow(registry).get(key).orElse(null);
+        if (found == null) {
+            missing(source, key.identifier());
+        }
+        return found;
+    }
+
+    private static void missing(final CommandSourceStack source, final Identifier what) {
+        source.sendSuccess(
+            () -> Component.translatable("commands.armorpieces.stage.set.missing", what.toString()), false);
+    }
+
+    private static ResourceKey<ArmorDecoration> part(final String name) {
+        return ResourceKey.create(ArmorPiecesRegistries.ARMOR_DECORATION, id(name));
+    }
+
+    private static ResourceKey<ArmorSkin> skin(final String name) {
+        return ResourceKey.create(ArmorPiecesRegistries.ARMOR_SKIN, id(name));
+    }
+
+    private static Identifier id(final String name) {
+        return Identifier.fromNamespaceAndPath(ArmorPieces.MOD_ID, name);
+    }
+
+    private static SetCloth cloth(final String name, final DyeColor colour) {
+        return new SetCloth(ResourceKey.create(ArmorPiecesRegistries.CLOTH, id(name)), colour);
+    }
+
+    /** A socket of a set. The varargs are the items handed to the part's fittings, in order. */
+    private static SetSocket on(
+        final DecorationAnchor anchor,
+        final String name,
+        final ResourceKey<TrimMaterial> material,
+        final SetItem... fittings
+    ) {
+        return new SetSocket(anchor, part(name), material, List.of(fittings));
+    }
+
+    private static SetItem metal(final ResourceKey<TrimMaterial> material) {
+        return new SetItem.Material(material);
+    }
+
+    private static SetItem dyed(final DyeColor colour) {
+        return new SetItem.Dye(colour);
+    }
+
+    private static SetItem flag(final DyeColor colour) {
+        return new SetItem.Banner(colour);
+    }
+
+    /**
+     * Six sets, one per theme the parts were authored in - knightly, court, beast, wayfarer, tidal,
+     * carapace - each filling all twelve sockets.
+     *
+     * <p>The themes are the loot groups' (see {@code data/armorpieces/armorpieces/loot_group}), but
+     * the parts are NOT confined to a theme's tag: no theme covers all twelve sockets, and a set with
+     * a bare waist is not a picture of anything. Where a theme has nothing for a socket the nearest
+     * neutral part stands in, which is what a player with that theme's chest loot would end up
+     * wearing anyway.
+     */
+    private static final List<GallerySet> SETS = List.of(
+        // Knightly: iron on iron, so every plate part takes the darker variant and reads as one
+        // suit, with gold on the guards and one loud red for the crest, the banner and the inlay.
+        new GallerySet("knight_errant", EquipmentAssets.IRON, skin("plate"),
+            cloth("tabard", DyeColor.WHITE), List.of(
+                on(DecorationAnchor.CREST, "brush_crest", TrimMaterials.REDSTONE),
+                on(DecorationAnchor.BROW, "great_helm", TrimMaterials.IRON, metal(TrimMaterials.GOLD)),
+                on(DecorationAnchor.HORNS, "cheek_guards", TrimMaterials.IRON, metal(TrimMaterials.GOLD)),
+                on(DecorationAnchor.PAULDRONS, "spaulders", TrimMaterials.IRON),
+                on(DecorationAnchor.BACK, "banner", TrimMaterials.IRON, flag(DyeColor.RED)),
+                on(DecorationAnchor.COLLAR, "gorget", TrimMaterials.IRON),
+                on(DecorationAnchor.VAMBRACES, "vambraces", TrimMaterials.IRON),
+                on(DecorationAnchor.BELT, "girdle", TrimMaterials.IRON, metal(TrimMaterials.GOLD), metal(TrimMaterials.REDSTONE)),
+                on(DecorationAnchor.TASSETS, "tassets", TrimMaterials.IRON),
+                on(DecorationAnchor.KNEES, "poleyns", TrimMaterials.IRON),
+                on(DecorationAnchor.SPURS, "rowel_spurs", TrimMaterials.IRON, metal(TrimMaterials.GOLD)),
+                on(DecorationAnchor.GREAVES, "greaves", TrimMaterials.IRON, dyed(DyeColor.RED)))),
+
+        // Court: gold and amethyst throughout, purple everywhere a dye is taken. Greaves has no
+        // court part, so the wayfarer's boot cuffs stand in - the only socket the theme cannot fill.
+        new GallerySet("high_court", EquipmentAssets.GOLD, skin("runic"),
+            cloth("tabard", DyeColor.PURPLE), List.of(
+                on(DecorationAnchor.CREST, "feathering", TrimMaterials.QUARTZ),
+                on(DecorationAnchor.BROW, "coronet", TrimMaterials.GOLD, metal(TrimMaterials.AMETHYST)),
+                on(DecorationAnchor.HORNS, "helm_wings", TrimMaterials.GOLD),
+                on(DecorationAnchor.PAULDRONS, "epaulettes", TrimMaterials.GOLD, dyed(DyeColor.PURPLE)),
+                on(DecorationAnchor.BACK, "cloak", TrimMaterials.GOLD, flag(DyeColor.PURPLE), metal(TrimMaterials.GOLD)),
+                on(DecorationAnchor.COLLAR, "chain_of_office", TrimMaterials.GOLD, metal(TrimMaterials.GOLD), metal(TrimMaterials.AMETHYST)),
+                on(DecorationAnchor.VAMBRACES, "bangles", TrimMaterials.GOLD, metal(TrimMaterials.AMETHYST)),
+                on(DecorationAnchor.BELT, "sash", TrimMaterials.GOLD, dyed(DyeColor.PURPLE), metal(TrimMaterials.GOLD)),
+                on(DecorationAnchor.TASSETS, "loin_panels", TrimMaterials.GOLD, dyed(DyeColor.PURPLE)),
+                on(DecorationAnchor.KNEES, "garters", TrimMaterials.GOLD, dyed(DyeColor.PURPLE)),
+                on(DecorationAnchor.SPURS, "anklets", TrimMaterials.GOLD, metal(TrimMaterials.AMETHYST)),
+                on(DecorationAnchor.GREAVES, "boot_cuffs", TrimMaterials.GOLD, dyed(DyeColor.PURPLE)))),
+
+        // Beast: copper hide and quartz bone, the two of them alternating socket by socket, over the
+        // varangian skin. Belt and back have no beast part; a cord and a pair of pinions carry them.
+        new GallerySet("wild_hunt", EquipmentAssets.COPPER, skin("varangian"), null, List.of(
+            on(DecorationAnchor.CREST, "horsetail", TrimMaterials.COPPER, dyed(DyeColor.BROWN)),
+            on(DecorationAnchor.BROW, "bone_mask", TrimMaterials.QUARTZ, metal(TrimMaterials.REDSTONE)),
+            on(DecorationAnchor.HORNS, "antlers", TrimMaterials.COPPER),
+            on(DecorationAnchor.PAULDRONS, "beast_head", TrimMaterials.COPPER, metal(TrimMaterials.REDSTONE)),
+            on(DecorationAnchor.BACK, "pinions", TrimMaterials.COPPER),
+            on(DecorationAnchor.COLLAR, "fang_necklace", TrimMaterials.QUARTZ, metal(TrimMaterials.REDSTONE)),
+            on(DecorationAnchor.VAMBRACES, "claws", TrimMaterials.QUARTZ, metal(TrimMaterials.COPPER)),
+            on(DecorationAnchor.BELT, "cord", TrimMaterials.COPPER, dyed(DyeColor.BROWN)),
+            on(DecorationAnchor.TASSETS, "pelt", TrimMaterials.COPPER, dyed(DyeColor.BROWN)),
+            on(DecorationAnchor.KNEES, "fanged_cop", TrimMaterials.COPPER, metal(TrimMaterials.REDSTONE)),
+            on(DecorationAnchor.SPURS, "talons", TrimMaterials.QUARTZ, metal(TrimMaterials.COPPER)),
+            on(DecorationAnchor.GREAVES, "shin_spikes", TrimMaterials.QUARTZ, metal(TrimMaterials.COPPER)))),
+
+        // Wayfarer: leather under a gambeson, everything copper and brown, iron only where a buckle
+        // or a spur has to be metal. The crest and the temples have no wayfarer part.
+        new GallerySet("far_road", EquipmentAssets.LEATHER, skin("gambeson"),
+            cloth("tunic", DyeColor.BROWN), List.of(
+                on(DecorationAnchor.CREST, "feathering", TrimMaterials.COPPER),
+                on(DecorationAnchor.BROW, "browband", TrimMaterials.COPPER, dyed(DyeColor.BROWN)),
+                on(DecorationAnchor.HORNS, "cheek_guards", TrimMaterials.COPPER, metal(TrimMaterials.IRON)),
+                on(DecorationAnchor.PAULDRONS, "mantle", TrimMaterials.COPPER, dyed(DyeColor.BROWN)),
+                on(DecorationAnchor.BACK, "bedroll", TrimMaterials.COPPER, dyed(DyeColor.BROWN)),
+                on(DecorationAnchor.COLLAR, "bandolier", TrimMaterials.COPPER, metal(TrimMaterials.IRON), dyed(DyeColor.BROWN)),
+                on(DecorationAnchor.VAMBRACES, "wraps", TrimMaterials.QUARTZ, dyed(DyeColor.BROWN)),
+                on(DecorationAnchor.BELT, "pouch_belt", TrimMaterials.COPPER, dyed(DyeColor.BROWN)),
+                on(DecorationAnchor.TASSETS, "thigh_sheath", TrimMaterials.COPPER, metal(TrimMaterials.IRON)),
+                on(DecorationAnchor.KNEES, "padding", TrimMaterials.COPPER, dyed(DyeColor.BROWN)),
+                on(DecorationAnchor.SPURS, "spurs", TrimMaterials.IRON),
+                on(DecorationAnchor.GREAVES, "puttees", TrimMaterials.QUARTZ, dyed(DyeColor.BROWN)))),
+
+        // Tidal: diamond and lapis on the scale skin, light blue in every dye. Six sockets have no
+        // tidal part at all, which is why this one leans hardest on neutral plate.
+        new GallerySet("deep_tide", EquipmentAssets.DIAMOND, skin("scale"), null, List.of(
+            on(DecorationAnchor.CREST, "dorsal_fin", TrimMaterials.DIAMOND, dyed(DyeColor.LIGHT_BLUE)),
+            on(DecorationAnchor.BROW, "visor", TrimMaterials.DIAMOND),
+            on(DecorationAnchor.HORNS, "head_fins", TrimMaterials.DIAMOND, dyed(DyeColor.LIGHT_BLUE)),
+            on(DecorationAnchor.PAULDRONS, "lames", TrimMaterials.DIAMOND, metal(TrimMaterials.COPPER)),
+            on(DecorationAnchor.BACK, "spine_ridge", TrimMaterials.DIAMOND, metal(TrimMaterials.COPPER)),
+            on(DecorationAnchor.COLLAR, "gorget", TrimMaterials.DIAMOND),
+            on(DecorationAnchor.VAMBRACES, "bangles", TrimMaterials.DIAMOND, metal(TrimMaterials.LAPIS)),
+            on(DecorationAnchor.BELT, "sash", TrimMaterials.LAPIS, dyed(DyeColor.LIGHT_BLUE), metal(TrimMaterials.COPPER)),
+            on(DecorationAnchor.TASSETS, "scale_skirt", TrimMaterials.DIAMOND, metal(TrimMaterials.COPPER)),
+            on(DecorationAnchor.KNEES, "garters", TrimMaterials.DIAMOND, dyed(DyeColor.LIGHT_BLUE)),
+            on(DecorationAnchor.SPURS, "streamers", TrimMaterials.DIAMOND, dyed(DyeColor.LIGHT_BLUE)),
+            on(DecorationAnchor.GREAVES, "swim_fins", TrimMaterials.DIAMOND, dyed(DyeColor.LIGHT_BLUE)))),
+
+        // Carapace: netherite and lime over lamellar - the theme has five parts and they are all
+        // here, with the beast's claws and talons and a few dark plates filling the other seven.
+        new GallerySet("chitin", EquipmentAssets.NETHERITE, skin("lamellar"), null, List.of(
+            on(DecorationAnchor.CREST, "antennae", TrimMaterials.NETHERITE, metal(TrimMaterials.EMERALD)),
+            on(DecorationAnchor.BROW, "bone_mask", TrimMaterials.NETHERITE, metal(TrimMaterials.EMERALD)),
+            on(DecorationAnchor.HORNS, "aerials", TrimMaterials.NETHERITE, dyed(DyeColor.LIME)),
+            on(DecorationAnchor.PAULDRONS, "wing_cases", TrimMaterials.NETHERITE, dyed(DyeColor.LIME)),
+            on(DecorationAnchor.BACK, "carapace", TrimMaterials.NETHERITE, dyed(DyeColor.LIME)),
+            on(DecorationAnchor.COLLAR, "ruff", TrimMaterials.NETHERITE, dyed(DyeColor.LIME)),
+            on(DecorationAnchor.VAMBRACES, "claws", TrimMaterials.NETHERITE, metal(TrimMaterials.NETHERITE)),
+            on(DecorationAnchor.BELT, "chain_belt", TrimMaterials.NETHERITE, metal(TrimMaterials.NETHERITE)),
+            on(DecorationAnchor.TASSETS, "mail_fringe", TrimMaterials.NETHERITE, metal(TrimMaterials.NETHERITE)),
+            on(DecorationAnchor.KNEES, "fanged_cop", TrimMaterials.NETHERITE, metal(TrimMaterials.EMERALD)),
+            on(DecorationAnchor.SPURS, "talons", TrimMaterials.NETHERITE, metal(TrimMaterials.NETHERITE)),
+            on(DecorationAnchor.GREAVES, "shin_spikes", TrimMaterials.NETHERITE, metal(TrimMaterials.NETHERITE)))));
 
     // ---- layout ---------------------------------------------------------------------------------
 
@@ -879,6 +1375,16 @@ public final class StageCommand {
 
     private static int finish(final CommandSourceStack source, final int placed) {
         source.sendSuccess(() -> Component.translatable("commands.armorpieces.stage.placed", placed), true);
+        return placed;
+    }
+
+    /**
+     * As {@link #finish}, and says which seed produced it - the only way back to a stage that came
+     * out well, since nothing else about a roll is kept.
+     */
+    private static int finish(final CommandSourceStack source, final int placed, final long seed) {
+        source.sendSuccess(
+            () -> Component.translatable("commands.armorpieces.stage.placed.seeded", placed, seed), true);
         return placed;
     }
 }
