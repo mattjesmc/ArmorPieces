@@ -1,0 +1,225 @@
+"""
+The cloth bake, in Python, and a contact sheet of what it produces.
+
+The reference implementation of `ClothTextureManager`, the way `bake_skin.py` is the reference for
+`SkinBake`: same steps, same numbers, no game. It exists because the only thing worth judging about a
+garment is how it LOOKS on a material, and a round trip through the client to find out that a fold is
+too dark is a slow way to move a number by ten.
+
+The five steps, per texel, and they are the ones the Java does:
+
+  1. the base - the armor's own texture, upsampled nearest, so the plate is untouched where the mask
+     is transparent;
+  2. the cut - where the mask is transparent, stop;
+  3. the colour - the banner's design where the texel is on one of the two torso panels, the base dye
+     everywhere else the mask covers;
+  4. the value - the mask's own, plus the armor's lighting at that texel, at LIGHT;
+  5. the ramp - `DecorationPalette.ofStaticColour`, the same three-stop rule a dye fitting goes
+     through.
+
+Usage:
+    python tools/preview_cloth.py                    # a sheet of the shipped cloths on four metals
+    python tools/preview_cloth.py --light 0.45       # the same at a different armor-light mix
+"""
+
+from __future__ import annotations
+
+import argparse
+from pathlib import Path
+
+from PIL import Image
+
+import skin_sheets
+
+ROOT = Path(__file__).resolve().parent.parent
+ASSETS = ROOT / "tools" / ".mcassets"
+MASKS = ROOT / "src" / "main" / "resources" / "assets" / "armorpieces" / "textures" / "entity" / "cloth"
+
+# Must match ClothTextureManager.
+LIGHT = 0.30
+WIDTH = 256
+GRID = (64, 32)
+FRONT = skin_sheets.rect_of("chest", "front")
+BACK = skin_sheets.rect_of("chest", "back")
+FLAG = (20, 40, 1)
+PLATE = (12, 22, 1)
+SPRITE_SHEET = 64.0
+
+# Vanilla's own diffuse colours, which is what a banner pass is tinted with.
+DYES = {
+    "white": 0xF9FFFE, "orange": 0xF9801D, "magenta": 0xC74EBD, "light_blue": 0x3AB3DA,
+    "yellow": 0xFED83D, "lime": 0x80C71F, "pink": 0xF38BAA, "gray": 0x474F52,
+    "light_gray": 0x9D9D97, "cyan": 0x169C9C, "purple": 0x8932B8, "blue": 0x3C44AA,
+    "brown": 0x835432, "green": 0x5E7C16, "red": 0xB02E26, "black": 0x1D1D21,
+}
+
+
+def luma(rgb) -> float:
+    return 0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]
+
+
+def static_ramp(rgb: int) -> list[tuple[int, int, int]]:
+    """`DecorationPalette.ofStaticColour`: three stops around one colour, as a 256-entry table."""
+    r, g, b = rgb >> 16 & 0xFF, rgb >> 8 & 0xFF, rgb & 0xFF
+    dark = (round(r * 0.5), round(g * 0.5), round(b * 0.5))
+    mid = (r, g, b)
+    light = (round(r + (255 - r) * 0.5), round(g + (255 - g) * 0.5), round(b + (255 - b) * 0.5))
+
+    def lerp(a, c, t):
+        return tuple(round(a[i] + (c[i] - a[i]) * t) for i in range(3))
+
+    return [lerp(dark, mid, v / 127) if v <= 127 else lerp(mid, light, (v - 127) / 128)
+            for v in range(256)]
+
+
+def lightmap(image: Image.Image, mix: float = LIGHT) -> list[list[int]]:
+    """`SkinBake.lightmap`: the deviation from the middle of the image's own range, normalised."""
+    px = image.load()
+    values = sorted(luma(px[x, y][:3])
+                    for y in range(image.height) for x in range(image.width) if px[x, y][3])
+    if not values:
+        return [[0] * image.width for _ in range(image.height)]
+    lo = values[int(0.05 * (len(values) - 1))]
+    hi = values[int(0.95 * (len(values) - 1))]
+    mid = (lo + hi) / 2
+    spread = max(1.0, hi - lo)
+    rows = []
+    for y in range(image.height):
+        row = []
+        for x in range(image.width):
+            r, g, b, a = px[x, y]
+            offset = max(-0.5, min(0.5, (luma((r, g, b)) - mid) / spread))
+            row.append(round(mix * 255 * offset) if a else 0)
+        rows.append(row)
+    return rows
+
+
+def panel(sheet: str, base: str, layers: list[tuple[str, str]]) -> Image.Image:
+    """The banner's design, composited into the rectangle its sprites are painted for."""
+    box = FLAG if sheet == "banner" else PLATE
+    out = Image.new("RGBA", (box[0], box[1]), (0, 0, 0, 0))
+    passes = [(f"{sheet}_base", base)] + [(name, colour) for name, colour in layers]
+    for name, colour in passes:
+        path = ASSETS / sheet / f"{name}.png"
+        if not path.is_file():
+            print(f"  (no sprite {path.name}, skipped)")
+            continue
+        with Image.open(path) as opened:
+            sprite = opened.convert("RGBA")
+        unit = sprite.width / SPRITE_SHEET
+        x0 = y0 = round(box[2] * unit)
+        face = (round(box[0] * unit), round(box[1] * unit))
+        tint = DYES[colour]
+        src, dst = sprite.load(), out.load()
+        for y in range(box[1]):
+            for x in range(box[0]):
+                sx, sy = x0 + x * face[0] // box[0], y0 + y * face[1] // box[1]
+                a = src[sx, sy][3]
+                if not a:
+                    continue
+                # Alpha only: the sprite's own colour is vanilla's flag shading, and this garment
+                # already has the mask's folds and the armor's light. See ClothTextureManager.pass.
+                over = (tint >> 16 & 0xFF, tint >> 8 & 0xFF, tint & 0xFF)
+                if a == 255:
+                    dst[x, y] = (*over, 255)
+                else:
+                    under = dst[x, y]
+                    dst[x, y] = (*[(over[i] * a + under[i] * (255 - a)) // 255 for i in range(3)], 255)
+    return out
+
+
+def within(rect, gx: float, gy: float) -> bool:
+    return rect[0] <= gx < rect[0] + rect[2] and rect[1] <= gy < rect[1] + rect[3]
+
+
+def bake(cloth: str, material: str, base: str, layers: list[tuple[str, str]],
+         sheet: str = "shield", mix: float = LIGHT) -> Image.Image | None:
+    """One garment in one design on one material, as a 256x128 armor sheet."""
+    mask_path = MASKS / cloth / "humanoid.png"
+    armor_path = ASSETS / "armor" / f"{material}.png"
+    if not mask_path.is_file() or not armor_path.is_file():
+        return None
+    with Image.open(mask_path) as opened:
+        mask = opened.convert("RGBA")
+    with Image.open(armor_path) as opened:
+        armor = opened.convert("RGBA")
+
+    scale = max(1, round(WIDTH / armor.width))
+    width, height = armor.width * scale, armor.height * scale
+    light = lightmap(armor, mix)
+    design = panel(sheet, base, layers)
+    fallback = DYES[base]
+    ramps: dict[int, list] = {}
+
+    out = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    src, msk, dsn, dst = armor.load(), mask.load(), design.load(), out.load()
+    for y in range(height):
+        for x in range(width):
+            bx, by = x // scale, y // scale
+            under = src[bx, by]
+            mx, my = x * mask.width // width, y * mask.height // height
+            m = msk[mx, my]
+            if not m[3]:
+                dst[x, y] = under
+                continue
+            gx, gy = x * GRID[0] / width, y * GRID[1] / height
+            rect = FRONT if within(FRONT, gx, gy) else BACK if within(BACK, gx, gy) else None
+            colour = fallback
+            if rect is not None:
+                px = min(design.width - 1, int((gx - rect[0]) / rect[2] * design.width))
+                py = min(design.height - 1, int((gy - rect[1]) / rect[3] * design.height))
+                pixel = dsn[px, py]
+                if pixel[3]:
+                    colour = pixel[0] << 16 | pixel[1] << 8 | pixel[2]
+            shade = max(0, min(255, m[0] + light[by][bx]))
+            table = ramps.setdefault(colour, static_ramp(colour))
+            dst[x, y] = (*table[shade], 255)
+    return out
+
+
+# The designs the sheet is judged on: one plain, one two-layer, one busy. Between them they show a
+# flat field, a hard edge and a charge, which are the three things a panel can be asked to carry.
+DESIGNS = [
+    ("plain", "white", []),
+    ("cross", "white", [("cross", "red"), ("border", "red")]),
+    ("charge", "yellow", [("half_horizontal", "black"), ("creeper", "green")]),
+]
+MATERIALS = ["iron", "gold", "diamond", "netherite", "leather"]
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--light", type=float, default=LIGHT, help="armor-light mix (0 = none)")
+    parser.add_argument("--cloth", default=None, help="one cloth rather than every shipped one")
+    args = parser.parse_args()
+
+    cloths = [args.cloth] if args.cloth else sorted(
+        d.name for d in MASKS.iterdir() if (d / "humanoid.png").exists())
+
+    scale = 3
+    cell = (64 * 4 * scale, 32 * 4 * scale)
+    rows = [(cloth, name, material)
+            for cloth in cloths for name, _, _ in DESIGNS for material in MATERIALS]
+    columns = len(MATERIALS)
+    lines = len(rows) // columns
+    sheet = Image.new("RGBA", (cell[0] * columns, cell[1] * lines), (24, 24, 28, 255))
+
+    i = 0
+    for cloth in cloths:
+        for name, base, layers in DESIGNS:
+            for column, material in enumerate(MATERIALS):
+                img = bake(cloth, material, base, layers, mix=args.light)
+                if img is None:
+                    continue
+                big = img.resize(cell, Image.NEAREST)
+                sheet.paste(big, (column * cell[0], (i // columns) * cell[1]), big)
+                i += 1
+            print(f"{cloth:8} {name:8} {' '.join(MATERIALS)}")
+
+    path = ROOT / "tools" / "cloth_preview.png"
+    sheet.save(path)
+    print(f"sheet: {path}  (light {args.light})")
+
+
+if __name__ == "__main__":
+    main()

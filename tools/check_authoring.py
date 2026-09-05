@@ -18,6 +18,9 @@ the claim that opening a part and saving it unchanged changes nothing:
   skins      every data/<ns>/armorpieces/armor_skin/<skin>.json re-serialises to its own bytes,
              its loot rows are in the part's own three-key shape, and both of its master sheets are
              actually in the resource pack - a skin with no art draws as plain armor and says nothing
+  cloths     every data/<ns>/armorpieces/cloth/<cloth>.json re-serialises to its own bytes, names
+             a sheet that exists, ships at least one cut mask, and has a template recipe of the
+             usual shape - a cloth with no art at all is a garment that draws nothing
   skin art   the select in assets/<ns>/items/skin_template.json and the skin_template_<skin>.png
              beside it name each other: a case with no texture draws the chequer, a texture with no
              case is art nothing can show, and a pack's own skin correctly has neither
@@ -314,7 +317,117 @@ def check_skin_icons(assets: Path) -> list[str]:
             named = ((case.get("model") or {}).get("model") or "").split(":")[-1]
             if named and not (assets / "assets" / namespace / "models" / f"{named}.json").exists():
                 failures.append(f"skin icon {case.get('when')}: no model at {named}.json")
+        fallback = ((model.get("fallback") or {}).get("model") or "").split(":")[-1]
+        if fallback and not (assets / "assets" / namespace / "models" / f"{fallback}.json").exists():
+            failures.append(f"skin icon fallback: no model at {fallback}.json - a pack's own skin "
+                            "would draw as the missing-texture chequer")
         print(f"skin icons {namespace}: ok ({len(cased)} cases)")
+    return failures
+
+
+def check_cloths(pack: Path, assets: Path) -> list[str]:
+    """Every cloth: its data file, its cut masks, and its template recipe.
+
+    A cloth is the fourth template family and round-trips like the other three. What differs from a
+    skin, and is the whole reason this is not the same function, is that its two masks are OPTIONAL
+    ONE AT A TIME: a tabard that stops at the waist ships no leggings mask, and that absence is how
+    it stops. What cannot be absent is BOTH - a cloth with no art at all is a garment the game puts
+    on a piece of armor and then draws nothing for, which is silent in game and so is caught here.
+    """
+    failures: list[str] = []
+    for data in sorted(pack.glob("data/*/armorpieces/cloth/*.json")):
+        namespace, cloth = data.parents[2].name, data.stem
+        text = data.read_text(encoding="utf8")
+        parsed = json.loads(text)
+        if json.dumps(parsed, indent=2) + "\n" != text:
+            failures.append(f"cloth {data.name}: would be reformatted by a save")
+        for index, row in enumerate(parsed.get("loot", [])):
+            if not _loot_row_ok(row):
+                failures.append(f"cloth {data.name}: loot row {index} would be rewritten by a save")
+        sheet = parsed.get("sheet", "shield")
+        if sheet not in ("banner", "shield"):
+            failures.append(f"cloth {data.name}: sheet {sheet!r} is neither banner nor shield")
+        asset = parsed.get("asset_id") or ""
+        if ":" not in asset:
+            failures.append(f"cloth {data.name}: asset_id {asset!r} is not a namespaced id")
+            continue
+        asset_ns, asset_path = asset.split(":", 1)
+        masks = [name for name in ("humanoid", "humanoid_leggings")
+                 if (assets / "assets" / asset_ns / "textures" / "entity" / "cloth" / asset_path
+                     / f"{name}.png").exists()]
+        if not masks:
+            failures.append(f"cloth {data.name}: no cut mask at all under textures/entity/cloth/"
+                            f"{asset_path}/ - it would draw nothing")
+            continue
+        print(f"cloth {data.name}: ok ({', '.join(masks)})")
+
+        recipe_file = pack / "data" / namespace / "recipe" / f"cloth_template_{cloth}.json"
+        if not recipe_file.exists():
+            continue
+        recipe_text = recipe_file.read_text(encoding="utf8")
+        try:
+            recipe = json.loads(recipe_text)
+        except ValueError:
+            failures.append(f"recipe {recipe_file.name}: not valid JSON")
+            continue
+        craftable = recipe.get("type") != DISABLED_TYPE
+        key = recipe.get("key") or {}
+        focus, ring = _ingredient_id(key.get("F")), _ingredient_id(key.get("#"))
+        if (craftable and recipe.get("type") != "minecraft:crafting_shaped") \
+                or recipe.get("pattern") != RING_PATTERN or not focus or not ring:
+            print(f"recipe {recipe_file.name}: hand-made, left alone")
+            continue
+        rewrite = dict(recipe)
+        rewrite.update({
+            "type": "minecraft:crafting_shaped" if craftable else DISABLED_TYPE,
+            "pattern": RING_PATTERN,
+            "key": {"#": ring, "F": focus},
+            "result": {
+                "id": "armorpieces:cloth_template",
+                # The garment and nothing else: the colour and the layers arrive off the banner at
+                # the smithing table, and a template that named them would be a template for one
+                # design rather than for a garment.
+                "components": {"armorpieces:cloth": {"cloth": f"{namespace}:{cloth}"}},
+            },
+        })
+        rewrite.setdefault("category", "equipment")
+        if json.dumps(rewrite, indent=2) + "\n" != recipe_text:
+            failures.append(f"recipe {recipe_file.name}: would be rewritten by a save")
+            continue
+        print(f"recipe {recipe_file.name}: ok ({'off' if not craftable else 'on'})")
+    return failures
+
+
+def check_cloth_icons(assets: Path) -> list[str]:
+    """The cloth templates' item art, on the same terms as the skins'.
+
+    The one difference is the shape of a case: a cloth template's component is an object rather than
+    a bare id, because the value carries a colour and pattern layers as well as the garment, so the
+    `when` is `{"cloth": "<ns>:<name>"}` and the garment has to be read out of it.
+    """
+    failures: list[str] = []
+    for select in sorted(assets.glob("assets/*/items/cloth_template.json")):
+        namespace = select.parents[1].name
+        model = json.loads(select.read_text(encoding="utf8")).get("model") or {}
+        cased = {(case.get("when") or {}).get("cloth") for case in model.get("cases", [])}
+        drawn = {f"{namespace}:{png.stem[len('cloth_template_'):]}"
+                 for png in (assets / "assets" / namespace / "textures" / "item").glob("cloth_template_*.png")}
+        for cloth in sorted(c for c in cased - drawn if c):
+            failures.append(f"cloth icon {cloth}: a select case with no texture - it would draw as "
+                            "the missing-texture chequer")
+        for cloth in sorted(drawn - cased):
+            failures.append(f"cloth icon {cloth}: a texture no select case names - nothing can show it")
+        for case in model.get("cases", []):
+            named = ((case.get("model") or {}).get("model") or "").split(":")[-1]
+            if named and not (assets / "assets" / namespace / "models" / f"{named}.json").exists():
+                failures.append(f"cloth icon {case.get('when')}: no model at {named}.json")
+        # The fallback is the model a PACK's own cloth lands on - the one case the mod's own content
+        # never exercises, and so the one that goes missing without anyone noticing.
+        fallback = ((model.get("fallback") or {}).get("model") or "").split(":")[-1]
+        if fallback and not (assets / "assets" / namespace / "models" / f"{fallback}.json").exists():
+            failures.append(f"cloth icon fallback: no model at {fallback}.json - a pack's own cloth "
+                            "would draw as the missing-texture chequer")
+        print(f"cloth icons {namespace}: ok ({len(cased)} cases)")
     return failures
 
 
@@ -326,8 +439,9 @@ def check_pack(pack: Path, assets: Path | None = None) -> list[str]:
     data_files = sorted(pack.glob("data/*/armorpieces/armor_decoration/*.json"))
     geometry_files = sorted(assets.glob("assets/*/armorpieces/decoration/*.json"))
     skin_files = sorted(pack.glob("data/*/armorpieces/armor_skin/*.json"))
-    if not data_files and not geometry_files and not skin_files:
-        return [f"{pack}: no parts or skins found"]
+    cloth_files = sorted(pack.glob("data/*/armorpieces/cloth/*.json"))
+    if not data_files and not geometry_files and not skin_files and not cloth_files:
+        return [f"{pack}: no parts, skins or cloths found"]
 
     for geometry in geometry_files:
         if not bb_geo.roundtrip(geometry):
@@ -352,6 +466,8 @@ def check_pack(pack: Path, assets: Path | None = None) -> list[str]:
         print(f"data {data.name}: ok")
     failures.extend(check_skins(pack, assets))
     failures.extend(check_skin_icons(assets))
+    failures.extend(check_cloths(pack, assets))
+    failures.extend(check_cloth_icons(assets))
     failures.extend(check_recipes(pack, data_files))
     failures.extend(check_fitting_recipes(pack))
     failures.extend(check_recipe_collisions(pack))

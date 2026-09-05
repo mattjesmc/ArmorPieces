@@ -3,6 +3,8 @@ package com.mattjesmc.armorpieces.client.mixin;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mattjesmc.armorpieces.client.texture.ArmorSkinTextureManager;
+import com.mattjesmc.armorpieces.client.texture.ClothTextureManager;
+import com.mattjesmc.armorpieces.cloth.ClothValue;
 import com.mattjesmc.armorpieces.registry.ModDataComponents;
 import com.mattjesmc.armorpieces.skin.ArmorSkinValue;
 import java.util.List;
@@ -14,8 +16,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
 /**
- * Draws a skinned piece of armor with its skin's texture instead of the material's own - the one
- * place a skin is applied, and the mod's only mixin.
+ * Draws a skinned or clothed piece of armor with a texture of ours instead of the material's own -
+ * the one place either is applied, and the mod's only mixin.
  *
  * <p>The alternative was to rewrite the piece's {@code minecraft:equippable} component and point its
  * asset id at art of ours, which needs no mixin at all. It was rejected for two things it would
@@ -37,6 +39,23 @@ import org.spongepowered.asm.mixin.injection.At;
  * layer and that is it. Leather declares two - a tinted shell and an untinted overlay carrying the
  * stitching and the straps - and there the skin takes the tinted one, so a dyed piece is still dyed
  * and the buckles stay where vanilla drew them. A layer that is neither is left alone.
+ *
+ * <h2>The cloth, which rides the same substitution</h2>
+ *
+ * <p>A garment is composited INTO the texture rather than drawn as a pass of its own, which is what
+ * puts it over the skin, under the trim (a later pass in this very method) and under every part
+ * (an appended render layer, which draws after all of this) at no cost. See
+ * {@link ClothTextureManager}.
+ *
+ * <p>It goes on the LAST layer, not the shell, and the reason is leather: the shell there is
+ * multiplied by the piece's dye at draw time, so a garment composited into it would come out brown
+ * on undyed leather and purple on blue. The last layer is leather's untinted overlay and is the sole
+ * layer everywhere else, so it is drawn untinted in both cases. The shading still comes from the
+ * shell, which is where the armor's form actually is.
+ *
+ * <p>Both may apply to one layer - single-layer armor that is skinned AND clothed - and then the
+ * order here is the order on the body: the skin decides what the plate is, and the cloth is laid
+ * over what the skin produced.
  */
 @Mixin(EquipmentLayerRenderer.class)
 public class EquipmentLayerRendererMixin {
@@ -55,7 +74,7 @@ public class EquipmentLayerRendererMixin {
             value = "INVOKE",
             target = "Ljava/util/function/Function;apply(Ljava/lang/Object;)Ljava/lang/Object;",
             ordinal = 0))
-    private Object armorpieces$skinTexture(
+    private Object armorpieces$texture(
         final Object original,
         final @Local(argsOnly = true) EquipmentClientInfo.LayerType layerType,
         final @Local(argsOnly = true) ItemStack itemStack,
@@ -66,12 +85,46 @@ public class EquipmentLayerRendererMixin {
             return original;
         }
         final ArmorSkinValue skin = itemStack.get(ModDataComponents.SKIN);
-        if (skin == null || !isShell(layer, layers)) {
+        final ClothValue cloth = itemStack.get(ModDataComponents.CLOTH);
+        if (skin == null && cloth == null) {
             return original;
         }
-        final Identifier skinned = ArmorSkinTextureManager.instance()
-            .resolve(skin.skin().value(), layerType.getSerializedName(), texture);
-        return skinned != null ? skinned : original;
+        final String sheet = layerType.getSerializedName();
+
+        Identifier result = texture;
+        if (skin != null && isShell(layer, layers)) {
+            final Identifier skinned =
+                ArmorSkinTextureManager.instance().resolve(skin.skin().value(), sheet, texture);
+            if (skinned != null) {
+                result = skinned;
+            }
+        }
+        if (cloth != null && layer.equals(layers.getLast())) {
+            // The armor's form, as the player actually sees it: a skinned piece's own greyscale
+            // master IS the form, and an unskinned one's is in the material's vanilla texture.
+            final Identifier shading = skin != null
+                ? skin.skin().value().sheet(sheet, "")
+                : shellTexture(layers, layerType);
+            final Identifier clothed =
+                ClothTextureManager.instance().resolve(cloth, sheet, result, shading);
+            if (clothed != null) {
+                result = clothed;
+            }
+        }
+        return result;
+    }
+
+    /** The shell layer's own texture - what the armor's lighting is measured from. */
+    private static Identifier shellTexture(
+        final List<EquipmentClientInfo.Layer> layers,
+        final EquipmentClientInfo.LayerType layerType
+    ) {
+        for (final EquipmentClientInfo.Layer candidate : layers) {
+            if (candidate.dyeable().isPresent()) {
+                return candidate.getTextureLocation(layerType);
+            }
+        }
+        return layers.getFirst().getTextureLocation(layerType);
     }
 
     /**

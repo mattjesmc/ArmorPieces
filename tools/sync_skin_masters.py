@@ -40,6 +40,7 @@ OUT = ROOT / "src" / "main" / "resources" / "assets" / "armorpieces" / "textures
 # only the later one ships.
 SHIPPED = {
     "plate": "plate",
+    "chainmail": "chainmail",
     "mail": "mail",
     "gambeson": "gambeson",
     "gothic": "gothic",
@@ -47,6 +48,11 @@ SHIPPED = {
     "brigandine": "brigandine",
     "scale": "scale",
     "lamellar": "lamellar",
+    "lorica": "lorica",
+    "varangian": "varangian",
+    "hoplite": "hoplite",
+    "samurai": "samurai",
+    "runic": "runic",
 }
 
 

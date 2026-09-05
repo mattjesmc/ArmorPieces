@@ -63,6 +63,12 @@ public final class ModCreativeTabs {
                             .lookup(ArmorPiecesRegistries.ARMOR_SKIN)
                             .ifPresent(skins -> skins.listElements()
                                 .forEach(skin -> output.accept(ModItems.skinTemplateFor(skin))));
+                        // Then the cloths, walked the same way again. Last of all, because a garment
+                        // is the outermost thing a piece can wear that is not a part.
+                        parameters.holders()
+                            .lookup(ArmorPiecesRegistries.CLOTH)
+                            .ifPresent(cloths -> cloths.listElements()
+                                .forEach(cloth -> output.accept(ModItems.clothTemplateFor(cloth))));
                     }))
                 .build());
         ArmorPieces.LOGGER.info("[Armor Pieces] Registered creative tab.");

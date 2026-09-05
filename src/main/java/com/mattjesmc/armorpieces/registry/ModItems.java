@@ -1,9 +1,12 @@
 package com.mattjesmc.armorpieces.registry;
 
 import com.mattjesmc.armorpieces.ArmorPieces;
+import com.mattjesmc.armorpieces.cloth.Cloth;
+import com.mattjesmc.armorpieces.cloth.ClothValue;
 import com.mattjesmc.armorpieces.decoration.ArmorDecoration;
 import com.mattjesmc.armorpieces.decoration.DecorationAnchor;
 import com.mattjesmc.armorpieces.decoration.fitting.Fitting;
+import com.mattjesmc.armorpieces.item.ClothTemplateItem;
 import com.mattjesmc.armorpieces.item.DecorationTemplateItem;
 import com.mattjesmc.armorpieces.item.FittingTemplateItem;
 import com.mattjesmc.armorpieces.item.SkinTemplateItem;
@@ -23,7 +26,7 @@ import net.minecraft.world.item.Rarity;
 
 /**
  * The mod's items: exactly one smithing template per {@link DecorationAnchor}, plus the one fitting
- * template and the one skin template, and nothing else.
+ * template, the one skin template and the one cloth template, and nothing else.
  *
  * <p>The count is bounded by the anchor enum on purpose. Registering an item per PART would make the
  * part list compiled-in and undo the whole datapack story; registering one per SOCKET costs the same
@@ -34,13 +37,15 @@ import net.minecraft.world.item.Rarity;
  * <p>The fitting template is one item for every fitting there will ever be, because the ITEM placed
  * beside it decides where it goes - see {@link FittingTemplateItem}. The skin template is one item
  * for every skin, for the plainer reason that skins are a datapack registry - see
- * {@link SkinTemplateItem}.
+ * {@link SkinTemplateItem}; the cloth template is one item for every cloth, for the same reason
+ * again - see {@link ClothTemplateItem}.
  */
 public final class ModItems {
     private static final Map<DecorationAnchor, DecorationTemplateItem> TEMPLATES =
         new EnumMap<>(DecorationAnchor.class);
     private static FittingTemplateItem fittingTemplate;
     private static SkinTemplateItem skinTemplate;
+    private static ClothTemplateItem clothTemplate;
 
     private ModItems() {}
 
@@ -65,8 +70,14 @@ public final class ModItems {
             BuiltInRegistries.ITEM,
             skinKey,
             new SkinTemplateItem(new Item.Properties().setId(skinKey).rarity(Rarity.UNCOMMON)));
+        final ResourceKey<Item> clothKey = ResourceKey.create(
+            Registries.ITEM, Identifier.fromNamespaceAndPath(ArmorPieces.MOD_ID, "cloth_template"));
+        clothTemplate = Registry.register(
+            BuiltInRegistries.ITEM,
+            clothKey,
+            new ClothTemplateItem(new Item.Properties().setId(clothKey).rarity(Rarity.UNCOMMON)));
         ArmorPieces.LOGGER.info(
-            "[Armor Pieces] Registered {} decoration templates, the fitting template and the skin template.",
+            "[Armor Pieces] Registered {} decoration templates and the fitting, skin and cloth templates.",
             TEMPLATES.size());
     }
 
@@ -97,6 +108,22 @@ public final class ModItems {
     public static ItemStack skinTemplateFor(final Holder<ArmorSkin> skin) {
         final ItemStack stack = new ItemStack(skinTemplate);
         stack.set(ModDataComponents.SKIN, new ArmorSkinValue(skin));
+        return stack;
+    }
+
+    /** The template that puts a garment on a piece of armor. */
+    public static ClothTemplateItem clothTemplate() {
+        return clothTemplate;
+    }
+
+    /**
+     * A cloth template naming one garment, with no design on it yet - the design arrives off the
+     * banner at the table. The one place it is built, so the creative tab, a recipe and a loot table
+     * agree on what a valid cloth template looks like.
+     */
+    public static ItemStack clothTemplateFor(final Holder<Cloth> cloth) {
+        final ItemStack stack = new ItemStack(clothTemplate);
+        stack.set(ModDataComponents.CLOTH, ClothValue.of(cloth));
         return stack;
     }
 

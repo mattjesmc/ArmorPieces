@@ -57,6 +57,13 @@ TRIM_PALETTES = [
 ]
 
 
+# The banner pattern sprites, which a cloth's design is composited out of. Both sheets, because a
+# cloth chooses which one it samples the way `armorpieces:banner` does. Taken by DIRECTORY rather
+# than by name: the pattern list is data, a pack may add to it, and a preview that hardcoded the
+# vanilla twelve would go stale the first time one was added.
+PATTERN_SHEETS = ["banner", "shield"]
+
+
 def minecraft_version(path: Path = GRADLE_PROPERTIES) -> str:
     """The version the mod is built against, read from the one place that declares it."""
     text = path.read_text(encoding="utf-8")
@@ -103,6 +110,9 @@ def wanted() -> dict[str, str]:
 
     for palette in TRIM_PALETTES:
         out[f"{base}/trims/color_palettes/{palette}.png"] = f"palette/{palette}.png"
+
+    # The banner and shield pattern sprites are added by `extract`, which can see the jar's own
+    # listing and so does not have to know their names. See PATTERN_SHEETS.
 
     # The language file, for the item list below. Not a texture, but the same rule applies: it is
     # Mojang's, and it is read from the jar rather than copied into the repo.
@@ -189,6 +199,13 @@ def extract(jar_path: Path, listing_only: bool = False) -> tuple[int, list[str]]
                                            or name.startswith("data/minecraft/tags/trim_material/")
                                            or name.startswith("data/minecraft/tags/damage_type/")):
                 entries[name] = name
+        # The banner and shield pattern sprites, enumerated the same way and for the same reason:
+        # the pattern list is Mojang's to grow, and a pack may add to it.
+        for sheet in PATTERN_SHEETS:
+            prefix = f"assets/minecraft/textures/entity/{sheet}/"
+            for name in names:
+                if name.startswith(prefix) and name.endswith(".png"):
+                    entries[name] = f"{sheet}/{name[len(prefix):]}"
         for entry, relative in sorted(entries.items()):
             if entry not in names:
                 missing.append(entry)

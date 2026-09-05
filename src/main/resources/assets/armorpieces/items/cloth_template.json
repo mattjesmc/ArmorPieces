@@ -1,0 +1,31 @@
+{
+  "model": {
+    "type": "minecraft:select",
+    "property": "minecraft:component",
+    "component": "armorpieces:cloth",
+    "cases": [
+      {
+        "when": {
+          "cloth": "armorpieces:tabard"
+        },
+        "model": {
+          "type": "minecraft:model",
+          "model": "armorpieces:item/cloth_template_tabard"
+        }
+      },
+      {
+        "when": {
+          "cloth": "armorpieces:tunic"
+        },
+        "model": {
+          "type": "minecraft:model",
+          "model": "armorpieces:item/cloth_template_tunic"
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "armorpieces:item/cloth_template"
+    }
+  }
+}

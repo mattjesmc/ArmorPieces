@@ -1,0 +1,5 @@
+{
+  "type": "armorpieces:smithing_cloth",
+  "template": "armorpieces:cloth_template",
+  "base": "#armorpieces:clothable_armor"
+}

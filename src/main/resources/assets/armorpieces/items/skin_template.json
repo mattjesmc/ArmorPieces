@@ -12,6 +12,13 @@
         }
       },
       {
+        "when": "armorpieces:chainmail",
+        "model": {
+          "type": "minecraft:model",
+          "model": "armorpieces:item/skin_template_chainmail"
+        }
+      },
+      {
         "when": "armorpieces:gambeson",
         "model": {
           "type": "minecraft:model",

@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:field_masoned_banner_pattern"
+  },
+  "result": {
+    "id": "armorpieces:cloth_template",
+    "components": {
+      "armorpieces:cloth": {
+        "cloth": "armorpieces:tunic"
+      }
+    }
+  }
+}

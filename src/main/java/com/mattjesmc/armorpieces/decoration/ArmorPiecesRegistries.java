@@ -1,6 +1,7 @@
 package com.mattjesmc.armorpieces.decoration;
 
 import com.mattjesmc.armorpieces.ArmorPieces;
+import com.mattjesmc.armorpieces.cloth.Cloth;
 import com.mattjesmc.armorpieces.decoration.effect.DecorationEffect;
 import com.mattjesmc.armorpieces.decoration.fitting.Fitting;
 import com.mattjesmc.armorpieces.skin.ArmorSkin;
@@ -11,7 +12,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 
-/** The mod's registries: three loaded from datapacks, two filled in by code. */
+/** The mod's registries: four loaded from datapacks, two filled in by code. */
 public final class ArmorPiecesRegistries {
     /**
      * Decorative parts, loaded from {@code data/<ns>/armorpieces/armor_decoration/}.
@@ -42,6 +43,15 @@ public final class ArmorPiecesRegistries {
      */
     public static final ResourceKey<Registry<ArmorSkin>> ARMOR_SKIN =
         ResourceKey.createRegistryKey(Identifier.fromNamespaceAndPath(ArmorPieces.MOD_ID, "armor_skin"));
+
+    /**
+     * Cloths - a garment worn over the armor's texture, loaded from
+     * {@code data/<ns>/armorpieces/cloth/}. Synced for the reason skins are: the art is a cut mask
+     * the CLIENT composites, found by the id this registry gives, and a client that could not name
+     * the garment would draw bare armor where the server thinks there is a tabard.
+     */
+    public static final ResourceKey<Registry<Cloth>> CLOTH =
+        ResourceKey.createRegistryKey(Identifier.fromNamespaceAndPath(ArmorPieces.MOD_ID, "cloth"));
 
     /**
      * Effect types - the kinds of behaviour a part is allowed to have.
@@ -82,5 +92,8 @@ public final class ArmorPiecesRegistries {
         // Skins depend on nothing and nothing depends on them: a skin is the armor's own texture,
         // and neither a part nor a fitting has an opinion about it. Last, therefore.
         DynamicRegistries.registerSynced(ARMOR_SKIN, ArmorSkin.DIRECT_CODEC);
+        // Cloths, likewise, depend on nothing - a garment is cut out of the armor's own net and
+        // has no opinion about what it is worn over.
+        DynamicRegistries.registerSynced(CLOTH, Cloth.DIRECT_CODEC);
     }
 }

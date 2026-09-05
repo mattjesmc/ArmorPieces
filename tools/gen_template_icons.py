@@ -257,6 +257,20 @@ INLAY = {
         ".*+....+*.",
         "..........",
     ],
+    # The cloth is not a socket either: it is a garment worn over the whole front of the piece, so
+    # the amber is a PANEL hanging off the chestplate's shoulders rather than a mark on one place.
+    "cloth": [
+        "..........",
+        "..........",
+        ".aaa..aaa.",
+        ".aaaaaaaa.",
+        "..******..",
+        "..******..",
+        "..******..",
+        "..+****+..",
+        "..aa..aa..",
+        "..........",
+    ],
     "fitting": [
         "..........",
         "....**....",
@@ -415,6 +429,96 @@ def write_skin_models(names: list[str]) -> None:
     SKIN_ITEM.write_text(json.dumps(select, indent=2) + "\n", encoding="utf8")
 
 
+# ---------------------------------------------------------------------------
+# The cloths: the garment's own CUT, not an emblem for it. Same reasoning as the skins - a skin is a
+# surface, so its icon is a swatch of that surface; a cloth is a SHAPE, the one thing its mask's
+# alpha says, so its icon is that shape read off the same mask that ships. A tunic's collar gap and
+# a tabard's open flanks are the whole difference between them, and both are visible at 8x10.
+
+CLOTH_MASKS = (ROOT / "src" / "main" / "resources" / "assets" / "armorpieces" / "textures"
+               / "entity" / "cloth")
+CLOTH_ITEM = (ROOT / "src" / "main" / "resources" / "assets" / "armorpieces" / "items"
+              / "cloth_template.json")
+
+
+def cloths() -> list[str]:
+    """Every cloth with a body mask in the resources. The icons follow what ships."""
+    if not CLOTH_MASKS.is_dir():
+        return []
+    return sorted(d.name for d in CLOTH_MASKS.iterdir() if (d / "humanoid.png").exists())
+
+
+def cut(cloth: str) -> Image.Image:
+    """The top ten rows of the chest's front face: the garment levelled, the armor where it is not.
+
+    Nothing is resampled, for the reason the skin swatch gives. What differs is that a cloth's mask
+    is not opaque everywhere - that is the point of it - so an uncovered texel takes the card's own
+    armor grey and the cut reads as a cut.
+    """
+    x, y, width, _ = skin_sheets.rect_of("chest", "front")
+    with Image.open(CLOTH_MASKS / cloth / "humanoid.png") as opened:
+        sheet = opened.convert("RGBA")
+    face = sheet.crop((x, y, x + width, y + 10))
+    px = face.load()
+    values = [px[col, row][0]
+              for row in range(face.height) for col in range(face.width) if px[col, row][3]]
+    low, span = (min(values), max(1, max(values) - min(values))) if values else (0, 1)
+    out = Image.new("RGBA", face.size, (0, 0, 0, 0))
+    dst = out.load()
+    for row in range(face.height):
+        for col in range(face.width):
+            r, _, _, a = px[col, row]
+            if not a:
+                dst[col, row] = PALETTE["a"]
+                continue
+            level = SWATCH_LO + round((r - low) / span * (SWATCH_HI - SWATCH_LO))
+            dst[col, row] = (level, level, level, 255)
+    return out
+
+
+def render_cloth(cloth: str) -> Image.Image:
+    """The card with the garment's cut in its recess."""
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    px = img.load()
+    for y, row in enumerate(CARD):
+        for x, ch in enumerate(row):
+            px[x, y] = PALETTE[ch]
+    art = cut(cloth)
+    src_px = art.load()
+    ox, oy = 3 + (10 - art.width) // 2, 3 + (10 - art.height) // 2
+    for y in range(art.height):
+        for x in range(art.width):
+            r, g, b, a = src_px[x, y]
+            if a:
+                px[ox + x, oy + y] = (r, g, b, 255)
+    return img
+
+
+def write_cloth_models(names: list[str]) -> None:
+    """One model per cloth and the select that picks between them.
+
+    The `when` is the component as a TEMPLATE carries it - the garment and nothing else - because a
+    template's colour fields sit at their defaults and are therefore not written. A worn piece has a
+    design on it, matches no case, and falls back, which is right: the fallback is a template icon.
+    """
+    for cloth in names:
+        model = {"parent": "minecraft:item/generated",
+                 "textures": {"layer0": f"armorpieces:item/cloth_template_{cloth}"}}
+        (SKIN_MODELS / f"cloth_template_{cloth}.json").write_text(
+            json.dumps(model, indent=2) + "\n", encoding="utf8")
+    select = {"model": {
+        "type": "minecraft:select",
+        "property": "minecraft:component",
+        "component": "armorpieces:cloth",
+        "cases": [{"when": {"cloth": f"armorpieces:{cloth}"},
+                   "model": {"type": "minecraft:model",
+                             "model": f"armorpieces:item/cloth_template_{cloth}"}}
+                  for cloth in names],
+        "fallback": {"type": "minecraft:model", "model": "armorpieces:item/cloth_template"},
+    }}
+    CLOTH_ITEM.write_text(json.dumps(select, indent=2) + "\n", encoding="utf8")
+
+
 def render(anchor: str) -> Image.Image:
     """The card with one inlay composited into its recess."""
     img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
@@ -481,6 +585,14 @@ def main() -> None:
         img.save(OUT / f"skin_template_{skin}.png")
     write_skin_models(list(skins_shipped))
     print(f"wrote {len(skins_shipped)} skin icons to {OUT}, with their models and the select")
+
+    # The cloths, on the same terms as the skins: one place in the advanced table, so the generic
+    # `cloth_template` hint is what an empty one shows and none of these needs its own.
+    cloths_shipped = {cloth: render_cloth(cloth) for cloth in cloths()}
+    for cloth, img in cloths_shipped.items():
+        img.save(OUT / f"cloth_template_{cloth}.png")
+    write_cloth_models(list(cloths_shipped))
+    print(f"wrote {len(cloths_shipped)} cloth icons to {OUT}, with their models and the select")
 
     if "--sheet" in sys.argv:
         scale, pad = 8, 2

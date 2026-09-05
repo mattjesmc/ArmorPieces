@@ -1,6 +1,8 @@
 package com.mattjesmc.armorpieces.loot;
 
 import com.mattjesmc.armorpieces.ArmorPieces;
+import com.mattjesmc.armorpieces.cloth.Cloth;
+import com.mattjesmc.armorpieces.cloth.ClothValue;
 import com.mattjesmc.armorpieces.decoration.ArmorDecoration;
 import com.mattjesmc.armorpieces.decoration.ArmorPiecesRegistries;
 import com.mattjesmc.armorpieces.decoration.DecorationLoot;
@@ -103,6 +105,25 @@ public final class DecorationLootTables {
                     .when(LootItemRandomChanceCondition.randomChance(drop.chance()))
                     .apply(SetComponentsFunction.setComponent(
                         ModDataComponents.SKIN, new ArmorSkinValue(skin))));
+                entries++;
+            }
+        }
+        // Cloths, into the same pool again, from the same field.
+        for (final Holder.Reference<Cloth> cloth : registries.lookup(ArmorPiecesRegistries.CLOTH)
+            .map(lookup -> lookup.listElements().toList())
+            .orElse(List.of())) {
+            for (final DecorationLoot drop : cloth.value().loot()) {
+                if (!drop.table().equals(key)) {
+                    continue;
+                }
+                if (pool == null) {
+                    pool = LootPool.lootPool().setRolls(ConstantValue.exactly(1.0f));
+                }
+                pool.add(LootItem.lootTableItem(ModItems.clothTemplate())
+                    .setWeight(drop.weight())
+                    .when(LootItemRandomChanceCondition.randomChance(drop.chance()))
+                    .apply(SetComponentsFunction.setComponent(
+                        ModDataComponents.CLOTH, ClothValue.of(cloth))));
                 entries++;
             }
         }

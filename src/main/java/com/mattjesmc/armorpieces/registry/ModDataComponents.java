@@ -1,6 +1,7 @@
 package com.mattjesmc.armorpieces.registry;
 
 import com.mattjesmc.armorpieces.ArmorPieces;
+import com.mattjesmc.armorpieces.cloth.ClothValue;
 import com.mattjesmc.armorpieces.decoration.ArmorDecoration;
 import com.mattjesmc.armorpieces.decoration.ArmorDecorations;
 import com.mattjesmc.armorpieces.decoration.fitting.Fitting;
@@ -61,6 +62,23 @@ public final class ModDataComponents {
      */
     public static DataComponentType<ArmorSkinValue> SKIN;
 
+    /**
+     * The cloth - a garment worn over the armor's texture - carried by BOTH the cloth template
+     * that applies it and the armor wearing it, as the skin is.
+     *
+     * <p>On a template only the garment is set and the two colour fields sit at their defaults,
+     * which is what makes the template's serialised form a bare {@code {"cloth": "..."}} and so
+     * what the item model's select matches on. On the armor the colour and the pattern layers are
+     * filled in from the banner that was laid beside it - see
+     * {@link com.mattjesmc.armorpieces.recipe.SmithingClothRecipe}.
+     *
+     * <p>It keeps the same invariant {@link #SKIN} does, and by the same means: nothing about
+     * {@code minecraft:equippable} is touched, the garment is composited into the armor's texture
+     * at render time and nowhere else, and a clothed piece with this mod stripped out is plain
+     * armor again.
+     */
+    public static DataComponentType<ClothValue> CLOTH;
+
     private ModDataComponents() {}
 
     public static void register() {
@@ -98,6 +116,15 @@ public final class ModDataComponents {
                 .build()
         );
 
+        CLOTH = Registry.register(
+            BuiltInRegistries.DATA_COMPONENT_TYPE,
+            Identifier.fromNamespaceAndPath(ArmorPieces.MOD_ID, "cloth"),
+            DataComponentType.<ClothValue>builder()
+                .persistent(ClothValue.CODEC)
+                .networkSynchronized(ClothValue.STREAM_CODEC)
+                .build()
+        );
+
         // Vanilla only asks the ITEM for its tooltip lines, and vanilla armor has never heard of us -
         // so DECORATIONS being a TooltipProvider is not by itself enough to make a decorated helmet
         // list what it is wearing. This registers the component as a provider for every item, which is
@@ -108,6 +135,9 @@ public final class ModDataComponents {
         // the armor itself - what the plate IS, what is painted on it, what is bolted to it. The
         // line only shows on armor; the template says its skin in its own name. See ArmorSkinValue.
         ItemComponentTooltipProviderRegistry.addAfter(DataComponents.TRIM, SKIN);
+        // The cloth sits between the skin and the parts, which is where it sits on the body: what
+        // the plate IS, what is painted on it, what is worn over it, what is bolted on top.
+        ItemComponentTooltipProviderRegistry.addAfter(DataComponents.TRIM, CLOTH);
 
         ArmorPieces.LOGGER.info("[Armor Pieces] Registered data components.");
     }

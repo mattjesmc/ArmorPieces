@@ -420,6 +420,102 @@ what repairs it, which is right for armor it has never heard of. Leave the third
 skin comes off. Armor listed in `#armorpieces:unskinnable_armor` refuses skins outright — vanilla
 chainmail is in it, because the weave is its whole identity and it has no metal of its own.
 
+## Cloths
+
+A cloth is the fourth kind of template, and the last thing that can be said about one piece of
+armor. A part is geometry hung on the body, a trim is vanilla's accent painted over the armor's
+texture, a skin is the armor's own texture — and a **cloth is a garment worn over that texture**,
+dyed and patterned at a loom.
+
+It sits between the skin and the parts, which is where it sits on the body: over the plate, under
+the trim's edge line, and under every part. That layering costs nothing, because a cloth is not a
+new pass — it is *composited into the armor's own texture*, so it is the armor model. Which is also
+why it moves correctly, clips nothing, and needs no rig.
+
+What it cannot do is hang. A cloth is tight to the torso box: no hem past it, no flare, no side
+slits that swing. A garment that hangs is geometry, which is a part — and a part cannot be under
+anything or take the armor's shading. They are different features.
+
+A cloth is **one greyscale mask, one data file and a recipe**:
+
+    assets/<ns>/textures/entity/cloth/<cloth>/humanoid.png            64x32, on vanilla's armor grid
+    data/<ns>/armorpieces/cloth/<cloth>.json                          asset_id, sheet, description, loot
+    data/<ns>/recipe/cloth_template_<cloth>.json                      the ring of paper, as a part's is
+
+```json
+{
+  "asset_id": "examplemod:surcoat",
+  "sheet": "shield",
+  "description": { "translate": "cloth.examplemod.surcoat" },
+  "loot": [ { "table": "minecraft:chests/pillager_outpost", "weight": 2, "chance": 0.1 } ]
+}
+```
+
+**It stops at the waist, and that is the model's word not the design's.** A chestplate's layer draws
+three boxes - the torso and the two arms - and a texture can only paint texels that some box of its
+own item samples. There is no geometry over the thigh in that layer, so there is nothing to paint: a
+chestplate's garment ends where the chestplate ends.
+
+A hem on the LEGGINGS' leg boxes was built and looked right - three to five rows read cleanly as
+cloth hanging past the breastplate - and was cut, because it is not the chestplate's to draw. It
+needs the garment applied to the leggings as well, which is a second smithing operation on a second
+item for a few rows of cloth, and it makes "a piece half-wearing a garment" a thing a player can
+have. The capability is still there for a pack that wants it: ship a `humanoid_leggings.png` mask,
+add `#minecraft:leg_armor` to `armorpieces:clothable_armor`, and no code changes. Anything longer
+than a few rows should not go there anyway - a leg box inflates 0.4 where the chest box inflates 1.0,
+so the hem is thinner than the garment above it, and the legs are two boxes that swing apart, so a
+long one splits down the middle at every step.
+
+`check_authoring.py` refuses a cloth with no mask at all, which would be a garment the game puts on
+a piece of armor and then draws nothing for.
+
+### What the mask says
+
+One sheet, three jobs at once:
+
+- **Alpha is the garment.** Where it is transparent, the armor is untouched. This is what makes a
+  tunic a tunic rather than a paint job — it starts below the collar, leaves the arms bare, has a
+  hem. Cut it, do not fill the box.
+- **Value is the cloth's own form** — the folds, the shadow where it turns a corner, the dark band
+  at the hem. 127 is the dye exactly; below goes toward black and above toward white, on the same
+  three-stop ramp a dye fitting and a horn's ivory already use.
+- **The two torso panels are where the design lands.** `chest.front` (20,20 8x12) and `chest.back`
+  (32,20 8x12). Everywhere else the mask covers takes the base colour alone — the sides, the
+  shoulders and the hem underside, which are four texels wide at most and could not carry a charge
+  anyway.
+
+Both panels get the design **the right way round**. A banner's back is mirrored because a banner is
+one sheet of cloth read from behind; a tabard is two panels, each read from outside.
+
+`sheet` chooses which of vanilla's two pattern sprite sets the panels sample — `shield` (12x22) or
+`banner` (20x40) — the same choice `armorpieces:banner` offers. `shield` is the closer proportion to
+an 8x12 panel and is the default.
+
+**The colour comes from a banner, not from the cloth.** Nothing in your art is coloured. What the
+armor supplies is neither the silhouette nor the colour but the **light**: the material's own
+deviation from the middle of its range is added to your mask's value before the ramp is read, so
+iron's studs and diamond's facets show *through* the garment, and a skinned piece's own form shows
+instead when there is a skin. The bake runs at 256x128 so a charge has room, upsampling the armor's
+own texels nearest so the plate still reads at vanilla resolution.
+
+`python tools/preview_cloth.py` is the reference implementation of all of that and writes a contact
+sheet of your garment in three designs on five materials — `--light 0` to see the pattern alone,
+`--light 0.45` to see it overdone. `python tools/paint_cloth_masks.py` is how the two shipped masks
+are cut, and reads its rectangles out of `skin_sheets.py` so a cut and a bake cannot disagree.
+
+**The template's own icon draws itself**, as a skin's does, but from a different half of the art: a
+skin is a surface, so its icon is a swatch of that surface; a cloth is a *shape*, so its icon is the
+cut read off the same mask that ships, with the armor grey showing where the garment is not. A
+tunic's collar gap and a tabard's open flanks are the whole difference between them and both are
+visible at eight texels wide. `python tools/gen_template_icons.py` writes the icon, the item model
+and the select for every cloth with art in the resources.
+
+**Wearing one.** Cloth template + the armor + **a banner**. The addition slot names a material on
+every other recipe in this mod; a cloth's colour is not a material, so here it means the design —
+base colour and up to six layers, made at a loom, which is already the best pattern editor the game
+has. The banner is consumed, as it is for a shield. Leave the third slot empty and the garment comes
+off. What may wear one is `#armorpieces:clothable_armor`, which ships chest armor and nothing else.
+
 ## Judging the result in game
 
 `/armorpieces stage` (permission level 2) puts a part next to the others on armor stands, read from

@@ -349,9 +349,26 @@ the two implementations are held to the same numbers rather than to the same pro
 
 ## What was built
 
-The Java half, 2026-09-04. Eight skins ship — `plate`, `mail`, `gambeson`, `gothic`, `milanese`,
-`brigandine`, `scale`, `lamellar`. The ninth, `chainmail`, is not drawn yet; `gothic` ships from the
+The Java half, 2026-09-04. **Fourteen skins ship** — the nine of the first range (`plate`,
+`chainmail`, `mail`, `gambeson`, `gothic`, `milanese`, `brigandine`, `scale`, `lamellar`) and the
+five of the second (`lorica`, `varangian`, `hoplite`, `samurai`, `runic`). `gothic` ships from the
 freehand redraw rather than from the silhouette-pinned `gothic_strict`, which stays in `tools/`.
+
+`chainmail` was the last of them and the only one that was not drawn: it is
+`tools/convert_chainmail_skin.py`, a conversion of vanilla's own sheet, and it is described in
+`docs/plans/briefs/skins/chainmail.md`. Two things in it are worth having in this file, because they
+are about the bake rather than about that skin:
+
+- **A four-tone texture stretched onto the ramp is still a four-tone texture** — four of the eight
+  shades, which `check_skin` rejects. What made it a real master is that vanilla's per-net gradient
+  is *quantised*, not absent: smoothing the per-row means and stretching those instead recovers a
+  gradient that was always in the texture and could not be spelled in four colours. That is the same
+  observation the ramp's own `MIN_SPAN` deepening makes, one level up.
+- **A compressed material's top faces lie.** Normalised into its own range, chainmail's `helmet.top`
+  sits at level 15.0 against `helmet.right` at 5.9; iron says 4.5 against 3.3, gold 6.2 against 4.6,
+  netherite 7.8 against 7.7. Any conversion that maps a narrow material linearly onto `0`..`f` will
+  put a white cap on the head. This one maps onto `2`..`e`, which lands the sheet's mean at 6.8
+  where the thirteen drawn skins run 6.8 to 8.9.
 
 Settled differently from the plan above, or settled where it was left open:
 
@@ -396,12 +413,11 @@ Settled differently from the plan above, or settled where it was left open:
   resemblance, and the swatch turned out to need neither: it is legible, it is the armor itself, and
   it cannot drift from it.
 
-  It also makes the set self-maintaining. `gen_template_icons.py` walks every skin with art in the
-  resources and writes the icon, the item model and the `minecraft:select` case together, so a skin
-  drawn later gets all three by existing and there is no JSON to write. A pack's own skin cannot add
-  a case (select does not merge) and falls back to the generic icon; `check_authoring.py` fails if a
+  It also made the set self-maintaining. `gen_template_icons.py` walks every skin with art in the
+  resources and writes the icon, the item model and the `minecraft:select` case together — so
+  `chainmail`, drawn after this was built, got all three by existing. A pack's own skin cannot add a
+  case (select does not merge) and falls back to the generic icon; `check_authoring.py` fails if a
   case and its texture ever stop naming each other.
-
 
 ## Check
 
@@ -414,9 +430,11 @@ PASSES.
 that both master sheets are really in the resource pack, and that no two shaped recipes share a
 crafting grid. PASSES.
 
-`python tools/check_skin.py <skin>` is clean for all eight. `milanese` was not when it was installed:
-its thigh top was unpainted, which is a hole seen from above. Filled at the value its front face
-uses, and that is the only change made to any master.
+`python tools/check_skin.py <skin>` is clean for all fourteen. `milanese` was not when it was
+installed: its thigh top was unpainted, which is a hole seen from above. Filled at the value its
+front face uses, and that is the only change made to any drawn master. `chainmail` had the same
+defect from vanilla — a bare `boot.bottom`, the one hole in that material's own silhouette — and its
+converter fills it at the boot's hem value.
 
 Still to do in game: `/armorpieces stage skins` and read the eight columns — does each skin still
 read as the material it is on; put a vanilla trim over a skinned piece and confirm it is unmoved and

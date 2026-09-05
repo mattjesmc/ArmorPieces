@@ -5,6 +5,7 @@ import com.mattjesmc.armorpieces.client.fitting.FittingRenderers;
 import com.mattjesmc.armorpieces.client.geometry.DecorationGeometryManager;
 import com.mattjesmc.armorpieces.client.screen.AdvancedSmithingScreen;
 import com.mattjesmc.armorpieces.client.texture.ArmorSkinTextureManager;
+import com.mattjesmc.armorpieces.client.texture.ClothTextureManager;
 import com.mattjesmc.armorpieces.client.texture.DecorationTextureManager;
 import com.mattjesmc.armorpieces.registry.ModMenus;
 import net.fabricmc.api.ClientModInitializer;
@@ -34,6 +35,12 @@ public class ArmorPiecesClient implements ClientModInitializer {
         // ArmorSkinTextureManager.
         ResourceManagerHelper.get(PackType.CLIENT_RESOURCES)
             .registerReloadListener(ArmorSkinTextureManager.instance());
+
+        // Indexes every cut mask any pack ships. A garment is composited onto the armor texture it is
+        // worn over and coloured by the banner it was made with, so nothing can be baked until a
+        // piece is actually drawn - see ClothTextureManager.
+        ResourceManagerHelper.get(PackType.CLIENT_RESOURCES)
+            .registerReloadListener(ClothTextureManager.instance());
 
         // The one fitting type that draws rather than colours. A mod's own goes through the same door.
         FittingRenderers.registerBuiltins();

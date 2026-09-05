@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces:chainmail",
+  "description": {
+    "translate": "skin.armorpieces.chainmail"
+  },
+  "loot": [
+    {
+      "table": "minecraft:chests/abandoned_mineshaft",
+      "weight": 1,
+      "chance": 0.07
+    }
+  ]
+}

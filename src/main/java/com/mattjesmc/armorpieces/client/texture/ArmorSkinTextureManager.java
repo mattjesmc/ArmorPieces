@@ -81,6 +81,14 @@ public final class ArmorSkinTextureManager implements SimpleSynchronousResourceR
     private final Map<Identifier, Optional<Material>> materials = new HashMap<>();
     /** Baked texture id to the id actually rendered with; also negative-caches a failed bake. */
     private final Map<Identifier, Optional<Identifier>> resolved = new HashMap<>();
+    /**
+     * The pixels of each bake, kept so that something composited ON TOP of a skinned layer has
+     * something to composite onto - a texture handed to the texture manager cannot be read back.
+     *
+     * <p>The one thing this class shares with {@link ClothTextureManager}, and cheap: a sheet is
+     * 64x32, so an entry is eight kilobytes and there is one per skin per material actually worn.
+     */
+    private final Map<Identifier, Baked> bakedImages = new HashMap<>();
     /** What we handed to the texture manager, so a reload can hand it back. */
     private final List<Identifier> registered = new ArrayList<>();
 
@@ -102,6 +110,19 @@ public final class ArmorSkinTextureManager implements SimpleSynchronousResourceR
 
     /** Vanilla's lighting for one sheet, with the size it was measured at. */
     private record Lighting(byte[] map, int width, int height) {}
+
+    /** A baked sheet's pixels, for a caller that has to draw over them. See {@link #baked}. */
+    public record Baked(int[] pixels, int width, int height) {}
+
+    /**
+     * The pixels behind one of this class's own baked texture ids, or null for an id it did not make.
+     *
+     * <p>Exists for the cloth bake, which composites a garment onto whatever the layer was going to
+     * draw with - a file for unskinned armor, and one of these for skinned armor.
+     */
+    public @Nullable Baked baked(final Identifier id) {
+        return this.bakedImages.get(id);
+    }
 
     /**
      * The texture to draw {@code skin} with in place of {@code vanillaTexture}, or null to leave
@@ -192,6 +213,7 @@ public final class ArmorSkinTextureManager implements SimpleSynchronousResourceR
                     out.setPixel(x, y, baked[y * width + x]);
                 }
             }
+            this.bakedImages.put(target, new Baked(baked, width, height));
             final Minecraft client = Minecraft.getInstance();
             client.getTextureManager().release(target);
             client.getTextureManager().register(target, new DynamicTexture(target::toString, out));
@@ -319,5 +341,6 @@ public final class ArmorSkinTextureManager implements SimpleSynchronousResourceR
         }
         this.registered.clear();
         this.resolved.clear();
+        this.bakedImages.clear();
     }
 }
