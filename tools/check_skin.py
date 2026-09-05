@@ -15,7 +15,12 @@ go wrong with one is invisible while you are painting it and obvious in game:
     band of greys. The bake spends eight shades on the range the master actually uses, so a master
     that lives between 40% and 60% grey throws six of them away and comes out flat on every
     material. Netherite's own sheet has exactly this problem, which is why the plan says to redraw
-    it rather than reuse it.
+    it rather than reuse it;
+  * and its twin, which is not about the range but about the STEPS in it: a texel is not read at
+    the value it was drawn at. Vanilla's own texture for the material is added first, and between
+    two texels side by side it can put five levels of its own - so shading drawn in small bands
+    bakes level, or the wrong way round, and the greyscale says nothing about it. `against_light`
+    counts the pairs it really happens to.
 
 Lines marked `!` are problems that need a decision before the skin is saved; `-` lines are notes.
 
@@ -35,6 +40,7 @@ from pathlib import Path
 
 from PIL import Image
 
+import bake_skin
 import skin_sheets as sheets_mod
 from skin_sheets import (ANATOMY, FACE_WINDOW, MASTERS, SHEETS, SHEET_H, SHEET_W,
                          level_of, owners, regions)
@@ -42,6 +48,12 @@ from skin_sheets import (ANATOMY, FACE_WINDOW, MASTERS, SHEETS, SHEET_H, SHEET_W
 # How many of the eight ramp shades a master has to reach to be worth baking, and the least spread
 # between its darkest and lightest texel. Both are floors, not targets: a good master uses the range.
 MIN_OCTILES, MIN_SPREAD = 6, 110
+
+# What share of the drawn steps vanilla's own lighting may overrule before it is a problem rather
+# than a fact. Some is unavoidable and wanted - the light is mixed in on purpose - but a master
+# whose shading loses more often than not is a master drawn in steps too small to survive its own
+# armor, and the fix is bigger bands, not a different mix. See against_light.
+MAX_LIGHT_LOSS = 0.35
 
 # Every armor slot has to carry paint somewhere, or that piece of armor renders as nothing.
 SLOTS = ("helmet", "chestplate", "leggings", "boots")
@@ -87,6 +99,80 @@ def seed_level(name: str) -> int | None:
         return int(parts[1], 16)
     except ValueError:
         return None
+
+
+def drawn_steps(images: dict[str, Image.Image]) -> dict[str, list[tuple[int, int, int, int, int]]]:
+    """Every adjacent pair of painted texels the master puts a step between, per sheet.
+
+    `(x, y, nx, ny, step)`, where `step` is the second texel's value minus the first's. Measured
+    once and reused across the materials, because the drawing does not change per material and the
+    lighting does."""
+    out: dict[str, list[tuple[int, int, int, int, int]]] = {}
+    for sheet, image in images.items():
+        if image is None:
+            continue
+        px = image.convert("RGBA").load()
+        width, height = image.size
+        found = []
+        for y in range(height):
+            for x in range(width):
+                r, g, b, a = px[x, y]
+                if not a:
+                    continue
+                here = r if r == g == b else round(bake_skin.luma((r, g, b)))
+                for nx, ny in ((x + 1, y), (x, y + 1)):
+                    if nx >= width or ny >= height:
+                        continue
+                    r2, g2, b2, a2 = px[nx, ny]
+                    if not a2:
+                        continue
+                    there = r2 if r2 == g2 == b2 else round(bake_skin.luma((r2, g2, b2)))
+                    if there != here:
+                        found.append((x, y, nx, ny, there - here))
+        out[sheet] = found
+    return out
+
+
+def against_light(images: dict[str, Image.Image],
+                  mix: float = bake_skin.LIGHT_MIX) -> tuple[str, int, int]:
+    """How much of the drawing vanilla's own lighting overrules, on the material it hurts most.
+
+    A texel's value is not what the ramp is read at. The material's own texture - the panel edges,
+    the rim along the top of a plate, the shadow under an overhang - is measured as a signed offset
+    and added to the value first (`bake_skin.lightmap`, `SkinBake.lightmap`), which is what keeps a
+    skinned plate reading as metal rather than as a flat pattern. It also means a pair of texels the
+    author drew a step apart can come out level, or the other way round, wherever vanilla puts more
+    between them than the author did - and none of that is visible in the greyscale, which is the
+    only thing being drawn.
+
+    So this counts the pairs it really happens to rather than quoting the worst case, which is
+    useless as advice: vanilla's textures have hard edges, so somewhere on every sheet the offset
+    jumps its whole range and "a step of six levels or nothing" is the only safe rule. The share
+    below is what the drawing in hand actually loses. Returns the worst material, that count, and
+    how many steps the master drew at all."""
+    steps = drawn_steps(images)
+    worst = ("", 0, 0)
+    worst_share = -1.0
+    for material in bake_skin.MATERIALS:
+        maps = bake_skin.lightmap(material, mix)
+        spoiled = drawn = 0
+        for sheet, pairs in steps.items():
+            rows = maps.get(sheet)
+            if rows is None:
+                continue
+            for x, y, nx, ny, step in pairs:
+                drawn += 1
+                after = step + (rows[ny][nx] - rows[y][x])
+                # Level, or the wrong way round: either way the pair no longer says what it said.
+                if after == 0 or (after > 0) != (step > 0):
+                    spoiled += 1
+        if not drawn:
+            continue
+        share = spoiled / drawn
+        if share > worst_share:
+            worst_share = share
+            worst = (material, spoiled, drawn)
+    return worst
 
 
 def against_vanilla(images: dict[str, Image.Image], material: str) -> tuple[list[str], list[str]]:
@@ -293,6 +379,25 @@ def analyse(images: dict[str, Image.Image], name: str) -> dict:
         else:
             notes.append(f"value range {lo}..{hi}, {reached} of 8 ramp shades reached")
 
+    # The other half of the contrast budget, and the half the range above says nothing about: what
+    # vanilla's own lighting does to the drawing once it is added to the value. Skipped while the
+    # skin is half drawn, for the reason the ramp check is: the numbers are still moving.
+    light_material, spoiled, drawn_pairs = ("", 0, 0)
+    if facts and not half_drawn:
+        light_material, spoiled, drawn_pairs = against_light(images)
+    if drawn_pairs:
+        share = spoiled / drawn_pairs
+        line = (f"vanilla's light overrules {spoiled} of {drawn_pairs} drawn steps "
+                f"({share * 100:.0f}%) on {light_material}: neighbours that bake level or the wrong "
+                f"way round, the material's own texture being added to the value before the ramp "
+                f"is read")
+        if share > MAX_LIGHT_LOSS:
+            problems.append(line + f". Over {MAX_LIGHT_LOSS * 100:.0f}% is shading too small to "
+                                   f"survive its own armor - draw the bands further apart "
+                                   f"(bake_skin.py --lighting)")
+        else:
+            notes.append(line + " - the light doing its job; judge it on a material, not in grey")
+
     # Cut faces, and the raised helmet shell.
     for sheet, f in facts.items():
         # A net with nothing on it at all is one line, not six: `helmet_raised` is unpainted on
@@ -373,6 +478,7 @@ def analyse(images: dict[str, Image.Image], name: str) -> dict:
         "problems": problems,
         "notes": notes,
         "values": {"low": lo, "high": hi, "shades": reached, "opaque": len(values)},
+        "light": {"material": light_material, "spoiled": spoiled, "steps": drawn_pairs},
         "regions": painted_regions,
         "coverage": coverage,
     }

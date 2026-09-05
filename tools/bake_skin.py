@@ -39,6 +39,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import functools
 import json
 import sys
 from pathlib import Path
@@ -179,6 +180,7 @@ def table(material: str, faithful: bool = False) -> list[tuple[int, int, int]]:
 LIGHT_MIX = 0.35
 
 
+@functools.lru_cache(maxsize=None)
 def lightmap(material: str, mix: float = LIGHT_MIX) -> dict[str, list[list[int]]]:
     """Vanilla's lighting for one material: a signed amount to add to each master texel.
 
@@ -213,6 +215,80 @@ def lightmap(material: str, mix: float = LIGHT_MIX) -> dict[str, list[list[int]]
             rows.append(row)
         out[sheet] = rows
     return out
+
+
+@functools.lru_cache(maxsize=None)
+def opaque(material: str, sheet: str) -> tuple[tuple[bool, ...], ...] | None:
+    """Which texels of a material's own sheet carry paint.
+
+    A lightmap is 0 both where the material adds nothing and where there is no material at all, and
+    the two are not the same thing: a pair of neighbours that straddles the edge of the armor is not
+    a step in the light, it is the end of the armor. Everything below that walks neighbours masks
+    with this first."""
+    path = ASSETS / _FOLDER[sheet] / f"{material}.png"
+    if not path.is_file():
+        return None
+    with Image.open(path) as opened:
+        image = opened.convert("RGBA")
+    px = image.load()
+    return tuple(tuple(px[x, y][3] != 0 for x in range(image.width)) for y in range(image.height))
+
+
+def light_steps(mix: float = LIGHT_MIX) -> dict[str, dict]:
+    """What vanilla's own lighting does to a master, per material, in the master's own units.
+
+    Two numbers, answering two different questions. The SWING is what the light does to the sheet as
+    a whole - how far apart the most-brightened and the most-darkened texel of it end up - and it is
+    what says whether a value drawn near an end of the range will clip. The NEIGHBOUR step is what
+    it does to a shading step, which is what a drawing is actually made of: two texels side by side
+    one level apart are 17 units apart in the master and `17 - neighbour` apart once vanilla has had
+    its say. That is the number a ladder has to clear, and it is not visible in the greyscale."""
+    out = {}
+    for material in MATERIALS:
+        maps = lightmap(material, mix)
+        lo = hi = worst = 0
+        for sheet, rows in maps.items():
+            mask = opaque(material, sheet)
+            for y, row in enumerate(rows):
+                for x, value in enumerate(row):
+                    if mask and not mask[y][x]:
+                        continue
+                    lo, hi = min(lo, value), max(hi, value)
+                    for ny, nx in ((y, x + 1), (y + 1, x)):
+                        if ny >= len(rows) or nx >= len(row):
+                            continue
+                        if mask and not mask[ny][nx]:
+                            continue
+                        worst = max(worst, abs(rows[ny][nx] - value))
+        out[material] = {"low": lo, "high": hi, "swing": hi - lo, "neighbour": worst}
+    return out
+
+
+def light_report(mix: float = LIGHT_MIX) -> str:
+    """The lighting half of the contrast budget, which --contrast on its own does not know about.
+
+    Everything --levels and --contrast measure is the ramp TABLE, and the table is not what a texel
+    is read at: the offset below is added to its value first. So the ladder those two recommend is
+    measured against a bake that has not happened."""
+    steps = light_steps(mix)
+    lines = [f"vanilla's own lighting, mixed back at {mix} (bake_skin.lightmap, SkinBake.lightmap)",
+             "",
+             "material          offset       swing  levels    worst step between neighbours"]
+    for material, s in steps.items():
+        lines.append(f"{material:<14} {s['low']:>5}..{s['high']:<5} {s['swing']:>6}  "
+                     f"{s['swing'] / 17:>5.1f}    {s['neighbour']:>4}  ({s['neighbour'] / 17:.1f} levels)")
+    worst = max(s["neighbour"] for s in steps.values())
+    clears = worst // 17 + 1
+    lines += ["", (
+        f"The offset is added to a texel's VALUE before the ramp is read, so it moves the LEVEL the "
+        f"texel is drawn at, not the colour that level bakes to. Between two texels side by side "
+        f"vanilla can put {worst} units of its own - {worst / 17:.1f} levels - so a step of "
+        f"{clears} levels clears it outright and anything smaller can, somewhere on the sheet, come "
+        f"out level or the wrong way round. That is not a reason to draw in six-level steps: it is "
+        f"a reason to LOOK, on the material, rather than trust the greyscale. In Blockbench the "
+        f"Armor Skin panel's Showing switch has the bake and the offset on its own, and its Vanilla "
+        f"light slider moves this mix; check_skin.py counts the pairs it actually spoils.")]
+    return "\n".join(lines)
 
 
 def bake(image: Image.Image, lut: list[tuple[int, int, int]],
@@ -273,7 +349,7 @@ def _levels(faithful: bool = False) -> dict[str, list[int]]:
     return out
 
 
-def contrast_rule(faithful: bool = False) -> str:
+def contrast_rule(faithful: bool = False, mix: float = LIGHT_MIX) -> str:
     """One measured sentence: how big a step between two levels has to be to survive the bake.
 
     The sixteen levels a master is drawn in land on eight stops, and a material whose texture
@@ -284,12 +360,19 @@ def contrast_rule(faithful: bool = False) -> str:
              for k in range(1, 6)]
     safe = next((k for k in range(1, 6) if worst[k - 1] >= 10), 5)
     vanish = max((k for k in range(1, 6) if worst[k - 1] == 0), default=0)
+    # The second half of the budget, and the half nothing here used to say: the level a texel is
+    # read at is not the level it was drawn at. See light_report.
+    light = max(s["neighbour"] for s in light_steps(mix).values())
     return ("contrast: a level is a position on an eight-stop ramp and most materials repeat "
             f"stops, so a step of {vanish} level(s) or less can bake IDENTICAL; "
             + ", ".join(f"{k}->{worst[k - 1]} luma" for k in range(1, 6))
             + f". Shade in bands {safe}-{safe + 1} levels apart - smaller steps read in "
             "greyscale and vanish on iron. That is the worst case over every material and every "
-            "pair; particular pairs are much better, and --levels prints them.")
+            "pair; particular pairs are much better, and --levels prints them. "
+            f"AND vanilla's own lighting is added to a texel's value before the ramp is read: "
+            f"between two texels side by side it can put {light} units - {light / 17:.1f} levels - "
+            f"of its own, so a ladder in that band is not safe from it, only from the ramp. Look at "
+            "the skin on a material rather than trusting the greyscale; --lighting has the numbers.")
 
 
 def pair(lo: str, hi: str, faithful: bool = False) -> str:
@@ -330,7 +413,7 @@ def levels(faithful: bool = False) -> str:
     return "\n".join(lines)
 
 
-def contrast(faithful: bool = False) -> str:
+def contrast(faithful: bool = False, mix: float = LIGHT_MIX) -> str:
     """The whole budget: which levels each material flattens, and what each step size buys."""
     lums = _levels(faithful)
     lines = ["material       flat runs of levels (these bake to the same colour)"]
@@ -346,9 +429,10 @@ def contrast(faithful: bool = False) -> str:
     for k in range(1, 6):
         pair = min((min(v[i + k] - v[i] for i in range(16 - k)), m) for m, v in lums.items())
         lines.append(f"{k} level(s)   {pair[0]:>3} luma  ({pair[1]})")
-    return "\n".join(lines + ["", contrast_rule(faithful), "",
+    return "\n".join(lines + ["", contrast_rule(faithful, mix), "",
                               "--levels prints what each level bakes to on each material, and the "
-                              "best pairs: the worst case above is a floor, not the whole story."])
+                              "best pairs: the worst case above is a floor, not the whole story.",
+                              "", light_report(mix)])
 
 
 def reference(mix: float = LIGHT_MIX) -> dict:
@@ -395,6 +479,9 @@ def main() -> None:
     parser.add_argument("--contrast", action="store_true",
                         help="what a step between two master levels buys, per material")
     parser.add_argument("--rule", action="store_true", help="with --contrast: the one line only")
+    parser.add_argument("--lighting", action="store_true",
+                        help="vanilla's own lighting: the offset it adds, per material, in the "
+                             "master's own units and in levels")
     parser.add_argument("--levels", action="store_true",
                         help="what each of the sixteen levels bakes to, per material")
     parser.add_argument("--pair", nargs=2, metavar=("LO", "HI"),
@@ -419,8 +506,12 @@ def main() -> None:
     if args.levels:
         print(levels(args.faithful))
         return
+    if args.lighting:
+        print(light_report(args.light))
+        return
     if args.contrast:
-        print(contrast_rule(args.faithful) if args.rule else contrast(args.faithful))
+        print(contrast_rule(args.faithful, args.light) if args.rule
+              else contrast(args.faithful, args.light))
         return
     if args.report:
         print(report(args.faithful))

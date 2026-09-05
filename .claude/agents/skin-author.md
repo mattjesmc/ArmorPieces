@@ -98,6 +98,31 @@ for the greyscale you are painting in. **Look at every skin on iron, gold and ne
 save it**: they are the light, the saturated and the dark end of the range, and a shape that only
 reads on one of them is not finished. The brush always lands on the greyscale master either way.
 
+### You are not drawing on bare armor
+
+The bake is not the ramp alone. Vanilla's own texture for the material - its panel edges, the rim
+along the top of a plate, the shadow under an overhang - is measured as a signed offset and **added
+to your texel's value before the ramp is read**. It is why a skinned plate still reads as metal
+rather than as a flat pattern, and it is added to what you drew, not blended with it.
+
+Measured, that offset runs ±45: **two and a half of your sixteen levels, in either direction**, and
+between two texels side by side vanilla can put five levels of its own. So a ladder four levels
+apart is safe from the *ramp* and not from the *light*: somewhere on the sheet a pair you drew one
+way round bakes the other way round, and the greyscale says nothing about it.
+
+Two ways to see it rather than guess:
+
+- `armorpieces_skin_material <material> view=light` draws vanilla's contribution on its own - mid
+  grey where it changes nothing, brighter and darker by exactly what it adds. Do this **once, on
+  iron, before you draw the chest**: it is the shape you are drawing into, and a band placed along a
+  seam vanilla already shades is a band that disappears.
+- `light=0` on the same call bakes the pattern with none of it, so the two pictures either side of a
+  shape say whether the shape is yours or vanilla's.
+
+`armorpieces_skin_check` counts the pairs it really spoils on the worst material - the shipped skins
+lose 2-11%, which is the light doing its job. Over 35% is a problem, and the fix is bigger bands.
+`python tools/bake_skin.py --lighting` has the numbers.
+
 ## What vanilla does, and why you should mostly agree with it
 
 The four slots overlap in space, and vanilla resolves it by leaving rows empty. Rows are numbered
@@ -157,6 +182,8 @@ take the first one where it can still change what you draw, not at the end to ad
    a third of the range. Do not copy it - the brief names something else. Then
    `python tools/bake_skin.py --levels`, which is the spec for how far apart your values have to be
    and which bands are strongest. Both in one Bash call.
+   Then `armorpieces_skin_material iron view=light` once, to see the shape vanilla's own lighting
+   will add underneath everything you draw - see *You are not drawing on bare armor* above.
 3. Draw in this order, biggest surface first, because each one sets the value scale for the next:
    `chest` (front, back, both sides, top), then `arm`, then `helmet`, then `leg` and `waist`, then
    `boot`. Compose the whole of `humanoid` first and send it as ONE `stamps` call - base `fill` and

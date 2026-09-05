@@ -865,7 +865,14 @@ const OWN = {
       "authored in. The colours are that material's own, taken out of its vanilla texture by " +
       "tools/bake_skin.py - so this is the bake, in the viewport. The brush and the painter always " +
       "land on the greyscale master either way. Look at a skin on at least iron, gold and " +
-      "netherite before saving it: they are the light, the saturated and the dark end of the range.",
+      "netherite before saving it: they are the light, the saturated and the dark end of the range." +
+      "\n\nThe bake is not the ramp alone. Vanilla's own texture for the material - its panel " +
+      "edges, the rim on a plate, the shadow under an overhang - is added to each texel's VALUE " +
+      "before the ramp is read, and between two texels side by side it can put five of the sixteen " +
+      "levels a skin is drawn in. `view: \"light\"` shows that offset on its own, mid grey where " +
+      "it changes nothing, so the shape a drawing is going into can be looked at; `light` moves " +
+      "the mix, 0.35 being what the game does and 0 the pattern alone. check_skin.py counts how " +
+      "many of the drawn steps it actually overrules.",
     inputSchema: {
       type: "object",
       properties: {
@@ -874,18 +881,33 @@ const OWN = {
           description: "iron, gold, diamond, netherite, copper, chainmail, turtle_scute, leather, " +
             "or `none` for the greyscale master.",
         },
+        view: {
+          type: "string",
+          enum: ["material", "light"],
+          description: "`material` (default) bakes the skin as the game does; `light` shows " +
+            "vanilla's own lighting for that material on its own, with the skin's alpha.",
+        },
+        light: {
+          type: "number",
+          minimum: 0,
+          maximum: 1,
+          description: "How much of vanilla's lighting is mixed in. Default 0.35, which is what " +
+            "the game does; 0 is the pattern with none of it.",
+        },
       },
       required: ["material"],
       additionalProperties: false,
     },
-    async execute({ material }) {
+    async execute({ material, view, light }) {
+      const options = JSON.stringify({ view: view ?? null, light: light ?? null });
       const out = await evalIn(
         `(function () { var api = window.armorpieces_api;` +
-        ` var r = api.setSkinMaterial(${JSON.stringify(material)}); api.publishSkin(); return r; })()`,
+        ` var r = api.setSkinMaterial(${JSON.stringify(material)}, ${options}); api.publishSkin(); return r; })()`,
       );
-      const text = out.material
-        ? `Showing the skin on ${out.material}.`
-        : "Showing the greyscale master.";
+      const text = !out.material ? "Showing the greyscale master."
+        : out.view === "light"
+          ? `Showing vanilla's own lighting for ${out.material} at a mix of ${out.light} - mid grey adds nothing.`
+          : `Showing the skin on ${out.material}, vanilla's light mixed at ${out.light}.`;
       // The point of switching material is to LOOK at it, so the picture comes back with the
       // switch rather than costing a second round trip.
       try {

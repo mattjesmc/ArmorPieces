@@ -39,7 +39,33 @@ sixteen greys (`armorpieces_skins`, `_open_skin`, `_skin_sheet`, `_skin_paint`, 
 skin. `tools/skin_sheets.py` is the net every one of them shares, `tools/bake_skin.py` the bake
 outside the game, `tools/check_skin.py` the check a master has to pass - unpainted texels under a
 face, a silhouette with a hole in it, a ramp so narrow the material cannot show through it -
-and `tools/sync_skin_masters.py` installs one - which saving in Blockbench does for you. The mod also gains its first test:
+and `tools/sync_skin_masters.py` installs one - which saving in Blockbench does for you.
+
+That second workspace is now a workspace rather than a set of calls. It has an **Armor Skin** panel
+beside the piece one - which skin, the four shells on switches of their own, the pose, and the
+template recipe with the same Craftable switch a part has - and a **New Skin…** and **Skin…** pair
+that write the datapack half the plugin used to owe: the master pair, blank or seeded on a vanilla
+material's own silhouette, the `armor_skin` file, its loot rows, the template recipe, the language
+line, and the sheets installed into whichever resource pack you picked. The palette becomes the
+sixteen levels a skin is actually written in, `0`-`f` seventeen apart, rather than the nine stops a
+part's continuous ramp gets. And a stroke over a skin shown on a material now lands on the master:
+it used to land on the internal preview texture, which is never saved and is recomposited over on
+the next edit, so the paint went with no message that it had - the Textures panel, which a piece
+hides and a skin did not, was what made it reachable.
+
+**The other half of the contrast budget.** A skin's texel is not read at the value it was drawn at:
+vanilla's own texture for the material is added first, which is what keeps a skinned plate reading
+as metal. Measured, that offset is +/-45 - two and a half of the sixteen levels - and between two
+texels side by side vanilla can put five levels of its own, so the "shade four to five levels apart"
+rule was a floor against the ramp and never against the light, and nothing said so. Now three
+things do: `bake_skin.py --lighting` prints the swing per material and a clause of it rides in the
+rule the authoring bridge injects; `check_skin.py` counts the adjacent pairs the light actually
+overrules - bakes level, or the wrong way round - on the material that suffers worst, which the
+fourteen shipped skins survive at 2-11%; and the panel draws the offset on its own, mid grey where
+it changes nothing, with a slider from the pattern alone to twice the mix. The number was always in
+the picture and never visible as a thing of its own.
+
+The mod also gains its first test:
 `SkinBakeTest` reproduces `docs/plans/skin-bake-reference.json` for all eight vanilla materials,
 the eight shades, the sampled table and the SHA-1 of each material's lighting map, so the Java bake
 and the Python one cannot drift apart unnoticed. JUnit is a build-time dependency and ships in

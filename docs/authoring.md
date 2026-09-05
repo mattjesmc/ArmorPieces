@@ -106,6 +106,29 @@ switched off, the pattern and items the disabled file still holds.
 a pack folder it checks that pack, and given two — `check_authoring.py <datapack> <resourcepack>` —
 a piece split over both.
 
+**A skin, not a part.** *Open Armor Skin…* opens the other kind of thing this plugin edits — see
+[Skins](#skins) — as a workspace of its own: the same figure, but the armor is unlocked and painted
+by the skin's two greyscale sheets, and nothing is modelled, because a skin *is* the armor. It gets
+an **Armor Skin** panel with the same shape as the piece one, and the palette becomes the sixteen
+levels a skin is written in — `0`–`f`, seventeen apart — so a colour picked off it is a value the
+sheets really use.
+
+| Control | What it does |
+| --- | --- |
+| Skin | Which skin is open. The list is every master pair under `tools/skin_masters/`, labelled with the pack half it belongs to, or *masters only* when it has none yet. |
+| New…, Skin…, Save, Rebuild | Start a skin — its master pair, blank or seeded on a vanilla material's own silhouette, its `armor_skin` file, its sheets and its name, into a datapack and a resource pack you pick; edit the name a player reads and where its template is found; write everything back; reload the sheets from disk. |
+| Showing: Master / On a material / Vanilla's light | The greyscale you are painting, the bake as the game performs it, or vanilla's own lighting for that material *on its own* — mid grey where it changes nothing, and brighter or darker by exactly what it adds. Strokes always land on the greyscale master, whichever is shown. |
+| Material | Which armor material the bake is shown on. Look at a skin on iron, gold and netherite: the light, the saturated and the dark end of the range. |
+| Vanilla light | How much of that material's own texture is mixed over the master before the ramp is read. `0.35` is what the game does; `0` is the pattern with none of it, and the two pictures either side say which shapes are yours. |
+| Pose, Phase | The walk or sprint cycle, frozen, as a piece's. |
+| Show player, Helmet, Chestplate, Leggings, Boots | The figure and the four shells, one at a time. A boot drawn over the leggings and a helmet that swallows the face are only visible with the shell above taken off. |
+| Recipe centre, Recipe ring, Craftable | The skin template's recipe, exactly as a part's, written on Save as `data/<ns>/recipe/skin_template_<skin>.json`. |
+
+Save writes both sheets back to `tools/skin_masters/<skin>/`, installs the pair where the client
+loads it, and — when the skin has a datapack half — writes the data file, the language line and the
+recipe. The masters stay in the repository even when the content does not, because the rig and the
+checks are built from them: *authoring* a skin needs the clone, shipping one does not.
+
 **Starting from a rig.** Outside the plugin, authoring a part starts from a rig: each one holds
 the vanilla body and all four armor layers at their real inflate, animated with the game's own walk
 and sprint cycles, with an empty group sitting exactly where the layer will draw.
@@ -418,12 +441,21 @@ an unskinned one, and an armor material added by another mod is skinned the mome
 the only thing wanted from it is the equipment texture it already ships. `SkinBake` is the
 arithmetic and `python tools/bake_skin.py --report` prints what each material gives you.
 
-Two consequences worth knowing before you draw:
+Three consequences worth knowing before you draw:
 
 - **Shade in bands four to five levels apart.** A level is a position on an eight-stop ramp and most
   materials repeat stops, so a step of one or two levels can bake to the same colour on iron.
   `python tools/bake_skin.py --levels` prints what every level buys on every material, and
   `--pair 6 a` checks the pair you fancy.
+- **You are not drawing on bare armor.** Vanilla's own texture for the material — its panel edges,
+  the rim along the top of a plate, the shadow under an overhang — is added to your texel's *value*
+  before the ramp is read. That is what keeps a skinned plate reading as metal, and it runs ±45:
+  two and a half of your sixteen levels, with up to five levels between two texels side by side. So
+  the band above is a floor against the ramp, not against the light, and a shape placed along a
+  seam vanilla already shades will not be seen. `python tools/bake_skin.py --lighting` has the
+  numbers; `check_skin.py` counts the steps it actually overrules on the worst material (the skins
+  that ship lose 2–11%); and in Blockbench the Armor Skin panel's **Showing** switch draws that
+  offset on its own, mid grey where it changes nothing.
 - **A skin never paints a visor, and never paints the raised helmet shell.** The face window is what
   the `brow` sockets need, and the `hat` net at UV 32,0 sits exactly where those parts do — vanilla
   paints neither, and a skin that did would bury seven parts.

@@ -268,12 +268,29 @@ install the pair, which is what a part's save has always done with its master. T
 step of its own any more — see below — so a skin drawn in the workspace is art the game loads and an
 icon the hotbar draws, with nothing typed.
 
-What the plugin still owes is the datapack half. Painting works; writing does not. A **New Skin**
-dialog should do for a skin what the Part dialog does for a part — write the `armor_skin` data file,
-its template recipe with the two item fields and the Craftable switch, its loot rows, and the lang
-line into the right half of the right pack — so that a skin is authored end to end in Blockbench and
-never by hand. That is the same code path the Part and New Fitting dialogs already are, pointed at a
-third registry.
+*Paid 2026-09-05, along with the rest of the workspace.* What the plugin owed was the datapack half:
+painting worked, writing did not. It now has both, and an **Armor Skin** panel beside the piece one
+rather than nothing at all — the gap was that every control the piece workspace has is gated on
+`isWorkspace()`, and a skin project is `free` rather than the plugin's own format, so a skin had no
+panel, no greyscale palette, and the Textures panel still up.
+
+- **New Skin...** writes everything a skin is, at once: the seeded or blank master pair (through
+  `skin_sheets.py`), the `armor_skin` file, the two sheets installed into the resource pack, and the
+  language line. **Skin...** is the Part dialog's Name and Loot groups over the same data object,
+  held whole and written on Save. The panel's two item fields and Craftable switch write the
+  template recipe, exactly as a part's do. A skin in someone else's pack is installed by copying the
+  pair rather than by `sync_skin_masters.py`, which is a list of what the *mod* ships.
+- **The palette is the alphabet.** A skin is written in `0`–`f`, sixteen levels seventeen apart, so
+  the swatches are those sixteen — a colour picked off the palette is now a character the ASCII
+  painter would have written. (A part keeps its nine stops: its master bakes through a 256-entry
+  ramp and has no alphabet.)
+- **A stroke lands on the master.** With a material shown, the armor points at two internal preview
+  textures; the redirect that sends a stroke back to the layer being edited asked for a piece, so it
+  missed them, and Blockbench's own `getTextureToEdit` hands back whatever the face carries. Paint
+  went into a texture that is never saved and is recomposited over on the next edit — gone, with no
+  message that it went. The Textures panel made it reachable, since `internal` in Blockbench means
+  "a bitmap rather than a linked file", not "hidden".
+- **The light is a control.** See below.
 
 The masters stay in `tools/skin_masters/`, and are installed from there into
 `assets/armorpieces/textures/entity/skin/<skin>/{humanoid,humanoid_leggings}.png` — which is why
@@ -365,6 +382,29 @@ same ones:
 `python tools/bake_skin.py --report` prints the ramp table, `--contrast` and `--levels` what a value
 step buys, and `--faithful` bakes the medians as they come. `--light 0` bakes without the mix, which
 is the honest before-and-after.
+
+**The lighting is also the second half of the contrast budget, and for a while nothing said so.**
+`--contrast` and `--levels` both measure the ramp *table*, and the table is not what a texel is read
+at: the offset above is added to its value first. Measured (`--lighting`, added 2026-09-05), that
+offset is ±45 on every material and both sheets, and between two texels *side by side* vanilla can
+put up to 90 units — 5.3 of the sixteen levels a skin is drawn in. So the "shade in bands 4–5 levels
+apart" the contrast rule gives is a floor against the ramp and not against the light: somewhere on
+every sheet a pair drawn one way round bakes the other way round.
+
+Quoting that worst case as advice would be useless — it says "six levels or nothing", which no
+drawing can afford. So the tools say it twice instead, once as a fact and once as a measurement of
+the drawing in hand:
+
+- `--lighting` and one clause in `--contrast --rule` (which is what the bridge injects into an
+  authoring session) state the swing and what it can do to a step.
+- `check_skin.against_light` counts the adjacent painted pairs the master puts a step between and
+  reports how many of them the light overrules — bakes level, or the wrong way round — on the
+  material that suffers worst. The fourteen shipped skins lose **2–11%**, which is the light doing
+  its job; over 35% is a master shaded in steps too small to survive its own armor, and is a problem.
+- And the Blockbench panel shows it: *Showing* has the bake and vanilla's offset on its own (mid grey
+  where it changes nothing), and *Vanilla light* moves the mix between 0 and 1 with 0.35 in the
+  middle. That is the answer to "previewable so an author can adjust for it": the offset was always
+  in the preview, mixed into the picture, and never visible as a thing of its own.
 
 ## What the Java half has to match
 

@@ -29,6 +29,12 @@
  *     and a material preview is only ever a thing you look at: strokes over it are routed to the
  *     layer being edited, and the preview is recomposited under the brush.
  *
+ * An armor SKIN gets the same three things - see the skin section far below. It is a different
+ * project, in `free` rather than the plugin's format, so every one of the changes above asks
+ * `isWorkspace() || isSkinWorkspace()` rather than the first alone: a skin's panel is "Armor Skin",
+ * its palette is the sixteen levels its ASCII alphabet is written in, and its two previews route
+ * the brush back onto the two masters exactly as a piece's one does.
+ *
  * That means Python must be on PATH, which it already must be for every other tool here.
  *
  * Install: Blockbench > File > Plugins > Load Plugin from File, and pick this file. Then set
@@ -534,8 +540,7 @@
 	 * somebody's hand-made recipe and is left alone). A disabled file keeps its pattern and key, so
 	 * the two items still read back; a bare disabled file - `{"type": "armorpieces:disabled"}` by
 	 * hand - reads as switched off with nothing to show. */
-	function readRecipe(piece) {
-		const file = recipeFileFor(piece);
+	function readTemplateRecipe(file) {
 		if (!fs.existsSync(file)) return null;
 		try {
 			const recipe = JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -553,6 +558,10 @@
 		}
 	}
 
+	function readRecipe(piece) {
+		return readTemplateRecipe(recipeFileFor(piece));
+	}
+
 	function knownItem(id) {
 		if (!ITEM_ID.test(id)) return false;
 		// Only vanilla ids can be checked; another mod's item is taken on trust.
@@ -560,11 +569,14 @@
 		return !!vanillaItems()[id];
 	}
 
-	/* Write the recipe for the current choices. Returns what was done, for the Save message. */
-	function writeRecipe(piece) {
-		const s = state();
-		const focus = (s.recipe_focus || '').trim();
-		const ring = (s.recipe_ring || '').trim() || 'minecraft:paper';
+	/*
+	 * Write one ring-around-a-centre template recipe. Returns what was done, for the Save message.
+	 * A part and a skin hand their template out the same way and differ only in what the recipe
+	 * results in, so `result` is the argument and everything else here is shared.
+	 */
+	function writeTemplateRecipe(file, result, focus, ring, craftable) {
+		focus = (focus || '').trim();
+		ring = (ring || '').trim() || 'minecraft:paper';
 		if (!focus) return 'no recipe (no centre item)';
 		for (const id of [focus, ring]) {
 			if (!knownItem(id)) {
@@ -576,43 +588,47 @@
 				return 'recipe not written';
 			}
 		}
-		const socket = anchorsOf(piece)[0] || s.anchor;
 		// Only the fields the two choices decide are replaced. Anything else in an existing file - a
 		// group, a notification flag - is somebody's authoring and stays. Switched off, the type is
 		// the disabled one and the rest is written all the same, so the choices survive until it
 		// is switched back on; the game ignores every field of a disabled recipe but its type.
-		const craftable = s.recipe_craftable !== false;
-		const file = recipeFileFor(piece);
 		const recipe = Object.assign(readJsonOr(file, {}), {
 			type: craftable ? 'minecraft:crafting_shaped' : DISABLED_TYPE,
 			pattern: RING_PATTERN,
 			key: { '#': ring, F: focus },
-			result: {
-				id: 'armorpieces:' + socket + '_template',
-				components: { 'armorpieces:decoration': piece.key },
-			},
+			result: result,
 		});
 		if (!recipe.category) recipe.category = 'equipment';
 		writeJson(file, recipe);
 		return (craftable ? 'recipe: ' : 'recipe off, kept: ') + focus + ' in ' + ring;
 	}
 
+	function writeRecipe(piece) {
+		const s = state();
+		const socket = anchorsOf(piece)[0] || s.anchor;
+		return writeTemplateRecipe(recipeFileFor(piece), {
+			id: 'armorpieces:' + socket + '_template',
+			components: { 'armorpieces:decoration': piece.key },
+		}, s.recipe_focus, s.recipe_ring, s.recipe_craftable !== false);
+	}
+
 	/*
 	 * The autocomplete behind the two item fields. Filled once, on first use rather than when the
 	 * panel is built, because the repository - and so the game jar - is not known until then.
 	 */
-	let itemListFilled = false;
+	const itemListFilled = {};
 
-	function fillItemLists() {
-		if (itemListFilled || !panel || !panel.form) return;
+	function fillItemLists(which) {
+		which = which || panel;
+		if (!which || !which.form || itemListFilled[which.id]) return;
 		const items = vanillaItems();
 		const ids = Object.keys(items);
 		if (!ids.length) return;
 		for (const field of ['recipe_focus', 'recipe_ring']) {
-			const element = panel.form.form_data[field];
+			const element = which.form.form_data[field];
 			const input = element && element.input;
 			if (!input) continue;
-			const listId = panel.form.uuid + '_' + field + '_list';
+			const listId = which.form.uuid + '_' + field + '_list';
 			input.setAttribute('list', listId);
 			let list = document.getElementById(listId);
 			if (!list) {
@@ -622,7 +638,7 @@
 			list.innerHTML = '';
 			for (const id of ids) list.append(Interface.createElement('option', { value: id }, items[id]));
 		}
-		itemListFilled = true;
+		itemListFilled[which.id] = true;
 	}
 
 	// ---- opening ------------------------------------------------------------------------------
@@ -1693,8 +1709,16 @@
 	 * stashed in storage too, for as long as the greys are in, and put back on every way out:
 	 * switching mode, leaving the piece, unloading the plugin, closing Blockbench, and - should
 	 * none of those have run - the next time the plugin loads and finds the greys still there.
+	 *
+	 * A skin gets a palette of its own, because a skin has an ALPHABET: it is written in `0`-`f`,
+	 * sixteen levels seventeen apart, and the ASCII painter and check_skin.py both read a texel
+	 * back as one of those characters. So the swatches are those sixteen exactly, and a colour
+	 * picked off the palette is a character an agent could have written. A part's master has no
+	 * such alphabet - it bakes through a 256-entry ramp - and the nine stops below are stops on it.
 	 */
 	const GREYS = [0, 32, 64, 96, 127, 160, 192, 224, 255].map(function (v) { return hex(v, v, v); });
+	const SKIN_GREYS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+		.map(function (level) { return hex(level * 17, level * 17, level * 17); });
 	const STASH_KEY = ID + '_user_palette';
 
 	function stashedPalette() {
@@ -1716,8 +1740,19 @@
 		}
 	}
 
-	function isGreyPalette(list) {
-		return list.join() === GREYS.join();
+	/* The palette this project wants, or null for the author's own. */
+	function wantedPalette() {
+		if (isSkinWorkspace()) return SKIN_GREYS;
+		if (isWorkspace() && state().edit !== 'static') return GREYS;
+		return null;
+	}
+
+	/* Either of the two the plugin puts in. Neither is anything an author would have chosen, and
+	   the check has to cover both, or switching from a piece to a skin stashes the piece's greys
+	   as if they were the author's and hands them back on the way out. */
+	function isPluginPalette(list) {
+		const joined = list.join();
+		return joined === GREYS.join() || joined === SKIN_GREYS.join();
 	}
 
 	function restorePalette() {
@@ -1725,22 +1760,25 @@
 		const saved = userPalette || stashedPalette();
 		userPalette = null;
 		stashPalette(null);
-		if (saved && isGreyPalette(ColorPanel.palette)) ColorPanel.palette.replace(saved);
+		if (saved && isPluginPalette(ColorPanel.palette)) ColorPanel.palette.replace(saved);
 	}
 
 	function applyPalette() {
 		if (!ColorPanel.palette) return;
-		const greys = isWorkspace() && state().edit !== 'static';
-		if (greys) {
-			if (userPalette === null && !isGreyPalette(ColorPanel.palette)) {
-				userPalette = ColorPanel.palette.slice();
-				stashPalette(userPalette);
-			}
-			if (!isGreyPalette(ColorPanel.palette)) ColorPanel.palette.replace(GREYS);
-			const current = ColorPanel.get();
-			if (typeof current === 'string' && !/^#(..)\1\1$/i.test(current)) ColorPanel.set('#7f7f7f');
-		} else {
+		const wanted = wantedPalette();
+		if (!wanted) {
 			restorePalette();
+			return;
+		}
+		if (userPalette === null && !isPluginPalette(ColorPanel.palette)) {
+			userPalette = ColorPanel.palette.slice();
+			stashPalette(userPalette);
+		}
+		if (ColorPanel.palette.join() !== wanted.join()) ColorPanel.palette.replace(wanted);
+		const current = ColorPanel.get();
+		// Mid grey: 0x7f on a part's continuous ramp, 0x88 on a skin, which is level `8` exactly.
+		if (typeof current === 'string' && !/^#(..)\1\1$/i.test(current)) {
+			ColorPanel.set(isSkinWorkspace() ? '#888888' : '#7f7f7f');
 		}
 	}
 
@@ -1767,6 +1805,23 @@
 	}
 
 	/*
+	 * A skin's figure has the same two switches and four more. The armor is the SUBJECT here rather
+	 * than the reference, so its four shells come off one at a time: a boot drawn over the leggings
+	 * and a helmet that swallows the face are the two mistakes a skin author cannot see any other
+	 * way, and taking the shell above off is how you look. The armor cubes are unlocked in this rig
+	 * - they are what is being painted - so the slot is read off the name alone.
+	 */
+	function applySkinVisibility() {
+		if (!isSkinWorkspace()) return;
+		const s = skinState();
+		for (const cube of Cube.all) {
+			const slot = ARMOR_NAME.exec(cube.name);
+			cube.visibility = slot ? s['show_' + slot[1]] !== false : !!s.show_player;
+		}
+		Canvas.updateVisibility();
+	}
+
+	/*
 	 * The outliner shows the part and nothing else. The part hangs under the bone it is attached
 	 * to, so the chain of locked groups above it has to stay - a hidden parent hides its subtree -
 	 * but every locked cube and every locked group with nothing of the author's inside it goes.
@@ -1777,10 +1832,14 @@
 		});
 	}
 
+	/* The same rule serves a skin, where what is unlocked is the four armor shells rather than a
+	   part: show what is being worked on, and the chain of locked groups that has to stay above it. */
 	const outlinerRule = {
 		id: ID + '_part_only',
 		test: function (node) {
-			if (!isWorkspace() || !state().part_only) return true;
+			const on = isSkinWorkspace() ? skinState().armor_only
+				: (isWorkspace() && state().part_only);
+			if (!on) return true;
 			if (!node.locked) return true;
 			return node instanceof Group && hasUnlocked(node);
 		},
@@ -1789,7 +1848,7 @@
 	/* The painting grid is drawn on every visible cube. The reference is not being painted. */
 	function onPaintingGrid(data) {
 		const element = data && data.element;
-		if (!element || !isWorkspace() || !element.locked) return;
+		if (!element || (!isWorkspace() && !isSkinWorkspace()) || !element.locked) return;
 		if (element.mesh && element.mesh.grid_box) element.mesh.grid_box.visible = false;
 	}
 
@@ -2230,8 +2289,8 @@
 	 * repeated from those hooks. In animate mode the timeline owns the pose and this stays out.
 	 */
 	function applyPose() {
-		if (!isWorkspace() || Animator.open) return;
-		const s = state();
+		if ((!isWorkspace() && !isSkinWorkspace()) || Animator.open) return;
+		const s = isSkinWorkspace() ? skinState() : state();
 		let chosen = null;
 		for (const animation of Animation.all) {
 			animation.playing = animation.name === s.animation;
@@ -3309,6 +3368,12 @@
 	/*
 	 * Panels a part author never needs while a piece is open. Their conditions are wrapped, not
 	 * their positions changed, so the author's layout for every other project is exactly as it was.
+	 *
+	 * A skin hides the same list, and the Textures panel is the one that matters: a skin shown on a
+	 * material points its armor at two internal preview textures, and `internal` in Blockbench means
+	 * "a bitmap rather than a linked file", not "hidden" - so the previews were listed beside the
+	 * masters and were selectable, and paint aimed at one went into a texture that is never saved
+	 * and is recomposited over on the next edit.
 	 */
 	const HIDDEN_PANELS = ['textures', 'layers', 'animations', 'keyframe', 'timeline',
 		'variable_placeholders', 'bone', 'collections', 'animation_controllers'];
@@ -3316,7 +3381,7 @@
 	function wrapCondition(owner) {
 		const original = owner.condition;
 		owner.condition = function () {
-			if (isWorkspace()) return false;
+			if (isWorkspace() || isSkinWorkspace()) return false;
 			return Condition(original);
 		};
 		undo_hooks.push(function () { owner.condition = original; });
@@ -3343,6 +3408,61 @@
 		writeCurrent(null);
 	}
 
+	/*
+	 * The same two, for a skin. A skin project is `free` rather than the plugin's own format - the
+	 * rig is vanilla's four shells and there is nothing to trim off a format for - so there is no
+	 * onActivation to hang these on: openSkin calls the first, and the select/unselect events do
+	 * the rest, which is what makes switching between a piece tab and a skin tab put the right
+	 * panel and the right palette up.
+	 */
+	/*
+	 * Re-resolve the open skin's list entry. A skin can gain its datapack half after it was opened
+	 * - New Skin writes one, a pack is added under Packs..., a file is written outside - and the
+	 * entry was resolved once, when the tab was made. Without this the panel goes on saying
+	 * "masters only" for a skin that has both halves, and Save writes neither.
+	 */
+	function refreshSkinEntry() {
+		if (!isSkinWorkspace()) return;
+		const skin = currentSkin();
+		const fresh = skinList().find(function (s) { return s.name === skin.name; });
+		if (!fresh) return;
+		const had = !!skin.half;
+		Project[ID + '_skin'] = fresh;
+		// Only when the half is NEW: re-reading it otherwise would drop the Skin dialog's edits.
+		if (!had && fresh.half && !Project[ID + '_skin_dirty']) loadSkinHalf(Project, fresh);
+	}
+
+	function enterSkinWorkspace() {
+		if (!isSkinWorkspace()) return;
+		refreshSkinEntry();
+		if (typeof updateInterfacePanels === 'function') updateInterfacePanels();
+		if (Modes.vue) Modes.vue.$forceUpdate();
+		Outliner.updateNodeDisplayRules();
+		fillItemLists(skinPanel);
+		syncSkinForm();
+		applySkinPreview();
+		applyPalette();
+		applySkinVisibility();
+		applyPose();
+		writeCurrent(Project.uuid);
+	}
+
+	function leaveSkinWorkspace() {
+		restorePalette();
+		writeCurrent(null);
+	}
+
+	function onSelectProject() {
+		if (isSkinWorkspace()) enterSkinWorkspace();
+	}
+
+	/* Fires with Blockbench.Project already cleared, so the project that is leaving is the
+	   argument's rather than the global one. */
+	function onUnselectProject(data) {
+		const project = data && data.project;
+		if (project && project[ID + '_skin']) leaveSkinWorkspace();
+	}
+
 	// ---- armor skins ---------------------------------------------------------------------------
 
 	/*
@@ -3355,9 +3475,22 @@
 	 * So it gets a workspace of its own rather than a mode of the piece one. `bb_rig.py --skin`
 	 * builds the same figure a part is judged on, wearing all four slots at their real inflate,
 	 * with the ARMOR cubes unlocked and their two sheets linked to tools/skin_masters/<name>/.
-	 * Everything the piece workspace does about bones, fittings, effects and recipes is absent here
-	 * on purpose; what is shared is the loop - open, paint, look, check, save - and the status the
-	 * bridge checks after every edit.
+	 * Everything the piece workspace does about bones, fittings and effects is absent here on
+	 * purpose; what is shared is the loop - open, paint, look, check, save - the status the bridge
+	 * checks after every edit, the "Armor Skin" panel beside the piece one, and the datapack half:
+	 * a skin has a data file, a template recipe and loot rows exactly as a part does, written by
+	 * the Skin dialog and on Save.
+	 *
+	 * The one thing the panel has that a piece's has not is the LIGHT slider, and it is there
+	 * because of what the bake does. A skin is not painted onto bare armor: vanilla's own texture
+	 * for the material - its panel edges, the rim along the top of a plate, the shadow under an
+	 * overhang - is measured as a signed offset and added to the master's VALUE before the ramp is
+	 * read (bake_skin.lightmap, SkinBake.lightmap, LIGHT_MIX = 0.35). Measured, that offset runs
+	 * +/-45 on every material and both sheets: two and a half of the sixteen levels a skin is drawn
+	 * in, in either direction. So a ladder four levels apart can be flattened, or locally inverted,
+	 * by armor the author never drew - and nothing in the greyscale says so. The slider moves the
+	 * mix, and the third view shows vanilla's contribution on its own, so the thing being drawn
+	 * into can be looked at rather than guessed.
 	 *
 	 * The sheets are painted as ASCII rather than with a brush. A 64x32 sheet is thirty-two lines
 	 * of sixteen greys and a dot for transparent, which is small enough to read back in full and to
@@ -3368,20 +3501,159 @@
 	const SKIN_LEVELS = '0123456789abcdef';
 	const SKIN_CLEAR = '.';
 	const SKIN_KEEP = ' ';
+	const SKIN_SLOTS = ['helmet', 'chestplate', 'leggings', 'boots'];
+	// The materials a skin is BAKED on, which are the armor materials - not MATERIALS above, which
+	// is the trim palette list a part is previewed through. Same order as bake_skin.MATERIALS.
+	const SKIN_MATERIALS = ['leather', 'chainmail', 'iron', 'gold', 'diamond', 'netherite',
+		'turtle_scute', 'copper'];
+	// bake_skin.py's own default, and so the mix a skin is really worn at. The slider starts here.
+	const SKIN_LIGHT_MIX = 0.35;
 	// 256-entry lookup tables from bake_skin.py, per material. A material's ramp never changes.
 	const skinRamps = {};
+
+	function defaultSkinState() {
+		return {
+			// What the armor shows: the greyscale master, the bake on a material, or vanilla's own
+			// lighting for that material on its own.
+			view: 'master',
+			material: 'iron',
+			light: SKIN_LIGHT_MIX,
+			animation: 'idle',
+			phase: 0,
+			show_player: true,
+			show_helmet: true,
+			show_chestplate: true,
+			show_leggings: true,
+			show_boots: true,
+			armor_only: true,
+			recipe_focus: '',
+			recipe_ring: 'minecraft:paper',
+			recipe_craftable: true,
+		};
+	}
+
+	function skinState() {
+		if (!Project) return defaultSkinState();
+		if (!Project[ID + '_skin_state']) Project[ID + '_skin_state'] = defaultSkinState();
+		return Project[ID + '_skin_state'];
+	}
 
 	function skinsRoot() {
 		const root = repoRoot();
 		return root ? path.join(root, 'tools', 'skin_masters') : null;
 	}
 
+	/*
+	 * A skin's datapack half, the way a piece has one. `data` is the `armor_skin` file the dynamic
+	 * registry loads, `recipe` the template recipe that hands it out, `sheets` the directory the
+	 * two masters are INSTALLED to - authoring stays under tools/skin_masters, because the rig is
+	 * built from there - and `langKey` the line a player reads the name from.
+	 */
+	const SKIN_DATA_REL = ['armorpieces', 'armor_skin'];
+
+	function skinRecord(dataPack, assetPack, namespace, name) {
+		return {
+			name: name,
+			namespace: namespace,
+			key: namespace + ':' + name,
+			dataPack: dataPack,
+			assetPack: assetPack,
+			data: path.join(dataPack, 'data', namespace, ...SKIN_DATA_REL, name + '.json'),
+			recipe: path.join(dataPack, 'data', namespace, 'recipe', 'skin_template_' + name + '.json'),
+			sheets: path.join(assetPack, 'assets', namespace, 'textures', 'entity', 'skin', name),
+			langKey: 'skin.' + namespace + '.' + name,
+		};
+	}
+
+	/*
+	 * The half each authored skin belongs to, by the master directory's name. A skin is matched by
+	 * NAME rather than by a key, because the name is the only thing tools/skin_masters/<name>
+	 * knows; a skin installed under another id (sync_skin_masters --as) is the one case this
+	 * cannot see, and it reads as a skin with no half, which is what it looks like from here.
+	 */
+	function skinHalves() {
+		const byName = {};
+		const roots = searchRoots();
+		for (const packDir of roots) {
+			for (const namespace of namespacesIn(packDir, 'data')) {
+				for (const name of listJson(path.join(packDir, 'data', namespace, ...SKIN_DATA_REL))) {
+					if (byName[name]) continue;
+					// The sheets may be in another pack than the data file, as a piece's are.
+					let assetPack = packDir;
+					for (const candidate of roots) {
+						const dir = path.join(candidate, 'assets', namespace, 'textures', 'entity', 'skin', name);
+						if (fs.existsSync(path.join(dir, SKIN_SHEETS[0] + '.png'))) {
+							assetPack = candidate;
+							break;
+						}
+					}
+					byName[name] = skinRecord(packDir, assetPack, namespace, name);
+				}
+			}
+		}
+		return byName;
+	}
+
 	function skinList() {
 		const root = skinsRoot();
 		if (!root) return [];
+		const halves = skinHalves();
 		return subdirs(root)
 			.filter(function (dir) { return fs.existsSync(path.join(dir, SKIN_SHEETS[0] + '.png')); })
-			.map(function (dir) { return { name: path.basename(dir), dir: dir }; });
+			.map(function (dir) {
+				const name = path.basename(dir);
+				return { name: name, dir: dir, half: halves[name] || null };
+			});
+	}
+
+	/* The open skin's datapack half, or null while it is masters and nothing else. */
+	function currentHalf() {
+		const skin = currentSkin();
+		return (skin && skin.half) || null;
+	}
+
+	/* Held on the project and written back whole on Save, exactly as a part's data file is. */
+	function skinData() {
+		return (Project && Project[ID + '_skin_data']) || null;
+	}
+
+	function markSkinDirty() {
+		if (Project) Project[ID + '_skin_dirty'] = true;
+	}
+
+	/* The skin's name as a player reads it. The three shapes a description comes in are the part's. */
+	function skinDisplayName(half, data) {
+		const description = data && data.description;
+		if (typeof description === 'string') return { text: description, editable: true, key: null };
+		if (description && typeof description.translate === 'string') {
+			const entries = readJsonOr(langFile(half.assetPack, half.namespace), {});
+			const text = entries[description.translate];
+			return {
+				text: typeof text === 'string' ? text : titleCase(half.name),
+				editable: true,
+				key: description.translate,
+			};
+		}
+		return { text: description ? JSON.stringify(description) : '', editable: false, key: null };
+	}
+
+	/* One line for the panel: what the datapack half says, or that there is not one. */
+	function skinSummary() {
+		const skin = currentSkin();
+		if (!skin) return '';
+		const half = currentHalf();
+		if (!half) {
+			return 'Masters only - no armor_skin file, so the game cannot wear it. Skin... writes one.';
+		}
+		const data = skinData();
+		if (!data) return half.key + '  ·  ' + half.data + ' could not be read';
+		const name = Project[ID + '_skin_name'] || skinDisplayName(half, data).text;
+		const loot = (data.loot || []).map(function (l) {
+			return String(l.table || '').replace(/^minecraft:/, '');
+		});
+		return name + '  ·  ' + half.key
+			+ (loot.length ? '  ·  found in: ' + loot.join(', ') : '  ·  found nowhere')
+			+ (skinState().recipe_craftable === false ? '  ·  not craftable' : '');
 	}
 
 	function currentSkin() {
@@ -3409,6 +3681,26 @@
 		return Cube.all.filter(function (c) { return !c.locked; });
 	}
 
+	/*
+	 * Read the datapack half onto a skin project: the data file as the object it parsed to, held
+	 * whole and written back whole the way a part's is, and the two recipe fields off the template
+	 * recipe. Also the reload path's, so a skin open across a plugin reload picks up a half the
+	 * build before it did not know how to find.
+	 */
+	function loadSkinHalf(project, entry) {
+		project[ID + '_skin_data'] = entry.half ? readJsonOr(entry.half.data, null) : null;
+		project[ID + '_skin_dirty'] = false;
+		// A display name changed in the Skin dialog, held until Save writes the language line.
+		project[ID + '_skin_name'] = null;
+		const recipe = entry.half ? readTemplateRecipe(entry.half.recipe) : null;
+		const s = project[ID + '_skin_state'];
+		if (recipe && s) {
+			s.recipe_focus = recipe.focus;
+			s.recipe_ring = recipe.ring;
+			s.recipe_craftable = recipe.craftable;
+		}
+	}
+
 	function openSkin(name, options) {
 		options = options || {};
 		const existing = ModelProject.all.find(function (p) {
@@ -3416,6 +3708,7 @@
 		});
 		if (existing && !options.reload) {
 			if (existing !== Project) existing.select();
+			enterSkinWorkspace();
 			publishSkin('select');
 			return {
 				skin: name, reused: true,
@@ -3448,12 +3741,17 @@
 
 		Project[ID + '_skin'] = entry;
 		Project[ID + '_skin_material'] = '';
+		Project[ID + '_skin_state'] = defaultSkinState();
+		loadSkinHalf(Project, entry);
 		Project[ID + '_saved_index'] = 0;
 		Project.name = 'skin ' + name;
 		// The rig is scratch, like a piece's: Save Skin puts the sheets back, saving the project
 		// would put a rig where the masters live.
 		Project.save_path = '';
 		Project.export_path = '';
+		// The project was loaded as `free`, so no format activation ran and nothing knows this is a
+		// skin yet. Now that it is one, bring the workspace up - the same bargain openPiece makes.
+		enterSkinWorkspace();
 		publishSkin('open');
 		Blockbench.showQuickMessage('Skin ' + name, 2000);
 		return { skin: name, reused: false, dir: entry.dir };
@@ -3480,6 +3778,30 @@
 			written.push(path.join(skin.dir, sheet.id + '.png'));
 		}
 
+		// The datapack half, exactly as a piece's Save writes it: the whole data object as the Skin
+		// dialog left it, so a field this editor has no control for is written back as it was read;
+		// the language line the name lives on; and the template recipe from the panel's two fields.
+		const half = currentHalf();
+		const notes = [];
+		if (half) {
+			if (Project[ID + '_skin_dirty'] && skinData()) {
+				writeJson(half.data, skinData());
+				Project[ID + '_skin_dirty'] = false;
+				notes.push('data');
+			}
+			if (Project[ID + '_skin_name']) {
+				const shown = skinDisplayName(half, skinData());
+				if (shown.key) writeLang(half.assetPack, half.namespace, shown.key, Project[ID + '_skin_name']);
+				Project[ID + '_skin_name'] = null;
+				notes.push('name');
+			}
+			const s = skinState();
+			notes.push(writeTemplateRecipe(half.recipe, {
+				id: 'armorpieces:skin_template',
+				components: { 'armorpieces:skin': half.key },
+			}, s.recipe_focus, s.recipe_ring, s.recipe_craftable !== false));
+		}
+
 		// A skin is authored under tools/skin_masters and loaded from the resources, and its
 		// template's icon is a swatch of the chest front off the sheet that ships - so a pair
 		// written and left there is a skin the game cannot wear and the hotbar cannot draw. Save
@@ -3488,16 +3810,46 @@
 		// select that picks between them. That is the bargain a part's master already makes on save
 		// (see sync_decoration_masters above); the difference is that a skin's icon draws itself, so
 		// there is a second script behind it.
-		let report = tool('sync_skin_masters.py', [skin.name]).trim();
-		const icons = tool('gen_template_icons.py', ['--skins']).trim();
-		report = [report, icons].filter(Boolean).join('\n');
+		//
+		// A skin in somebody else's pack has no sync script - the mod's is a list of what the mod
+		// ships, into the mod's own resources - so the pair is copied straight into the half's own
+		// texture directory, which is the same two files at the same path under a different root.
+		// Its icon needs nothing: the icon is a sprite source that lists every pack's skins.
+		const root = repoRoot();
+		const mine = half && half.namespace === 'armorpieces' && root && half.dataPack.startsWith(root);
+		let report = '';
+		if (!half || mine) {
+			report = tool('sync_skin_masters.py', [skin.name]).trim();
+			const icons = tool('gen_template_icons.py', ['--skins']).trim();
+			report = [report, icons].filter(Boolean).join('\n');
+			notes.push('installed');
+		} else {
+			fs.mkdirSync(half.sheets, { recursive: true });
+			for (const sheetId of SKIN_SHEETS) {
+				fs.copyFileSync(path.join(skin.dir, sheetId + '.png'),
+					path.join(half.sheets, sheetId + '.png'));
+			}
+			// check_skin.py exits non-zero when the skin has problems, which is right for a command
+			// line and wrong here: a half-drawn skin is exactly what a save in the middle of drawing
+			// one looks like, and the report is news, not a reason to abandon the write. So the
+			// exit code is ignored and the output taken either way. (The repo path above goes
+			// through sync_skin_masters.py, which prints the same analysis without failing on it.)
+			try {
+				report = tool('check_skin.py', [skin.name, '--brief']).trim();
+			} catch (err) {
+				report = String((err && err.stdout) || err.message || '').trim();
+			}
+			notes.push('installed to ' + packLabel(half.assetPack));
+		}
 		if (report) console.log('[armorpieces] ' + report);
 
 		Project[ID + '_saved_index'] = Project.undo.index;
 		if (Project.undo.current_save) Project[ID + '_save_in_edit'] = true;
+		// The summary line reads the name back off the file it was just written to.
+		syncSkinForm();
 		publishSkin('save');
-		Blockbench.showQuickMessage('Saved skin ' + skin.name + ' - sheets, installed', 2500);
-		return { skin: skin.name, wrote: written, report: report };
+		Blockbench.showQuickMessage('Saved skin ' + skin.name + ' - sheets, ' + notes.join(', '), 3000);
+		return { skin: skin.name, wrote: written, notes: notes, report: report };
 	}
 
 	/* One sheet as rows of characters. See the section comment for the alphabet. */
@@ -3630,23 +3982,51 @@
 		return { sheets: order, stamps: stamps.length, texels: texels, skipped: skipped };
 	}
 
-	/* The material's 256-entry table, from bake_skin.py. Asked for once per material per session. */
+	/* The material's 256-entry table, from bake_skin.py. Asked for once per material per session.
+	   `--light 0` keeps the lightmaps out of the answer: the table does not depend on the mix, and
+	   the maps are two grids of two thousand numbers each. */
 	function skinRamp(material) {
 		if (!skinRamps[material]) {
-			const data = JSON.parse(tool('bake_skin.py', ['--ramps', '--material', material]));
+			const data = JSON.parse(tool('bake_skin.py',
+				['--ramps', '--material', material, '--light', '0']));
 			if (!data[material]) throw new Error('no ramp for ' + material);
 			skinRamps[material] = data[material];
-			skinLights[material] = (data.lightmaps || {})[material] || null;
 		}
 		return skinRamps[material];
+	}
+
+	/*
+	 * Vanilla's own lighting for one material at one mix: a signed amount, in the master's own
+	 * units, added to each texel's value before the ramp is read. Keyed by BOTH, because the mix is
+	 * a control now rather than a constant - and asked of bake_skin.py rather than scaled here, so
+	 * that the mix the slider sits at by default is the file the game loads, rounding included.
+	 */
+	function skinLight(material, mix) {
+		mix = Math.round(Math.max(0, Math.min(1, Number(mix) || 0)) * 100) / 100;
+		if (!mix) return null;
+		const key = material + '@' + mix;
+		if (!(key in skinLights)) {
+			const data = JSON.parse(tool('bake_skin.py',
+				['--ramps', '--material', material, '--light', String(mix)]));
+			skinLights[key] = (data.lightmaps || {})[material] || null;
+		}
+		return skinLights[key];
 	}
 
 	function skinPreviewId(sheetId) {
 		return 'preview_' + sheetId;
 	}
 
-	/* One sheet through one ramp, into a canvas: the bake, in the viewport. */
-	function compositeSkin(target, sheet, lut, light) {
+	/*
+	 * One sheet through one ramp, into a canvas: the bake, in the viewport.
+	 *
+	 * `lightOnly` draws vanilla's half of it instead of the skin - mid grey where the material adds
+	 * nothing, and the offset it really adds either side of that, one for one in the master's own
+	 * units. So a texel two shades brighter than mid is a texel vanilla will push two levels up,
+	 * and the shape the drawing is going into is visible on the figure it is going onto. The alpha
+	 * is still the master's, because that is what the model shows.
+	 */
+	function compositeSkin(target, sheet, lut, light, lightOnly) {
 		target.width = sheet.canvas.width;
 		target.height = sheet.canvas.height;
 		const ctx = target.getContext('2d');
@@ -3654,14 +4034,21 @@
 		const data = image.data;
 		for (let i = 0; i < data.length; i += 4) {
 			if (!data[i + 3]) continue;
-			let value = data[i] === data[i + 1] && data[i + 1] === data[i + 2] ? data[i]
-				: Math.round(data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114);
 			/* Vanilla's own lighting, mixed back over the pattern - see bake_skin.lightmap. */
+			let offset = 0;
 			if (light) {
 				const texel = i / 4;
 				const row = light[Math.floor(texel / target.width)];
-				if (row) value += row[texel % target.width] || 0;
+				if (row) offset = row[texel % target.width] || 0;
 			}
+			if (lightOnly) {
+				const shade = Math.max(0, Math.min(255, 128 + offset));
+				data[i] = data[i + 1] = data[i + 2] = shade;
+				continue;
+			}
+			let value = data[i] === data[i + 1] && data[i + 1] === data[i + 2] ? data[i]
+				: Math.round(data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114);
+			value += offset;
 			const colour = lut[Math.max(0, Math.min(255, value))];
 			data[i] = colour[0];
 			data[i + 1] = colour[1];
@@ -3684,59 +4071,97 @@
 	 * The preview textures are internal and never saved; the brush and the ASCII painter always
 	 * land on the masters, and the preview is recomposited from them after every edit.
 	 */
-	function setSkinMaterial(material) {
-		if (!isSkinWorkspace()) throw new Error('no skin is open');
-		material = (material || '').trim();
+	/* Point the armor at whatever the state asks for and build the previews it needs. */
+	function applySkinPreview() {
+		if (!isSkinWorkspace()) return { material: '', view: 'master' };
+		const s = skinState();
 		const byId = {};
-		if (!material || material === 'none') {
-			for (const sheet of SKIN_SHEETS) byId[sheet] = tex(sheet);
+		if (s.view === 'master' || !s.material) {
+			for (const sheetId of SKIN_SHEETS) byId[sheetId] = tex(sheetId);
 			Project[ID + '_skin_material'] = '';
 			pointArmorAt(byId);
-			return { material: '' };
+			return { material: '', view: 'master' };
 		}
-		const lut = skinRamp(material);
-		const lights = skinLights[material] || {};
+		const lut = skinRamp(s.material);
+		const lights = skinLight(s.material, s.light) || {};
+		const lightOnly = s.view === 'light';
 		for (const sheetId of SKIN_SHEETS) {
 			const sheet = tex(sheetId);
 			if (!sheet) continue;
 			let preview = tex(skinPreviewId(sheetId));
 			if (!preview) {
 				const scratch = document.createElement('canvas');
-				compositeSkin(scratch, sheet, lut, lights[sheetId]);
+				compositeSkin(scratch, sheet, lut, lights[sheetId], lightOnly);
 				preview = new Texture({
 					name: skinPreviewId(sheetId), id: skinPreviewId(sheetId), internal: true,
 					uv_width: sheet.uv_width, uv_height: sheet.uv_height,
 				}).fromDataURL(scratch.toDataURL('image/png')).add(false);
 			} else {
-				compositeSkin(preview.canvas, sheet, lut, lights[sheetId]);
+				compositeSkin(preview.canvas, sheet, lut, lights[sheetId], lightOnly);
 				const own = preview.getOwnMaterial();
 				if (own && own.map) own.map.needsUpdate = true;
 			}
 			byId[sheetId] = preview;
 		}
-		Project[ID + '_skin_material'] = material;
+		Project[ID + '_skin_material'] = s.material;
 		pointArmorAt(byId);
-		return { material: material };
+		return { material: s.material, view: s.view, light: s.light };
+	}
+
+	/*
+	 * The bridge's and the panel's one way in. A material with nothing else said shows the bake;
+	 * 'none' goes back to the greyscale; `view` picks between the bake and vanilla's light alone,
+	 * and `light` moves the mix. Whatever changes, the brush and the ASCII painter still land on
+	 * the masters - the previews are only ever a thing you look at.
+	 */
+	function setSkinMaterial(material, options) {
+		if (!isSkinWorkspace()) throw new Error('no skin is open');
+		options = options || {};
+		const s = skinState();
+		material = material === undefined || material === null ? s.material : String(material).trim();
+		if (!material || material === 'none') {
+			s.view = 'master';
+		} else {
+			s.material = material;
+			s.view = options.view || (s.view === 'master' ? 'material' : s.view);
+		}
+		if (options.light !== undefined && options.light !== null) {
+			s.light = Math.max(0, Math.min(1, Number(options.light)));
+		}
+		const out = applySkinPreview();
+		syncSkinForm();
+		return out;
 	}
 
 	function refreshSkinPreview() {
-		const material = Project && Project[ID + '_skin_material'];
-		if (!material) return;
-		let lut;
+		if (!isSkinWorkspace()) return;
+		const s = skinState();
+		if (s.view === 'master' || !s.material) return;
+		let lut, lights;
 		try {
-			lut = skinRamp(material);
+			lut = skinRamp(s.material);
+			lights = skinLight(s.material, s.light) || {};
 		} catch (err) {
 			return;
 		}
-		const lights = skinLights[material] || {};
+		const lightOnly = s.view === 'light';
 		for (const sheetId of SKIN_SHEETS) {
 			const sheet = tex(sheetId);
 			const preview = tex(skinPreviewId(sheetId));
 			if (!sheet || !preview) continue;
-			compositeSkin(preview.canvas, sheet, lut, lights[sheetId]);
+			compositeSkin(preview.canvas, sheet, lut, lights[sheetId], lightOnly);
 			const own = preview.getOwnMaterial();
 			if (own && own.map) own.map.needsUpdate = true;
 		}
+	}
+
+	/* The master a skin preview was composited from, or null for anything else. */
+	function skinMasterOf(texture) {
+		if (!texture) return null;
+		for (const sheetId of SKIN_SHEETS) {
+			if (texture.id === skinPreviewId(sheetId)) return tex(sheetId);
+		}
+		return null;
 	}
 
 	/* What the bridge checks after every edit: the two sheets as they are right now, and a meta
@@ -3766,6 +4191,9 @@
 				dir: skin.dir,
 				sheets: files,
 				material: Project[ID + '_skin_material'] || '',
+				view: skinState().view,
+				light: skinState().light,
+				half: currentHalf() ? currentHalf().key : null,
 				unsaved_edits: Project.undo.index - (Project[ID + '_saved_index'] || 0),
 			}), 'utf8');
 			writeCurrent(Project.uuid);
@@ -3791,6 +4219,412 @@
 		}
 		if (textures.length) refreshSkinPreview();
 		publishSkin((data && data.message) || 'edit');
+	}
+
+	// ---- the Skin dialog ------------------------------------------------------------------------
+
+	/*
+	 * What an `armor_skin` file says that the sheets cannot: the name a player reads, and where the
+	 * template turns up in the world. That is the whole of ArmorSkin beyond its asset id - there is
+	 * deliberately no material list, because the ramp is derived rather than authored - so this
+	 * dialog is the Part dialog's Name and Loot groups and nothing else, and it borrows that
+	 * dialog's stylesheet rather than growing a second copy of it.
+	 */
+	const SKIN_DIALOG_TEMPLATE = [
+		'<div class="armorpieces_part">',
+		'	<div class="dialog_bar form_bar">',
+		'		<label class="name_space_left">Name</label>',
+		'		<input type="text" class="dark_bordered" v-model="name" :disabled="!editable"',
+		'			:title="editable ? \'\' : \'A text component the editor cannot edit\'">',
+		'	</div>',
+		'	<div class="dialog_bar form_bar">',
+		'		<label class="name_space_left">Loot</label>',
+		'		<div class="ap_column">',
+		'			<div class="ap_loot" v-for="(l, i) in loot" :key="i">',
+		'				<input type="text" class="dark_bordered ap_loot_table" v-model="l.table" list="armorpieces_loot_tables"',
+		'					placeholder="minecraft:chests/stronghold_crossing" title="The loot table the skin is added to">',
+		'				<label title="Splits the roll between the skins and parts that share this table">w</label>',
+		'				<input type="number" class="dark_bordered ap_loot_num" min="1" step="1" v-model.number="l.weight">',
+		'				<label title="How often the skin is offered at all; 1 is every chest">chance</label>',
+		'				<input type="number" class="dark_bordered ap_loot_num" min="0" max="1" step="0.01" v-model.number="l.chance">',
+		'				<i class="material-icons" title="Remove" @click="removeLoot(i)">clear</i>',
+		'			</div>',
+		'			<button type="button" @click="addLoot">Add a loot table...</button>',
+		'			<datalist id="armorpieces_loot_tables">',
+		'				<option v-for="t in tables" :key="t" :value="t"></option>',
+		'			</datalist>',
+		'			<p class="ap_dim">A skin template is a whole look for a whole suit, so the weights want to be ',
+		'			lower than a part\'s and the tables fewer.</p>',
+		'		</div>',
+		'	</div>',
+		'</div>',
+	].join('\n');
+
+	function editSkin() {
+		const half = currentHalf();
+		if (!half) {
+			Blockbench.showMessageBox({
+				title: 'No datapack half',
+				message: 'This skin is a master pair under tools/skin_masters and nothing else, so ' +
+					'there is no armor_skin file to edit and the game cannot wear it. New... makes ' +
+					'a skin with both halves; to give this one a half, make a new skin under the ' +
+					'same name and it will find these masters.',
+			});
+			return;
+		}
+		const data = skinData();
+		if (!data) {
+			Blockbench.showQuickMessage('Could not read ' + half.data, 2500);
+			return;
+		}
+		const shown = skinDisplayName(half, data);
+		new Dialog({
+			id: ID + '_skin_edit',
+			title: 'Skin ' + half.key,
+			width: 560,
+			component: {
+				data: function () {
+					return {
+						name: Project[ID + '_skin_name'] || shown.text,
+						editable: shown.editable,
+						loot: (data.loot || []).map(lootRow),
+						tables: lootTables(),
+					};
+				},
+				methods: {
+					addLoot: function () { this.loot.push(lootRow()); },
+					removeLoot: function (i) { this.loot.splice(i, 1); },
+				},
+				template: SKIN_DIALOG_TEMPLATE,
+			},
+			onConfirm: function () {
+				const vue = this.content_vue;
+				for (const row of vue.loot) {
+					const problem = lootProblem(row);
+					if (problem) {
+						Blockbench.showQuickMessage(problem, 2500);
+						return false;
+					}
+				}
+				this.hide();
+				applySkinEdit(half, data, shown, vue.name, vue.loot.map(lootFromRow));
+			},
+		}).show();
+	}
+
+	/* The dialog's answers onto the held data object. Nothing is written until Save. */
+	function applySkinEdit(half, data, shown, name, loot) {
+		let changed = false;
+		if (loot && JSON.stringify(loot) !== JSON.stringify(data.loot || [])) {
+			if (loot.length) data.loot = loot;
+			else delete data.loot;
+			markSkinDirty();
+			changed = true;
+		}
+		name = (name || '').trim();
+		if (shown.editable && name && name !== shown.text) {
+			if (shown.key) {
+				Project[ID + '_skin_name'] = name;
+			} else {
+				data.description = name;
+				markSkinDirty();
+			}
+			changed = true;
+		} else if (shown.key && Project[ID + '_skin_name'] && name === shown.text) {
+			Project[ID + '_skin_name'] = null;
+		}
+		syncSkinForm();
+		if (changed) Blockbench.showQuickMessage('Skin changed - written on Save', 2000);
+	}
+
+	// ---- new skin ------------------------------------------------------------------------------
+
+	/*
+	 * Everything a skin is, written at once: the master pair the rig is built from, the
+	 * `armor_skin` file the registry loads, the template recipe that hands it out, the language
+	 * line, and the pair installed where the client reads it. That is the debt docs/plans/
+	 * armor-skins.md books against this plugin - "painting works; writing does not" - and it is the
+	 * same code path New Armor Piece and New Fitting already are, pointed at a third registry.
+	 *
+	 * The masters stay under tools/skin_masters even when the content does not, because the rig is
+	 * built from there and the check reads from there; the pair is COPIED into the pack on Save.
+	 * So authoring a skin still needs the repository, as it always has, while shipping one does not.
+	 */
+	function newSkin() {
+		const root = repoRoot();
+		if (!root) {
+			Blockbench.showMessageBox({
+				title: 'No repository',
+				message: 'A skin is drawn on masters under tools/skin_masters, so the Armor Pieces ' +
+					'repository has to be set in Settings before one can be started.',
+			});
+			return;
+		}
+		const packs = searchRoots();
+		if (!packs.length) {
+			Blockbench.showMessageBox({
+				title: 'No packs',
+				message: 'No pack folder to put the skin in. Make one with Tools > Armor Pieces > ' +
+					'New Pack..., or add an existing folder under Packs....',
+			});
+			return;
+		}
+		const inRepo = packs[0].startsWith(root);
+		const seedOptions = { '': 'Blank sheets' };
+		for (const material of SKIN_MATERIALS) seedOptions[material] = "Vanilla's " + material + ' outline';
+
+		new Dialog({
+			id: ID + '_new_skin',
+			title: 'New Armor Skin',
+			form: {
+				name: { label: 'Name', type: 'text', value: '', placeholder: 'brigandine' },
+				namespace: { label: 'Namespace', type: 'text', value: inRepo ? 'armorpieces' : 'mypack' },
+				seed: {
+					label: 'Start from', type: 'select', options: seedOptions, value: 'iron',
+					description: 'A seeded skin starts as a flat grey on vanilla\'s own silhouette, ' +
+						'so it is drawn where the armor really is and the check holds it to that ' +
+						'outline. Blank sheets are the freehand start.',
+				},
+				data_pack: {
+					label: 'Datapack', type: 'select', options: packOptions(packs), value: '0',
+					description: 'Where the armor_skin file and its template recipe go.',
+				},
+				asset_pack: {
+					label: 'Resource pack', type: 'select', options: packOptions(packs), value: '0',
+					description: 'Where the two sheets and the language file go. The same folder is fine.',
+				},
+			},
+			onConfirm: function (result) {
+				const name = (result.name || '').trim().toLowerCase().replace(/[^a-z0-9_]/g, '_');
+				if (!name) {
+					Blockbench.showQuickMessage('Name a skin first', 2000);
+					return;
+				}
+				this.hide();
+				const dataPack = packs[parseInt(result.data_pack, 10)];
+				const assetPack = packs[parseInt(result.asset_pack, 10)];
+				const namespace = (result.namespace || '').trim().toLowerCase()
+					.replace(/[^a-z0-9_.-]/g, '_') || 'mypack';
+				try {
+					createSkin(dataPack, assetPack, namespace, name, result.seed);
+				} catch (err) {
+					Blockbench.showMessageBox({ title: 'Could not create', message: String(err.message || err) });
+					return;
+				}
+				Blockbench.showQuickMessage('Created ' + namespace + ':' + name, 2500);
+				openSkin(name);
+			},
+		}).show();
+	}
+
+	/*
+	 * The files a new skin starts from. Throws when the pack or the masters already hold it: the
+	 * dialog above and the bridge both end up here, and neither should overwrite a drawing.
+	 */
+	function createSkin(dataPack, assetPack, namespace, name, seedMaterial) {
+		const half = skinRecord(dataPack, assetPack, namespace, name);
+		const masters = path.join(skinsRoot(), name);
+		if (fs.existsSync(half.data)) throw new Error(half.key + ' is already in that pack.');
+		if (fs.existsSync(path.join(masters, SKIN_SHEETS[0] + '.png'))) {
+			throw new Error('tools/skin_masters/' + name + ' already holds a drawing. Open it instead.');
+		}
+
+		// The pair, by the same script the command line starts a skin with.
+		if (seedMaterial) tool('skin_sheets.py', ['--seed', name, '--from', seedMaterial]);
+		else tool('skin_sheets.py', ['--new', name]);
+
+		writeJson(half.data, {
+			asset_id: half.key,
+			description: { translate: half.langKey },
+		});
+		// A skin found nowhere and craftable from nothing until the author says otherwise: the
+		// recipe is written on Save from the panel's two fields, as a part's is.
+		fs.mkdirSync(half.sheets, { recursive: true });
+		for (const sheetId of SKIN_SHEETS) {
+			fs.copyFileSync(path.join(masters, sheetId + '.png'), path.join(half.sheets, sheetId + '.png'));
+		}
+		if (!readJsonOr(langFile(assetPack, namespace), {})[half.langKey]) {
+			writeLang(assetPack, namespace, half.langKey, titleCase(name));
+		}
+		return half;
+	}
+
+	// ---- the skin panel --------------------------------------------------------------------------
+
+	let skinPanel = null;
+
+	function skinOptions() {
+		const options = {};
+		for (const skin of skinList()) {
+			options[skin.name] = skin.half ? skin.name + '  (' + skin.half.key + ')'
+				: skin.name + '  (masters only)';
+		}
+		const current = currentSkin();
+		if (current && !options[current.name]) options[current.name] = current.name;
+		if (!Object.keys(options).length) options[''] = '-';
+		return options;
+	}
+
+	function skinPanelForm() {
+		const materialOptions = SKIN_MATERIALS.reduce(function (all, m) { all[m] = m; return all; }, {});
+		const slots = {};
+		for (const slot of SKIN_SLOTS) {
+			slots['show_' + slot] = {
+				label: titleCase(slot), type: 'checkbox', style: 'toggle_switch', value: true,
+			};
+		}
+		return Object.assign({
+			skin: { label: 'Skin', type: 'select', options: skinOptions },
+			actions: {
+				type: 'buttons', buttons: ['New...', 'Skin...', 'Save', 'Rebuild'],
+				click: function (index) {
+					if (index === 0) newSkin();
+					else if (index === 1) editSkin();
+					else if (index === 2) saveSkin();
+					else reopenSkin();
+				},
+			},
+			// What the datapack half says, in one line; syncSkinForm writes it into the element.
+			summary: { type: 'info', text: '' },
+			_1: '_',
+			view: {
+				label: 'Showing', type: 'inline_select',
+				options: { master: 'Master (grey)', material: 'On a material', light: 'Vanilla\'s light' },
+				value: 'master',
+				description: 'The greyscale being painted, the bake as the game performs it, or ' +
+					'vanilla\'s own lighting for that material on its own - mid grey where it ' +
+					'changes nothing, and the amount it really adds either side of that.',
+			},
+			material: {
+				label: 'Material', type: 'select', options: materialOptions, value: 'iron',
+				condition: function (result) { return result.view !== 'master'; },
+			},
+			light: {
+				label: 'Vanilla light', type: 'range', min: 0, max: 1, step: 0.05, value: SKIN_LIGHT_MIX,
+				condition: function (result) { return result.view !== 'master'; },
+				description: 'How much of the material\'s own texture is mixed back over the master ' +
+					'before the ramp is read. 0.35 is what the game does; at that mix the offset ' +
+					'runs +/-45, which is two and a half of the sixteen levels a skin is drawn in. ' +
+					'Slide it to 0 to see the pattern alone, and to 1 to see what it is fighting.',
+			},
+			_2: '_',
+			animation: { label: 'Pose', type: 'inline_select', options: animationOptions() },
+			phase: {
+				label: 'Phase', type: 'range', min: 0, max: 1, step: 0.01, value: 0,
+				condition: function (result) { return result.animation !== 'idle'; },
+			},
+			_3: '_',
+			show_player: { label: 'Show player', type: 'checkbox', style: 'toggle_switch', value: true },
+		}, slots, {
+			armor_only: { label: 'Outliner: armor only', type: 'checkbox', style: 'toggle_switch', value: true },
+			_4: '_',
+			// No `list` here for the same reason the piece panel has none: 5.1's own datalist never
+			// reaches the page. fillItemLists attaches a working one.
+			recipe_focus: {
+				label: 'Recipe centre', type: 'text', value: '', placeholder: 'minecraft:iron_block',
+				description: 'The item in the middle of the skin template\'s recipe. Written on Save.',
+			},
+			recipe_ring: {
+				label: 'Recipe ring', type: 'text', value: 'minecraft:paper',
+				description: 'The four items around it.',
+			},
+			recipe_craftable: {
+				label: 'Craftable', type: 'checkbox', style: 'toggle_switch', value: true,
+				description: 'Off, Save writes the recipe as armorpieces:disabled - it loads, matches '
+					+ 'nothing and is absent from the recipe book - with the two items kept. For a '
+					+ 'skin that is found rather than made.',
+			},
+		});
+	}
+
+	function syncSkinForm() {
+		if (!skinPanel || !skinPanel.form || !isSkinWorkspace()) return;
+		const skin = currentSkin();
+		const s = skinState();
+		syncingForm = true;
+		try {
+			const values = {
+				skin: skin ? skin.name : '',
+				view: s.view,
+				material: s.material,
+				light: s.light,
+				animation: s.animation,
+				phase: s.phase,
+				show_player: s.show_player,
+				armor_only: s.armor_only,
+				recipe_focus: s.recipe_focus,
+				recipe_ring: s.recipe_ring,
+				recipe_craftable: s.recipe_craftable !== false,
+			};
+			for (const slot of SKIN_SLOTS) values['show_' + slot] = s['show_' + slot] !== false;
+			const summary = skinPanel.form.form_data.summary;
+			const box = summary && summary.bar && summary.bar.querySelector('.small_text');
+			if (box) box.textContent = skinSummary();
+			skinPanel.form.setValues(values);
+		} finally {
+			syncingForm = false;
+		}
+	}
+
+	/* Rebuild the rig from the masters on disk, the way the piece panel's Rebuild does. */
+	function reopenSkin() {
+		const skin = currentSkin();
+		if (!skin) return;
+		try {
+			openSkin(skin.name, { reload: true });
+		} catch (err) {
+			Blockbench.showMessageBox({ title: 'Could not rebuild', message: String(err.message || err) });
+		}
+	}
+
+	function onSkinFormChange(event) {
+		if (syncingForm || !isSkinWorkspace()) return;
+		const result = event.result;
+		const changed = event.changed_keys || [];
+		const s = skinState();
+		const skin = currentSkin();
+
+		if (changed.includes('skin') && result.skin && result.skin !== skin.name) {
+			try {
+				openSkin(result.skin);
+			} catch (err) {
+				Blockbench.showMessageBox({ title: 'Could not open', message: String(err.message || err) });
+				syncSkinForm();
+			}
+			return;
+		}
+
+		s.view = result.view;
+		s.material = result.material;
+		s.light = result.light;
+		s.animation = result.animation;
+		s.phase = result.phase;
+		s.show_player = !!result.show_player;
+		s.armor_only = !!result.armor_only;
+		for (const slot of SKIN_SLOTS) s['show_' + slot] = !!result['show_' + slot];
+		s.recipe_focus = result.recipe_focus || '';
+		s.recipe_ring = result.recipe_ring || '';
+		s.recipe_craftable = result.recipe_craftable !== false;
+		// The summary line says "not craftable" while the switch is off.
+		if (changed.includes('recipe_craftable')) syncSkinForm();
+
+		if (changed.includes('view') || changed.includes('material') || changed.includes('light')) {
+			try {
+				applySkinPreview();
+			} catch (err) {
+				console.error(err);
+				Blockbench.showQuickMessage('No ramp for ' + s.material +
+					' - run tools/vanilla_assets.py', 3000);
+				s.view = 'master';
+				applySkinPreview();
+				syncSkinForm();
+			}
+		}
+		if (changed.includes('animation') || changed.includes('phase')) applyPose();
+		if (changed.includes('show_player') || changed.some(function (key) {
+			return SKIN_SLOTS.some(function (slot) { return key === 'show_' + slot; });
+		})) applySkinVisibility();
+		if (changed.includes('armor_only')) Outliner.updateNodeDisplayRules();
 	}
 
 	// ---- status for the bridge ----------------------------------------------------------------
@@ -4103,12 +4937,26 @@
 					}).show();
 				},
 			});
+			const newSkinAction = new Action(ID + '_new_skin', {
+				name: 'New Armor Skin...',
+				description: 'Start a skin: its master pair, its data file, its recipe and its name.',
+				icon: 'add_photo_alternate',
+				click: newSkin,
+			});
 			const saveSkinAction = new Action(ID + '_save_skin', {
 				name: 'Save Armor Skin',
-				description: 'Write both sheets back to tools/skin_masters.',
+				description: 'Write both sheets back to tools/skin_masters, install them, and write ' +
+					'the datapack half.',
 				icon: 'save',
 				condition: function () { return isSkinWorkspace(); },
 				click: function () { saveSkin(); },
+			});
+			const editSkinAction = new Action(ID + '_edit_skin', {
+				name: 'Skin...',
+				description: 'The name a player reads and where the template is found.',
+				icon: 'edit',
+				condition: function () { return isSkinWorkspace(); },
+				click: editSkin,
 			});
 			const packs = new Action(ID + '_packs', {
 				name: 'Packs...',
@@ -4136,11 +4984,12 @@
 				name: 'Armor Pieces',
 				description: 'Browse, edit and preview Armor Pieces.',
 				icon: 'shield',
-				children: [open, create, save, '_', openSkinAction, saveSkinAction, '_',
+				children: [open, create, save, '_',
+					openSkinAction, newSkinAction, editSkinAction, saveSkinAction, '_',
 					packs, createPack, exportZip],
 			});
-			registered.push(open, save, create, openSkinAction, saveSkinAction,
-				packs, createPack, exportZip, menu);
+			registered.push(open, save, create, openSkinAction, newSkinAction, editSkinAction,
+				saveSkinAction, packs, createPack, exportZip, menu);
 			MenuBar.addAction(menu, 'tools');
 			registered.push(Blockbench.addCSS(PACKS_DIALOG_CSS));
 
@@ -4161,6 +5010,24 @@
 			panel.form.on('change', onFormChange);
 			registered.push(Blockbench.addCSS(PART_DIALOG_CSS));
 
+			// The skin panel takes the same slot: a project is a piece or a skin, never both, so
+			// the two conditions are exclusive and the sidebar holds whichever one applies.
+			skinPanel = new Panel(ID + '_skin_panel', {
+				name: 'Armor Skin',
+				icon: 'texture',
+				condition: function () { return isSkinWorkspace(); },
+				default_position: {
+					slot: 'right_bar',
+					float_position: [0, 0],
+					float_size: [320, 480],
+					height: 460,
+					sidebar_index: 0,
+				},
+				form: skinPanelForm(),
+			});
+			registered.push(skinPanel);
+			skinPanel.form.on('change', onSkinFormChange);
+
 			for (const id of HIDDEN_PANELS) {
 				if (Interface.Panels[id]) wrapCondition(Interface.Panels[id]);
 			}
@@ -4178,6 +5045,15 @@
 				if (input && input.id === 'preview' && isWorkspace()) {
 					return editTarget() || input;
 				}
+				// A skin makes the same bargain and has two previews rather than one, so the
+				// redirect is by which master a preview was composited from. Without it a stroke
+				// lands on the preview: Blockbench's own getTextureToEdit hands back whatever
+				// texture the face carries, and that one is never saved and is recomposited over
+				// on the next edit - the paint is gone with no message that it went.
+				if (input && isSkinWorkspace()) {
+					const master = skinMasterOf(input);
+					if (master) return master;
+				}
 				return originalTextureToEdit.call(this, input);
 			};
 			undo_hooks.push(function () { Painter.getTextureToEdit = originalTextureToEdit; });
@@ -4188,14 +5064,14 @@
 				const originalUpdateTexture = UVEditor.vue.updateTexture;
 				UVEditor.vue.updateTexture = function () {
 					originalUpdateTexture.call(this);
-					if (isWorkspace() && this.texture && this.texture.id === 'preview') {
-						const target = editTarget();
-						if (target) {
-							this.texture = target;
-							this.layer = target.selected_layer || null;
-							UVEditor.updateSelectionOutline();
-							this.updateTextureCanvas();
-						}
+					let target = null;
+					if (isWorkspace() && this.texture && this.texture.id === 'preview') target = editTarget();
+					else if (isSkinWorkspace()) target = skinMasterOf(this.texture);
+					if (target) {
+						this.texture = target;
+						this.layer = target.selected_layer || null;
+						UVEditor.updateSelectionOutline();
+						this.updateTextureCanvas();
 					}
 				};
 				undo_hooks.push(function () { UVEditor.vue.updateTexture = originalUpdateTexture; });
@@ -4213,7 +5089,7 @@
 					// the code changed anything. One that changed nothing - a read, a check - is
 					// dropped here, so a piece read through the bridge is still a piece with no
 					// unsaved edits, and Ctrl+Z still undoes the author's last stroke.
-					if (message === BRIDGE_EVAL && isWorkspace() &&
+					if (message === BRIDGE_EVAL && (isWorkspace() || isSkinWorkspace()) &&
 						unchangedSince(this.current_save, aspects || this.current_save.aspects)) {
 						delete this.current_save;
 						metaPending = null;
@@ -4264,17 +5140,40 @@
 			Blockbench.on('undo', onUndoRedo);
 			Blockbench.on('redo', onUndoRedo);
 			Blockbench.on('before_closing', restorePalette);
+			// A skin project is `free`, so it has no format activation to hang the workspace on.
+			Blockbench.on('select_project', onSelectProject);
+			Blockbench.on('unselect_project', onUnselectProject);
 
 			// A piece open across a reload of the plugin keeps its resolved fittings from before it,
 			// which may be missing what the resolver now reports. Resolve them again on first use.
 			for (const project of ModelProject.all) project[ID + '_fittings'] = null;
+			// A skin open across one keeps the list entry it was opened from, and that entry carries
+			// the datapack half - which an older build did not resolve at all. Look it up again.
+			for (const project of ModelProject.all) {
+				const skin = project[ID + '_skin'];
+				if (!skin) continue;
+				const fresh = skinList().find(function (s) { return s.name === skin.name; });
+				if (!fresh) continue;
+				project[ID + '_skin'] = fresh;
+				if (!project[ID + '_skin_state']) project[ID + '_skin_state'] = defaultSkinState();
+				// Unsaved edits to the data file would be lost, so only a project that has none.
+				if (!project[ID + '_skin_dirty']) loadSkinHalf(project, fresh);
+			}
+			// A previous session may have ended with the greys still in. Put the author's palette
+			// back before anything else can persist the greys again - and before the workspace
+			// below puts them in on purpose, or this would take those straight back out.
+			if (ColorPanel.palette && stashedPalette() && isPluginPalette(ColorPanel.palette)
+				&& !wantedPalette()) {
+				restorePalette();
+			}
+
 			// And the unload just before this reload told the bridge no piece was current.
 			if (isWorkspace()) publishStatus('load', { model: true, sheets: 'all' });
-
-			// A previous session may have ended with the greys still in. Put the author's palette
-			// back before anything else can persist the greys again.
-			if (ColorPanel.palette && stashedPalette() && isGreyPalette(ColorPanel.palette)) {
-				restorePalette();
+			// A skin open across a reload has to bring its own workspace back for the same reason:
+			// nothing else will, since its format is not this plugin's.
+			if (isSkinWorkspace()) {
+				enterSkinWorkspace();
+				publishSkin('load');
 			}
 
 			// A small scripting surface, so the piece list and opener can be driven from outside
@@ -4336,6 +5235,33 @@
 				currentSkin: currentSkin,
 				isSkinWorkspace: isSkinWorkspace,
 				publishSkin: function () { return publishSkin('api'); },
+				// The skin's datapack half, the way editPart/applyPartEdit are the piece's.
+				skinState: skinState,
+				skinData: skinData,
+				skinHalf: currentHalf,
+				editSkin: editSkin,
+				newSkin: newSkin,
+				createSkin: function (dataPack, assetPack, namespace, name, seed) {
+					const half = createSkin(dataPack, assetPack, namespace, name, seed);
+					openSkin(name);
+					return { skin: half.key, files: [half.data, half.sheets] };
+				},
+				applySkinEdit: function (name, loot) {
+					const half = currentHalf();
+					if (!half) throw new Error('this skin has no datapack half');
+					const data = skinData();
+					applySkinEdit(half, data, skinDisplayName(half, data), name, loot);
+				},
+				setSkinRecipe: function (centre, ring, craftable) {
+					if (!isSkinWorkspace()) throw new Error('no skin is open');
+					const s = skinState();
+					if (centre !== undefined && centre !== null) s.recipe_focus = String(centre).trim();
+					if (ring !== undefined && ring !== null) s.recipe_ring = String(ring).trim() || 'minecraft:paper';
+					if (craftable !== undefined && craftable !== null) s.recipe_craftable = !!craftable;
+					syncSkinForm();
+					return { centre: s.recipe_focus, ring: s.recipe_ring, craftable: s.recipe_craftable !== false };
+				},
+				refreshSkin: enterSkinWorkspace,
 				statusDir: function () { return isWorkspace() ? statusDir() : null; },
 				currentPiece: currentPiece,
 				displayName: function () { return displayName(currentPiece(), partData()); },
@@ -4368,7 +5294,10 @@
 			Blockbench.removeListener('undo', onUndoRedo);
 			Blockbench.removeListener('redo', onUndoRedo);
 			Blockbench.removeListener('before_closing', restorePalette);
+			Blockbench.removeListener('select_project', onSelectProject);
+			Blockbench.removeListener('unselect_project', onUnselectProject);
 			leaveWorkspace();
+			leaveSkinWorkspace();
 			undo_hooks.reverse().forEach(function (fn) { fn(); });
 			undo_hooks = [];
 			// Deleting a BarItem does not take its menu entry with it, so the menu node has to go
@@ -4377,6 +5306,7 @@
 			registered.forEach(function (item) { item.delete(); });
 			registered = [];
 			panel = null;
+			skinPanel = null;
 			anchorCache = null;
 			delete window[ID + '_api'];
 			if (typeof updateInterfacePanels === 'function') updateInterfacePanels();
