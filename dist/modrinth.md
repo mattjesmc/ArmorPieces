@@ -423,6 +423,22 @@ Yes. Set `"first_person_parts": false` in `config/armorpieces.json` and restart 
 You need the mod installed, but adding a part takes no Java — a datapack and a resource pack. Only a brand-new *effect* type needs code. The [authoring guide](https://github.com/mattjesmc/ArmorPieces/blob/main/docs/authoring.md) walks through it.
 
 ---
+<a id="bugs"></a>
+
+## Bugs and issues
+
+Something broken, something clipping, a part that sits wrong on a body it should fit — the
+[issue tracker](https://github.com/mattjesmc/ArmorPieces/issues) is the place for it. So is a
+request: a socket, a part, a skin or a fitting that is not there yet.
+
+No GitHub account, and would rather not make one? The comment section on the CurseForge or
+Modrinth page reaches me just as well.
+
+For a bug, the three things that make it fixable are your Minecraft and mod versions, the
+other mods you are running, and `logs/latest.log` from the run it happened in. A screenshot
+settles most questions about how something *looks* on its own.
+
+---
 <a id="license"></a>
 
 ## License
