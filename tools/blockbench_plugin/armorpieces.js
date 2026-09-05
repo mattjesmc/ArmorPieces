@@ -45,8 +45,18 @@
 	const path = require('path');
 	const os = require('os');
 	const { execFileSync } = require('child_process');
+	const https = require('https');
 
 	const ID = 'armorpieces';
+	/*
+	 * The pack library: a hosted list of packs, each pointing at a zip its author hosts, plus the
+	 * mod's own. It is read from an index.json (the setting below says which) and written to by
+	 * submission - a filled-in issue on the library's repository, approved by a maintainer. The
+	 * web build of this plugin is served from LIBRARY_SITE and reads the index beside itself.
+	 */
+	const LIBRARY_HOME = 'https://github.com/mattjesmc/ArmorPiecesBlockbench';
+	const LIBRARY_SITE = 'https://mattjesmc.github.io/ArmorPiecesBlockbench/';
+	const LIBRARY_INDEX = LIBRARY_SITE + 'library/index.json';
 	// Everything created in onload that has a delete(), so unload can take it all down.
 	let registered = [];
 	// Everything else unload has to undo: wrapped conditions, patched methods, event listeners.
@@ -231,6 +241,116 @@
 		return path.join(home, '.minecraft');
 	}
 
+	// ---- packs: the platform seam ----------------------------------------------------------------
+
+	/*
+	 * Pack management is the one part of this plugin that cannot be written once and left alone,
+	 * because it is the part that touches things outside the editor: folders, zips, and the file
+	 * dialogs that reach them. The desktop has a disk and native pickers. The web build has a
+	 * filesystem that the Python shares and the browser persists, no native pickers at all, and
+	 * downloads instead of save dialogs.
+	 *
+	 * These five functions are the ONLY place in this file that asks which of the two it is on.
+	 * Everything else - discovery, the manager, new packs, import, export - is the same code
+	 * running over the same `fs`, because on both platforms there is a real filesystem underneath
+	 * with real pack folders in it. Adding a platform means adding cases here and nowhere else.
+	 */
+
+	/* Where a pack goes when the author is not asked where. */
+	function packHome() {
+		return isApp ? minecraftDir() : '/packs';
+	}
+
+	/* Only a desktop file dialog can hand back a folder that already exists elsewhere. */
+	function canBrowseFolders() {
+		return !!isApp;
+	}
+
+	function browseForPack(done) {
+		const dir = Blockbench.pickDirectory({ title: 'Add a pack folder', startpath: packHome() });
+		if (dir) done(dir);
+	}
+
+	/*
+	 * A zip from outside, landed somewhere the tools can read it. The desktop hands back a path
+	 * and the browser hands back bytes, so both are written to one scratch file and the caller
+	 * gets a path either way - which is what import_pack.py takes.
+	 */
+	function takeZip(done) {
+		Blockbench.import({
+			title: 'Import a pack zip', extensions: ['zip'], type: 'Pack zip', readtype: 'buffer',
+		}, function (files) {
+			const file = files && files[0];
+			if (!file) return;
+			const scratch = path.join(tempDir(), 'import.zip');
+			const content = file.content;
+			if (content) {
+				fs.writeFileSync(scratch, content instanceof ArrayBuffer ? new Uint8Array(content) : content);
+				done(scratch, file.name || 'pack.zip');
+			} else if (file.path) {
+				done(file.path, file.name || path.basename(file.path));
+			}
+		});
+	}
+
+	/*
+	 * A zip the tools have just written, put where the author can get at it. On the desktop it is
+	 * already there - they chose the path - so this is the browser's half: read it back out of the
+	 * filesystem and hand it to the page as a download, since nothing in a tab can reach a disk.
+	 */
+	function giveZip(file, name) {
+		if (isApp) return file;
+		Blockbench.export({
+			type: 'Pack zip', extensions: ['zip'], name: name || path.basename(file),
+			content: fs.readFileSync(file), savetype: 'buffer',
+		});
+		return file;
+	}
+
+	/*
+	 * Bytes from a URL. The sixth platform question, and the one the library turns on: the
+	 * desktop is a node program and can read from any host, a browser can only read from hosts
+	 * that allow a page to (CORS) - GitHub's raw files and jsDelivr do, GitHub release assets and
+	 * Google Drive do not. Both hand `done` a Uint8Array and `fail` an Error, so a caller reads
+	 * the same either way; where a browser is refused, the caller says so and offers the link.
+	 */
+	function fetchBytes(url, done, fail) {
+		if (isApp) {
+			if (!/^https:\/\//i.test(url)) return fail(new Error('Only https URLs can be fetched: ' + url));
+			const follow = function (target, left) {
+				https.get(target, { headers: { 'user-agent': 'armorpieces-blockbench' } }, function (res) {
+					const status = res.statusCode || 0;
+					if (status >= 300 && status < 400 && res.headers.location && left > 0) {
+						res.resume();
+						return follow(new URL(res.headers.location, target).href, left - 1);
+					}
+					if (status !== 200) {
+						res.resume();
+						return fail(new Error(target + ' answered ' + status));
+					}
+					const chunks = [];
+					res.on('data', function (chunk) { chunks.push(chunk); });
+					res.on('end', function () { done(new Uint8Array(Buffer.concat(chunks))); });
+					res.on('error', fail);
+				}).on('error', fail);
+			};
+			follow(url, 5);
+			return;
+		}
+		let absolute;
+		try {
+			absolute = new URL(url, window.location.href).href;
+		} catch (err) {
+			return fail(new Error('Not a URL: ' + url));
+		}
+		fetch(absolute).then(function (res) {
+			if (!res.ok) throw new Error(absolute + ' answered ' + res.status + ' ' + res.statusText);
+			return res.arrayBuffer();
+		}).then(function (buffer) { done(new Uint8Array(buffer)); }, function (err) {
+			fail(err instanceof Error ? err : new Error(String(err)));
+		});
+	}
+
 	/* Every resource pack folder and every world datapack folder under a game directory. */
 	function packsUnderGameDir(dir) {
 		const roots = subdirs(path.join(dir, 'resourcepacks'));
@@ -247,6 +367,24 @@
 	 * content never has to live in it; the game folders are there so a pack made for the launcher
 	 * needs no adding.
 	 */
+	/*
+	 * The roots found without being told about: the repository's, the game's, and - off the
+	 * desktop - everything under the folder packs live in. The manager needs these separately from
+	 * the author's own list, because a pack that is found anyway cannot be un-listed. Offering
+	 * "Forget" for one would be a button that appears to work and changes nothing.
+	 */
+	function autoRoots() {
+		const roots = [];
+		const root = repoRoot();
+		if (root) {
+			roots.push(path.join(root, 'src', 'main', 'resources'));
+			roots.push(...packsUnderGameDir(path.join(root, 'run')));
+		}
+		if (!isApp) roots.push(...subdirs(packHome()));
+		roots.push(...packsUnderGameDir(minecraftDir()));
+		return roots;
+	}
+
 	function searchRoots() {
 		const roots = userPacks().slice();
 		const root = repoRoot();
@@ -254,6 +392,10 @@
 			roots.push(path.join(root, 'src', 'main', 'resources'));
 			roots.push(...packsUnderGameDir(path.join(root, 'run')));
 		}
+		// The web build has no game folder to look in. What it has instead is one root that
+		// persists between visits, and every folder under it is a pack - the same relationship
+		// resourcepacks/ has to the packs inside it.
+		if (!isApp) roots.push(...subdirs(packHome()));
 		roots.push(...packsUnderGameDir(minecraftDir()));
 		const seen = new Set();
 		return roots.filter(function (dir) {
@@ -368,6 +510,453 @@
 			return '.minecraft/' + relative.replace(/\\/g, '/');
 		}
 		return dir;
+	}
+
+	/*
+	 * What the manager needs to say about one pack folder. The old Packs... dialog listed paths
+	 * and nothing else, which answers none of the questions an author actually has in front of it:
+	 * is this a datapack or a resource pack, is the game going to load it at all, how much is in
+	 * it, and is it mine to remove. All four are readable off the folder, so they are read.
+	 *
+	 * `parts` counts piece KEYS rather than files, so a pack holding both halves of one piece
+	 * counts it once - and `data`/`assets` say how many of those keys each half covers, which is
+	 * how a pack with models but no part files shows up as the half-finished thing it is.
+	 */
+	/* A pack.mcmeta's format as a label: "88", or "107-108" for a range, or null for none. */
+	function packFormatOf(pack) {
+		if (!pack) return null;
+		if (typeof pack.pack_format === 'number') return String(pack.pack_format);
+		const low = pack.min_format;
+		const high = pack.max_format;
+		const one = function (v) { return Array.isArray(v) ? v.join('.') : typeof v === 'number' ? String(v) : null; };
+		if (one(low) === null && one(high) === null) return null;
+		if (one(low) === null || one(high) === null || one(low) === one(high)) return one(low) || one(high);
+		return one(low) + '-' + one(high);
+	}
+
+	function packInfo(dir) {
+		const halves = halvesIn(dir);
+		const keys = Object.keys(halves);
+		let data = 0;
+		let assets = 0;
+		for (const key of keys) {
+			if (halves[key].data) data++;
+			if (halves[key].assets) assets++;
+		}
+		const meta = readJsonOr(path.join(dir, 'pack.mcmeta'), null);
+		const pack = (meta && meta.pack) || null;
+		return {
+			dir: dir,
+			label: packLabel(dir),
+			parts: keys.length,
+			data: data,
+			assets: assets,
+			hasData: fs.existsSync(path.join(dir, 'data')),
+			hasAssets: fs.existsSync(path.join(dir, 'assets')),
+			// Either shape the game has used: one pack_format, or the min_format..max_format range
+			// the standalone zips the build writes carry.
+			format: packFormatOf(pack),
+			description: pack ? pack.description : null,
+			// Forgetting a folder only does anything if being in the author's list is the only
+			// reason it shows up. A pack that is found anyway has to be deleted or left alone.
+			mine: userPacks().indexOf(dir) !== -1 && autoRoots().indexOf(dir) === -1,
+			/*
+			 * Deleting is offered only where this plugin is the only way to do it. In a browser
+			 * that is true of everything under the folder packs live in - there is no file manager
+			 * to switch to, so a pack made here and not wanted here has no other way out. On the
+			 * desktop it is true of nothing: packHome() is .minecraft, which is full of other
+			 * people's packs, and offering to delete a datapack some other tool put in a world is
+			 * both wrong and a click away from a real loss. There, Explorer is the right tool.
+			 */
+			deletable: !isApp && dir.indexOf(packHome() + '/') === 0,
+		};
+	}
+
+	/* Datapack, resource pack, or one folder serving as both - by what is in it, not by its name. */
+	function packKind(info) {
+		if (info.hasData && info.hasAssets) return 'datapack + resource pack';
+		if (info.hasData) return 'datapack';
+		if (info.hasAssets) return 'resource pack';
+		return 'empty';
+	}
+
+	// ---- where packs come from -------------------------------------------------------------------
+
+	/*
+	 * A SOURCE is somewhere parts can be installed from and published to. There is one today - a
+	 * zip on the author's machine - and the manager is written against this list rather than
+	 * against zips, because 0.4.0's online library is the second: browsing it and installing an
+	 * entry is `install`, and offering your own pack to it is `publish`. Adding it should mean
+	 * pushing an entry here and writing its two functions, not touching the dialog.
+	 *
+	 * `install` is handed a destination folder and calls back when something has landed in it.
+	 * `publish` is handed a pack folder. Either may be absent: a read-only library would have no
+	 * publish, and a source that is only somewhere to send things would have no install.
+	 */
+	const packSources = [];
+
+	function registerPackSource(source) {
+		packSources.push(source);
+		return source;
+	}
+
+	registerPackSource({
+		id: 'zip',
+		label: 'a pack zip',
+		installLabel: 'Import zip...',
+		publishLabel: 'Export zip...',
+		install: function (dest, done) {
+			takeZip(function (zip) {
+				try {
+					const report = tool('import_pack.py', [zip, dest, '--force']);
+					done(report.trim() || ('Unpacked into ' + dest));
+				} catch (err) {
+					console.error(err);
+					Blockbench.showMessageBox({
+						title: 'Import failed',
+						message: String((err && err.stderr) || (err && err.message) || err),
+					});
+				}
+			});
+		},
+		publish: function (dir, done) {
+			// The desktop lets the author say where the zip goes. A browser has nowhere to be
+			// asked about - a download is the only destination - so it does not ask.
+			if (!isApp) return tryWritePackZip(dir, null, done);
+			new Dialog({
+				id: ID + '_publish_zip',
+				title: 'Export Pack',
+				form: {
+					zip: {
+						label: 'Zip file', type: 'save', extensions: ['zip'], filetype: 'Pack zip',
+						value: defaultZipPath(dir),
+						description: 'Blank writes <pack folder>.zip beside the folder.',
+					},
+				},
+				onConfirm: function (result) {
+					this.hide();
+					tryWritePackZip(dir, (result.zip || '').trim(), done);
+				},
+			}).show();
+		},
+	});
+
+	// ---- the library --------------------------------------------------------------------------
+
+	/*
+	 * The second source: a hosted list of packs. Each entry names one or more zips - a datapack
+	 * half, a resource pack half, or one zip holding both - at URLs their author hosts, and
+	 * installing an entry is fetching those and running import_pack.py over each, which is the
+	 * same thing the zip source does with a file the author chose. Submitting a pack is a
+	 * filled-in issue on the library's repository; a maintainer approves it, which is when it
+	 * appears in the index. Nothing here decides what is in the library - the index does.
+	 */
+	let libraryCache = null;
+
+	function libraryUrl() {
+		return String(Settings.get(ID + '_library') || LIBRARY_INDEX).trim();
+	}
+
+	function libraryIndex(done, fail, fresh) {
+		if (libraryCache && !fresh) return done(libraryCache);
+		const url = libraryUrl();
+		fetchBytes(url, function (bytes) {
+			let index;
+			try {
+				index = JSON.parse(new TextDecoder().decode(bytes));
+				if (!index || !Array.isArray(index.entries)) throw new Error('no entries list');
+			} catch (err) {
+				return fail(new Error(url + ' is not a library index: ' + err.message));
+			}
+			// A pack URL may be relative to the index, which is how one site hosts both.
+			index.entries.forEach(function (entry) {
+				entry.packs = (entry.packs || []).map(function (pack) {
+					return Object.assign({}, pack, { url: new URL(pack.url, url).href });
+				});
+			});
+			libraryCache = index;
+			done(index);
+		}, fail);
+	}
+
+	/*
+	 * A download the page was refused. In a browser that is nearly always the host declining to
+	 * serve a page on another origin, which the author of the entry can fix by hosting the zip
+	 * somewhere that does; the visitor can fix it right now by downloading the file themselves
+	 * and importing it, so that is what is offered.
+	 */
+	function cannotFetch(entry, pack, err) {
+		const name = pack.url.split('/').pop() || 'the pack';
+		const why = isApp
+			? String((err && err.message) || err)
+			: 'This page was not allowed to download it. Browsers can only fetch from hosts that ' +
+				'permit it (GitHub raw files and jsDelivr do; GitHub release assets and Google Drive ' +
+				'do not), and on other hosts the file has to come in by hand.';
+		Blockbench.showMessageBox({
+			title: 'Could not download ' + name,
+			message: entry.name + ' - ' + why + '\n\nOpen the download, then bring the zip in with ' +
+				'Import zip... in Packs....',
+			buttons: ['Open the download', 'Cancel'],
+			confirm: 0, cancel: 1,
+		}, function (answer) {
+			if (answer === 0) Blockbench.openLink(pack.url);
+		});
+	}
+
+	/* Fetch every zip an entry lists and unpack each into one folder, in order. */
+	function installEntry(entry, dest, done) {
+		const packs = (entry.packs || []).slice();
+		const reports = [];
+		if (!packs.length) return done(entry.name + ' lists no packs to install.');
+		(function next() {
+			const pack = packs.shift();
+			if (!pack) return done(entry.name + ': ' + reports.join('; '));
+			fetchBytes(pack.url, function (bytes) {
+				try {
+					const scratch = path.join(tempDir(), 'library.zip');
+					fs.writeFileSync(scratch, bytes);
+					reports.push(tool('import_pack.py', [scratch, dest, '--force']).trim());
+				} catch (err) {
+					console.error(err);
+					return Blockbench.showMessageBox({
+						title: 'Install failed',
+						message: String((err && err.stderr) || (err && err.message) || err),
+					});
+				}
+				next();
+			}, function (err) {
+				console.error('[armorpieces] could not fetch ' + pack.url, err);
+				cannotFetch(entry, pack, err);
+			});
+		})();
+	}
+
+	const LIBRARY_DIALOG_TEMPLATE = [
+		'<div class="armorpieces_library">',
+		'	<p class="ap_dim" v-if="loading">Reading the library...</p>',
+		'	<p class="ap_dim ap_warn" v-else-if="error">{{ error }}</p>',
+		'	<template v-else>',
+		'		<div class="ap_add">',
+		'			<input type="search" v-model="term" placeholder="Search packs..." autocomplete="off">',
+		'			<span class="ap_dim">{{ shown.length }} of {{ entries.length }}</span>',
+		'		</div>',
+		'		<ul>',
+		'			<li v-for="e in shown" :key="e.id">',
+		'				<div class="ap_head">',
+		'					<span class="ap_name">{{ e.name }}</span>',
+		'					<span class="ap_tag" v-if="e.version">{{ e.version }}</span>',
+		'					<span class="ap_tag" v-for="t in e.tags || []" :key="t">{{ t }}</span>',
+		'				</div>',
+		'				<div class="ap_body"><span class="ap_dim">{{ e.description }}</span></div>',
+		'				<div class="ap_body">',
+		'					<span class="ap_dim">by {{ e.author && e.author.name }}',
+		'						<template v-if="e.packs.length > 1"> - {{ e.packs.length }} zips</template></span>',
+		'					<a v-if="e.homepage" href="#" @click.prevent="open(e.homepage)">details</a>',
+		'					<span class="ap_spacer"></span>',
+		'					<button type="button" @click="pick(e)">Install</button>',
+		'				</div>',
+		'			</li>',
+		'			<li v-if="!shown.length" class="ap_dim">Nothing matches.</li>',
+		'		</ul>',
+		'		<p class="ap_dim">Read from <a href="#" @click.prevent="open(home)">{{ url }}</a>.',
+		'			Your own packs go in through Submit... in Packs....</p>',
+		'	</template>',
+		'</div>',
+	].join('\n');
+
+	/*
+	 * Browse the library and pick an entry. The list is the index, filtered; what happens to the
+	 * pick is the caller's, because the manager installs into a pack and the start page of the
+	 * web build installs into a new one.
+	 */
+	function libraryDialog(onPick) {
+		const dialog = new Dialog({
+			id: ID + '_library',
+			title: 'Armor Pieces Library',
+			width: 640,
+			singleButton: true,
+			component: {
+				data: function () {
+					return { loading: true, error: '', entries: [], term: '', url: libraryUrl(), home: LIBRARY_HOME };
+				},
+				computed: {
+					shown: function () {
+						const term = this.term.trim().toLowerCase();
+						if (!term) return this.entries;
+						return this.entries.filter(function (e) {
+							return [e.name, e.description, e.author && e.author.name, e.id]
+								.concat(e.tags || []).join(' ').toLowerCase().indexOf(term) !== -1;
+						});
+					},
+				},
+				mounted: function () {
+					const vue = this;
+					libraryIndex(function (index) {
+						vue.entries = index.entries;
+						vue.loading = false;
+					}, function (err) {
+						vue.error = 'Could not read the library: ' + String((err && err.message) || err);
+						vue.loading = false;
+					});
+				},
+				methods: {
+					open: function (url) { Blockbench.openLink(url); },
+					pick: function (entry) {
+						dialog.hide();
+						onPick(entry);
+					},
+				},
+				template: LIBRARY_DIALOG_TEMPLATE,
+			},
+		});
+		dialog.show();
+		return dialog;
+	}
+
+	/*
+	 * The two places a pack can be offered, in the words the library's issue form uses - GitHub
+	 * fills a dropdown in from a URL only when the text matches an option exactly.
+	 */
+	const SUBMIT_TO = {
+		library: 'The library (hosted by me)',
+		mod: 'The mod (for inclusion)',
+	};
+
+	/* The issue that is a submission, with everything the author typed already in it. */
+	function submissionUrl(fields) {
+		const query = {
+			template: 'submission.yml',
+			title: '[Pack] ' + fields.name,
+			destination: SUBMIT_TO[fields.destination] || SUBMIT_TO.library,
+			name: fields.name,
+			author: fields.author,
+			url: fields.url,
+			homepage: fields.homepage,
+			description: fields.description,
+		};
+		return LIBRARY_HOME + '/issues/new?' + Object.keys(query)
+			.filter(function (key) { return query[key]; })
+			.map(function (key) { return key + '=' + encodeURIComponent(query[key]); })
+			.join('&');
+	}
+
+	/*
+	 * Submit...: offer a pack to the library, or to the mod. Neither is something this plugin can
+	 * do on its own - one is a listing a maintainer approves, the other is a change to the mod's
+	 * own content - so both are an issue on the library's repository, opened here with the form
+	 * filled in, and the zip written beside the pack so there is something to host or attach.
+	 */
+	function submitDialog(dir, done) {
+		const info = packInfo(dir);
+		new Dialog({
+			id: ID + '_submit',
+			title: 'Submit ' + info.label,
+			width: 600,
+			form: {
+				about: {
+					type: 'info',
+					text: 'Submitting opens an issue on ' + LIBRARY_HOME.replace('https://', '') +
+						' with this form in it, and writes a zip of the pack for you to host or attach. ' +
+						'A maintainer reviews it; an approved pack appears in the library.',
+				},
+				destination: {
+					label: 'Send it to', type: 'select', value: 'library',
+					options: SUBMIT_TO,
+					description: 'The library lists packs their authors host. The mod takes packs ' +
+						'into Armor Pieces itself, under its license.',
+				},
+				name: { label: 'Pack name', type: 'text', value: info.label },
+				author: { label: 'Your name', type: 'text', value: '' },
+				description: {
+					label: 'Description', type: 'textarea', value: '', height: 80,
+					description: 'What is in it, for the list.',
+				},
+				url: {
+					label: 'Download link', type: 'text', value: '',
+					description: 'Where the zip will be, for the library. Host it somewhere a browser ' +
+						'can fetch from - a file in a GitHub repository (raw.githubusercontent.com) or ' +
+						'on jsDelivr works; a release asset or a Drive link has to be downloaded by hand.',
+					condition: function (result) { return result.destination === 'library'; },
+				},
+				homepage: {
+					label: 'Home page', type: 'text', value: '',
+					description: 'Optional - a repository or a page about the pack.',
+				},
+			},
+			onConfirm: function (result) {
+				this.hide();
+				const fields = {
+					destination: result.destination,
+					name: String(result.name || info.label).trim(),
+					author: String(result.author || '').trim(),
+					description: String(result.description || '').trim(),
+					url: String(result.url || '').trim(),
+					homepage: String(result.homepage || '').trim(),
+				};
+				tryWritePackZip(dir, null, function (report) {
+					Blockbench.openLink(submissionUrl(fields));
+					if (done) {
+						done(report + ' - ' + (fields.destination === 'mod'
+							? 'attach the zip to the issue that opened'
+							: 'host the zip at the link you gave, then send the issue'));
+					}
+				});
+			},
+		}).show();
+	}
+
+	registerPackSource({
+		id: 'library',
+		label: 'the Armor Pieces library',
+		installLabel: 'From the library...',
+		publishLabel: 'Submit...',
+		install: function (dest, done) {
+			libraryDialog(function (entry) { installEntry(entry, dest, done); });
+		},
+		publish: submitDialog,
+	});
+
+	/*
+	 * Anything the platform can offer that this file cannot write for itself. A browser can hand
+	 * the author a real folder to work in through an API no desktop needs, so the web build puts
+	 * that here and it appears in the manager as another way in. Nothing is assumed about what
+	 * arrives beyond the shape a source has, which is what lets this list grow without this
+	 * function knowing it did.
+	 */
+	if (typeof window !== 'undefined' && window.ArmorPiecesPlatform
+		&& Array.isArray(window.ArmorPiecesPlatform.packSources)) {
+		window.ArmorPiecesPlatform.packSources.forEach(registerPackSource);
+	}
+
+	function defaultZipPath(dir) {
+		return dir.replace(/[\\\/]+$/, '') + '.zip';
+	}
+
+	/*
+	 * Zip a pack and put it where the author can get at it. Both callers - the manager's per-pack
+	 * button and the Export Pack... menu entry - end here, and so does either platform: the tool
+	 * writes the zip into the filesystem it has, and giveZip does whatever getting it out of that
+	 * filesystem means, which on the desktop is nothing and in a browser is a download.
+	 */
+	function writePackZip(dir, target) {
+		const name = (path.basename(dir.replace(/[\\\/]+$/, '')) || 'pack') + '.zip';
+		const out = target || (isApp ? defaultZipPath(dir) : path.join(tempDir(), name));
+		const report = tool('export_pack.py', [dir, out]);
+		giveZip(out, name);
+		return report.trim() || ('Wrote ' + out);
+	}
+
+	function tryWritePackZip(dir, target, done) {
+		try {
+			const report = writePackZip(dir, target);
+			if (done) done(report);
+		} catch (err) {
+			console.error(err);
+			Blockbench.showMessageBox({
+				title: 'Export failed',
+				message: String((err && err.stderr) || (err && err.message) || err),
+			});
+		}
 	}
 
 	function pieceLabel(piece) {
@@ -1080,73 +1669,169 @@
 
 	const PACKS_DIALOG_TEMPLATE = [
 		'<div class="armorpieces_packs">',
-		'	<p class="ap_dim">Folders looked in for parts, besides the repository\'s own and the game\'s ',
-		'	resourcepacks/ and worlds\' datapacks/. A pack is a folder with data/ or assets/ in it.</p>',
+		'	<p class="ap_dim">Every folder parts are read from and written to. The repository\'s own',
+		'	and the game\'s are found; the rest are yours to add and forget.</p>',
 		'	<ul>',
-		'		<li v-for="(dir, i) in packs" :key="dir">',
-		'			<span :title="dir">{{ dir }}</span>',
-		'			<i class="material-icons" title="Forget this folder" @click="remove(i)">clear</i>',
+		'		<li v-for="pack in packs" :key="pack.dir">',
+		'			<div class="ap_head">',
+		'				<span class="ap_name" :title="pack.dir">{{ pack.label }}</span>',
+		'				<span class="ap_tag">{{ pack.kind }}</span>',
+		'				<span class="ap_tag" v-if="pack.format">format {{ pack.format }}</span>',
+		'				<span class="ap_tag ap_warn" v-else>no pack.mcmeta</span>',
+		'			</div>',
+		'			<div class="ap_body"><span class="ap_dim">{{ pack.summary }}</span></div>',
+		'			<div class="ap_ops">',
+		'				<button type="button" v-for="s in installers" :key="s.id"',
+		'					@click="install(pack, s)">{{ s.installLabel }}</button>',
+		'				<button type="button" v-for="s in publishers" :key="s.id"',
+		'					@click="publish(pack, s)">{{ s.publishLabel }}</button>',
+		'				<span class="ap_spacer"></span>',
+		'				<button type="button" v-if="pack.mine" @click="forget(pack)">Forget</button>',
+		'				<button type="button" v-else-if="pack.deletable" @click="remove(pack)">Delete</button>',
+		'			</div>',
 		'		</li>',
-		'		<li v-if="!packs.length" class="ap_dim">No folders added.</li>',
+		'		<li v-if="!packs.length" class="ap_dim">No packs anywhere. Make one below.</li>',
 		'	</ul>',
 		'	<div class="ap_add">',
-		'		<button type="button" @click="add">Add folder...</button>',
 		'		<button type="button" @click="create">New Pack...</button>',
+		'		<button type="button" v-if="canBrowse" @click="add">Add folder...</button>',
+		'		<button type="button" v-for="s in installers" :key="s.id"',
+		'			@click="installNew(s)">New pack from {{ s.label }}...</button>',
 		'	</div>',
-		'	<p class="ap_dim">Found now: {{ found }}</p>',
 		'</div>',
 	].join('\n');
 
 	const PACKS_DIALOG_CSS = [
-		'.armorpieces_packs ul { list-style: none; margin: 6px 0; padding: 0; max-height: 240px; overflow-y: auto; }',
-		'.armorpieces_packs li { display: flex; align-items: center; gap: 8px; padding: 2px 6px; margin-bottom: 2px; background: var(--color-back); }',
-		'.armorpieces_packs li span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }',
-		'.armorpieces_packs li .material-icons { cursor: pointer; opacity: 0.6; }',
-		'.armorpieces_packs li .material-icons:hover { opacity: 1; }',
-		'.armorpieces_packs .ap_add { display: flex; gap: 6px; }',
+		'.armorpieces_packs ul { list-style: none; margin: 6px 0; padding: 0; max-height: 320px; overflow-y: auto; }',
+		'.armorpieces_packs li { padding: 6px 8px; margin-bottom: 4px; background: var(--color-back); border-radius: 4px; }',
+		'.armorpieces_packs .ap_head { display: flex; align-items: center; gap: 6px; min-width: 0; }',
+		'.armorpieces_packs .ap_name { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--color-light); }',
+		'.armorpieces_packs .ap_tag { flex: none; font-size: 0.78em; padding: 1px 6px; border-radius: 3px; background: var(--color-ui); color: var(--color-subtle_text); }',
+		'.armorpieces_packs .ap_tag.ap_warn { color: var(--color-close); }',
+		'.armorpieces_packs .ap_body { display: flex; align-items: center; gap: 6px; margin-top: 4px; }',
+		'.armorpieces_packs .ap_ops { display: flex; align-items: center; gap: 6px; margin-top: 6px; flex-wrap: wrap; }',
+		'.armorpieces_packs .ap_spacer { flex: 1; }',
+		'.armorpieces_packs .ap_body button, .armorpieces_packs .ap_ops button { flex: none; }',
+		'.armorpieces_packs .ap_add { display: flex; gap: 6px; flex-wrap: wrap; }',
 		'.armorpieces_packs .ap_dim { color: var(--color-subtle_text); font-size: 0.9em; margin: 4px 0; }',
 	].join('\n');
 
-	/* Packs...: the list the author owns, added to with a folder picker and by New Pack.... */
+	// The library dialog is the manager's list with a search box over it, and shares its look.
+	const LIBRARY_DIALOG_CSS = PACKS_DIALOG_CSS.replace(/\.armorpieces_packs/g, '.armorpieces_library') + '\n' +
+		'.armorpieces_library .ap_add { align-items: center; }\n' +
+		'.armorpieces_library input[type=search] { flex: 1; min-width: 10rem; }\n' +
+		'.armorpieces_library a { color: var(--color-accent); }';
+
+	/*
+	 * Packs...: the pack manager. Every root discovery already looks in, said out loud - what kind
+	 * of pack it is, whether the game will load it, how much of a piece each half has - with the
+	 * operations that used to be scattered across three menu entries attached to the pack they act
+	 * on. Installing and publishing are asked of the sources rather than hard-coded, so the
+	 * library 0.4.0 adds appears here as more buttons and no new dialog.
+	 */
 	function packsDialog() {
-		let dialog = null;
-		dialog = new Dialog({
+		new Dialog({
 			id: ID + '_packs',
 			title: 'Armor Pieces Packs',
-			width: 560,
+			width: 640,
 			singleButton: true,
 			component: {
 				data: function () {
-					return { packs: userPacks(), found: searchRoots().map(packLabel).join(', ') || 'nothing' };
+					return {
+						packs: [],
+						canBrowse: canBrowseFolders(),
+						installers: packSources.filter(function (s) { return !!s.install; }),
+						publishers: packSources.filter(function (s) { return !!s.publish; }),
+					};
 				},
+				mounted: function () { this.refresh(); },
 				methods: {
 					refresh: function () {
-						this.packs = userPacks();
-						this.found = searchRoots().map(packLabel).join(', ') || 'nothing';
+						this.packs = searchRoots().map(function (dir) {
+							const info = packInfo(dir);
+							info.kind = packKind(info);
+							info.summary = info.parts
+								? info.parts + (info.parts === 1 ? ' piece' : ' pieces') +
+									' - ' + info.data + ' with a part file, ' + info.assets + ' with a model'
+								: 'no pieces yet';
+							return info;
+						});
 					},
-					remove: function (i) {
-						const list = userPacks();
-						list.splice(i, 1);
-						setUserPacks(list);
+					forget: function (pack) {
+						setUserPacks(userPacks().filter(function (dir) { return dir !== pack.dir; }));
 						this.refresh();
+					},
+					/*
+					 * The only destructive thing in this dialog, so it says what it is about to
+					 * lose and counts it. Offered only where forgetting would not work - a pack
+					 * found by where it sits rather than by being listed - because otherwise the
+					 * author would have two buttons for one intention and one of them would be
+					 * the one that cannot be undone.
+					 */
+					remove: function (pack) {
+						const vue = this;
+						Blockbench.showMessageBox({
+							title: 'Delete this pack?',
+							message: pack.label + ' holds ' + pack.summary + '. Deleting it cannot be ' +
+								'undone - export it first if you want to keep a copy.',
+							buttons: ['Delete', 'Cancel'],
+							confirm: 1, cancel: 1,
+						}, function (answer) {
+							if (answer !== 0) return;
+							try {
+								fs.rmSync(pack.dir, { recursive: true, force: true });
+								setUserPacks(userPacks().filter(function (dir) { return dir !== pack.dir; }));
+								Blockbench.showQuickMessage('Deleted ' + pack.label, 3000);
+							} catch (err) {
+								console.error(err);
+								Blockbench.showMessageBox({
+									title: 'Could not delete',
+									message: String((err && err.message) || err),
+								});
+							}
+							vue.refresh();
+						});
 					},
 					add: function () {
-						const dir = Blockbench.pickDirectory({ title: 'Add a pack folder', startpath: minecraftDir() });
-						if (!dir) return;
-						const list = userPacks();
-						if (!list.includes(dir)) list.push(dir);
-						setUserPacks(list);
-						this.refresh();
+						const vue = this;
+						browseForPack(function (dir) {
+							const list = userPacks();
+							if (list.indexOf(dir) === -1) list.push(dir);
+							setUserPacks(list);
+							vue.refresh();
+						});
 					},
 					create: function () {
 						const vue = this;
 						newPack(function () { vue.refresh(); });
 					},
+					install: function (pack, source) {
+						const vue = this;
+						source.install(pack.dir, function (report) {
+							vue.refresh();
+							Blockbench.showQuickMessage(report, 3000);
+						});
+					},
+					/* Install into a folder that does not exist yet, which is how somebody else's
+					 * pack arrives without being merged into one of yours. */
+					installNew: function (source) {
+						const vue = this;
+						newPack(function (dir) {
+							source.install(dir, function (report) {
+								vue.refresh();
+								Blockbench.showQuickMessage(report, 3000);
+							});
+						}, { title: 'New Pack from ' + source.label, mcmeta: false });
+					},
+					publish: function (pack, source) {
+						source.publish(pack.dir, function (report) {
+							Blockbench.showQuickMessage(report, 3000);
+						});
+					},
 				},
 				template: PACKS_DIALOG_TEMPLATE,
 			},
-		});
-		dialog.show();
+		}).show();
 	}
 
 	/*
@@ -1154,32 +1839,44 @@
 	 * the format the game this mod is built for wants, so the author never has to know the
 	 * numbers. Added to the author's list, so the next New Armor Piece can pick it.
 	 */
-	function newPack(done) {
+	function newPack(done, options) {
+		options = options || {};
+		// A pack about to be filled from a zip brings its own pack.mcmeta, so asking what kind it
+		// is and what it says would be asking the author to guess at somebody else's file.
+		const wantMeta = options.mcmeta !== false;
 		const formats = packFormats();
+		const form = {
+			name: { label: 'Folder name', type: 'text', value: '', placeholder: 'My Armor Pieces' },
+		};
+		if (wantMeta) {
+			form.kind = {
+				label: 'Kind', type: 'select', value: 'datapack',
+				options: {
+					datapack: 'Datapack  (parts, recipes, fittings; goes in a world\'s datapacks/)',
+					resourcepack: 'Resource pack  (models, textures, names; goes in resourcepacks/)',
+				},
+			};
+		}
+		// Where to put it is a question only the desktop can answer: a browser has one place packs
+		// can live, and a folder picker that does not exist there would be a dead field.
+		if (isApp) {
+			form.where = {
+				label: 'Put it in', type: 'folder', value: packHome(),
+				description: 'The folder the pack folder is created in. The game reads resource packs ' +
+					'from .minecraft/resourcepacks and datapacks from .minecraft/saves/<world>/datapacks.',
+			};
+		}
+		if (wantMeta) form.description = { label: 'Description', type: 'text', value: 'Armor Pieces parts' };
 		new Dialog({
 			id: ID + '_new_pack',
-			title: 'New Pack',
-			form: {
-				name: { label: 'Folder name', type: 'text', value: '', placeholder: 'My Armor Pieces' },
-				kind: {
-					label: 'Kind', type: 'select', value: 'datapack',
-					options: {
-						datapack: 'Datapack  (parts, recipes, fittings; goes in a world\'s datapacks/)',
-						resourcepack: 'Resource pack  (models, textures, names; goes in resourcepacks/)',
-					},
-				},
-				where: {
-					label: 'Put it in', type: 'folder', value: minecraftDir(),
-					description: 'The folder the pack folder is created in. The game reads resource packs ' +
-						'from .minecraft/resourcepacks and datapacks from .minecraft/saves/<world>/datapacks.',
-				},
-				description: { label: 'Description', type: 'text', value: 'Armor Pieces parts' },
-			},
+			title: options.title || 'New Pack',
+			form: form,
 			onConfirm: function (result) {
 				const name = (result.name || '').trim();
-				const where = (result.where || '').trim();
+				const where = isApp ? (result.where || '').trim() : packHome();
 				if (!name || !where) {
-					Blockbench.showQuickMessage('Name the pack and say where it goes', 2500);
+					Blockbench.showQuickMessage(isApp ? 'Name the pack and say where it goes'
+						: 'Name the pack', 2500);
 					return false;
 				}
 				const dir = path.join(where, name);
@@ -1187,16 +1884,20 @@
 					Blockbench.showMessageBox({ title: 'Already a pack', message: dir + ' already has a pack.mcmeta.' });
 					return false;
 				}
-				const format = result.kind === 'resourcepack' ? formats.resourcepack : formats.datapack;
-				writeJson(path.join(dir, 'pack.mcmeta'), {
-					pack: { description: result.description || name, pack_format: format },
-				});
-				fs.mkdirSync(path.join(dir, result.kind === 'resourcepack' ? 'assets' : 'data'), { recursive: true });
+				if (wantMeta) {
+					const format = result.kind === 'resourcepack' ? formats.resourcepack : formats.datapack;
+					writeJson(path.join(dir, 'pack.mcmeta'), {
+						pack: { description: result.description || name, pack_format: format },
+					});
+					fs.mkdirSync(path.join(dir, result.kind === 'resourcepack' ? 'assets' : 'data'), { recursive: true });
+				} else {
+					fs.mkdirSync(dir, { recursive: true });
+				}
 				const list = userPacks();
 				if (!list.includes(dir)) list.push(dir);
 				setUserPacks(list);
 				this.hide();
-				Blockbench.showQuickMessage('Created ' + dir, 3000);
+				if (wantMeta) Blockbench.showQuickMessage('Created ' + dir, 3000);
 				if (done) done(dir);
 			},
 		}).show();
@@ -1213,28 +1914,24 @@
 			Blockbench.showMessageBox({ title: 'No packs', message: 'Nothing to export. Add or make a pack first.' });
 			return;
 		}
+		const form = { pack: { label: 'Pack', type: 'select', options: packOptions(packs), value: '0' } };
+		if (isApp) {
+			form.zip = {
+				label: 'Zip file', type: 'save', extensions: ['zip'], filetype: 'Pack zip',
+				value: path.join(packHome(), 'pack.zip'),
+				description: 'Blank writes <pack folder>.zip beside the folder.',
+			};
+		}
 		new Dialog({
 			id: ID + '_export_pack',
 			title: 'Export Pack',
-			form: {
-				pack: { label: 'Pack', type: 'select', options: packOptions(packs), value: '0' },
-				zip: {
-					label: 'Zip file', type: 'save', extensions: ['zip'], filetype: 'Pack zip',
-					value: path.join(minecraftDir(), 'pack.zip'),
-					description: 'Blank writes <pack folder>.zip beside the folder.',
-				},
-			},
+			form: form,
 			onConfirm: function (result) {
 				const dir = packs[parseInt(result.pack, 10)];
-				const zip = (result.zip || '').trim() || dir.replace(/[\\\/]+$/, '') + '.zip';
 				this.hide();
-				try {
-					const report = tool('export_pack.py', [dir, zip]);
-					Blockbench.showQuickMessage(report.trim() || ('Wrote ' + zip), 3000);
-				} catch (err) {
-					console.error(err);
-					Blockbench.showMessageBox({ title: 'Export failed', message: String(err.stderr || err.message || err) });
-				}
+				tryWritePackZip(dir, isApp ? (result.zip || '').trim() : null, function (report) {
+					Blockbench.showQuickMessage(report, 3000);
+				});
 			},
 		}).show();
 	}
@@ -4826,6 +5523,15 @@
 				type: 'text',
 				value: '[]',
 			}));
+			registered.push(new Setting(ID + '_library', {
+				name: 'Armor Pieces library',
+				description: 'The index.json of the pack library that Packs... installs from and ' +
+					'Submit... offers packs to. The default is the library at ' + LIBRARY_SITE + '.',
+				category: 'edit',
+				type: 'text',
+				value: LIBRARY_INDEX,
+				onChange: function () { libraryCache = null; },
+			}));
 			registered.push(new Setting(ID + '_python', {
 				name: 'Armor Pieces Python',
 				description: 'Python executable used to run the repo tools.',
@@ -4992,6 +5698,7 @@
 				saveSkinAction, packs, createPack, exportZip, menu);
 			MenuBar.addAction(menu, 'tools');
 			registered.push(Blockbench.addCSS(PACKS_DIALOG_CSS));
+			registered.push(Blockbench.addCSS(LIBRARY_DIALOG_CSS));
 
 			panel = new Panel(ID + '_panel', {
 				name: 'Armor Piece',
@@ -5194,6 +5901,13 @@
 				},
 				packs: searchRoots,
 				anchors: anchors,
+				// The library: the index it reads, an install into a folder, the submission form.
+				library: libraryIndex,
+				libraryUrl: libraryUrl,
+				installEntry: installEntry,
+				submit: submitDialog,
+				submissionUrl: submissionUrl,
+				packSources: function () { return packSources.map(function (s) { return s.id; }); },
 				paintFaces: paintFaces,
 				// The sheets the part's fittings need, created where the panel would create them.
 				ensureSheets: function () {
