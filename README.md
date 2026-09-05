@@ -61,7 +61,7 @@ read through it.
 buckle and a dyed strap on the sash, a dyed inlay on the greaves, a banner on the back banner.
 One more smithing step, one template per fitting, and the item decides where it goes.
 
-Most of it is **found rather than made**. Twenty-nine parts have a crafting recipe, the ones where
+Most of it is **found rather than made**. Thirty parts have a crafting recipe, the ones where
 the item is plainly the part or what it is made of; the rest turn up in the chests that suit them,
 each theme in its own kind of structure, with the skins and the fitting templates alongside. An
 **advanced smithing table** shows a whole set worn by a stand and takes a part, a fitting or a
@@ -98,7 +98,7 @@ The release that turned a set of parts into a wardrobe.
 - **The advanced smithing table.** Crafted from a smithing table, an armor stand and two iron
   ingots. It holds a whole set worn by a stand and lists each piece's sockets, fittings and trim
   as rows of icons — and Remove is the one way a part, a fitting or a trim ever comes off.
-- **Twenty-nine recipes, not ninety-one.** A template recipe now ships only where the centre
+- **Thirty recipes, not ninety-one.** A template recipe now ships only where the centre
   item is plainly the part or what it is made of — a bell for the bells, a goat horn for the
   horns. The rest are found.
 - **One template per fitting.** *Gemstone*, *Guard*, *Inlay* and *Banner*, each with its own

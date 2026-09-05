@@ -117,9 +117,9 @@ a part on a piece of armor a table hands out, with a socket, a part, a material 
 fittings, so a chest can hold a helmet already wearing a gold circlet with an emerald in it.
 `/armorpieces stage loot <table> [rolls]` rolls a table and counts what the mod put in it.
 
-**Twenty-nine recipes, not ninety-one.** A template recipe now ships only where the centre item is
+**Thirty recipes, not ninety-one.** A template recipe now ships only where the centre item is
 plainly the part or what it is made of - a bell for the bells, a saddle for the spurs, a goat horn
-for the horns, an ingot for the circlet. The sixty-two reached for because the grid happened to be
+for the horns, an ingot for the circlet. The sixty-one reached for because the grid happened to be
 free - wolf armor for the mantle, a porkchop for the tusks, a golden chestplate for the cuffs - are
 gone, and those parts are found instead. Nothing is *disabled*: they are recipes the mod no longer
 has, and a pack that wants one writes it. `check_authoring.py` fails on a part with no recipe, no
