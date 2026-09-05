@@ -136,18 +136,12 @@ and sprint cycles, with an empty group sitting exactly where the layer will draw
 reference are extracted from the game jar by `tools/vanilla_assets.py` on first use and are never
 committed. `bb_geo.py` converts `.bbmodel` to the mod's geometry and back.
 
-**From an agent.** The same editor drives from an MCP client through `tools/mcp`, a small server
-in front of Blockbench's own MCP plugin: it serves the tools a part author uses (an *authoring*
-profile of the plugin's ninety-odd), adds `armorpieces_open`, `_new`, `_check`, `_save`, `_part`,
-`_set_part`, `_pieces` and `_close` — with the skin workspace's own set beside them,
-`armorpieces_skins`, `_open_skin`, `_skin_sheet`, `_skin_paint`, `_skin_material`, `_skin_check`,
-`_save_skin` and `_close_skin` — and after every editing call appends the check every shipped
-part passes - clearance and shared planes from `trace_geometry.py`, unpainted faces and stray or
-coloured paint from `sync_decoration_masters.py`, together in `tools/check_part.py`, and
-`tools/check_skin.py` for a skin - so the reply that placed a cube on the helmet shell says so.
-Save refuses while problems stand unless told otherwise. `tools/mcp/README.md` has the setup and what the model is told; `check_part.py` runs
-the same report by hand over a shipped part (`check_part.py antlers`, `--all`), a pack piece, or
-the piece open in Blockbench (`--status`).
+**Checking one.** `python tools/check_part.py` is the check every shipped part passes: clearance
+and shared planes from `trace_geometry.py`, unpainted faces and stray or coloured paint from
+`sync_decoration_masters.py`. Point it at a shipped part (`check_part.py antlers`, or `--all`), at
+a part of your own, or at whatever is open in Blockbench (`--status`), and it prints what would
+stop the part shipping and what is merely worth knowing. `tools/check_skin.py` is its twin for a
+skin.
 
 ## By hand
 
