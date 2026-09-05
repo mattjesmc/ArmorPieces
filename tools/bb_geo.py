@@ -194,7 +194,22 @@ def export(bb_path, out_path, group_name=PART_GROUP, quiet=False):
         sys.exit(f"error: no group named {group_name!r} in {bb_path.name}. Model inside that group - "
                  f"everything outside it is locked reference geometry.")
 
-    part_origin = group_props(part, groups).get("origin", [0, 0, 0])
+    part_props = group_props(part, groups)
+    part_origin = part_props.get("origin", [0, 0, 0])
+    # Only the bones INSIDE the part group are exported, so a rotation on the group itself has
+    # nowhere to go: it stays in the viewport and ships as nothing. Refusing is the only honest
+    # answer - the author is looking at a shape that no geometry file can hold, and every number
+    # a checker prints about it would describe the un-rotated one instead.
+    part_rotation = part_props.get("rotation") or [0, 0, 0]
+    if any(part_rotation):
+        bone_names = [group_props(c, groups).get("name", "?") for c in part.get("children", [])
+                      if isinstance(c, dict)]
+        under = f" - {bone_names[0]!r}" if len(bone_names) == 1 else ""
+        sys.exit(f"error: the {group_name!r} group itself is rotated {list(part_rotation)}. Only "
+                 f"the bones inside it export, so that rotation would be dropped silently and the "
+                 f"part would ship unrotated. Bake it onto the bone under it{under}: a bone sharing "
+                 f"the group's origin takes the same rotation for the same transform, and then set "
+                 f"the group's own rotation back to zero.")
     bones = []
     for child in part.get("children", []):
         if isinstance(child, dict):

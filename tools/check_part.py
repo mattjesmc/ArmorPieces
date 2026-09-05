@@ -319,6 +319,20 @@ def strays(bb_path: Path) -> list[str]:
             if uid not in inside and not cube.get("locked")]
 
 
+def part_rotation(bb_path: Path) -> list | None:
+    """A rotation on the `part` group itself. bb_geo takes the group's origin and then exports the
+    bones inside it, so this one is in the viewport and in nothing that ships - and every position
+    below is computed from the bone origins, so the whole report would describe the un-rotated
+    shape. Caught here as well as in bb_geo because the bridge runs this after every edit, which is
+    where an author finds out before the rest of a session is built on it."""
+    data, cubes, groups = bb_geo.read_bbmodel(bb_path)
+    part = bb_geo.find_group(data.get("outliner", []), bb_geo.PART_GROUP, groups)
+    if part is None:
+        return None
+    rot = bb_geo.group_props(part, groups).get("rotation") or [0, 0, 0]
+    return list(rot) if any(rot) else None
+
+
 def recipe_collision(meta: dict) -> str | None:
     """The template recipe the plugin will write on save, against every shaped recipe already in
     the datapack: every template is the same ring of paper, so the centre item IS the recipe, and
@@ -358,6 +372,7 @@ def from_status(folder: Path):
     model = folder / meta["files"]["model"]
     geo, err = export_geometry(model, folder / "geometry.json")
     outside = strays(model)
+    spun = part_rotation(model)
     sheets = meta.get("sheets", {})
     master = open_image(folder / sheets["master"]) if sheets.get("master") else None
     static = open_image(folder / sheets["static"]) if sheets.get("static") else None
@@ -371,10 +386,16 @@ def from_status(folder: Path):
         r["problems"].append(f"{len(outside)} cube(s) outside the part group, so never exported: "
                              + ", ".join(outside[:6]) + (" ..." if len(outside) > 6 else "")
                              + " - move them into a bone group under part")
+    if spun:
+        r["problems"].append(
+            f"the part group itself is rotated {spun}, which nothing exports - the shape on screen "
+            f"is not the shape that ships, and every position above is the unrotated one. Bake it "
+            f"onto the bone under it (a bone on the group's own origin takes the same rotation for "
+            f"the same transform) and zero the group's")
     clash = recipe_collision(meta)
     if clash:
         r["problems"].append(clash)
-    if outside or clash:
+    if outside or clash or spun:
         r["ok"] = False
         r["text"] = compact(r)
         r["full"] = full(r)
