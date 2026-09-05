@@ -116,17 +116,17 @@ The release that turned a set of parts into a wardrobe.
 
 ## Gallery
 
-![Every socket filled — three sets, one per row, in all eleven trim materials](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/gallery/sets.png)
+![The six themed sets, every socket filled — knightly, court, beast, wayfarer, tidal, carapace](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/gallery/sets.png)
 
-*Every socket filled — three sets, one per row, in all eleven trim materials*
+*The six themed sets, every socket filled — knightly, court, beast, wayfarer, tidal, carapace*
 
-![The front row up close; the horns keep their ivory through every material](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/gallery/row.png)
+![Sixty sets with nothing about them chosen — armor, skin, cloth, part, material and every fitting rolled](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/gallery/wardrobe.png)
 
-*The front row up close; the horns keep their ivory through every material*
+*Sixty sets with nothing about them chosen — armor, skin, cloth, part, material and every fitting rolled*
 
-![The same three rows from behind — wing roots, banner and pinions on the back socket](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/gallery/back.png)
+![Fourteen armor skins on one diamond suit — the plate itself changed, not something hung on it](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/gallery/skins.png)
 
-*The same three rows from behind — wing roots, banner and pinions on the back socket*
+*Fourteen armor skins on one diamond suit — the plate itself changed, not something hung on it*
 
 ![One circlet, seven gems — the fitting takes a second material](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/gallery/fittings.png)
 

@@ -132,18 +132,18 @@ The release that turned a set of parts into a wardrobe.
 ## Gallery
 
 <p align="center">
-  <img src="docs/assets/gallery/sets.png" alt="Every socket filled — three sets, one per row, in all eleven trim materials">
-  <br><sub><i>Every socket filled — three sets, one per row, in all eleven trim materials</i></sub>
+  <img src="docs/assets/gallery/sets.png" alt="The six themed sets, every socket filled — knightly, court, beast, wayfarer, tidal, carapace">
+  <br><sub><i>The six themed sets, every socket filled — knightly, court, beast, wayfarer, tidal, carapace</i></sub>
 </p>
 
 <p align="center">
-  <img src="docs/assets/gallery/row.png" alt="The front row up close; the horns keep their ivory through every material">
-  <br><sub><i>The front row up close; the horns keep their ivory through every material</i></sub>
+  <img src="docs/assets/gallery/wardrobe.png" alt="Sixty sets with nothing about them chosen — armor, skin, cloth, part, material and every fitting rolled">
+  <br><sub><i>Sixty sets with nothing about them chosen — armor, skin, cloth, part, material and every fitting rolled</i></sub>
 </p>
 
 <p align="center">
-  <img src="docs/assets/gallery/back.png" alt="The same three rows from behind — wing roots, banner and pinions on the back socket">
-  <br><sub><i>The same three rows from behind — wing roots, banner and pinions on the back socket</i></sub>
+  <img src="docs/assets/gallery/skins.png" alt="Fourteen armor skins on one diamond suit — the plate itself changed, not something hung on it">
+  <br><sub><i>Fourteen armor skins on one diamond suit — the plate itself changed, not something hung on it</i></sub>
 </p>
 
 <p align="center">
