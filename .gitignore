@@ -6,6 +6,9 @@
 # Game working directories (worlds, logs, downloaded assets, generated server files).
 run/
 
+# Gradle's own log directory, written by a build rather than by us.
+/logs/
+
 # Loom's decompiled/remapped Minecraft and its caches.
 .loom-cache/
 remappedSrc/
