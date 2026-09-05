@@ -3,9 +3,13 @@ Cut and shade the mask for every cloth the mod ships.
 
 A cloth's art is ONE greyscale sheet, and it says three things at once:
 
-  * alpha is the garment.  Where it is transparent the armor is untouched, and that is what makes a
-    tunic a tunic rather than a paint job: it starts below the collar, leaves the arms bare, and has
-    a hem.
+  * alpha is HOW FAR the garment reaches - which faces of the torso box it covers, and how wide.
+    How far it CAN reach is the armor's to say on any face the armor USES: the bake clips the cloth
+    to the armor's own silhouette there, so the neck's notch and the hem's taper come from the piece
+    being worn rather than from rows counted by hand here.  Cut generously; the armor trims it.
+    The box's TOP and UNDERSIDE are the exception, because vanilla paints neither - a breastplate has
+    no lid - and a face the armor never uses is not a hole to respect but room to use: a tunic's
+    shoulders and a tabard's straps live there and are never trimmed.
   * value is the cloth's own form - the vertical folds, the shadow where it turns a corner, the dark
     band at the hem.  127 is the dye exactly; below is toward black and above is toward white, which
     is the three-stop ramp `DecorationPalette.ofStaticColour` builds and the same one a dye fitting
@@ -62,39 +66,31 @@ FIELD = 150   # the flat of the cloth
 FOLD = 118    # a crease running down it
 LIT = 182     # the ridge beside a crease, catching the light
 EDGE = 108    # where the garment turns a corner and the light does not reach
-HEM = 96      # the band of shadow at the bottom edge, and the underside of it
 
 # Which columns of an 8-wide panel carry a crease and which carry the ridge beside it. Asymmetric on
 # purpose: a symmetric fold pattern reads as corduroy rather than as cloth.
 FOLDS = {1: FOLD, 3: LIT, 4: FOLD, 6: LIT}
 
 
-def panel(top: int, bottom: int, left: int, right: int, shoulder: bool = False) -> dict:
-    """One face's texels, keyed by (col, row).
+def panel(left: int, right: int) -> dict:
+    """One 8-wide face of the torso box, full height, in columns `left`..`right`.
 
-    `top`/`bottom` are the rows the garment occupies and `left`/`right` the columns; a texel outside
-    them is not painted at all, so the armor shows. The last row is the hem's own shadow, and
-    `shoulder` lights the first, which is right where the garment hangs from one.
+    Full height because the armor is what ends it - see the module note. The top row is lit, which is
+    right wherever a garment hangs from a shoulder; there is no hem row, because where the hem falls
+    is the armor's business and vanilla already darkens its own bottom edge, which the armor light
+    carries through.
     """
-    out = {}
-    for row in range(top, bottom):
-        for col in range(left, right):
-            value = FOLDS.get(col, FIELD)
-            if row == bottom - 1:
-                value = HEM
-            elif shoulder and row == top:
-                value = min(255, value + 20)
-            out[(col, row)] = value
-    return out
+    return {(col, row): (FOLDS.get(col, FIELD) + (20 if row == 0 else 0))
+            for row in range(12) for col in range(left, right)}
 
 
-def side(top: int, bottom: int) -> dict:
+def side() -> dict:
     """A four-wide side face: no folds to speak of, and darker, because it is turned away."""
-    return {(col, row): (HEM if row == bottom - 1 else EDGE)
-            for row in range(top, bottom) for col in range(4)}
+    return {(col, row): EDGE for row in range(12) for col in range(4)}
 
 
 def flat(width: int, height: int, value: int) -> dict:
+    """A whole face at one value - for the top and the underside, which have no form to speak of."""
     return {(col, row): value for row in range(height) for col in range(width)}
 
 
@@ -104,16 +100,23 @@ def flat(width: int, height: int, value: int) -> dict:
 def tunic() -> dict:
     """A sleeveless garment closed all the way round, hemmed at the waist.
 
-    Starts two rows below the collar so a gorget, a brooch or the armor's own neckline still reads,
-    and is closed at the sides - which is what separates it from the tabard.
+    Closed at the sides, which is the whole of what separates it from the tabard. It does not stop
+    short of the collar on purpose any more: the armor's own neck notch is what leaves the throat
+    bare, and it does so on a skin's cut as readily as on vanilla's.
     """
     return {
-        "front": panel(2, 12, 0, 8, shoulder=True),
-        "back": panel(2, 12, 0, 8, shoulder=True),
-        "left": side(2, 12),
-        "right": side(2, 12),
+        "front": panel(0, 8),
+        "back": panel(0, 8),
+        "left": side(),
+        "right": side(),
+        # The shoulders. Vanilla paints nothing here - a breastplate has no lid - so the face is the
+        # garment's alone, and the bake leaves a face the armor never uses uncut. Only the outer
+        # column each side is ever seen, the head covering the rest, and that is the shoulder line.
+        #
+        # The box's UNDERSIDE is the other face vanilla leaves empty and it is deliberately left
+        # empty here too. It is not a hem: it is a horizontal plate at the waist, the full width of
+        # a box inflated past the body, and it cuts straight through the legs at every step.
         "top": flat(8, 4, FIELD + 20),
-        "bottom": flat(8, 4, HEM),
     }
 
 
@@ -121,14 +124,18 @@ def tabard() -> dict:
     """Two panels front and back, open at the sides, joined over the shoulders.
 
     Narrower than the box by a column each side, so the armor's own edge reads down the flanks and
-    the two panels are seen as separate cloth rather than as a tube. Nothing on the sides at all,
-    and it starts at the shoulder where the tunic starts below the collar.
+    the two panels are seen as separate cloth rather than as a tube. Nothing on the sides at all.
     """
     return {
-        "front": panel(0, 12, 1, 7),
-        "back": panel(0, 12, 1, 7),
-        # Two shoulder straps joining the panels, and nothing between them.
-        "top": {(col, row): FIELD + 20 for row in range(4) for col in (1, 2, 5, 6)},
+        "front": panel(1, 7),
+        "back": panel(1, 7),
+        # Two straps over the shoulders joining the panels, with the neck open between them. Without
+        # these the two panels hang off nothing, which is what a tabard famously does not do.
+        #
+        # Out to the outermost columns on purpose. The top face is eight texels stretched over a box
+        # inflated to ten units wide, and the head covers all but the outer one on each side - a
+        # strap that stopped short of column 0 would be a strap nobody ever sees.
+        "top": {(col, row): FIELD + 20 for row in range(4) for col in (0, 1, 2, 5, 6, 7)},
     }
 
 

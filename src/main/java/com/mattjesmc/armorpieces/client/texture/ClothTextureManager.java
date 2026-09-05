@@ -53,7 +53,10 @@ import org.jspecify.annotations.Nullable;
  * <ol>
  *   <li><b>the base</b> - the texture the layer was about to draw with, upsampled nearest, so the
  *       armor is exactly what it was where there is no cloth;</li>
- *   <li><b>the cut</b> - where the mask is transparent, stop;</li>
+ *   <li><b>the cut</b> - where the mask is transparent, stop; and on a face the armor uses, where
+ *       the ARMOR is transparent, stop as well, because a garment is worn on the armor and there is
+ *       nothing there to hang it on. The mask says how far the garment reaches; the armor says how
+ *       far it can, except on a face it has no use for at all - see {@link #paintedFaces};</li>
  *   <li><b>the colour</b> - the banner's design where the texel is on one of the two torso panels,
  *       the base dye everywhere else the mask covers;</li>
  *   <li><b>the value</b> - the mask's own, plus the armor's lighting at that texel;</li>
@@ -74,7 +77,8 @@ import org.jspecify.annotations.Nullable;
  * <p>What it is measured FROM is the form the player actually sees: a skinned piece's own greyscale
  * master, or else the material's vanilla equipment texture. Both are plain resources, which is why
  * nothing has to be shared between the managers for this - only the base pixels are, and only when
- * the layer being composited onto is itself a bake.
+ * the layer being composited onto is itself a bake. The same image is what the garment is CLIPPED to,
+ * and the two jobs want the same picture: the thing the cloth is worn on.
  *
  * <h2>Resolution</h2>
  *
@@ -112,6 +116,21 @@ public final class ClothTextureManager implements SimpleSynchronousResourceReloa
      */
     private static final int[] FRONT = {20, 20, 8, 12};
     private static final int[] BACK = {32, 20, 8, 12};
+
+    /**
+     * Every face of the torso box, in the order {@link #paintedFaces} reports them: the two panels
+     * above, then the flanks, then the top and the underside.
+     *
+     * <p>The last two are why this table exists at all. Vanilla paints NOTHING on the top or the
+     * bottom of the chest box - a breastplate has no lid - and a face the armor paints nothing on is
+     * not a hole in it: it is a face the armor has no use for, and a garment draped over the
+     * shoulders has every use for. So the clip is judged per face rather than per texel.
+     */
+    private static final int[] LEFT = {28, 20, 4, 12};
+    private static final int[] RIGHT = {16, 20, 4, 12};
+    private static final int[] TOP = {20, 16, 8, 4};
+    private static final int[] BOTTOM = {28, 16, 8, 4};
+    private static final int[][] FACES = {FRONT, BACK, LEFT, RIGHT, TOP, BOTTOM};
 
     /** The flag every banner pattern is painted for: 20 wide, 40 tall, 1 deep, net at (0, 0). */
     private static final int[] FLAG = {20, 40, 1};
@@ -235,8 +254,9 @@ public final class ClothTextureManager implements SimpleSynchronousResourceReloa
             final int width = base.width() * scale;
             final int height = base.height() * scale;
 
-            final Image light = shading == null ? null : image(manager, shading);
-            final byte[] lightmap = light == null ? null : SkinBake.lightmap(light.pixels(), ARMOR_LIGHT);
+            final Image armor = shading == null ? null : image(manager, shading);
+            final byte[] lightmap = armor == null ? null : SkinBake.lightmap(armor.pixels(), ARMOR_LIGHT);
+            final boolean[] painted = armor == null ? null : paintedFaces(armor);
 
             final Panel panel = panel(manager, value);
             final Map<Integer, DecorationPalette> ramps = new HashMap<>();
@@ -265,10 +285,25 @@ public final class ClothTextureManager implements SimpleSynchronousResourceReloa
                         : panel.sample(gx, gy, value.base().getTextureDiffuseColor() & 0x00FFFFFF);
 
                     int shade = ARGB.red(m);
-                    if (lightmap != null) {
-                        final int lx = x * light.width() / width;
-                        final int ly = y * light.height() / height;
-                        shade += lightmap[ly * light.width() + lx];
+                    if (armor != null) {
+                        final int ax = x * armor.width() / width;
+                        final int ay = y * armor.height() / height;
+                        final int texel = ay * armor.width() + ax;
+                        // A garment is worn ON the armor, so on a face the armor USES, where the
+                        // armor paints nothing there is nothing to hang the cloth on and it stops
+                        // too. That is what gives the neck's notch and the hem's taper without
+                        // counting rows into a mask by hand, and it gives them from whatever the
+                        // piece actually is - vanilla's cut, or a skin's, which is not the same cut.
+                        //
+                        // On a face the armor uses NOWHERE the rule is off, and deliberately: the top
+                        // of the chest box is empty on every vanilla material because a breastplate
+                        // has no lid, and a tunic's shoulders and a tabard's straps live exactly
+                        // there. An empty face is not a hole to respect, it is room to use.
+                        if (clipped(painted, gx, gy) && ARGB.alpha(armor.pixels()[texel]) == 0) {
+                            out.setPixel(x, y, under);
+                            continue;
+                        }
+                        shade += lightmap[texel];
                     }
                     final DecorationPalette ramp =
                         ramps.computeIfAbsent(colour, DecorationPalette::ofStaticColour);
@@ -305,6 +340,46 @@ public final class ClothTextureManager implements SimpleSynchronousResourceReloa
     }
 
     // ---- the design -----------------------------------------------------------------------------
+
+    /**
+     * Which faces of the torso box the armor paints anything at all on - the six of {@link #FACES},
+     * in order. Measured once per bake, since it is a property of the armor and not of the texel.
+     */
+    private static boolean[] paintedFaces(final Image armor) {
+        final boolean[] painted = new boolean[FACES.length];
+        for (int i = 0; i < FACES.length; i++) {
+            final int[] rect = FACES[i];
+            for (int y = rect[1]; y < rect[1] + rect[3] && !painted[i]; y++) {
+                for (int x = rect[0]; x < rect[0] + rect[2]; x++) {
+                    final int ax = x * armor.width() / GRID_WIDTH;
+                    final int ay = y * armor.height() / GRID_HEIGHT;
+                    if (ARGB.alpha(armor.pixels()[ay * armor.width() + ax]) != 0) {
+                        painted[i] = true;
+                        break;
+                    }
+                }
+            }
+        }
+        return painted;
+    }
+
+    /**
+     * Whether the cloth at this point on the net is trimmed to the armor: yes on a face the armor
+     * uses, no on one it leaves entirely empty, and yes off the torso box altogether - a mask that
+     * strays onto an arm is trimmed to the sleeve that is there.
+     */
+    private static boolean clipped(final boolean[] painted, final float gx, final float gy) {
+        for (int i = 0; i < FACES.length; i++) {
+            if (within(FACES[i], gx, gy)) {
+                return painted[i];
+            }
+        }
+        return true;
+    }
+
+    private static boolean within(final int[] rect, final float gx, final float gy) {
+        return gx >= rect[0] && gx < rect[0] + rect[2] && gy >= rect[1] && gy < rect[1] + rect[3];
+    }
 
     /**
      * The banner's design, composited once into the rectangle its sprites are painted for, ready to
@@ -403,7 +478,8 @@ public final class ClothTextureManager implements SimpleSynchronousResourceReloa
          * colour alone.
          */
         int sample(final float gx, final float gy, final int fallback) {
-            final int[] rect = within(FRONT, gx, gy) ? FRONT : within(BACK, gx, gy) ? BACK : null;
+            final int[] rect = ClothTextureManager.within(FRONT, gx, gy) ? FRONT
+                : ClothTextureManager.within(BACK, gx, gy) ? BACK : null;
             if (rect == null) {
                 return fallback;
             }
@@ -411,10 +487,6 @@ public final class ClothTextureManager implements SimpleSynchronousResourceReloa
             final int py = clamp((int) ((gy - rect[1]) / rect[3] * this.height), this.height - 1);
             final int pixel = this.pixels[py * this.width + px];
             return pixel == 0 ? fallback : pixel & 0x00FFFFFF;
-        }
-
-        private static boolean within(final int[] rect, final float gx, final float gy) {
-            return gx >= rect[0] && gx < rect[0] + rect[2] && gy >= rect[1] && gy < rect[1] + rect[3];
         }
 
         private static int clamp(final int value, final int max) {

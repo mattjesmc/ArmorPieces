@@ -10,7 +10,9 @@ The five steps, per texel, and they are the ones the Java does:
 
   1. the base - the armor's own texture, upsampled nearest, so the plate is untouched where the mask
      is transparent;
-  2. the cut - where the mask is transparent, stop;
+  2. the cut - where the mask is transparent, stop; and on a face the armor USES, where the armor
+     is transparent, stop as well.  A face the armor paints nothing on at all - the box's top, the
+     box's underside - is the garment's to use, and is never trimmed;
   3. the colour - the banner's design where the texel is on one of the two torso panels, the base dye
      everywhere else the mask covers;
   4. the value - the mask's own, plus the armor's lighting at that texel, at LIGHT;
@@ -41,6 +43,9 @@ WIDTH = 256
 GRID = (64, 32)
 FRONT = skin_sheets.rect_of("chest", "front")
 BACK = skin_sheets.rect_of("chest", "back")
+# Every face of the torso box, for the per-face clip - see ClothTextureManager.paintedFaces.
+FACES = [skin_sheets.rect_of("chest", f)
+         for f in ("front", "back", "left", "right", "top", "bottom")]
 FLAG = (20, 40, 1)
 PLATE = (12, 22, 1)
 SPRITE_SHEET = 64.0
@@ -132,6 +137,24 @@ def within(rect, gx: float, gy: float) -> bool:
     return rect[0] <= gx < rect[0] + rect[2] and rect[1] <= gy < rect[1] + rect[3]
 
 
+def painted_faces(armor: Image.Image) -> list[bool]:
+    """Which faces of the torso box the armor paints anything at all on."""
+    px = armor.load()
+    out = []
+    for x, y, w, h in FACES:
+        out.append(any(px[x * armor.width // GRID[0] + c, y * armor.height // GRID[1] + r][3]
+                       for r in range(h) for c in range(w)))
+    return out
+
+
+def clipped(painted: list[bool], gx: float, gy: float) -> bool:
+    """Whether the cloth here is trimmed to the armor: yes on a face it uses, no on an empty one."""
+    for i, rect in enumerate(FACES):
+        if within(rect, gx, gy):
+            return painted[i]
+    return True
+
+
 def bake(cloth: str, material: str, base: str, layers: list[tuple[str, str]],
          sheet: str = "shield", mix: float = LIGHT) -> Image.Image | None:
     """One garment in one design on one material, as a 256x128 armor sheet."""
@@ -151,6 +174,7 @@ def bake(cloth: str, material: str, base: str, layers: list[tuple[str, str]],
     fallback = DYES[base]
     ramps: dict[int, list] = {}
 
+    painted = painted_faces(armor)
     out = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     src, msk, dsn, dst = armor.load(), mask.load(), design.load(), out.load()
     for y in range(height):
@@ -171,6 +195,10 @@ def bake(cloth: str, material: str, base: str, layers: list[tuple[str, str]],
                 pixel = dsn[px, py]
                 if pixel[3]:
                     colour = pixel[0] << 16 | pixel[1] << 8 | pixel[2]
+            # Clipped to the armor's silhouette, but only on a face the armor uses at all.
+            if clipped(painted, gx, gy) and not src[bx, by][3]:
+                dst[x, y] = under
+                continue
             shade = max(0, min(255, m[0] + light[by][bx]))
             table = ramps.setdefault(colour, static_ramp(colour))
             dst[x, y] = (*table[shade], 255)
