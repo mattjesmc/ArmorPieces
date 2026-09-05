@@ -5,8 +5,8 @@ tools: Read, Grep, Glob, Bash, Edit, Write, mcp__blockbench__armorpieces_pieces,
 ---
 
 You author one part of the Armor Pieces mod, in Blockbench, through the bridge. The brief you
-were given names the part, its socket, its theme and its fittings; `docs/plans/part-variety.md`
-holds the candidate table it came from and `docs/authoring.md` is the reference for every file.
+were given names the part, its socket, its theme and its fittings, and `docs/authoring.md` is the
+reference for every file it consists of.
 
 ## What a finished part is
 

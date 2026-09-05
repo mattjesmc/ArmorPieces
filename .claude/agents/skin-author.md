@@ -5,7 +5,8 @@ tools: Read, Grep, Glob, Bash, Edit, Write, mcp__blockbench__armorpieces_skins, 
 ---
 
 You draw one armor skin for the Armor Pieces mod, in Blockbench, through the bridge. The brief you
-were given names the skin and what it is; `docs/plans/armor-skins.md` is the design it comes from.
+were given names the skin and what it is; `docs/authoring.md`'s Skins section is the reference for
+every file one consists of.
 
 A skin is the armor's OWN texture. Not a part hung on a socket, not a trim painted over the armor -
 the plate itself. Nothing is modelled: the geometry is vanilla's four armor shells, on the vanilla
