@@ -73,8 +73,8 @@ Synced because the client bakes it, exactly as with a skin.
 
 One greyscale sheet on the vanilla armor grid, and it does three things at once:
 
-- **alpha is the garment.** Where it is transparent there is no cloth and the armor is untouched.
-  This is what makes a tunic a tunic: it stops below the collar, leaves the arms bare, has a hem.
+- **alpha is how far the garment reaches.** Where it is transparent there is no cloth and the armor
+  is untouched. Reach generously — the armor is what trims it; see *The armor cuts the garment*.
 - **value is the cloth's own form** — the folds, the shadow under a belt, the crease at the hem.
 - **the two torso panels are where the design goes.** `chest.front` (20,20 8x12) and `chest.back`
   (32,20 8x12) take the banner's pattern. Everywhere else the mask covers takes the base colour
@@ -96,13 +96,21 @@ For each output texel:
 
 1. the **base** is the texture the layer was about to draw with, upsampled — so the armor is exactly
    what it was where the cloth is not;
-2. where the mask is transparent, stop. That texel is the armor;
+2. where the mask is transparent, stop — and where the ARMOR is transparent, stop as well. That
+   texel is the armor, or the air the armor leaves;
 3. the **colour** is the banner's — the pattern layers composited in order in pattern space, sampled
    through the panel's own rect, or the base dye where the texel is not on a panel;
 4. the **value** is the mask's, plus the armor's own lighting at that texel;
 5. the colour and the value go through `DecorationPalette.ofStaticColour`, which is the same
    three-stop ramp a dye fitting and a horn's ivory already use — so a dyed cloth and a dyed inlay
    beside it shade identically.
+
+**The armor cuts the garment.** The mask says how far a cloth reaches; the armor says how far it
+can. Where the piece being worn paints nothing, neither does the cloth — so the neck's notch, the
+hem's taper and the bare shoulders come out of the piece itself rather than out of rows counted by
+hand into a mask, and they are right on a skin's cut as readily as on vanilla's. Cut the mask
+generously and let the armor trim it. It is the same image the lighting is measured from: the thing
+the cloth is worn on.
 
 ### The shading, which is the whole point
 
@@ -217,8 +225,13 @@ so the hem is thinner than the garment above it, and the legs are two boxes that
 long one splits down the middle at every step.
 
 **Not on the advanced smithing table yet.** Taking a cloth off works at a normal smithing table
-through the empty-addition recipe, the same as a skin. Listing it beside the part, fitting, trim and
-skin rows in `AdvancedSmithingMenu` is a follow-up.
+through the empty-addition recipe, the same as a skin. Adding it there is a follow-up, and it wants
+no new row: the table's last row is already the PIECE's own row, holding the two things that belong
+to the piece rather than to anything worn in a socket - what is painted over its texture (the trim,
+column 0) and what its texture is (the skin, column 1). A cloth is the third of that kind, what is
+worn over it, so it is place 1 of that row and the box does not change size - `MAX_FITTINGS` is
+already 3, which is the stride the select-fitting button ids are encoded with, and the widest socket
+row already draws three columns.
 
 ## Check
 

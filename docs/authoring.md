@@ -243,7 +243,37 @@ block, a copper ingot, any dye and a loom in a ring of paper.
 
 **4b. Found rather than made.** A pack can write a loot table of its own, but it cannot add to a
 vanilla one — only replace it whole, and two packs replacing `chests/ancient_city` cannot both
-win. So the part names its tables and the mod does the adding, as each table loads:
+win. So the mod does the adding, as each table loads, and there are two ways to tell it what.
+
+*The one that scales* is a **loot group**: a category of loot tables, and the parts found in it.
+
+```json
+// data/<ns>/armorpieces/loot_group/tomb.json
+{ "chance": 0.12,
+  "tables": [ "minecraft:chests/desert_pyramid",
+              { "table": "minecraft:chests/ancient_city", "chance": 0.2 } ],
+  "parts": "#<ns>:tomb",
+  "skins": [ "<ns>:sarcophagus" ],
+  "fittings": "#armorpieces:common" }
+```
+
+Membership is a **tag**, `data/<ns>/tags/armorpieces/armor_decoration/tomb.json`, so a part joins
+by being tagged and nothing about the part's own file changes. That is what makes it worth having:
+one file says where a whole look is found, and adding the fortieth part to it is one line in a tag
+rather than a fortieth edit. It also runs both ways — your part joins one of the mod's groups by
+being tagged into `#armorpieces:knightly`, without overriding a file of ours. `weight` sets what
+every member of the group is worth against the other groups sharing a table.
+
+All four template families ride in the same pool. `skins` and `cloths` are the same field for those
+registries; `fittings` is the same field again, and is the **only** route into the world for a
+fitting template, since a `Fitting` is a dispatched codec — one record per type — and a `loot`
+field on it would have to be added to every type, including a pack's own. That asymmetry is also
+the right shape: a fitting template is not a look but the second step of one the player already
+has, so the mod's six groups all name `#armorpieces:common` and the four fitting templates are
+found everywhere. The skins divide by theme instead, because a skin *is* a look.
+
+*The exact one* is the `loot` list on the part's own file, for a part that belongs in one named
+place and nowhere else:
 
 ```json
 "loot": [
@@ -252,13 +282,22 @@ win. So the part names its tables and the mod does the adding, as each table loa
 ]
 ```
 
-The mod adds one pool per table, rolled once, holding an entry for every part that names it —
-the part's socket template, as the creative tab holds it — so a chest never has two parts and
-the table's own pools are untouched. `chance` is the entry's `random_chance`: how often this part
-is offered at all, and required, because 1 means every chest. `weight` is optional, 1 by default,
-and only matters between parts that share a table. Any table will do, a mob's or a fishing pool's
-as much as a chest's; the shipped parts name chests between one in twenty and one in three.
-Pair it with a disabled recipe (below) for a part that is only ever found.
+**The chance belongs to the table, not to the part.** However many groups and rows feed one table,
+the mod adds it ONE pool, rolled once, with a single `random_chance` on the pool — so `0.12` means
+"a chest of this kind holds one of ours about one time in eight", and it goes on meaning that as
+parts are added. What another part changes is *which* one is found. (The obvious alternative, a
+chance per part, does not survive contact with ninety of them: the table's real odds are
+`1-∏(1-c)`, which climbs until every chest holds something.) Where several sources name one table
+the highest chance wins and the members pool together, and a part offered twice is one entry, not
+two. `weight` is optional, 1 by default, and only decides which member is placed once the pool has
+fired. Any table will do, a mob's or a fishing pool's as much as a chest's.
+
+A part with no recipe and no route into the world cannot be had in survival at all, so
+`check_authoring.py` fails on it; a part that means to be creative-only says so with an empty
+`"loot": []`. The mod ships six groups over the six themes its parts are drawn in — `knightly`,
+`court`, `beast`, `wayfarer`, `tidal`, `carapace` — holding all ninety-one parts, the fourteen
+skins divided between them, and the four fitting templates in every one. Craftable recipes are kept
+only where the centre item genuinely is the part or what it is made of; everything else is found.
 
 For decorated armor rather than a template — a helmet already wearing a circlet with an emerald
 in it — a table uses the mod's loot function on an armor entry:
@@ -392,26 +431,35 @@ Two consequences worth knowing before you draw:
 A pack may ship `<sheet>_<material>.png` beside the pair — `humanoid_netherite.png` — and that art
 is used as it is for that one material, which is the same escape hatch a part has.
 
-**The template's own icon draws itself.** One item carries every skin and picks its look off the
-`armorpieces:skin` component, through the `minecraft:select` in
-`assets/armorpieces/items/skin_template.json`. The art is not drawn by hand: it is the top ten rows
-of your skin's own chest front, lifted off `humanoid.png`, greyed and levelled into the card's
-range, so the icon is a swatch of the armor rather than a symbol for it and cannot drift from what
-the player will wear. `python tools/gen_template_icons.py` writes the icon, the item model and the
-select for **every skin with art in the resources** — so a new skin gets all three by existing, with
-no JSON to write — and `--sheet` writes a magnified contact sheet of every template icon the mod
-has. `check_authoring.py` fails if a select case and its texture ever stop naming each other.
+**The template's own icon draws itself, and yours does too.** One item carries every skin and picks
+its look at render time, off the `armorpieces:skin` component. The art is not drawn by hand and is
+not a file anywhere: it is the top ten rows of your skin's own chest front, lifted off
+`humanoid.png`, greyed and levelled into the template card's range, drawn by the game as the item
+atlas is built. So the icon is a swatch of the armor rather than a symbol for it, it cannot drift
+from what the player will wear, and **a skin a pack ships gets an icon on exactly the same terms as
+one the mod ships** — draw the sheet, and the icon is there.
 
-`minecraft:select` cases cannot be merged from another pack, so a skin you ship falls back to the
-generic `skin_template` icon; to give it one of its own, override that whole file in your resource
-pack, keeping the mod's cases and adding yours.
+That last part is why this is in the mod rather than in a script. `minecraft:select`, the vanilla way
+to give one item many looks, keeps its cases in one file, and resource packs resolve a file by
+winning it outright rather than by merging it — so a select listing the mod's own skins is a select
+your skin could never join. The mod registers a sprite source (`armorpieces:skin_template_icons`,
+declared in `assets/minecraft/atlases/items.json`) and an item model type
+(`armorpieces:skin_template`) instead; between them they find every skin with a sheet, in any pack,
+and give it its own icon. A skin whose art is missing falls back to the generic card.
+
+Two escape hatches. Ship `textures/item/skin_template_<skin>.png` in your own namespace and that file
+wins — a sprite source loses to a real texture of the same name — so a skin whose chest is a poor
+summary of it can be given a hand-drawn icon. And the generic card itself is still authored:
+`python tools/gen_template_icons.py` draws it with the twelve socket icons and the cloths, and
+`--sheet` writes a magnified contact sheet of the lot.
 
 Authoring is the same loop parts have, with its own tools: `python tools/skin_sheets.py <skin>`
 prints a sheet as ASCII to work from (`--vanilla netherite` prints vanilla's own),
 `python tools/bb_rig.py --skin <skin>` builds the Blockbench rig, the plugin's skin workspace paints
 it on the real figure with a live material preview, `python tools/check_skin.py <skin>` is the check
 every shipped skin passes, and `python tools/sync_skin_masters.py <skin> [--as <name>]` installs the
-pair into the resources.
+pair into the resources — which **the plugin's Save already does**, the way saving a part installs
+its master, so this one is for a skin installed under another name or for reinstalling the lot.
 
 **Wearing one.** Skin template + the armor + *the armor's own reforging material* — an iron ingot
 for iron, a diamond for diamond, a turtle scute for the turtle helmet. Re-skinning is re-forging, so
@@ -473,9 +521,22 @@ a piece of armor and then draws nothing for.
 
 One sheet, three jobs at once:
 
-- **Alpha is the garment.** Where it is transparent, the armor is untouched. This is what makes a
-  tunic a tunic rather than a paint job — it starts below the collar, leaves the arms bare, has a
-  hem. Cut it, do not fill the box.
+- **Alpha is how far the garment reaches.** Where it is transparent, the armor is untouched. Reach
+  generously: how far it *can* reach is the armor's to say — see below.
+**The armor cuts the garment.** The mask says how far a cloth reaches; the armor says how far it
+can. Where the piece being worn paints nothing, neither does the cloth — so the neck's notch, the
+hem's taper and the bare shoulders come out of the piece itself rather than out of rows counted by
+hand into a mask, and they are right on a skin's cut as readily as on vanilla's. Cut the mask
+generously and let the armor trim it. It is the same image the lighting is measured from: the thing
+the cloth is worn on.
+
+The exception is a face the armor uses *nowhere*, which is not a hole to respect but room to use —
+and on the torso box that means the top and the underside, since a breastplate has no lid. The
+**top** is worth using: only its outer column each side is ever seen, the head covering the rest, and
+that column is the shoulder line a tunic hangs from and a tabard'''s straps cross. The **underside** is
+not: it is a horizontal plate at the waist, the full width of a box inflated past the body, and it
+cuts straight through the legs at every step. Leave it empty, as vanilla does.
+
 - **Value is the cloth's own form** — the folds, the shadow where it turns a corner, the dark band
   at the hem. 127 is the dye exactly; below goes toward black and above toward white, on the same
   three-stop ramp a dye fitting and a horn's ivory already use.

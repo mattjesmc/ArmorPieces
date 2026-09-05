@@ -1,6 +1,6 @@
 name: Armor Pieces
 slug: armor-pieces
-tagline: Decorative parts for armor — applied at a smithing table like trims, coloured by the same trim materials.
+tagline: Parts, skins and cloth for armor — because someone else at spawn is wearing your diamond set.
 authors: [mattjes]
 license: All Rights Reserved
 
@@ -27,27 +27,51 @@ badges:
 
 sections:
   about: |
-    Armor Pieces adds **modular 3D pieces** to armor. A full set has twelve sockets - crest, brow,
-    horns, pauldrons, back, collar, vambraces, belt, tassets, knees, spurs, greaves - and each socket
-    holds one part: a plume on the helmet, spaulders on the shoulders, a sash on the belt, spurs on
-    the heels. Parts are real geometry hung on the body, not paint on the texture, and any combination
-    of them makes a set.
+    You know the one. You walk into spawn in your best diamond and the first person you see is
+    wearing the same helmet, the same chestplate, the same Sentry trim in the same netherite. Vanilla
+    can build 1,568,239,201 armor sets, which sounds like plenty right up until it happens to you
+    twice in a week.
 
-    A part is applied at a smithing table like a trim, with a template and a trim material, and takes
-    that material's colour. It sits on top of whatever vanilla trim the armor has; neither replaces
-    the other.
+    Armor Pieces takes that number to **3 × 10⁸⁴** — more than thirty thousand unique diamond sets
+    for every atom in the observable universe. Diamond is one of seven armor materials.
 
-    Some parts have a **fitting** that is coloured separately: a gem set into the circlet, a metal
-    buckle and a dyed strap on the sash, a dyed inlay on the greaves, a banner's design on the back
-    banner. One more smithing step, with a template per fitting, and the item decides where it goes.
+    It gives one piece of armor **four layers of decoration, each an independent choice**:
+    a **part** hung on a socket, a **skin** that changes what the plate itself is made of, a **cloth**
+    worn over the chest, and vanilla's own **trim** underneath them all. Every one of them is applied
+    at a smithing table, and none of them replaces another - a helmet can carry a skin, a trim, a
+    crest, a browband and a pair of horns at once.
 
-    Parts are crafted, or found: every one ships in a few of the world's chests. An **advanced
-    smithing table** shows a whole set on a stand and takes a part off again, which the smithing
-    table cannot.
+    **Ninety-one parts, over twelve sockets.** `crest`, `brow`, `horns`, `pauldrons`, `back`,
+    `collar`, `vambraces`, `belt`, `tassets`, `knees`, `spurs`, `greaves` - a plume on the helmet,
+    spaulders on the shoulders, a sash on the belt, spurs on the heels. Parts are real geometry hung
+    on the body, not paint on the texture. A socket holds one part and every socket has at least six
+    to choose from, so the choice is the expressive act. Each part is applied with a trim material and
+    takes that material's colour.
 
-    This version ships forty-one parts across the twelve sockets. Each is a datapack entry, a model and
-    a texture, no code, and a pack can add its own the same way - from Blockbench, in folders of its
-    own.
+    **Fourteen armor skins.** A skin is the armor's *own* texture - what the plate is, rather than
+    what is bolted to it. Plate, gothic, milanese, mail, chainmail, lorica, runic, hoplite, samurai,
+    gambeson, brigandine, varangian, scale and lamellar. Each is recoloured through the armor
+    material's own palette, so a skinned iron helmet still reads as iron and a modded armor material
+    is skinned for free from the texture it already ships. A skin is paid for in the metal the piece
+    is made of: re-skinning is re-forging.
+
+    **Two cloths.** A tunic or a tabard over a chestplate, carrying the design of any banner you make
+    at a loom - so the heraldry is yours rather than a list the mod maintains. It is baked into the
+    armor's texture rather than hung off it, so it clips nothing and the plate's own rivets and edges
+    read through it.
+
+    **Fittings.** Some parts have a second colour, set separately: a gem in the circlet, a metal
+    buckle and a dyed strap on the sash, a dyed inlay on the greaves, a banner on the back banner.
+    One more smithing step, one template per fitting, and the item decides where it goes.
+
+    Most of it is **found rather than made**. Twenty-nine parts have a crafting recipe, the ones where
+    the item is plainly the part or what it is made of; the rest turn up in the chests that suit them,
+    each theme in its own kind of structure, with the skins and the fitting templates alongside. An
+    **advanced smithing table** shows a whole set worn by a stand and takes a part, a fitting or a
+    trim off again, which the smithing table cannot.
+
+    Every part, skin and cloth is a datapack entry, a model and a texture, no code - and a pack adds
+    its own the same way, from Blockbench, in folders of its own.
 
   features:
     items:
@@ -55,12 +79,32 @@ sections:
         description: >-
           `crest`, `brow`, `horns`, `pauldrons`, `back`, `collar`, `vambraces`, `belt`, `tassets`,
           `knees`, `spurs`, `greaves`. A socket holds one part, so a new crest replaces the crest —
-          and with forty-one parts every socket has at least two to choose from. Seven of the
+          and with ninety-one parts every socket has at least six to choose from. Seven of the
           sockets are mirrored pairs, so spaulders means both shoulders.
       - title: Coloured by vanilla trim materials
         description: >-
           One grayscale master per part is mapped onto each material's own palette at load time.
           A new trim material costs a part no new art at all.
+      - title: Fourteen armor skins
+        description: >-
+          The one thing here that changes the armor itself rather than adding to it — plate, gothic,
+          milanese, mail, chainmail, lorica, runic, hoplite, samurai, gambeson, brigandine,
+          varangian, scale, lamellar. One greyscale master pair on vanilla's own armor grid,
+          recoloured at load through eight shades taken from *that armor material's* vanilla
+          texture, with vanilla's own panel edges and shadows mixed back over it. A skinned iron
+          helmet still reads as iron, gold still reads as gold, and a modded armor material is
+          skinned for free from the texture it already ships. Applied at the advanced smithing table
+          with the piece's own reforging material — re-skinning is re-forging, and it costs the metal
+          the piece is made of.
+      - title: Cloth over the chest
+        description: >-
+          A **Tunic** or a **Tabard**, applied with a cloth template and a banner, and the design is
+          the banner's — sixteen dyes crossed with every pattern layer, made at a loom, so the
+          heraldry is a player's choice rather than a list the mod keeps. It is painted into the
+          armor's own texture rather than hung off it, so it moves with the armor, clips nothing, and
+          the plate's rivets and edges read *through* it. It sits over the skin, under every part and
+          under the trim. One greyscale cut mask ships the whole feature; there is no per-material
+          art and no per-banner art.
       - title: Fittings
         description: >-
           A part can declare places for a second material — `gemstone`, `guard`, `inlay`, `banner` —
@@ -71,10 +115,16 @@ sections:
           gated on one.
       - title: Found in the world
         description: >-
-          Every shipped part turns up in a few of the world's chests — wings in end cities, horns in
-          bastions, the circlet in ancient cities — and a part names its own tables in its data file,
-          which the mod adds it to as they load, the one thing a datapack cannot do for itself. A
-          loot function puts a part on a piece of armor a table drops, gem and all.
+          Most parts are found rather than crafted, each theme in the structures that suit it —
+          knightly gear in strongholds and trial chambers, beast trophies in bastions, court
+          jewellery in mansions and ancient cities, tidal parts in shipwrecks and ocean ruins. A
+          **loot group** is one file naming a category of tables and the tag of parts found in
+          them, so a pack adds a whole look to the world at once, or drops one part into one chest
+          from its own data file — the one thing a datapack cannot do for itself, since it can only
+          replace a vanilla table whole. Armor **skins** are found the same way, divided over the
+          same groups, and a **fitting template** turns up in every one of them. The odds belong to
+          the table, so a chest's chance of holding something stays put however many parts are
+          added. A loot function puts a part on a piece of armor a table drops, gem and all.
       - title: Taking parts off
         description: >-
           The advanced smithing table, crafted from a smithing table, an armor stand and two iron
@@ -123,6 +173,21 @@ sections:
     icons:
       "minecraft:shield": icons/shield.png
       "minecraft:white_banner": icons/white_banner.png
+      "minecraft:orange_banner": icons/orange_banner.png
+      "minecraft:magenta_banner": icons/magenta_banner.png
+      "minecraft:light_blue_banner": icons/light_blue_banner.png
+      "minecraft:yellow_banner": icons/yellow_banner.png
+      "minecraft:lime_banner": icons/lime_banner.png
+      "minecraft:pink_banner": icons/pink_banner.png
+      "minecraft:gray_banner": icons/gray_banner.png
+      "minecraft:light_gray_banner": icons/light_gray_banner.png
+      "minecraft:cyan_banner": icons/cyan_banner.png
+      "minecraft:purple_banner": icons/purple_banner.png
+      "minecraft:blue_banner": icons/blue_banner.png
+      "minecraft:brown_banner": icons/brown_banner.png
+      "minecraft:green_banner": icons/green_banner.png
+      "minecraft:red_banner": icons/red_banner.png
+      "minecraft:black_banner": icons/black_banner.png
       "minecraft:smithing_table": icons/smithing_table.png
       "minecraft:loom": icons/loom.png
       "minecraft:hay_block": icons/hay_block.png
@@ -134,6 +199,12 @@ sections:
         layout: smithing
         result: base
       "armorpieces:smithing_fitting":
+        layout: smithing
+        result: base
+      "armorpieces:smithing_skin":
+        layout: smithing
+        result: base
+      "armorpieces:smithing_cloth":
         layout: smithing
         result: base
 
@@ -195,6 +266,94 @@ sections:
     in writing and covers the distribution it describes.
 
 custom_sections:
+  - id: whats-new
+    title: New in 0.3.0
+    after: about
+    body: |
+      The release that turned a set of parts into a wardrobe.
+
+      - **Seventy-one new parts — ninety-one in total.** Every one of the twelve sockets now has at
+        least six answers, and the six themes reach across the whole suit. Among them a family of
+        seven flat **visor styles** on the `brow` socket, whose sights are real openings with your
+        own face behind them rather than paint.
+      - **Armor skins.** A third template family, and the first thing in the mod that changes the
+        armor itself instead of adding to it. Fourteen ship, each recoloured through the armor
+        material's own vanilla palette, so a skin costs no per-material art and a modded material
+        gets one free.
+      - **Cloth.** A fourth layer: a **Tunic** or a **Tabard** over a chestplate, wearing the design
+        of any banner you make at a loom, painted into the armor's texture rather than hung off it.
+      - **Most parts are now found rather than crafted.** A **loot group** is one file naming a
+        category of vanilla tables and a tag of parts found in them; six ship, one per theme —
+        knightly gear in strongholds and trial chambers, beast trophies in bastions, court jewellery
+        in mansions and ancient cities, tidal parts in shipwrecks and ocean ruins, and so on. Skins
+        are divided over the same six, and a fitting template turns up in all of them.
+      - **The chance belongs to the table, not to the part.** One pool per table, rolled once: a
+        chest's odds of holding something of ours stay put however many parts are added. Another part
+        changes *which* one you find, never how often.
+      - **The advanced smithing table.** Crafted from a smithing table, an armor stand and two iron
+        ingots. It holds a whole set worn by a stand and lists each piece's sockets, fittings and trim
+        as rows of icons — and Remove is the one way a part, a fitting or a trim ever comes off.
+      - **Twenty-nine recipes, not ninety-one.** A template recipe now ships only where the centre
+        item is plainly the part or what it is made of — a bell for the bells, a goat horn for the
+        horns. The rest are found.
+      - **One template per fitting.** *Gemstone*, *Guard*, *Inlay* and *Banner*, each with its own
+        look, name and recipe, instead of one template that guessed.
+      - **Any recipe the mod ships can be switched off** by overriding its file with
+        `{"type": "armorpieces:disabled"}`.
+      - **Blockbench, for your pack.** The plugin no longer assumes content lives in this repository:
+        it opens a part on the vanilla player wearing real armor, paints master, static layer and
+        fitting masks in place, previews any trim material live, and on Save writes every file into
+        *your* datapack and resource pack — which it makes, finds and zips for you.
+
+  - id: how-many-sets
+    title: How many sets is that?
+    after: gallery
+    body: |
+      A diamond set in vanilla is one look plus a trim. Eighteen patterns times eleven materials,
+      plus untrimmed, is **199** states per piece — and **1,568,239,201** for a set of four.
+
+      Now count that same diamond set with this mod installed. Each piece keeps all 199 of its trims
+      and gains a skin
+      (fourteen, or bare), a part in each of its sockets, each part in one of eleven materials, each
+      part's fittings filled or left empty — a gem from seven, a metal from four, an inlay from
+      sixteen dyes — and the chestplate a tunic or a tabard on top.
+
+      | | Vanilla diamond | With Armor Pieces |
+      | --- | ---: | ---: |
+      | Helmet | 199 | 1,833,029,934,300 |
+      | Chestplate | 199 | 5,113,599,898,358,700 |
+      | Leggings | 199 | 1,839,405,834,600 |
+      | Boots | 199 | 1,187,185,245 |
+      | **Full set** | **1,568,239,201** | **20,468,798,559,625,822,847,874,604,407,037,697,665,836,570,000,000** |
+
+      That is **2 × 10⁴⁹** — about 10⁴⁰ times the whole of vanilla, and roughly a sixth of the atoms
+      in the Earth. Some smaller ways to hold it:
+
+      - **The boots alone** come to 1,187,185,245 arrangements: three quarters of every trimmed
+        diamond set vanilla can build, on your feet.
+      - **The helmet alone** is 1,169 times vanilla's entire four-piece space.
+      - **Shape alone**, before a single colour is chosen — which part sits in which socket, and
+        nothing else — is 368,709,304,320 distinct silhouettes. 235 times vanilla's fully trimmed
+        space, in pure geometry.
+      - Pick a set a second and you exhaust vanilla in fifty years. You exhaust this one in
+        4.7 × 10³¹ times the age of the universe.
+
+      And all of that **counts a banner as a single design**, which it is not. A banner is sixteen
+      base colours and up to six layers of forty-two patterns in sixteen dyes:
+      **1,475,646,641,940,097,552** banners, any of which can go on the back banner, the cloak, the
+      tunic or the tabard. Count them properly and the chestplate alone reaches 7.7 × 10⁵⁰, and a
+      full set:
+
+      **3.07 × 10⁸⁴** — over thirty thousand distinct diamond sets for every atom in the observable
+      universe. (There are about 7.3 × 10⁷⁹ of those, if you take Planck's numbers and the baryons
+      they imply.)
+
+      And every number on this page is **diamond alone**, because that is what vanilla is being
+      compared against. Diamond is one of seven armor materials, six of which take a skin — which
+      multiplies the whole table by about thirteen hundred again, before leather has been dyed.
+
+      Nobody at spawn is wearing yours.
+
   - id: adding-a-part
     title: Adding a part
     after: installation

@@ -263,6 +263,11 @@ because the one thing that cannot be judged from a flat sheet is armor.
   visor, and the value range against the eight shades.
 - **`.claude/agents/skin-author.md`** is one session per skin, with the vanilla coverage table in it.
 
+Saving a skin now closes the *resource* half as well: the plugin runs `sync_skin_masters.py` to
+install the pair, which is what a part's save has always done with its master. The icon needs no
+step of its own any more — see below — so a skin drawn in the workspace is art the game loads and an
+icon the hotbar draws, with nothing typed.
+
 What the plugin still owes is the datapack half. Painting works; writing does not. A **New Skin**
 dialog should do for a skin what the Part dialog does for a part — write the `armor_skin` data file,
 its template recipe with the two item fields and the Craftable switch, its loot rows, and the lang
@@ -270,10 +275,44 @@ line into the right half of the right pack — so that a skin is authored end to
 never by hand. That is the same code path the Part and New Fitting dialogs already are, pointed at a
 third registry.
 
-The masters stay in `tools/skin_masters/` for now. Where they are installed into the resources is
-the Java half's call; `tools/sync_decoration_masters.py` is the shape to copy, and
-`assets/armorpieces/textures/entity/skin/<skin>/{humanoid,humanoid_leggings}.png` is the obvious
-place.
+The masters stay in `tools/skin_masters/`, and are installed from there into
+`assets/armorpieces/textures/entity/skin/<skin>/{humanoid,humanoid_leggings}.png` — which is why
+AUTHORING a skin is still a thing only the repository can do. Shipping one is not: see below.
+
+## The icon a pack's skin can have
+
+Built 2026-09-05. The icons were generated PNGs and a `minecraft:select` with one case per skin, and
+that arrangement had a ceiling nothing on the authoring side could lift. Model definitions live one
+per item, resource packs resolve a file by winning it outright rather than by merging it, and so a
+select listing the mod's fourteen skins is a select a pack's skin can never join: the pack would have
+to copy every case into its own override of `assets/armorpieces/items/skin_template.json`, go stale
+the moment the mod shipped a fifteenth, and lose outright to the next pack that did the same. The
+`fallback` in that file was the honest admission of it — a pack's skin drew the generic card.
+
+So the icon moved into the game, where the sheet already is:
+
+- **`SkinTemplateIconSource`** is a sprite source, registered through Fabric's `SpriteSourceRegistry`
+  and declared in `assets/minecraft/atlases/items.json` — atlas definitions are one of the things
+  that DO stack across packs. It lists every `textures/entity/skin/*/humanoid.png` any pack ships and
+  stitches one icon per skin onto the item atlas, drawn by **`SkinTemplateIcon`**: the same card the
+  socket templates use, with the chest front's top ten rows greyed and levelled into its recess. It
+  is the Python `swatch()` and `render_skin()`, ported, and `SkinTemplateIconTest` holds it to the
+  two things that matter — the swatch lands in the recess, and it spans the card's whole band.
+- **`SkinTemplateItemModel`** is an item model type, registered into `ItemModels.ID_MAPPER` (opened
+  up by Fabric API's transitive access wideners, as `MenuScreens.register` is). It bakes the generic
+  model once per stitched skin against that skin's own sprite — `minecraft:item/generated` takes its
+  shape from the texture it is handed, so one model and fifteen sprites are fifteen icons — and
+  chooses between them off the `armorpieces:skin` component, exactly as the select did. So
+  `items/skin_template.json` is now four lines and never changes again.
+
+What that bought: fourteen PNGs and fourteen model files left the resources, `gen_template_icons.py`
+lost its skin pass, the plugin's Save has one script to run instead of two, and a pack that ships a
+skin gets an icon for it on the same terms the mod does. A pack that would rather draw its own still
+can — a real `textures/item/skin_template_<skin>.png` beats a stitched one — and a skin with no art
+falls back to the generic card, which is what an unknown skin should look like.
+
+The cloths are the same arrangement one step behind, and the obvious next thing: their icons are
+still generated PNGs and a select, and a pack's cloth still cannot have one.
 
 ## What the bake turned out to need
 

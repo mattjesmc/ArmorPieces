@@ -224,6 +224,39 @@ HAY_BLOCK = [
     "................",
 ]
 
+# The other fifteen banners. A banner's cloth is ONE white sheet in the assets, tinted by the dye's
+# texture diffuse colour - so the fifteen coloured icons are the white one's three cloth greys put
+# through the same multiply, and the crossbar left alone. White keeps its sampled palette rather
+# than being multiplied by 0xF9FFFE, so the icon that already shipped does not move by a shade.
+DYE_DIFFUSE = {
+    "orange": (0xF9, 0x80, 0x1D),
+    "magenta": (0xC7, 0x4E, 0xBD),
+    "light_blue": (0x3A, 0xB3, 0xDA),
+    "yellow": (0xFE, 0xD8, 0x3D),
+    "lime": (0x80, 0xC7, 0x1F),
+    "pink": (0xF3, 0x8B, 0xAA),
+    "gray": (0x47, 0x4F, 0x52),
+    "light_gray": (0x9D, 0x9D, 0x97),
+    "cyan": (0x16, 0x9C, 0x9C),
+    "purple": (0x89, 0x32, 0xB8),
+    "blue": (0x3C, 0x44, 0xAA),
+    "brown": (0x83, 0x54, 0x32),
+    "green": (0x5E, 0x7C, 0x16),
+    "red": (0xB0, 0x2E, 0x26),
+    "black": (0x1D, 0x1D, 0x21),
+}
+
+CLOTH_KEYS = ("C", "w", "d")
+
+
+def _tinted_banner_palette(tint):
+    palette = dict(BANNER_PALETTE)
+    for key in CLOTH_KEYS:
+        r, g, b, a = BANNER_PALETTE[key]
+        palette[key] = (r * tint[0] // 255, g * tint[1] // 255, b * tint[2] // 255, a)
+    return palette
+
+
 ICONS = {
     "shield": (SHIELD, SHIELD_PALETTE),
     "white_banner": (BANNER, BANNER_PALETTE),
@@ -231,6 +264,8 @@ ICONS = {
     "advanced_smithing_table": (ADVANCED_SMITHING_TABLE, SMITHING_PALETTE),
     "loom": (LOOM, LOOM_PALETTE),
     "hay_block": (HAY_BLOCK, HAY_PALETTE),
+    **{f"{name}_banner": (BANNER, _tinted_banner_palette(tint))
+       for name, tint in DYE_DIFFUSE.items()},
 }
 
 

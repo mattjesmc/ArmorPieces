@@ -165,7 +165,9 @@ take the first one where it can still change what you draw, not at the end to ad
    of few, big value steps - three or four bands, not a gradient per row. Fix it now, not at the end.
 5. `armorpieces_skin_material iron`, then `gold`, then `netherite`. Each call returns its own
    screenshot, so this is three calls, not six.
-6. `armorpieces_skin_check`, fix what it marks, `armorpieces_save_skin`.
+6. `armorpieces_skin_check`, fix what it marks, `armorpieces_save_skin`. Saving also installs the
+   pair into the mod's resources and redraws the skin template icons, and returns what both scripts
+   said - so do not run `sync_skin_masters.py` or `gen_template_icons.py` yourself.
 7. `python tools/check_skin.py <skin>` from the repository root as the independent confirmation, and
    `python tools/bake_skin.py <skin> --out build/skins` to leave the baked pairs for a human to look
    at.

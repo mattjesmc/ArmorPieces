@@ -5,33 +5,126 @@
 **Armor skins.** A third template family beside the socket templates and the fitting templates. A
 skin is the armor's *own* texture - what the plate is, rather than what is bolted to it or painted
 over it - so a piece, a trim and a skin are three independent choices on one piece of armor.
-Thirteen ship: plate, mail, gambeson, gothic, milanese, brigandine, scale, lamellar, and then
-lorica, varangian, hoplite, samurai and runic. Each is one greyscale master pair on vanilla's own
-armor grid, recoloured at load through eight shades taken from *that armor material's* vanilla
-texture, with vanilla's own panel edges and shadows mixed back over it - so a skinned iron helmet
-still reads as iron, and a modded armor material is skinned for free from the texture it already
-ships. A skin is applied at the advanced smithing table with the piece's own **reforging material**
-in the addition slot, asked of the armor item itself rather than of a table the mod maintains:
-re-skinning is re-forging, and it costs the metal the piece is made of. Chainmail takes no skin -
-its ramp is dead and its identity is the weave - and says so through a tag a pack can disagree
-with. Leather's dyeable layer takes the skin, so dye still multiplies into it; trims are drawn
+Fourteen ship: plate, mail, gambeson, gothic, milanese, brigandine, scale, lamellar, then lorica,
+varangian, hoplite, samurai and runic - and chainmail, the one that was not drawn. Each is one
+greyscale master pair on vanilla's own armor grid, recoloured at load through eight shades taken
+from *that armor material's* vanilla texture, with vanilla's own panel edges and shadows mixed back
+over it - so a skinned iron helmet still reads as iron, and a modded armor material is skinned for
+free from the texture it already ships. A skin is applied at the advanced smithing table with the
+piece's own **reforging material** in the addition slot, asked of the armor item itself rather than
+of a table the mod maintains: re-skinning is re-forging, and it costs the metal the piece is made
+of. Chainmail *armor* takes no skin - its ramp is dead and its identity is the weave - and says so
+through a tag a pack can disagree with; chainmail the *look* goes the other way, and every other
+material can wear it. That fourteenth skin is the only one nobody drew.
+`tools/convert_chainmail_skin.py` greys vanilla's own sheet, stretches the four tones it has out of
+the forty-three luma levels they were compressed into, and fills the one hole in vanilla's
+silhouette - a bare `boot.bottom`, the single texel in either sheet that Mojang did not put there.
+The gradient is not invented but read back out of vanilla's own per-row means, per face, which is
+what takes a ramp the checker calls dead to seven of the eight shades; the script re-runs in a
+second, so a Minecraft bump that redraws `chainmail.png` is answered by running it again. Leather's
+dyeable layer takes the skin, so dye still multiplies into it; trims are drawn
 after the base layer as they always were, and are unaffected. A skin never paints a visor: the
 face opening is the shape the `brow` parts are drawn to sit in. Every skin's template wears its own
 icon, and the icon is the skin: the front of that skin's own chestplate, greyed and set in the
-template card, so a hotbar of them says which look is which without a tooltip being read.
+template card, so a hotbar of them says which look is which without a tooltip being read. The game
+draws those icons itself, as the item atlas is built - a sprite source finds every skin sheet any
+pack ships and an item model type of the mod's own picks between them - so a skin a PACK adds gets
+an icon on the same terms the mod's do. `minecraft:select`, the vanilla way to do this, could never
+have: its cases are one file, and a resource pack wins a file whole rather than merging it.
 
-**Found in the world.** A part can name the loot tables it turns up in, and the mod adds it to
-them as they load - the one thing a datapack cannot do for itself, since it can only replace a
-vanilla table whole. The `loot` list on the part's data file is rows of table, weight and chance:
-one pool per table, rolled once, with the part's socket template as the entry, so a chest never
-holds two parts and the table's own pools are untouched. `chance` is the part's own odds of being
-offered and is required, because 1 means every chest; `weight` only splits a table between the
-parts that share it. Every shipped part is now found somewhere that suits it - wings in end
-cities, horns in bastions, the circlet in ancient cities, mittens in igloos - at chances between
-one in twenty and one in three. A second loot function, `armorpieces:set_decoration`, puts a part
-on a piece of armor a table hands out, with a socket, a part, a material and optionally its
+A skin is drawn in the same Blockbench the parts are, on a second workspace: the same figure with
+the armor *unlocked* and nothing modelled, both master sheets read and written as rows of the
+sixteen greys (`armorpieces_skins`, `_open_skin`, `_skin_sheet`, `_skin_paint`, `_skin_material`,
+`_skin_check`, `_save_skin`), with `.claude/agents/skin-author.md` the profile for one session per
+skin. `tools/skin_sheets.py` is the net every one of them shares, `tools/bake_skin.py` the bake
+outside the game, `tools/check_skin.py` the check a master has to pass - unpainted texels under a
+face, a silhouette with a hole in it, a ramp so narrow the material cannot show through it -
+and `tools/sync_skin_masters.py` installs one - which saving in Blockbench does for you. The mod also gains its first test:
+`SkinBakeTest` reproduces `docs/plans/skin-bake-reference.json` for all eight vanilla materials,
+the eight shades, the sampled table and the SHA-1 of each material's lighting map, so the Java bake
+and the Python one cannot drift apart unnoticed. JUnit is a build-time dependency and ships in
+nothing.
+
+**Cloth.** A fourth layer, after the part, the trim and the skin. A cloth is a garment cut out of
+the humanoid armor net, painted with a banner's design and baked into the armor's own texture - so
+it is not geometry, moves with the armor, clips nothing, and the plate's own rivets and edges read
+*through* it. Two ship, **Tunic** and **Tabard**, chestplate only, applied at a smithing table with
+a **Cloth Smithing Template** and a banner: the design is the banner's, so sixteen dyes crossed
+with every pattern layer is a player's choice rather than a list the mod maintains. The template
+comes from a banner pattern in a ring of paper, one item for every cloth there will ever be, and
+the empty addition slot takes the garment off again.
+
+Where it sits falls out of where it is drawn and costs nothing: over the skin, because the skin is
+the shell texture the cloth composites onto; under every part, because parts are an appended render
+layer; under the trim, because the trim is a later pass - a surcoat would cover its trim in life,
+but the trim staying visible is the mod's premise. Like a skin it ships no per-material art: one
+greyscale cut mask, where alpha is the garment, value is the cloth's own folds, and the two torso
+panels are where the banner's pattern goes. Both panels read from outside rather than
+front-and-mirrored-back, because a tabard is two panels and not one sheet seen from behind. The
+bake runs at 4x so a charge painted for a shield still lands on an 8x12 chest, mixes the armor's
+own lighting in at 0.30 where a skin uses 0.35, and caches on an LRU of 64, because the key space
+is unbounded - a player can wear any banner. It goes on the last, untinted layer of the equipment
+asset, which is the counterpart of the skin's `isShell` rule and for the same reason: leather's
+shell is multiplied by its dye, and a cloth composited into it would come out brown on undyed
+leather and purple on blue. `#armorpieces:clothable_armor` ships chest armor and nothing else; the
+recipe still accepts leg armor, so a pack that wants a hem ships a `humanoid_leggings.png` mask and
+edits the tag, with no code changed. Head and foot armor are refused outright, because a helmet
+draws on the humanoid sheet but its model does not sample the torso's UVs. There is no drape - a
+garment that hangs is geometry, which is a part, and this is deliberately the other thing - and a
+cloth is not on the advanced smithing table yet; taking one off works there through the empty
+addition, as a skin's does.
+
+**Found in the world.** Most parts are found rather than crafted, and the mod puts them into
+vanilla's tables as those load - the one thing a datapack cannot do for itself, since it can only
+replace a table whole. A **loot group**, `data/<ns>/armorpieces/loot_group/<name>.json`, is a
+category of loot tables and the templates found in it: the tables, a chance, and a TAG of parts.
+Six ship, over the six themes the parts are drawn in - `knightly` in strongholds, dungeons, trial
+chamber rewards and the mansion; `court` in the mansion, ancient cities, end city treasure, the
+desert pyramid and a village temple; `beast` in the bastions, the nether bridge, the jungle temple
+and mineshafts; `wayfarer` in village houses, igloos, shipwreck supplies and ruined portals;
+`tidal` in ocean ruins, shipwreck treasure and buried treasure; `carapace` in end city treasure,
+the jungle temple and mineshafts - and all ninety-one parts are in one. A part joins a group by
+being TAGGED, so a pack puts a whole look into the world in one file, and adds its own part to one
+of ours without overriding a file of ours. The `loot` list on a part's own data file is unchanged
+and stays the exact route, for a part that belongs in one named place: the twenty parts this mod
+shipped before 0.3.0 keep theirs - wings in end cities, horns in bastions, the circlet in ancient
+cities, mittens in igloos - on top of their group.
+
+**The chance now belongs to the table, not to the part**, which is what makes the above possible.
+One pool per table, rolled once, with a single `random_chance` on the POOL: 0.12 means a chest of
+that kind holds one of ours about one time in eight, and goes on meaning that as parts are added -
+another part changes WHICH one is found, never how often. Under the old shape, a chance per entry,
+a table's real odds were `1-∏(1-c)`: 0.28 over the four entries already on `pillager_outpost`, and
+climbing to near-certainty once a theme's worth of parts named one table. Where several groups and
+rows name one table the highest chance wins and their members pool together, so a chest still never
+holds two of ours, and a part offered twice is one entry rather than two.
+
+**All four template families are found, and the split between them is what each one means.** A
+skin *is* a look, so the fourteen **divide** across the six groups the way the parts do - plate,
+gothic, milanese, mail, chainmail and lorica are knightly; runic, hoplite and samurai are court;
+gambeson and brigandine wayfarer; varangian beast; scale tidal; lamellar carapace - on top of the
+one signature chest each already had, chainmail in a mineshaft, runic in an ancient city, hoplite
+in buried treasure. A **fitting template is not a look** but the second step of one the player
+already has, and wanting a gem for the circlet in your hand is theme-blind: all six groups name
+`#armorpieces:common` and the four are found **everywhere**, which is also the only route they
+have. A `Fitting` is a dispatched codec, one record per type, so a `loot` field on it would have to
+be added to every type including a pack's own, where a group naming a tag of fittings says the same
+thing from the outside and costs nothing. Cloths keep their two hand-placed chests, the tunic in a
+village armorer's and the tabard in a woodland mansion. In a full pool that lands at roughly three
+quarters parts, a tenth skins and a tenth fitting templates. A second loot function,
+`armorpieces:set_decoration`, puts
+a part on a piece of armor a table hands out, with a socket, a part, a material and optionally its
 fittings, so a chest can hold a helmet already wearing a gold circlet with an emerald in it.
 `/armorpieces stage loot <table> [rolls]` rolls a table and counts what the mod put in it.
+
+**Twenty-nine recipes, not ninety-one.** A template recipe now ships only where the centre item is
+plainly the part or what it is made of - a bell for the bells, a saddle for the spurs, a goat horn
+for the horns, an ingot for the circlet. The sixty-two reached for because the grid happened to be
+free - wolf armor for the mantle, a porkchop for the tusks, a golden chestplate for the cuffs - are
+gone, and those parts are found instead. Nothing is *disabled*: they are recipes the mod no longer
+has, and a pack that wants one writes it. `check_authoring.py` fails on a part with no recipe, no
+`loot` row and no group's tag - a part that ships complete and cannot be had in survival, which no
+other check could see; one that means to be creative-only says so with `"loot": []`.
 
 **One template per fitting.** The fitting template now names the fitting it is for, the way a
 socket template names its part: one item, and an `armorpieces:fitting` component on the stack,
@@ -112,12 +205,26 @@ case and its icon name each other, since a case with no texture draws the missin
 and a texture with no case is art nothing can show. `gen_template_icons.py` draws the four
 fitting template icons beside the bare one, and cuts every skin template's icon out of that skin's
 own sheet - writing the icon, the item model and the `minecraft:select` case together, so a skin
-drawn later gets all three by existing and there is no JSON to write by hand.
-`export_pack.py` zips a pack folder with its contents
+drawn later gets all three by existing and there is no JSON to write by hand. It does the same for
+the cloths, except that a cloth's icon is its *cut* rather than a swatch of it - read off the mask
+that ships, because a tunic's collar gap and a tabard's open flanks are the whole difference
+between them and both are visible at 8x10. `export_pack.py` zips a pack folder with its contents
 at the root, and is what the plugin's *Export Pack...* runs. `preview_material.py` takes `--pack`
 more than once, for a piece whose two halves are two folders.
 
-**Eighty-four parts.** Sixty-four new parts - every candidate in
+`check_authoring.py` grew four more checks over the year's features: every cloth's data file, the
+sheet it names, its cut masks and its template recipe; the cloth icons on the skins' terms, where
+the case is an object and the garment has to be read out of it; every loot group's shape and the
+existence of the tag it names, since a group naming a tag nobody wrote loads without complaint and
+fills no chest; and no two shaped recipes sharing a crafting grid, which is not a theoretical risk
+when every template in the mod is the same ring of paper - two parts given one centre item is one
+part the game silently never hands out. `paint_cloth_masks.py` cuts and shades both garments,
+reading the net out of `skin_sheets.py` so the panels cannot drift from the rects the bake samples,
+and `preview_cloth.py` composites one outside the game. `shrink_shot.py` crops a Blockbench
+screenshot to the figure before resizing it, which is the difference between 1290 tokens of mostly
+background and 113 tokens of armor, re-sent for the rest of a session either way.
+
+**Ninety-one parts.** Seventy-one new parts. Sixty-four of them are every candidate in
 `docs/plans/part-variety.md`, so each of the twelve sockets has at least six answers and the six
 themes reach across the whole suit. Antlers, bandolier, beast head, buckled belt, chain of
 office, claws, coronet, garters, head fins, mantle, pelt, puttees, quiver, scale shins, scale
@@ -129,6 +236,21 @@ buckler, laurel, scarf, cuffs, boot cuffs, browband, tusks, fanged cop, bells, l
 chain belt, anklets, cloak, fauld and mail fringe came through the bridge below, one session per
 part. Cloak is the first part after Banner to carry a real banner design: the `banner` fitting
 is geometry rather than a mask, so its cloth is a single cube in a bone named `banner`.
+
+The other seven are a family of their own: **visor styles**, flat faceplates on the `brow` socket,
+which takes it from seven parts to fourteen. The mod shipped one visor, a snouted bascinet built
+the way every other part is built. These are the flat answer to the same question - a plate a
+quarter of a unit thick whose whole character is what has been *cut out* of it. A historical visor
+is a plate with holes in it, and a hole is the one thing `armorCutoutNoCull` gives away: an
+unpainted texel is absent rather than transparent, so a sight is a real opening with the player's
+own face behind it, at a hue no trim material produces. Barbute is a T cut through a smooth plate
+with no relief at all; Sallet Slit one ocularium under a jutting brow reinforce; Bellows Visor two
+slots between three proud ribs; Great Helm a riveted reinforce cross with breaths on the sword
+side; Savoyard the death's-head, a stone set in its brow; Frog-Mouth one slot at the very top over
+a blank jutting face; Spectacle Visor a brille, the only one that cuts the raised bar. All seven
+stay on the master, so a faceplate takes the armor's own material and a gold suit makes a gold
+visor - colour is an inlay, a guard or a gemstone where the part wants one. Two paint calls each,
+and no shape or brush tool anywhere in the family.
 
 **Authoring from an agent.** `tools/mcp` is an MCP server in front of Blockbench's own MCP
 plugin: an *authoring* profile of its tools, piece-level tools (`armorpieces_open`, `_new`,

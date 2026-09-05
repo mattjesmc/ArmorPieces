@@ -21,9 +21,15 @@ the claim that opening a part and saving it unchanged changes nothing:
   cloths     every data/<ns>/armorpieces/cloth/<cloth>.json re-serialises to its own bytes, names
              a sheet that exists, ships at least one cut mask, and has a template recipe of the
              usual shape - a cloth with no art at all is a garment that draws nothing
-  skin art   the select in assets/<ns>/items/skin_template.json and the skin_template_<skin>.png
-             beside it name each other: a case with no texture draws the chequer, a texture with no
-             case is art nothing can show, and a pack's own skin correctly has neither
+  skin art   the skin template's item points at the model type the mod registers, and the generic
+             card it falls back to is really there - a skin's own icon is drawn in the game off its
+             own sheet, so there is no per-skin file here to check any more
+  groups     every data/<ns>/armorpieces/loot_group/<name>.json is in shape and its tags exist - a
+             group naming a tag nobody wrote loads without complaint and fills no chest, because an
+             unresolved tag is an empty set
+  reach      every part can be had in survival: a template recipe, a `loot` row, or a loot group's
+             tag. A part with none of the three ships complete and is unobtainable, which no other
+             check here can see - each of them checks a file that in that case does not exist
   recipes    every data/<ns>/recipe/template_<part>.json in the plugin's shape - the ring pattern,
              switched on or off with `armorpieces:disabled` - re-serialises to its own bytes from
              the two items and the switch the panel reads out of it, so a save reproduces the file
@@ -38,6 +44,7 @@ Usage:
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -48,6 +55,9 @@ import effect_schema  # noqa: E402
 import preview_material  # noqa: E402
 
 GATE = "armorpieces:if_fitting"
+
+# A loot table id, which unlike an item id may carry slashes: minecraft:chests/trial_chambers/reward.
+TABLE_ID = re.compile(r"^[a-z0-9_.-]+:[a-z0-9_./-]+$")
 
 
 def _effect_editable(effect, schema) -> bool:
@@ -292,36 +302,31 @@ def check_recipe_collisions(pack: Path) -> list[str]:
 
 
 def check_skin_icons(assets: Path) -> list[str]:
-    """The skin templates' item art: a select case, its model and its texture have to agree.
+    """The skin template's item art, which is now one file and a fallback.
 
-    One item carries every skin, so `items/skin_template.json` picks its look off the
-    `armorpieces:skin` component - and a skin shipped by a pack has no case of its own and falls
-    back to the generic icon, which is correct and is the whole point of the fallback. What is not
-    correct is half of a pair: a case whose model or texture is missing draws the missing-texture
-    chequer in a hotbar, and a texture no case points at is art nothing can ever show. Both are
-    silent in game, which is why they are checked here.
+    A skin's icon is a swatch of that skin's own chestplate, and a skin can come from a PACK - so the
+    icons cannot be files written ahead of time, and are drawn in the game instead: a sprite source
+    stitches one per skin that exists and `armorpieces:skin_template`, a model type of the mod's own,
+    picks between them off the component. What can still be wrong here is the two ends of that: an
+    item that names a model type nobody registered draws nothing, and a missing generic card leaves
+    an unknown skin with the chequer.
     """
     failures: list[str] = []
     for select in sorted(assets.glob("assets/*/items/skin_template.json")):
         namespace = select.parents[1].name
         model = json.loads(select.read_text(encoding="utf8")).get("model") or {}
-        cased = {case.get("when") for case in model.get("cases", [])}
-        drawn = {f"{namespace}:{png.stem[len('skin_template_'):]}"
-                 for png in (assets / "assets" / namespace / "textures" / "item").glob("skin_template_*.png")}
-        for skin in sorted(cased - drawn):
-            failures.append(f"skin icon {skin}: a select case with no texture - it would draw as "
-                            "the missing-texture chequer")
-        for skin in sorted(drawn - cased):
-            failures.append(f"skin icon {skin}: a texture no select case names - nothing can show it")
-        for case in model.get("cases", []):
-            named = ((case.get("model") or {}).get("model") or "").split(":")[-1]
-            if named and not (assets / "assets" / namespace / "models" / f"{named}.json").exists():
-                failures.append(f"skin icon {case.get('when')}: no model at {named}.json")
-        fallback = ((model.get("fallback") or {}).get("model") or "").split(":")[-1]
-        if fallback and not (assets / "assets" / namespace / "models" / f"{fallback}.json").exists():
-            failures.append(f"skin icon fallback: no model at {fallback}.json - a pack's own skin "
-                            "would draw as the missing-texture chequer")
-        print(f"skin icons {namespace}: ok ({len(cased)} cases)")
+        kind = model.get("type")
+        if kind != "armorpieces:skin_template":
+            failures.append(f"skin icon {namespace}: items/skin_template.json is a {kind!r} model, "
+                            "not armorpieces:skin_template - see SkinTemplateItemModel")
+            continue
+        card = assets / "assets" / namespace / "textures" / "item" / "skin_template.png"
+        card_model = assets / "assets" / namespace / "models" / "item" / "skin_template.json"
+        for path, what in ((card, "texture"), (card_model, "model")):
+            if not path.exists():
+                failures.append(f"skin icon {namespace}: no generic card {what} at {path} - an "
+                                "unknown skin would draw as the missing-texture chequer")
+        print(f"skin icons {namespace}: ok (drawn in game)")
     return failures
 
 
@@ -431,6 +436,110 @@ def check_cloth_icons(assets: Path) -> list[str]:
     return failures
 
 
+def check_loot_groups(pack: Path) -> list[str]:
+    """Every `armorpieces/loot_group/<name>.json`: its shape, and that its tags exist.
+
+    A group is a category of loot tables and the templates found in it. The failure this catches is
+    the silent one - a group naming `#armorpieces:knightly` when the tag is spelled `knights` loads
+    without complaint and puts nothing in any chest, because an unresolved tag is an empty set.
+    """
+    failures: list[str] = []
+    for group_file in sorted(pack.glob("data/*/armorpieces/loot_group/*.json")):
+        namespace = group_file.parents[2].name
+        text = group_file.read_text(encoding="utf8")
+        try:
+            group = json.loads(text)
+        except ValueError:
+            failures.append(f"loot group {group_file.name}: not valid JSON")
+            continue
+        if json.dumps(group, indent=2) + "\n" != text:
+            failures.append(f"loot group {group_file.name}: would be reformatted by a save")
+        chance = group.get("chance")
+        if not isinstance(chance, (int, float)) or not 0 <= chance <= 1:
+            failures.append(f"loot group {group_file.name}: chance {chance!r} is not between 0 and 1")
+        tables = group.get("tables")
+        if not isinstance(tables, list) or not tables:
+            failures.append(f"loot group {group_file.name}: no tables - it can never fire")
+            tables = []
+        for entry in tables:
+            table = entry if isinstance(entry, str) else (entry or {}).get("table")
+            if not isinstance(table, str) or not TABLE_ID.match(table):
+                failures.append(f"loot group {group_file.name}: {table!r} is not a loot table id")
+            if isinstance(entry, dict) and "chance" in entry \
+                    and not 0 <= entry["chance"] <= 1:
+                failures.append(f"loot group {group_file.name}: chance for {table} is not between 0 and 1")
+        for field, registry in (("parts", "armor_decoration"), ("skins", "armor_skin"),
+                                ("cloths", "cloth"), ("fittings", "fitting")):
+            for member in _holder_set(group.get(field)):
+                if member.startswith("#"):
+                    tag_ns, tag_path = member[1:].split(":", 1) if ":" in member[1:] else ("minecraft", member[1:])
+                    tag = pack / "data" / tag_ns / "tags" / "armorpieces" / registry / f"{tag_path}.json"
+                    if not tag.exists():
+                        failures.append(f"loot group {group_file.name}: {field} names {member}, "
+                                        f"but there is no tag at {tag} - an unresolved tag is empty, "
+                                        "and the group would put nothing anywhere")
+                elif ":" not in member:
+                    failures.append(f"loot group {group_file.name}: {field} entry {member!r} is not a namespaced id")
+        print(f"loot group {group_file.name}: ok ({len(tables)} tables)")
+    return failures
+
+
+def _holder_set(value) -> list[str]:
+    """A HolderSet field as written in JSON: absent, one id, one tag, or a list of either."""
+    if value is None:
+        return []
+    if isinstance(value, str):
+        return [value]
+    if isinstance(value, list):
+        return [v for v in value if isinstance(v, str)]
+    return []
+
+
+def check_reachable(pack: Path, data_files: list[Path]) -> list[str]:
+    """Every part is obtainable in survival: a template recipe, or a place in the world.
+
+    The hole this closes is a part that ships complete - data, geometry, texture, language line -
+    and simply cannot be had: no recipe file, no `loot` row, in no group's tag. It is invisible to
+    every other check here, because each of those checks a file that in this case does not exist,
+    and invisible in game, because the part is right there in the creative tab. Being creative-only
+    is a legitimate choice, so it has to be SAID: a part meaning it lists `"loot": []` and names no
+    tag, which reads as a decision rather than as an oversight.
+    """
+    failures: list[str] = []
+    tagged: set[str] = set()
+    for group_file in sorted(pack.glob("data/*/armorpieces/loot_group/*.json")):
+        try:
+            group = json.loads(group_file.read_text(encoding="utf8"))
+        except ValueError:
+            continue
+        for member in _holder_set(group.get("parts")):
+            if not member.startswith("#"):
+                tagged.add(member)
+                continue
+            tag_ns, tag_path = member[1:].split(":", 1) if ":" in member[1:] else ("minecraft", member[1:])
+            tag = pack / "data" / tag_ns / "tags" / "armorpieces" / "armor_decoration" / f"{tag_path}.json"
+            if tag.exists():
+                tagged.update(v for v in json.loads(tag.read_text(encoding="utf8")).get("values", [])
+                              if isinstance(v, str))
+
+    for data in data_files:
+        namespace, part = data.parents[2].name, data.stem
+        parsed = json.loads(data.read_text(encoding="utf8"))
+        recipe = pack / "data" / namespace / "recipe" / f"template_{part}.json"
+        craftable = recipe.exists() and json.loads(recipe.read_text(encoding="utf8")).get("type") != DISABLED_TYPE
+        found = bool(parsed.get("loot")) or f"{namespace}:{part}" in tagged
+        if craftable or found:
+            route = " + ".join(r for r, on in (("crafted", craftable), ("found", found)) if on)
+            print(f"reach {data.name}: ok ({route})")
+        elif "loot" in parsed:
+            print(f"reach {data.name}: creative only, said outright")
+        else:
+            failures.append(f"reach {data.name}: no recipe, no loot row and in no group's tag - the "
+                            "part cannot be had in survival. Add a recipe, tag it into a loot group, "
+                            'or say it outright with "loot": [].')
+    return failures
+
+
 def check_pack(pack: Path, assets: Path | None = None) -> list[str]:
     """`pack` holds the datapack half; `assets`, when given, the resource pack half - the two
     folders a player's own content sits in. One folder for both is the usual case here."""
@@ -471,6 +580,8 @@ def check_pack(pack: Path, assets: Path | None = None) -> list[str]:
     failures.extend(check_recipes(pack, data_files))
     failures.extend(check_fitting_recipes(pack))
     failures.extend(check_recipe_collisions(pack))
+    failures.extend(check_loot_groups(pack))
+    failures.extend(check_reachable(pack, data_files))
     return failures
 
 

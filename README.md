@@ -3,7 +3,7 @@
   <img src="docs/assets/banners/header.png" alt="Armor Pieces">
 </p>
 
-<p align="center"><i>Decorative parts for armor — applied at a smithing table like trims, coloured by the same trim materials.</i></p>
+<p align="center"><i>Parts, skins and cloth for armor — because someone else at spawn is wearing your diamond set.</i></p>
 
 <p align="center">
   <a href="https://github.com/mattjesmc/ArmorPieces/releases/latest"><img alt="GitHub release" src="https://img.shields.io/github/v/release/mattjesmc/ArmorPieces?style=for-the-badge&logo=github&logoColor=white&label=Release&color=5b21b6"></a>
@@ -24,37 +24,103 @@
 
 ## About
 
-Armor Pieces adds **modular 3D pieces** to armor. A full set has twelve sockets - crest, brow,
-horns, pauldrons, back, collar, vambraces, belt, tassets, knees, spurs, greaves - and each socket
-holds one part: a plume on the helmet, spaulders on the shoulders, a sash on the belt, spurs on
-the heels. Parts are real geometry hung on the body, not paint on the texture, and any combination
-of them makes a set.
+You know the one. You walk into spawn in your best diamond and the first person you see is
+wearing the same helmet, the same chestplate, the same Sentry trim in the same netherite. Vanilla
+can build 1,568,239,201 armor sets, which sounds like plenty right up until it happens to you
+twice in a week.
 
-A part is applied at a smithing table like a trim, with a template and a trim material, and takes
-that material's colour. It sits on top of whatever vanilla trim the armor has; neither replaces
-the other.
+Armor Pieces takes that number to **3 × 10⁸⁴** — more than thirty thousand unique diamond sets
+for every atom in the observable universe. Diamond is one of seven armor materials.
 
-Some parts have a **fitting** that is coloured separately: a gem set into the circlet, a metal
-buckle and a dyed strap on the sash, a dyed inlay on the greaves, a banner's design on the back
-banner. One more smithing step, with a template per fitting, and the item decides where it goes.
+It gives one piece of armor **four layers of decoration, each an independent choice**:
+a **part** hung on a socket, a **skin** that changes what the plate itself is made of, a **cloth**
+worn over the chest, and vanilla's own **trim** underneath them all. Every one of them is applied
+at a smithing table, and none of them replaces another - a helmet can carry a skin, a trim, a
+crest, a browband and a pair of horns at once.
 
-Parts are crafted, or found: every one ships in a few of the world's chests. An **advanced
-smithing table** shows a whole set on a stand and takes a part off again, which the smithing
-table cannot.
+**Ninety-one parts, over twelve sockets.** `crest`, `brow`, `horns`, `pauldrons`, `back`,
+`collar`, `vambraces`, `belt`, `tassets`, `knees`, `spurs`, `greaves` - a plume on the helmet,
+spaulders on the shoulders, a sash on the belt, spurs on the heels. Parts are real geometry hung
+on the body, not paint on the texture. A socket holds one part and every socket has at least six
+to choose from, so the choice is the expressive act. Each part is applied with a trim material and
+takes that material's colour.
 
-This version ships forty-one parts across the twelve sockets. Each is a datapack entry, a model and
-a texture, no code, and a pack can add its own the same way - from Blockbench, in folders of its
-own.
+**Fourteen armor skins.** A skin is the armor's *own* texture - what the plate is, rather than
+what is bolted to it. Plate, gothic, milanese, mail, chainmail, lorica, runic, hoplite, samurai,
+gambeson, brigandine, varangian, scale and lamellar. Each is recoloured through the armor
+material's own palette, so a skinned iron helmet still reads as iron and a modded armor material
+is skinned for free from the texture it already ships. A skin is paid for in the metal the piece
+is made of: re-skinning is re-forging.
+
+**Two cloths.** A tunic or a tabard over a chestplate, carrying the design of any banner you make
+at a loom - so the heraldry is yours rather than a list the mod maintains. It is baked into the
+armor's texture rather than hung off it, so it clips nothing and the plate's own rivets and edges
+read through it.
+
+**Fittings.** Some parts have a second colour, set separately: a gem in the circlet, a metal
+buckle and a dyed strap on the sash, a dyed inlay on the greaves, a banner on the back banner.
+One more smithing step, one template per fitting, and the item decides where it goes.
+
+Most of it is **found rather than made**. Twenty-nine parts have a crafting recipe, the ones where
+the item is plainly the part or what it is made of; the rest turn up in the chests that suit them,
+each theme in its own kind of structure, with the skins and the fitting templates alongside. An
+**advanced smithing table** shows a whole set worn by a stand and takes a part, a fitting or a
+trim off again, which the smithing table cannot.
+
+Every part, skin and cloth is a datapack entry, a model and a texture, no code - and a pack adds
+its own the same way, from Blockbench, in folders of its own.
+
+---
+<a id="whats-new"></a>
+
+## New in 0.3.0
+
+The release that turned a set of parts into a wardrobe.
+
+- **Seventy-one new parts — ninety-one in total.** Every one of the twelve sockets now has at
+  least six answers, and the six themes reach across the whole suit. Among them a family of
+  seven flat **visor styles** on the `brow` socket, whose sights are real openings with your
+  own face behind them rather than paint.
+- **Armor skins.** A third template family, and the first thing in the mod that changes the
+  armor itself instead of adding to it. Fourteen ship, each recoloured through the armor
+  material's own vanilla palette, so a skin costs no per-material art and a modded material
+  gets one free.
+- **Cloth.** A fourth layer: a **Tunic** or a **Tabard** over a chestplate, wearing the design
+  of any banner you make at a loom, painted into the armor's texture rather than hung off it.
+- **Most parts are now found rather than crafted.** A **loot group** is one file naming a
+  category of vanilla tables and a tag of parts found in them; six ship, one per theme —
+  knightly gear in strongholds and trial chambers, beast trophies in bastions, court jewellery
+  in mansions and ancient cities, tidal parts in shipwrecks and ocean ruins, and so on. Skins
+  are divided over the same six, and a fitting template turns up in all of them.
+- **The chance belongs to the table, not to the part.** One pool per table, rolled once: a
+  chest's odds of holding something of ours stay put however many parts are added. Another part
+  changes *which* one you find, never how often.
+- **The advanced smithing table.** Crafted from a smithing table, an armor stand and two iron
+  ingots. It holds a whole set worn by a stand and lists each piece's sockets, fittings and trim
+  as rows of icons — and Remove is the one way a part, a fitting or a trim ever comes off.
+- **Twenty-nine recipes, not ninety-one.** A template recipe now ships only where the centre
+  item is plainly the part or what it is made of — a bell for the bells, a goat horn for the
+  horns. The rest are found.
+- **One template per fitting.** *Gemstone*, *Guard*, *Inlay* and *Banner*, each with its own
+  look, name and recipe, instead of one template that guessed.
+- **Any recipe the mod ships can be switched off** by overriding its file with
+  `{"type": "armorpieces:disabled"}`.
+- **Blockbench, for your pack.** The plugin no longer assumes content lives in this repository:
+  it opens a part on the vanilla player wearing real armor, paints master, static layer and
+  fitting masks in place, previews any trim material live, and on Save writes every file into
+  *your* datapack and resource pack — which it makes, finds and zips for you.
 
 ---
 <a id="features"></a>
 
 ## Features
 
-- **Twelve sockets, one part at a time** — `crest`, `brow`, `horns`, `pauldrons`, `back`, `collar`, `vambraces`, `belt`, `tassets`, `knees`, `spurs`, `greaves`. A socket holds one part, so a new crest replaces the crest — and with forty-one parts every socket has at least two to choose from. Seven of the sockets are mirrored pairs, so spaulders means both shoulders.
+- **Twelve sockets, one part at a time** — `crest`, `brow`, `horns`, `pauldrons`, `back`, `collar`, `vambraces`, `belt`, `tassets`, `knees`, `spurs`, `greaves`. A socket holds one part, so a new crest replaces the crest — and with ninety-one parts every socket has at least six to choose from. Seven of the sockets are mirrored pairs, so spaulders means both shoulders.
 - **Coloured by vanilla trim materials** — One grayscale master per part is mapped onto each material's own palette at load time. A new trim material costs a part no new art at all.
+- **Fourteen armor skins** — The one thing here that changes the armor itself rather than adding to it — plate, gothic, milanese, mail, chainmail, lorica, runic, hoplite, samurai, gambeson, brigandine, varangian, scale, lamellar. One greyscale master pair on vanilla's own armor grid, recoloured at load through eight shades taken from *that armor material's* vanilla texture, with vanilla's own panel edges and shadows mixed back over it. A skinned iron helmet still reads as iron, gold still reads as gold, and a modded armor material is skinned for free from the texture it already ships. Applied at the advanced smithing table with the piece's own reforging material — re-skinning is re-forging, and it costs the metal the piece is made of.
+- **Cloth over the chest** — A **Tunic** or a **Tabard**, applied with a cloth template and a banner, and the design is the banner's — sixteen dyes crossed with every pattern layer, made at a loom, so the heraldry is a player's choice rather than a list the mod keeps. It is painted into the armor's own texture rather than hung off it, so it moves with the armor, clips nothing, and the plate's rivets and edges read *through* it. It sits over the skin, under every part and under the trim. One greyscale cut mask ships the whole feature; there is no per-material art and no per-banner art.
 - **Fittings** — A part can declare places for a second material — `gemstone`, `guard`, `inlay`, `banner` — and a fitting template sets one: gems and metals by trim material, inlays by dye, banners from a banner made at a loom. There is a template per fitting, each with its own look and recipe, and the template with the third slot empty takes its fitting out again. Fittings are data too — a pack's new fitting gets its template from a recipe — and an effect can be gated on one.
-- **Found in the world** — Every shipped part turns up in a few of the world's chests — wings in end cities, horns in bastions, the circlet in ancient cities — and a part names its own tables in its data file, which the mod adds it to as they load, the one thing a datapack cannot do for itself. A loot function puts a part on a piece of armor a table drops, gem and all.
+- **Found in the world** — Most parts are found rather than crafted, each theme in the structures that suit it — knightly gear in strongholds and trial chambers, beast trophies in bastions, court jewellery in mansions and ancient cities, tidal parts in shipwrecks and ocean ruins. A **loot group** is one file naming a category of tables and the tag of parts found in them, so a pack adds a whole look to the world at once, or drops one part into one chest from its own data file — the one thing a datapack cannot do for itself, since it can only replace a vanilla table whole. Armor **skins** are found the same way, divided over the same groups, and a **fitting template** turns up in every one of them. The odds belong to the table, so a chest's chance of holding something stays put however many parts are added. A loot function puts a part on a piece of armor a table drops, gem and all.
 - **Taking parts off** — The advanced smithing table, crafted from a smithing table, an armor stand and two iron ingots, holds a whole set worn by a stand at once and lists each piece's sockets, its fittings and its trim as rows of icons. Pick one and Remove empties it — the one way a part, a fitting or a trim ever comes off. Its own template and material slots run the smithing table's recipes, with the result on the stand before it is paid for, and a fitting goes into the socket that is picked rather than into every part that takes one.
 - **One smithing recipe per socket, forever** — The part rides on the template item as a component, so a pack hands out a template and needs no recipe of its own. And any recipe the mod ships can be switched off by overriding its file with `{"type": "armorpieces:disabled"}` — a part that is found rather than made, a server without fittings.
 - **Optional behaviour** — A part may carry effects — attributes, mob effects, a projectile dodge, gliding — configured in the same JSON file. `pinions` is a cut-down elytra that actually flies.
@@ -86,6 +152,56 @@ own.
 </p>
 
 ---
+<a id="how-many-sets"></a>
+
+## How many sets is that?
+
+A diamond set in vanilla is one look plus a trim. Eighteen patterns times eleven materials,
+plus untrimmed, is **199** states per piece — and **1,568,239,201** for a set of four.
+
+Now count that same diamond set with this mod installed. Each piece keeps all 199 of its trims
+and gains a skin
+(fourteen, or bare), a part in each of its sockets, each part in one of eleven materials, each
+part's fittings filled or left empty — a gem from seven, a metal from four, an inlay from
+sixteen dyes — and the chestplate a tunic or a tabard on top.
+
+| | Vanilla diamond | With Armor Pieces |
+| --- | ---: | ---: |
+| Helmet | 199 | 1,833,029,934,300 |
+| Chestplate | 199 | 5,113,599,898,358,700 |
+| Leggings | 199 | 1,839,405,834,600 |
+| Boots | 199 | 1,187,185,245 |
+| **Full set** | **1,568,239,201** | **20,468,798,559,625,822,847,874,604,407,037,697,665,836,570,000,000** |
+
+That is **2 × 10⁴⁹** — about 10⁴⁰ times the whole of vanilla, and roughly a sixth of the atoms
+in the Earth. Some smaller ways to hold it:
+
+- **The boots alone** come to 1,187,185,245 arrangements: three quarters of every trimmed
+  diamond set vanilla can build, on your feet.
+- **The helmet alone** is 1,169 times vanilla's entire four-piece space.
+- **Shape alone**, before a single colour is chosen — which part sits in which socket, and
+  nothing else — is 368,709,304,320 distinct silhouettes. 235 times vanilla's fully trimmed
+  space, in pure geometry.
+- Pick a set a second and you exhaust vanilla in fifty years. You exhaust this one in
+  4.7 × 10³¹ times the age of the universe.
+
+And all of that **counts a banner as a single design**, which it is not. A banner is sixteen
+base colours and up to six layers of forty-two patterns in sixteen dyes:
+**1,475,646,641,940,097,552** banners, any of which can go on the back banner, the cloak, the
+tunic or the tabard. Count them properly and the chestplate alone reaches 7.7 × 10⁵⁰, and a
+full set:
+
+**3.07 × 10⁸⁴** — over thirty thousand distinct diamond sets for every atom in the observable
+universe. (There are about 7.3 × 10⁷⁹ of those, if you take Planck's numbers and the baryons
+they imply.)
+
+And every number on this page is **diamond alone**, because that is what vanilla is being
+compared against. Diamond is one of seven armor materials, six of which take a skin — which
+multiplies the whole table by about thirteen hundred again, before leather has been dyed.
+
+Nobody at spawn is wearing yours.
+
+---
 <a id="recipes"></a>
 
 ## Recipes
@@ -101,123 +217,78 @@ own.
 </tr>
 <tr>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__apply_brow.gif" alt="Smithing Decoration recipe for Apply Brow"><br><sub>Apply Brow <i>(Smithing Decoration)</i></sub></td>
+<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__apply_cloth.gif" alt="Smithing Cloth recipe for Apply Cloth"><br><sub>Apply Cloth <i>(Smithing Cloth)</i></sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__apply_collar.gif" alt="Smithing Decoration recipe for Apply Collar"><br><sub>Apply Collar <i>(Smithing Decoration)</i></sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__apply_crest.gif" alt="Smithing Decoration recipe for Apply Crest"><br><sub>Apply Crest <i>(Smithing Decoration)</i></sub></td>
 </tr>
 <tr>
+<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__apply_crest.gif" alt="Smithing Decoration recipe for Apply Crest"><br><sub>Apply Crest <i>(Smithing Decoration)</i></sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__apply_fitting.gif" alt="Smithing Fitting recipe for Apply Fitting"><br><sub>Apply Fitting <i>(Smithing Fitting)</i></sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__apply_greaves.gif" alt="Smithing Decoration recipe for Apply Greaves"><br><sub>Apply Greaves <i>(Smithing Decoration)</i></sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__apply_horns.gif" alt="Smithing Decoration recipe for Apply Horns"><br><sub>Apply Horns <i>(Smithing Decoration)</i></sub></td>
 </tr>
 <tr>
+<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__apply_horns.gif" alt="Smithing Decoration recipe for Apply Horns"><br><sub>Apply Horns <i>(Smithing Decoration)</i></sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__apply_knees.gif" alt="Smithing Decoration recipe for Apply Knees"><br><sub>Apply Knees <i>(Smithing Decoration)</i></sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__apply_pauldrons.gif" alt="Smithing Decoration recipe for Apply Pauldrons"><br><sub>Apply Pauldrons <i>(Smithing Decoration)</i></sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__apply_spurs.gif" alt="Smithing Decoration recipe for Apply Spurs"><br><sub>Apply Spurs <i>(Smithing Decoration)</i></sub></td>
 </tr>
 <tr>
+<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__apply_skin.gif" alt="Smithing Skin recipe for Apply Skin"><br><sub>Apply Skin <i>(Smithing Skin)</i></sub></td>
+<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__apply_spurs.gif" alt="Smithing Decoration recipe for Apply Spurs"><br><sub>Apply Spurs <i>(Smithing Decoration)</i></sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__apply_tassets.gif" alt="Smithing Decoration recipe for Apply Tassets"><br><sub>Apply Tassets <i>(Smithing Decoration)</i></sub></td>
+</tr>
+<tr>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__apply_vambraces.gif" alt="Smithing Decoration recipe for Apply Vambraces"><br><sub>Apply Vambraces <i>(Smithing Decoration)</i></sub></td>
+<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__clear_cloth.gif" alt="Smithing Cloth recipe for Clear Cloth"><br><sub>Clear Cloth <i>(Smithing Cloth)</i></sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__clear_fitting.gif" alt="Smithing Fitting recipe for Clear Fitting"><br><sub>Clear Fitting <i>(Smithing Fitting)</i></sub></td>
 </tr>
 <tr>
+<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__clear_skin.gif" alt="Smithing Skin recipe for Clear Skin"><br><sub>Clear Skin <i>(Smithing Skin)</i></sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__cloth_template_tabard.png" alt="Crafting recipe for Cloth Template Tabard"><br><sub>Cloth Template Tabard</sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__cloth_template_tunic.png" alt="Crafting recipe for Cloth Template Tunic"><br><sub>Cloth Template Tunic</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__fitting_template_banner.png" alt="Crafting recipe for Fitting Template Banner"><br><sub>Fitting Template Banner</sub></td>
 </tr>
 <tr>
+<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__fitting_template_banner.png" alt="Crafting recipe for Fitting Template Banner"><br><sub>Fitting Template Banner</sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__fitting_template_gemstone.png" alt="Crafting recipe for Fitting Template Gemstone"><br><sub>Fitting Template Gemstone</sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__fitting_template_guard.png" alt="Crafting recipe for Fitting Template Guard"><br><sub>Fitting Template Guard</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__fitting_template_inlay.gif" alt="Crafting recipe for Fitting Template Inlay"><br><sub>Fitting Template Inlay</sub></td>
 </tr>
 <tr>
+<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__fitting_template_inlay.gif" alt="Crafting recipe for Fitting Template Inlay"><br><sub>Fitting Template Inlay</sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__skin_template_brigandine.png" alt="Crafting recipe for Skin Template Brigandine"><br><sub>Skin Template Brigandine</sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__skin_template_chainmail.png" alt="Crafting recipe for Skin Template Chainmail"><br><sub>Skin Template Chainmail</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__skin_template_gambeson.png" alt="Crafting recipe for Skin Template Gambeson"><br><sub>Skin Template Gambeson</sub></td>
 </tr>
 <tr>
+<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__skin_template_gambeson.png" alt="Crafting recipe for Skin Template Gambeson"><br><sub>Skin Template Gambeson</sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__skin_template_gothic.png" alt="Crafting recipe for Skin Template Gothic"><br><sub>Skin Template Gothic</sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__skin_template_hoplite.png" alt="Crafting recipe for Skin Template Hoplite"><br><sub>Skin Template Hoplite</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__skin_template_lamellar.png" alt="Crafting recipe for Skin Template Lamellar"><br><sub>Skin Template Lamellar</sub></td>
 </tr>
 <tr>
+<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__skin_template_lamellar.png" alt="Crafting recipe for Skin Template Lamellar"><br><sub>Skin Template Lamellar</sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__skin_template_lorica.png" alt="Crafting recipe for Skin Template Lorica"><br><sub>Skin Template Lorica</sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__skin_template_mail.png" alt="Crafting recipe for Skin Template Mail"><br><sub>Skin Template Mail</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__skin_template_milanese.png" alt="Crafting recipe for Skin Template Milanese"><br><sub>Skin Template Milanese</sub></td>
 </tr>
 <tr>
+<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__skin_template_milanese.png" alt="Crafting recipe for Skin Template Milanese"><br><sub>Skin Template Milanese</sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__skin_template_plate.png" alt="Crafting recipe for Skin Template Plate"><br><sub>Skin Template Plate</sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__skin_template_runic.png" alt="Crafting recipe for Skin Template Runic"><br><sub>Skin Template Runic</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__skin_template_samurai.png" alt="Crafting recipe for Skin Template Samurai"><br><sub>Skin Template Samurai</sub></td>
 </tr>
 <tr>
+<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__skin_template_samurai.png" alt="Crafting recipe for Skin Template Samurai"><br><sub>Skin Template Samurai</sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__skin_template_scale.png" alt="Crafting recipe for Skin Template Scale"><br><sub>Skin Template Scale</sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__skin_template_varangian.png" alt="Crafting recipe for Skin Template Varangian"><br><sub>Skin Template Varangian</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_aerials.png" alt="Crafting recipe for Template Aerials"><br><sub>Template Aerials</sub></td>
-</tr>
-<tr>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_anklets.png" alt="Crafting recipe for Template Anklets"><br><sub>Template Anklets</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_antennae.png" alt="Crafting recipe for Template Antennae"><br><sub>Template Antennae</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_antlers.png" alt="Crafting recipe for Template Antlers"><br><sub>Template Antlers</sub></td>
 </tr>
 <tr>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_bandolier.png" alt="Crafting recipe for Template Bandolier"><br><sub>Template Bandolier</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_bangles.png" alt="Crafting recipe for Template Bangles"><br><sub>Template Bangles</sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_banner.png" alt="Crafting recipe for Template Banner"><br><sub>Template Banner</sub></td>
-</tr>
-<tr>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_barbute.png" alt="Crafting recipe for Template Barbute"><br><sub>Template Barbute</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_beast_head.png" alt="Crafting recipe for Template Beast Head"><br><sub>Template Beast Head</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_bedroll.png" alt="Crafting recipe for Template Bedroll"><br><sub>Template Bedroll</sub></td>
-</tr>
-<tr>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_bellows_visor.png" alt="Crafting recipe for Template Bellows Visor"><br><sub>Template Bellows Visor</sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_bells.png" alt="Crafting recipe for Template Bells"><br><sub>Template Bells</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_bone_mask.png" alt="Crafting recipe for Template Bone Mask"><br><sub>Template Bone Mask</sub></td>
-</tr>
-<tr>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_boot_cuffs.png" alt="Crafting recipe for Template Boot Cuffs"><br><sub>Template Boot Cuffs</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_brooch.png" alt="Crafting recipe for Template Brooch"><br><sub>Template Brooch</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_browband.png" alt="Crafting recipe for Template Browband"><br><sub>Template Browband</sub></td>
 </tr>
 <tr>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_brush_crest.png" alt="Crafting recipe for Template Brush Crest"><br><sub>Template Brush Crest</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_buckled_belt.png" alt="Crafting recipe for Template Buckled Belt"><br><sub>Template Buckled Belt</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_buckler.png" alt="Crafting recipe for Template Buckler"><br><sub>Template Buckler</sub></td>
-</tr>
-<tr>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_carapace.png" alt="Crafting recipe for Template Carapace"><br><sub>Template Carapace</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_chain_belt.png" alt="Crafting recipe for Template Chain Belt"><br><sub>Template Chain Belt</sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_chain_of_office.png" alt="Crafting recipe for Template Chain Of Office"><br><sub>Template Chain Of Office</sub></td>
-</tr>
-<tr>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_cheek_guards.png" alt="Crafting recipe for Template Cheek Guards"><br><sub>Template Cheek Guards</sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_circlet.png" alt="Crafting recipe for Template Circlet"><br><sub>Template Circlet</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_claws.png" alt="Crafting recipe for Template Claws"><br><sub>Template Claws</sub></td>
-</tr>
-<tr>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_cloak.png" alt="Crafting recipe for Template Cloak"><br><sub>Template Cloak</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_comb.png" alt="Crafting recipe for Template Comb"><br><sub>Template Comb</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_cord.png" alt="Crafting recipe for Template Cord"><br><sub>Template Cord</sub></td>
 </tr>
 <tr>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_coronet.png" alt="Crafting recipe for Template Coronet"><br><sub>Template Coronet</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_cuffs.png" alt="Crafting recipe for Template Cuffs"><br><sub>Template Cuffs</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_dorsal_fin.png" alt="Crafting recipe for Template Dorsal Fin"><br><sub>Template Dorsal Fin</sub></td>
-</tr>
-<tr>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_ears.png" alt="Crafting recipe for Template Ears"><br><sub>Template Ears</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_epaulettes.png" alt="Crafting recipe for Template Epaulettes"><br><sub>Template Epaulettes</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_fang_necklace.png" alt="Crafting recipe for Template Fang Necklace"><br><sub>Template Fang Necklace</sub></td>
-</tr>
-<tr>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_fanged_cop.png" alt="Crafting recipe for Template Fanged Cop"><br><sub>Template Fanged Cop</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_fauld.png" alt="Crafting recipe for Template Fauld"><br><sub>Template Fauld</sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_feathering.png" alt="Crafting recipe for Template Feathering"><br><sub>Template Feathering</sub></td>
-</tr>
-<tr>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_frog_mouth.png" alt="Crafting recipe for Template Frog Mouth"><br><sub>Template Frog Mouth</sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_garters.png" alt="Crafting recipe for Template Garters"><br><sub>Template Garters</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_girdle.png" alt="Crafting recipe for Template Girdle"><br><sub>Template Girdle</sub></td>
 </tr>
 <tr>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_gorget.png" alt="Crafting recipe for Template Gorget"><br><sub>Template Gorget</sub></td>
@@ -225,84 +296,34 @@ own.
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_greaves.png" alt="Crafting recipe for Template Greaves"><br><sub>Template Greaves</sub></td>
 </tr>
 <tr>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_head_fins.png" alt="Crafting recipe for Template Head Fins"><br><sub>Template Head Fins</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_heel_wings.png" alt="Crafting recipe for Template Heel Wings"><br><sub>Template Heel Wings</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_helm_wings.png" alt="Crafting recipe for Template Helm Wings"><br><sub>Template Helm Wings</sub></td>
-</tr>
-<tr>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_horns.png" alt="Crafting recipe for Template Horns"><br><sub>Template Horns</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_horsetail.png" alt="Crafting recipe for Template Horsetail"><br><sub>Template Horsetail</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_knee_studs.png" alt="Crafting recipe for Template Knee Studs"><br><sub>Template Knee Studs</sub></td>
-</tr>
-<tr>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_lames.png" alt="Crafting recipe for Template Lames"><br><sub>Template Lames</sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_laurel.png" alt="Crafting recipe for Template Laurel"><br><sub>Template Laurel</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_loin_panels.png" alt="Crafting recipe for Template Loin Panels"><br><sub>Template Loin Panels</sub></td>
-</tr>
-<tr>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_mail_fringe.png" alt="Crafting recipe for Template Mail Fringe"><br><sub>Template Mail Fringe</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_mantle.png" alt="Crafting recipe for Template Mantle"><br><sub>Template Mantle</sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_mittens.png" alt="Crafting recipe for Template Mittens"><br><sub>Template Mittens</sub></td>
 </tr>
 <tr>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_nasal.png" alt="Crafting recipe for Template Nasal"><br><sub>Template Nasal</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_padding.png" alt="Crafting recipe for Template Padding"><br><sub>Template Padding</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_pelt.png" alt="Crafting recipe for Template Pelt"><br><sub>Template Pelt</sub></td>
-</tr>
-<tr>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_pendant.png" alt="Crafting recipe for Template Pendant"><br><sub>Template Pendant</sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_pinions.png" alt="Crafting recipe for Template Pinions"><br><sub>Template Pinions</sub></td>
+</tr>
+<tr>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_poleyns.png" alt="Crafting recipe for Template Poleyns"><br><sub>Template Poleyns</sub></td>
-</tr>
-<tr>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_pouch_belt.png" alt="Crafting recipe for Template Pouch Belt"><br><sub>Template Pouch Belt</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_puttees.png" alt="Crafting recipe for Template Puttees"><br><sub>Template Puttees</sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_quiver.png" alt="Crafting recipe for Template Quiver"><br><sub>Template Quiver</sub></td>
-</tr>
-<tr>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_rowel_spurs.png" alt="Crafting recipe for Template Rowel Spurs"><br><sub>Template Rowel Spurs</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_ruff.png" alt="Crafting recipe for Template Ruff"><br><sub>Template Ruff</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_sallet_slit.png" alt="Crafting recipe for Template Sallet Slit"><br><sub>Template Sallet Slit</sub></td>
-</tr>
-<tr>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_sash.png" alt="Crafting recipe for Template Sash"><br><sub>Template Sash</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_savoyard.png" alt="Crafting recipe for Template Savoyard"><br><sub>Template Savoyard</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_scale_shins.png" alt="Crafting recipe for Template Scale Shins"><br><sub>Template Scale Shins</sub></td>
-</tr>
-<tr>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_scale_skirt.png" alt="Crafting recipe for Template Scale Skirt"><br><sub>Template Scale Skirt</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_scarf.png" alt="Crafting recipe for Template Scarf"><br><sub>Template Scarf</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_shin_spikes.png" alt="Crafting recipe for Template Shin Spikes"><br><sub>Template Shin Spikes</sub></td>
 </tr>
 <tr>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_spaulders.png" alt="Crafting recipe for Template Spaulders"><br><sub>Template Spaulders</sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_spectacle_visor.png" alt="Crafting recipe for Template Spectacle Visor"><br><sub>Template Spectacle Visor</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_spiked_pauldrons.png" alt="Crafting recipe for Template Spiked Pauldrons"><br><sub>Template Spiked Pauldrons</sub></td>
-</tr>
-<tr>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_spine_ridge.png" alt="Crafting recipe for Template Spine Ridge"><br><sub>Template Spine Ridge</sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_spire.png" alt="Crafting recipe for Template Spire"><br><sub>Template Spire</sub></td>
+</tr>
+<tr>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_spurs.png" alt="Crafting recipe for Template Spurs"><br><sub>Template Spurs</sub></td>
-</tr>
-<tr>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_streamers.png" alt="Crafting recipe for Template Streamers"><br><sub>Template Streamers</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_swim_fins.png" alt="Crafting recipe for Template Swim Fins"><br><sub>Template Swim Fins</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_talons.png" alt="Crafting recipe for Template Talons"><br><sub>Template Talons</sub></td>
-</tr>
-<tr>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_tassets.png" alt="Crafting recipe for Template Tassets"><br><sub>Template Tassets</sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_thigh_sheath.png" alt="Crafting recipe for Template Thigh Sheath"><br><sub>Template Thigh Sheath</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_tusks.png" alt="Crafting recipe for Template Tusks"><br><sub>Template Tusks</sub></td>
 </tr>
 <tr>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_vambraces.png" alt="Crafting recipe for Template Vambraces"><br><sub>Template Vambraces</sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_visor.png" alt="Crafting recipe for Template Visor"><br><sub>Template Visor</sub></td>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_wing_cases.png" alt="Crafting recipe for Template Wing Cases"><br><sub>Template Wing Cases</sub></td>
-</tr>
-<tr>
 <td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_wing_roots.png" alt="Crafting recipe for Template Wing Roots"><br><sub>Template Wing Roots</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_winged_cops.png" alt="Crafting recipe for Template Winged Cops"><br><sub>Template Winged Cops</sub></td>
-<td align="center" width="33%"><img src="docs/assets/recipes/armorpieces__template_wraps.png" alt="Crafting recipe for Template Wraps"><br><sub>Template Wraps</sub></td>
 </tr>
 </table>
 
