@@ -9,6 +9,7 @@ import com.mattjesmc.armorpieces.decoration.fitting.FittingValue;
 import com.mattjesmc.armorpieces.menu.AdvancedSmithingMenu;
 import com.mattjesmc.armorpieces.registry.ModDataComponents;
 import com.mattjesmc.armorpieces.registry.ModItems;
+import com.mattjesmc.armorpieces.cloth.ClothValue;
 import com.mattjesmc.armorpieces.skin.ArmorSkinValue;
 import java.util.ArrayList;
 import java.util.List;
@@ -61,7 +62,7 @@ import org.jspecify.annotations.Nullable;
  * moves with the selection, so the box is drawn here rather than baked into the sheet.
  *
  * <p>A row is one socket of the selected piece, or - last, under them - the piece's own row: its
- * trim, and beside it its skin. The rows are not
+ * trim, beside it its skin, and - on a chestplate - its cloth. The rows are not
  * slots (a part in a socket is not an item to be picked up) so they are drawn by hand: the part as
  * the socket template that carries it, then one place per fitting the part declares, empty or
  * filled. The columns are fixed, so the parts line up down the box. Every
@@ -102,6 +103,9 @@ public class AdvancedSmithingScreen extends AbstractContainerScreen<AdvancedSmit
     /** The trim row borrows the smithing table's hint: it is the same template, asked for twice. */
     private static final Identifier TRIM_HINT =
         Identifier.withDefaultNamespace(SLOT_HINTS + "smithing_template_armor_trim");
+    /** The cloth's place, last on the piece's own row: the cloth template's own icon, knocked out. */
+    private static final Identifier CLOTH_HINT =
+        Identifier.fromNamespaceAndPath(ArmorPieces.MOD_ID, SLOT_HINTS + "cloth_template");
     /** The skin's place, beside the trim: the skin template's own icon, knocked out. */
     private static final Identifier SKIN_HINT =
         Identifier.fromNamespaceAndPath(ArmorPieces.MOD_ID, SLOT_HINTS + "skin_template");
@@ -190,6 +194,7 @@ public class AdvancedSmithingScreen extends AbstractContainerScreen<AdvancedSmit
     private static final Component HINT = Component.translatable("container.armorpieces.advanced_smithing.hint");
     private static final Component TRIM = Component.translatable("container.armorpieces.advanced_smithing.trim");
     private static final Component SKIN = Component.translatable("container.armorpieces.advanced_smithing.skin");
+    private static final Component CLOTH = Component.translatable("container.armorpieces.advanced_smithing.cloth");
     private static final Component EMPTY_SOCKET = Component.translatable("container.armorpieces.advanced_smithing.empty")
         .withStyle(ChatFormatting.GRAY);
 
@@ -404,7 +409,11 @@ public class AdvancedSmithingScreen extends AbstractContainerScreen<AdvancedSmit
         }
         final int fitting = this.menu.selectedFitting();
         if (this.menu.isTrimRow(row)) {
-            return fitting < 0 ? TRIM_HINT : SKIN_HINT;
+            return switch (fitting) {
+                case 0 -> SKIN_HINT;
+                case 1 -> this.menu.isClothPlace(row, fitting) ? CLOTH_HINT : TRIM_HINT;
+                default -> TRIM_HINT;
+            };
         }
         if (fitting < 0) {
             return socketHint(this.menu.anchorAt(row));
@@ -486,6 +495,11 @@ public class AdvancedSmithingScreen extends AbstractContainerScreen<AdvancedSmit
             if (trim) {
                 this.extractTrimSlot(graphics, part, y, picked == 0);
                 this.extractSkinSlot(graphics, this.leftPos + columnX(1), y, picked == 1);
+                // The cloth's place is a chestplate's alone, and the menu is what says so - drawing
+                // it off placesAt is what keeps the picture, the hit boxes and the clamp agreeing.
+                if (this.menu.placesAt(row) > 1) {
+                    this.extractClothSlot(graphics, this.leftPos + columnX(2), y, picked == 2);
+                }
             } else {
                 // The icon is the socket template carrying this part - the very item that put it
                 // there, and the one the creative tab and the recipe book show for it.
@@ -563,6 +577,27 @@ public class AdvancedSmithingScreen extends AbstractContainerScreen<AdvancedSmit
     }
 
     /**
+     * The cloth's place, last on the piece's own row: the template that would put this garment on,
+     * badged with the BANNER it was made from.
+     *
+     * <p>Unlike the skin beside it this does have a second thing to show, and it is the whole point
+     * of the feature - a cloth's colour is the player's, off a banner at a loom, where a skin's comes
+     * out of the armor. So the badge is that banner, patterns and all, which is the same rule every
+     * other place here follows: show what the occupant is made of.
+     */
+    private void extractClothSlot(
+        final GuiGraphicsExtractor graphics,
+        final int x,
+        final int y,
+        final boolean selected
+    ) {
+        final ClothValue cloth = this.menu.selectedCloth();
+        this.extractSlot(graphics, x, y, CLOTH_HINT, selected,
+            cloth == null ? ItemStack.EMPTY : ModItems.clothTemplateFor(cloth.cloth()),
+            cloth == null ? ItemStack.EMPTY : cloth.banner(), 0);
+    }
+
+    /**
      * One place of a row: what is in it, and - a half-size icon in the corner - what that is made
      * of. The badge falls back to a chip of the material's own colour for a material nothing in the
      * game provides, which is the only way a datapack's material can arrive.
@@ -631,6 +666,10 @@ public class AdvancedSmithingScreen extends AbstractContainerScreen<AdvancedSmit
             final ArmorSkinValue skin = this.menu.selectedSkin();
             lines.add(skin == null ? EMPTY_SOCKET : skin.description());
             lines.add(SKIN.copy().withStyle(ChatFormatting.DARK_GRAY));
+        } else if (slot > 0 && this.menu.isClothPlace(row, slot - 1)) {
+            final ClothValue cloth = this.menu.selectedCloth();
+            lines.add(cloth == null ? EMPTY_SOCKET : cloth.description());
+            lines.add(CLOTH.copy().withStyle(ChatFormatting.DARK_GRAY));
         } else if (slot > 0) {
             final Holder<Fitting> fitting = this.menu.fittingsAt(row).get(slot - 1);
             final FittingValue value = entry == null ? null : entry.fitting(fitting);

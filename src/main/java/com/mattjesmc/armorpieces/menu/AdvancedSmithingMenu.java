@@ -1,9 +1,11 @@
 package com.mattjesmc.armorpieces.menu;
 
+import com.mattjesmc.armorpieces.cloth.ClothValue;
 import com.mattjesmc.armorpieces.decoration.ArmorDecorations;
 import com.mattjesmc.armorpieces.decoration.DecorationAnchor;
 import com.mattjesmc.armorpieces.decoration.DecorationEntry;
 import com.mattjesmc.armorpieces.decoration.fitting.Fitting;
+import com.mattjesmc.armorpieces.recipe.SmithingClothRecipe;
 import com.mattjesmc.armorpieces.recipe.SmithingFittingRecipe;
 import com.mattjesmc.armorpieces.registry.ModBlocks;
 import com.mattjesmc.armorpieces.registry.ModDataComponents;
@@ -12,6 +14,7 @@ import com.mattjesmc.armorpieces.skin.ArmorSkinValue;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
@@ -41,7 +44,8 @@ import org.jspecify.annotations.Nullable;
  *
  * <ul>
  *   <li><b>Taking a part off.</b> Remove empties whatever is selected: a whole part out of its
- *       socket, one fitting out of the part sitting in it, the piece's trim, or its skin. The
+ *       socket, one fitting out of the part sitting in it, the piece's trim, its skin, or the cloth
+ *       it is wearing. The
  *       smithing table has no ingredient that means "nothing", so a filled socket there stays
  *       filled until another part replaces it; this is the one place any of the four comes off.
  *       Nothing is refunded - the template was spent putting it on, as a trim's template is.</li>
@@ -122,7 +126,7 @@ public class AdvancedSmithingMenu extends AbstractContainerMenu {
     /** {@code SELECT + i} selects display slot {@code i}. */
     public static final int BUTTON_SELECT = 0;
     public static final int BUTTON_APPLY = 4;
-    /** Empties whatever is selected - a socket, one fitting on it, the trim, or the skin. */
+    /** Empties whatever is selected - a socket, one fitting on it, the trim, the skin or the cloth. */
     public static final int BUTTON_REMOVE = 5;
     /** {@code SELECT_ROW + row} works on that row of the selected piece, part and all. */
     public static final int BUTTON_SELECT_ROW = 8;
@@ -251,8 +255,8 @@ public class AdvancedSmithingMenu extends AbstractContainerMenu {
 
     /**
      * The rows the selected piece lists: one per socket, then the piece's own row under them - its
-     * trim, and beside it its skin. Zero while nothing is selected - that last row belongs to a
-     * piece, not to the empty table.
+     * trim, and beside it its skin and its cloth. Zero while nothing is selected - that last row
+     * belongs to a piece, not to the empty table.
      */
     public int rowCount() {
         final List<DecorationAnchor> anchors = this.selectedAnchors();
@@ -263,19 +267,44 @@ public class AdvancedSmithingMenu extends AbstractContainerMenu {
      * How many places {@code row} has BESIDE its first - the columns drawn to the right of the part
      * or the trim.
      *
-     * <p>For a socket row that is the part's own fittings. For the trim row it is one, and that one
-     * is the SKIN: the last row is the piece's own row, and the two things on it are the two that
-     * belong to the piece rather than to anything worn on it - what is painted over its texture, and
-     * what its texture is. Putting the skin there rather than in a row of its own is also what keeps
-     * a chestplate's four sockets, its trim and its skin inside one box.
+     * <p>For a socket row that is the part's own fittings. For the trim row it is the piece's OWN
+     * things rather than any socket's: what is painted over its texture (the trim), what its texture
+     * is (the skin), and - on a chestplate - what is worn over it (the cloth). Putting them there
+     * rather than each in a row of its own is what keeps a chestplate's four sockets and all three of
+     * these inside one box, and it costs no width: a socket row already draws three columns.
+     *
+     * <p>The cloth's place is the only one here that is not on every piece, because a cloth is not:
+     * it is cut out of the torso box, which is the chestplate's. A helmet with an empty place it can
+     * never fill would be a promise the table cannot keep - see {@link #hasClothPlace}.
      */
     public int placesAt(final int row) {
-        return this.isTrimRow(row) ? 1 : this.fittingsAt(row).size();
+        return this.isTrimRow(row)
+            ? this.hasClothPlace() ? 2 : 1
+            : this.fittingsAt(row).size();
+    }
+
+    /**
+     * Whether the selected piece has a cloth place at all: armor a cloth may be put on, or armor
+     * already wearing one.
+     *
+     * <p>The second half is what keeps a piece from stranding its own garment. Which armor may wear
+     * cloth is a TAG, so a pack can narrow it after the fact, and a piece clothed under the old tag
+     * must still be able to take it off - the same rule
+     * {@link SmithingClothRecipe#applyCloth} keeps for the empty-addition recipe.
+     */
+    private boolean hasClothPlace() {
+        final ItemStack piece = this.selectedStack();
+        return SmithingClothRecipe.isClothable(piece) || piece.has(ModDataComponents.CLOTH);
     }
 
     /** Whether the place {@code fitting} of {@code row} is the skin's - column 1 of the trim row. */
     public boolean isSkinPlace(final int row, final int fitting) {
         return fitting == 0 && this.isTrimRow(row);
+    }
+
+    /** Whether the place {@code fitting} of {@code row} is the cloth's - column 2 of the trim row. */
+    public boolean isClothPlace(final int row, final int fitting) {
+        return fitting == 1 && this.isTrimRow(row) && this.hasClothPlace();
     }
 
     /** Whether the place being worked on is the skin's. */
@@ -286,6 +315,11 @@ public class AdvancedSmithingMenu extends AbstractContainerMenu {
     /** The skin the selected piece wears, or {@code null}. */
     public @Nullable ArmorSkinValue selectedSkin() {
         return this.selectedStack().get(ModDataComponents.SKIN);
+    }
+
+    /** The cloth the selected piece wears, or {@code null}. */
+    public @Nullable ClothValue selectedCloth() {
+        return this.selectedStack().get(ModDataComponents.CLOTH);
     }
 
     /** Whether {@code row} is the trim row - the last one, under the sockets. */
@@ -350,9 +384,7 @@ public class AdvancedSmithingMenu extends AbstractContainerMenu {
             return false;
         }
         if (this.isTrimRow(row)) {
-            return this.selectedFitting.get() < 0
-                ? this.selectedStack().has(DataComponents.TRIM)
-                : this.selectedStack().has(ModDataComponents.SKIN);
+            return this.selectedStack().has(pieceRowComponent(this.selectedFitting.get()));
         }
         final DecorationEntry entry = this.entryAt(row);
         if (entry == null) {
@@ -443,11 +475,11 @@ public class AdvancedSmithingMenu extends AbstractContainerMenu {
      * Empties whatever is selected. Both sides run this; it needs nothing the client lacks, and the
      * piece is a plain component edit either way - see {@link ArmorDecorations#without}.
      *
-     * <p>Four things can be taken off, and the selection says which: a whole part out of its
-     * socket, one fitting out of the part sitting in it, the piece's trim, or its skin. The trim is
-     * here for the reason removal is here at all - a smithing table has no ingredient meaning
-     * "nothing", so this is the one place a trim comes off - and nothing is refunded, exactly as
-     * with a part.
+     * <p>Five things can be taken off, and the selection says which: a whole part out of its
+     * socket, one fitting out of the part sitting in it, the piece's trim, its skin, or the cloth it
+     * wears. The trim is here for the reason removal is here at all - a smithing table has no
+     * ingredient meaning "nothing", so this is the one place a trim comes off - and nothing is
+     * refunded, exactly as with a part.
      */
     private boolean remove() {
         final int index = this.selected.get();
@@ -457,7 +489,7 @@ public class AdvancedSmithingMenu extends AbstractContainerMenu {
             return false;
         }
         final ItemStack edited = this.isTrimRow(row)
-            ? this.selectedFitting.get() < 0 ? withoutTrim(piece) : withoutSkin(piece)
+            ? without(piece, pieceRowComponent(this.selectedFitting.get()))
             : this.withoutPart(piece, row);
         if (edited.isEmpty()) {
             return false;
@@ -467,27 +499,34 @@ public class AdvancedSmithingMenu extends AbstractContainerMenu {
     }
 
     /**
-     * The piece without its skin, or empty if it had none - and the piece is then vanilla armor
-     * again, byte for byte, because the skin was the only thing this mod put on it. The smithing
-     * table can do this too (a skin template, the armor, an empty third slot); this is the one place
-     * it costs nothing.
+     * What place {@code fitting} of the piece's own row takes off - and the ONE place that mapping is
+     * written, because {@link #canRemove} and {@link #remove} both read it and a table whose button
+     * lights for one place and empties another is exactly the bug that costs.
+     *
+     * <p>{@code -1} is the row itself, and on this row the row itself is the trim.
      */
-    private static ItemStack withoutSkin(final ItemStack piece) {
-        if (!piece.has(ModDataComponents.SKIN)) {
-            return ItemStack.EMPTY;
-        }
-        final ItemStack edited = piece.copy();
-        edited.remove(ModDataComponents.SKIN);
-        return edited;
+    private static DataComponentType<?> pieceRowComponent(final int fitting) {
+        return switch (fitting) {
+            case 0 -> ModDataComponents.SKIN;
+            case 1 -> ModDataComponents.CLOTH;
+            default -> DataComponents.TRIM;
+        };
     }
 
-    /** The piece without its trim, or empty if it had none. */
-    private static ItemStack withoutTrim(final ItemStack piece) {
-        if (!piece.has(DataComponents.TRIM)) {
+    /**
+     * The piece without one of the three things its own row carries, or empty if it did not have it.
+     *
+     * <p>Worth stating what taking the skin off means, since it is the strongest of the three: the
+     * piece is then vanilla armor again, byte for byte, because the skin was the only thing this mod
+     * put on it. The smithing table can do all three too - the template, the armor, an empty third
+     * slot - and this is the place each costs nothing.
+     */
+    private static ItemStack without(final ItemStack piece, final DataComponentType<?> component) {
+        if (!piece.has(component)) {
             return ItemStack.EMPTY;
         }
         final ItemStack edited = piece.copy();
-        edited.remove(DataComponents.TRIM);
+        edited.remove(component);
         return edited;
     }
 

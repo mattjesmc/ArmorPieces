@@ -1,5 +1,6 @@
 package com.mattjesmc.armorpieces.cloth;
 
+import com.mattjesmc.armorpieces.decoration.MaterialIcons;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.function.Consumer;
@@ -14,6 +15,7 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipProvider;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
@@ -67,6 +69,21 @@ public record ClothValue(Holder<Cloth> cloth, DyeColor base, BannerPatternLayers
     /** The bare garment, as a template carries it: no colour, no layers. */
     public static ClothValue of(final Holder<Cloth> cloth) {
         return new ClothValue(cloth, DyeColor.WHITE, BannerPatternLayers.EMPTY);
+    }
+
+    /**
+     * The banner this garment was made from, patterns and all - not stored, rebuilt from the two
+     * fields that are, which is all a banner is.
+     *
+     * <p>For anywhere a cloth has to be shown as a THING rather than as a name: the advanced table's
+     * badge under its place, where every other place shows what its occupant is made of.
+     */
+    public ItemStack banner() {
+        final ItemStack banner = MaterialIcons.forBanner(this.base);
+        if (!banner.isEmpty() && !this.patterns.equals(BannerPatternLayers.EMPTY)) {
+            banner.set(DataComponents.BANNER_PATTERNS, this.patterns);
+        }
+        return banner;
     }
 
     /** The garment's own name, as the registry entry gives it, in the colour it is dyed. */
