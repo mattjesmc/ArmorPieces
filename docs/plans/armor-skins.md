@@ -383,6 +383,26 @@ Settled differently from the plan above, or settled where it was left open:
   set across the columns. The only mode whose columns are the armor rather than the trim, because
   that is the axis a skin's colour comes from.
 
+- **Every skin has its own template icon, and the icon is the skin.** Not an emblem for it: the top
+  ten rows of the skin's own chest front, lifted off the sheet that ships, greyed and levelled into
+  the card's range, set in the same 10x10 recess the socket and fitting templates use. Nothing is
+  resampled — the face is 8x12 and ten of the twelve rows are taken, because a scaled sheet is a
+  blurred sheet and at sixteen pixels blur is the one thing a swatch cannot afford.
+
+  Hand-drawn emblems were tried first, twice, and thrown out. Thirteen of them in one palette at
+  10x10 came out as thirteen grey lattices, and the ones whose identity is a *culture* rather than a
+  construction could not be drawn at that size at all — a spangenhelm needs more texels than the
+  recess has. Giving the skins a bigger frame of their own fixed the helmets and cost the family
+  resemblance, and the swatch turned out to need neither: it is legible, it is the armor itself, and
+  it cannot drift from it.
+
+  It also makes the set self-maintaining. `gen_template_icons.py` walks every skin with art in the
+  resources and writes the icon, the item model and the `minecraft:select` case together, so a skin
+  drawn later gets all three by existing and there is no JSON to write. A pack's own skin cannot add
+  a case (select does not merge) and falls back to the generic icon; `check_authoring.py` fails if a
+  case and its texture ever stop naming each other.
+
+
 ## Check
 
 `./gradlew test` — `SkinBakeTest` reproduces `docs/plans/skin-bake-reference.json` for all eight

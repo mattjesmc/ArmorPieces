@@ -18,6 +18,9 @@ the claim that opening a part and saving it unchanged changes nothing:
   skins      every data/<ns>/armorpieces/armor_skin/<skin>.json re-serialises to its own bytes,
              its loot rows are in the part's own three-key shape, and both of its master sheets are
              actually in the resource pack - a skin with no art draws as plain armor and says nothing
+  skin art   the select in assets/<ns>/items/skin_template.json and the skin_template_<skin>.png
+             beside it name each other: a case with no texture draws the chequer, a texture with no
+             case is art nothing can show, and a pack's own skin correctly has neither
   recipes    every data/<ns>/recipe/template_<part>.json in the plugin's shape - the ring pattern,
              switched on or off with `armorpieces:disabled` - re-serialises to its own bytes from
              the two items and the switch the panel reads out of it, so a save reproduces the file
@@ -285,6 +288,36 @@ def check_recipe_collisions(pack: Path) -> list[str]:
     return failures
 
 
+def check_skin_icons(assets: Path) -> list[str]:
+    """The skin templates' item art: a select case, its model and its texture have to agree.
+
+    One item carries every skin, so `items/skin_template.json` picks its look off the
+    `armorpieces:skin` component - and a skin shipped by a pack has no case of its own and falls
+    back to the generic icon, which is correct and is the whole point of the fallback. What is not
+    correct is half of a pair: a case whose model or texture is missing draws the missing-texture
+    chequer in a hotbar, and a texture no case points at is art nothing can ever show. Both are
+    silent in game, which is why they are checked here.
+    """
+    failures: list[str] = []
+    for select in sorted(assets.glob("assets/*/items/skin_template.json")):
+        namespace = select.parents[1].name
+        model = json.loads(select.read_text(encoding="utf8")).get("model") or {}
+        cased = {case.get("when") for case in model.get("cases", [])}
+        drawn = {f"{namespace}:{png.stem[len('skin_template_'):]}"
+                 for png in (assets / "assets" / namespace / "textures" / "item").glob("skin_template_*.png")}
+        for skin in sorted(cased - drawn):
+            failures.append(f"skin icon {skin}: a select case with no texture - it would draw as "
+                            "the missing-texture chequer")
+        for skin in sorted(drawn - cased):
+            failures.append(f"skin icon {skin}: a texture no select case names - nothing can show it")
+        for case in model.get("cases", []):
+            named = ((case.get("model") or {}).get("model") or "").split(":")[-1]
+            if named and not (assets / "assets" / namespace / "models" / f"{named}.json").exists():
+                failures.append(f"skin icon {case.get('when')}: no model at {named}.json")
+        print(f"skin icons {namespace}: ok ({len(cased)} cases)")
+    return failures
+
+
 def check_pack(pack: Path, assets: Path | None = None) -> list[str]:
     """`pack` holds the datapack half; `assets`, when given, the resource pack half - the two
     folders a player's own content sits in. One folder for both is the usual case here."""
@@ -318,6 +351,7 @@ def check_pack(pack: Path, assets: Path | None = None) -> list[str]:
                 failures.append(f"data {data.name}: loot row {index} would be rewritten by a save")
         print(f"data {data.name}: ok")
     failures.extend(check_skins(pack, assets))
+    failures.extend(check_skin_icons(assets))
     failures.extend(check_recipes(pack, data_files))
     failures.extend(check_fitting_recipes(pack))
     failures.extend(check_recipe_collisions(pack))

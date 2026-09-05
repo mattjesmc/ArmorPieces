@@ -392,6 +392,20 @@ Two consequences worth knowing before you draw:
 A pack may ship `<sheet>_<material>.png` beside the pair — `humanoid_netherite.png` — and that art
 is used as it is for that one material, which is the same escape hatch a part has.
 
+**The template's own icon draws itself.** One item carries every skin and picks its look off the
+`armorpieces:skin` component, through the `minecraft:select` in
+`assets/armorpieces/items/skin_template.json`. The art is not drawn by hand: it is the top ten rows
+of your skin's own chest front, lifted off `humanoid.png`, greyed and levelled into the card's
+range, so the icon is a swatch of the armor rather than a symbol for it and cannot drift from what
+the player will wear. `python tools/gen_template_icons.py` writes the icon, the item model and the
+select for **every skin with art in the resources** — so a new skin gets all three by existing, with
+no JSON to write — and `--sheet` writes a magnified contact sheet of every template icon the mod
+has. `check_authoring.py` fails if a select case and its texture ever stop naming each other.
+
+`minecraft:select` cases cannot be merged from another pack, so a skin you ship falls back to the
+generic `skin_template` icon; to give it one of its own, override that whole file in your resource
+pack, keeping the mod's cases and adding yours.
+
 Authoring is the same loop parts have, with its own tools: `python tools/skin_sheets.py <skin>`
 prints a sheet as ASCII to work from (`--vanilla netherite` prints vanilla's own),
 `python tools/bb_rig.py --skin <skin>` builds the Blockbench rig, the plugin's skin workspace paints
