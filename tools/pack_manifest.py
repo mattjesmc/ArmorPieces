@@ -19,6 +19,20 @@ The license comes from `armorpieces-credits.json` at a pack's root, a file the g
 A per-piece entry overrides the pack's default; a pack without the file is all rights reserved
 (`ARR`) by its author, which is what copyright law says anyway. The license is one of LICENSES.
 
+A pack may also say what its pieces are FOR, in `armorpieces-sets.json` beside the credits - the
+other file at a pack's root that the game ignores and this reads:
+
+    { "sets": [ { "id": "menagerie", "title": "The Menagerie", "description": "...",
+                  "set": { "name": "The Menagerie",
+                           "slots": { "helmet": { "material": "leather" } },
+                           "pieces": { "horns": { "id": "somebody:fox_ears", "material": "copper" } } } } ] }
+
+The inner `set` is the shape everything else already speaks: what `docs/examples/set.json` holds,
+what `bb_rig.py --wear` renders and what the website's wardrobe validates. It exists because a
+pack's pieces are an OUTFIT and nothing in a datapack can say so - the mod's own six sets are Java,
+which is fine for the mod and impossible for anyone else. A set may name pieces from other packs;
+that is how a themed set borrows the twelve sockets it cannot fill alone.
+
 Usage:
     python tools/pack_manifest.py <pack dir> [<pack dir> ...]        # JSON on stdout
     python tools/pack_manifest.py <pack dir> --brief                  # one line per entry
@@ -34,6 +48,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 CREDITS_FILE = "armorpieces-credits.json"
+SETS_FILE = "armorpieces-sets.json"
+
+# A set id is a slug because it becomes a URL on the website, under the pack's own id.
+SET_ID = re.compile(r"^[a-z0-9][a-z0-9-]{1,39}$")
 
 # The licenses a piece may carry. `compose` says whether the site may copy it into another pack.
 LICENSES = {
@@ -102,6 +120,77 @@ def resolve_credit(credits: dict, piece_id: str) -> dict:
     out = {"license": license_id, "author": str(own.get("author") or pack.get("author") or "")}
     if own.get("source"):
         out["source"] = str(own["source"])
+    return out
+
+
+def sets_of(dirs: list[Path], namespaces: list[str], known: set[str]) -> list[dict]:
+    """The outfits this pack declares, from `armorpieces-sets.json` in whichever half carries it.
+
+    Everything here is checked rather than trusted, because the file is hand-written and the thing
+    that reads it next is a web page: a set that is wrong is left out with a warning, never allowed
+    to become a broken row. The one check worth explaining is the piece one - a set may name a piece
+    from ANY pack, and a foreign id is passed through untouched (that is borrowing, and it is the
+    point), but a piece in this pack's OWN namespace that this pack does not contain is an authoring
+    slip and is dropped: it would render as a hole in the outfit and nothing downstream could tell
+    why."""
+    out: list[dict] = []
+    seen: set[str] = set()
+    for d in dirs:
+        path = d / SETS_FILE
+        if not path.is_file():
+            continue
+        try:
+            data = read_json(path)
+        except ValueError as err:
+            print(f"warning: {path} is not valid JSON ({err}); ignored", file=sys.stderr)
+            continue
+        for raw in data.get("sets") or []:
+            if not isinstance(raw, dict):
+                continue
+            set_id = str(raw.get("id") or "")
+            if not SET_ID.match(set_id):
+                print(f"warning: {path}: {set_id!r} is not a set id (lowercase, digits, dashes)",
+                      file=sys.stderr)
+                continue
+            if set_id in seen:
+                print(f"warning: {path}: two sets called {set_id!r}; the first is kept",
+                      file=sys.stderr)
+                continue
+            body = raw.get("set")
+            if not isinstance(body, dict):
+                print(f"warning: {path}: set {set_id!r} has no `set`", file=sys.stderr)
+                continue
+
+            pieces: dict = {}
+            borrowed = 0
+            for socket, piece in (body.get("pieces") or {}).items():
+                if not isinstance(piece, dict) or not isinstance(piece.get("id"), str):
+                    continue
+                piece_id = piece["id"]
+                if ":" not in piece_id:
+                    print(f"warning: {path}: set {set_id!r} names {piece_id!r} without a namespace",
+                          file=sys.stderr)
+                    continue
+                namespace = piece_id.split(":", 1)[0]
+                if namespace in namespaces and piece_id not in known:
+                    print(f"warning: {path}: set {set_id!r} names {piece_id}, which is not in this "
+                          f"pack; dropped", file=sys.stderr)
+                    continue
+                if namespace not in namespaces:
+                    borrowed += 1
+                pieces[str(socket)] = piece
+            body = {**body, "pieces": pieces}
+            body.setdefault("name", raw.get("title") or title(set_id))
+
+            out.append({
+                "id": set_id,
+                "title": str(raw.get("title") or body["name"]),
+                "description": str(raw.get("description") or ""),
+                "sockets": len(pieces),
+                "borrowed": borrowed,
+                "set": body,
+            })
+            seen.add(set_id)
     return out
 
 
@@ -296,12 +385,17 @@ def manifest(dirs: list[Path]) -> dict:
     pieces = entries(dirs, "piece")
     skins = entries(dirs, "skin")
     cloths = entries(dirs, "cloth")
+    meta = pack_meta(dirs)
+    known = {entry["id"] for entry in pieces + skins + cloths}
+    sets = sets_of(dirs, meta["namespaces"], known)
     return {
-        "pack": pack_meta(dirs),
+        "pack": meta,
         "pieces": pieces,
         "skins": skins,
         "cloths": cloths,
-        "counts": {"pieces": len(pieces), "skins": len(skins), "cloths": len(cloths)},
+        "sets": sets,
+        "counts": {"pieces": len(pieces), "skins": len(skins), "cloths": len(cloths),
+                   "sets": len(sets)},
     }
 
 
@@ -313,6 +407,10 @@ def brief(m: dict) -> str:
         how = ", ".join(w for w, on in (("crafted", entry["craftable"]), ("found", entry["loot"])) if on) or "pack's own"
         lines.append(f"  {entry['kind']:5s} {entry['id']:32s} {entry['label']:24s}{where:12s} "
                      f"{entry['license']:14s} {how}")
+    for entry in m.get("sets", []):
+        borrowed = f", {entry['borrowed']} borrowed" if entry["borrowed"] else ""
+        lines.append(f"  set   {entry['id']:32s} {entry['title']:24s}"
+                     f"{entry['sockets']} sockets{borrowed}")
     return "\n".join(lines)
 
 

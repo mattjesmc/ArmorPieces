@@ -118,8 +118,36 @@ class ManifestTests(unittest.TestCase):
             shutil.copytree(whole / "data", data / "data")
             shutil.copytree(whole / "assets", assets / "assets")
             m = pack_manifest.manifest([data, assets])
-            self.assertEqual(m["counts"], {"pieces": 1, "skins": 1, "cloths": 1})
+            self.assertEqual(m["counts"], {"pieces": 1, "skins": 1, "cloths": 1, "sets": 0})
             self.assertEqual(m["pieces"][0]["label"], "Great Helm")
+
+    def test_the_sets_a_pack_declares(self):
+        """armorpieces-sets.json: what is kept, what is borrowed, and what is left out.
+
+        The file is hand-written and the next thing to read it is a web page, so a set that is
+        wrong is dropped with a warning rather than published as a broken row."""
+        with tempfile.TemporaryDirectory() as tmp:
+            pack = make_pack(Path(tmp) / "a")
+            write(pack / pack_manifest.SETS_FILE, {"sets": [
+                {"id": "knightly", "title": "The Knightly", "description": "one own, one borrowed",
+                 "set": {"slots": {"helmet": {"material": "iron"}}, "pieces": {
+                     "crest": {"id": "somebody:great_helm"},          # this pack's own: kept
+                     "brow": {"id": "armorpieces:circlet"},           # another pack's: borrowed
+                     "horns": {"id": "somebody:antlers"},             # own, but not here: dropped
+                 }}},
+                {"id": "Shouting", "set": {"pieces": {}}},            # not a slug: no set at all
+                {"id": "knightly", "set": {"pieces": {}}},            # the id is taken: ignored
+                {"id": "bodyless"},                                   # no `set`: ignored
+            ]})
+            m = pack_manifest.manifest([pack])
+            self.assertEqual(m["counts"]["sets"], 1)
+            declared = m["sets"][0]
+            self.assertEqual(declared["title"], "The Knightly")
+            self.assertEqual(declared["sockets"], 2)
+            self.assertEqual(declared["borrowed"], 1)
+            self.assertEqual(sorted(declared["set"]["pieces"]), ["brow", "crest"])
+            # A set that says nothing about its name still has one, for the page that shows it.
+            self.assertEqual(declared["set"]["name"], "The Knightly")
 
 
 class PickTests(unittest.TestCase):
@@ -156,7 +184,7 @@ class PickTests(unittest.TestCase):
             self.assertTrue(credits["pack"]["composed"])
             # The result is a pack the manifest reads back with the licenses it came with.
             m = pack_manifest.manifest([dest])
-            self.assertEqual(m["counts"], {"pieces": 1, "skins": 1, "cloths": 1})
+            self.assertEqual(m["counts"], {"pieces": 1, "skins": 1, "cloths": 1, "sets": 0})
             self.assertEqual(m["pieces"][0]["license"], "CC-BY-4.0")
             mcmeta = json.loads((dest / "pack.mcmeta").read_text())
             self.assertIn("pack_format", mcmeta["pack"])
@@ -254,7 +282,7 @@ class PickTests(unittest.TestCase):
             self.assertEqual(body["asset_id"], "mine:tabard")
             self.assertEqual(body["sheet"], "shield")
             m = pack_manifest.manifest([a])
-            self.assertEqual(m["counts"], {"pieces": 1, "skins": 2, "cloths": 2})
+            self.assertEqual(m["counts"], {"pieces": 1, "skins": 2, "cloths": 2, "sets": 0})
 
     def test_duplicating_refuses_a_taken_id_and_a_bad_one(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -309,7 +337,7 @@ class PickTests(unittest.TestCase):
             credits = json.loads((dest / pack_manifest.CREDITS_FILE).read_text(encoding="utf-8"))
             self.assertNotIn("somebody:great_helm", credits["pieces"])
             m = pack_manifest.manifest([dest])
-            self.assertEqual(m["counts"], {"pieces": 0, "skins": 0, "cloths": 1})
+            self.assertEqual(m["counts"], {"pieces": 0, "skins": 0, "cloths": 1, "sets": 0})
 
     def test_a_move_is_a_pick_then_a_drop(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -351,7 +379,7 @@ class PickTests(unittest.TestCase):
                                        dest, own=True, name="test")
             self.assertEqual(len(written), 3)
             m = pack_manifest.manifest([dest])
-            self.assertEqual(m["counts"], {"pieces": 1, "skins": 1, "cloths": 1})
+            self.assertEqual(m["counts"], {"pieces": 1, "skins": 1, "cloths": 1, "sets": 0})
             # The circlet is found in the court group; the tag came along with just it in it.
             tags = list((dest / "data/armorpieces/tags/armorpieces/armor_decoration").glob("*.json"))
             self.assertTrue(tags)
