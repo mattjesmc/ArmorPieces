@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+**The six stage sets are on the site.** A `sets` generator reads the sets `/armorpieces stage set`
+dresses out of `StageCommand.java` into `dist/site.json`, in the shape the website's wardrobe saves
+a set in - the items each set hands to a part are turned into fitting values the way the game does
+it - so armorpieces.com's wardrobe opens with Knight Errant, High Court, Wild Hunt, Far Road, Deep
+Tide and Chitin, each with its commands and its pack, and a set changed in Java changes there too.
+
 **One command before a release.** `python tools/gate.py` runs everything in the repository that can
 fail - the authoring round trip, the skin masters, the painters and their traces, the language
 lines, the effect schema, the plugin's syntax, the unit tests and the Gradle build - prints a line

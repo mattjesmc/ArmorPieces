@@ -312,6 +312,159 @@ def counts(ctx: Context) -> list[dict[str, Any]]:
             for key, value, blurb in facts]
 
 
+# ---- the sets the stage command dresses ---------------------------------------------------------
+
+STAGE_SRC = "src/main/java/com/mattjesmc/armorpieces/command/StageCommand.java"
+TRIM_TAGS = f"{RESOURCES}/data/armorpieces/tags/trim_material"
+
+# The item a base armor is: EquipmentAssets.GOLD is worn as a golden_helmet. Every other asset
+# is named as its item is.
+ARMOR_ITEM = {"gold": "golden"}
+
+_SET = re.compile(
+    r'new GallerySet\("(?P<name>\w+)", EquipmentAssets\.(?P<base>\w+), skin\("(?P<skin>\w+)"\),'
+    r'\s*(?:cloth\("(?P<cloth>\w+)", DyeColor\.(?P<colour>\w+)\)|null), List\.of\(')
+_SOCKET = re.compile(
+    r'on\(DecorationAnchor\.(?P<anchor>\w+), "(?P<part>\w+)", TrimMaterials\.(?P<material>\w+)'
+    r'(?P<items>(?:,\s*(?:metal|dyed|flag)\((?:TrimMaterials|DyeColor)\.\w+\))*)\)')
+_ITEM = re.compile(r'(metal|dyed|flag)\((?:TrimMaterials|DyeColor)\.(\w+)\)')
+
+
+def _trim_tag(ctx: Context, tag: str) -> list[str]:
+    """The trim materials a `#armorpieces:...` tag names."""
+    _, _, tag_name = tag.lstrip("#").partition(":")
+    path = ctx.root / TRIM_TAGS / f"{tag_name}.json"
+    if not path.is_file():
+        return []
+    try:
+        values = json.loads(path.read_text(encoding="utf-8")).get("values") or []
+    except ValueError:
+        return []
+    return [v.get("id") if isinstance(v, dict) else str(v) for v in values]
+
+
+def _fitting_kinds(ctx: Context) -> dict[str, dict[str, Any]]:
+    """Every fitting by id: its kind, and for a material fitting the materials it takes."""
+    out: dict[str, dict[str, Any]] = {}
+    for path in sorted((ctx.root / DATA / "fitting").glob("*.json")):
+        try:
+            body = json.loads(path.read_text(encoding="utf-8"))
+        except ValueError:
+            continue
+        kind = str(body.get("type", "")).replace("armorpieces:", "")
+        materials = body.get("materials")
+        out[f"armorpieces:{path.stem}"] = {
+            "kind": kind,
+            "materials": _trim_tag(ctx, materials) if isinstance(materials, str) and materials.startswith("#") else [],
+        }
+    return out
+
+
+def _accepts(fitting: dict[str, Any], item: tuple[str, str]) -> Any:
+    """What a fitting stores for an item, or None when it does not take it - the same walk
+    Fitting.accept makes in the game, for the three kinds of item a set hands over."""
+    kind, value = item
+    if kind == "metal" and fitting["kind"] == "material":
+        material = f"minecraft:{value.lower()}"
+        return material if material in fitting["materials"] else None
+    if kind == "dyed" and fitting["kind"] == "dye":
+        return value.lower()
+    if kind == "flag" and fitting["kind"] == "banner":
+        return {"base": value.lower(), "patterns": []}
+    return None
+
+
+@generator("armorpieces.sets")
+def sets(ctx: Context) -> list[dict[str, Any]]:
+    """The sets `/armorpieces stage set` dresses, as the wardrobe saves a set.
+
+    The sets are written out in StageCommand.java rather than in a datapack - they are the
+    mod's screenshots, not something the game hands out - and this reads them from there, so the
+    website's wardrobe shows exactly what the stage does. A set names the ITEMS handed to a
+    part's fittings, in the part's own fitting order; the value each fitting stores is worked
+    out here the way the game works it out, from the fitting's kind and its materials tag.
+    """
+    source = ctx.root / STAGE_SRC
+    if not source.is_file():
+        ctx.warn(f"no {STAGE_SRC}")
+        return []
+    text = source.read_text(encoding="utf-8")
+    lines = _lang(ctx)
+    fittings = _fitting_kinds(ctx)
+    parts = {entry["name"]: entry["body"] for entry in _entries(ctx, "piece")}
+    anchors = {row["id"]: row["slot"] for row in _anchor_table(ctx)}
+
+    found = list(_SET.finditer(text))
+    out: list[dict[str, Any]] = []
+    for index, match in enumerate(found):
+        end = found[index + 1].start() if index + 1 < len(found) else len(text)
+        block = text[match.end():end]
+        name = match.group("name")
+        # The comment above the set is what it is FOR, in the words of whoever dressed it: the
+        # contiguous `//` lines immediately before `new GallerySet(`.
+        before = text[:match.start()].rstrip()
+        notes: list[str] = []
+        for line in reversed(before.splitlines()):
+            stripped = line.strip()
+            if stripped.startswith("//"):
+                notes.insert(0, stripped[2:].strip())
+            else:
+                break
+        armor = match.group("base").lower()
+        material = ARMOR_ITEM.get(armor, armor)
+        pieces: dict[str, Any] = {}
+        for socket in _SOCKET.finditer(block):
+            anchor = socket.group("anchor").lower()
+            part = socket.group("part")
+            if part not in parts:
+                ctx.warn(f"set {name}: no piece called {part}")
+                continue
+            piece: dict[str, Any] = {
+                "id": f"armorpieces:{part}",
+                "pack": "armorpieces",
+                "material": socket.group("material").lower(),
+            }
+            declared = [f for f in (parts[part].get("fittings") or []) if isinstance(f, str)]
+            values: dict[str, Any] = {}
+            for item in _ITEM.findall(socket.group("items")):
+                for fitting_id in declared:
+                    spec = fittings.get(fitting_id)
+                    stored = _accepts(spec, item) if spec else None
+                    if stored is not None:
+                        values[fitting_id] = stored
+                        break
+                else:
+                    ctx.warn(f"set {name}: {part} has no fitting that takes {item[0]} {item[1].lower()}")
+            if values:
+                piece["fittings"] = values
+            if anchor not in anchors:
+                ctx.warn(f"set {name}: no socket called {anchor}")
+            pieces[anchor] = piece
+        title = lines.get(f"commands.armorpieces.stage.set.{name}", name.replace("_", " ").title())
+        spec: dict[str, Any] = {
+            "name": title,
+            "slots": {slot: {"material": material} for slot in ("helmet", "chestplate", "leggings", "boots")},
+            "skin": f"armorpieces:{match.group('skin')}",
+            "pieces": pieces,
+        }
+        if match.group("cloth"):
+            spec["cloth"] = {"cloth": f"armorpieces:{match.group('cloth')}",
+                             "base": match.group("colour").lower(), "patterns": []}
+        out.append({
+            "id": f"armorpieces:{name}",
+            "name": name,
+            "title": title,
+            "command": f"/armorpieces stage set {name}",
+            "armor": material,
+            "set": spec,
+            "count": len(pieces),
+            "description": " ".join(notes),
+        })
+    if not out:
+        ctx.warn(f"no sets found in {STAGE_SRC}")
+    return out
+
+
 # Small numbers read as words in prose and as digits in a table; a page picks with `.word` or
 # `.value`. Only as far as a count here plausibly goes.
 WORDS = {

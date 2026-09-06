@@ -46,6 +46,8 @@ generators:
     use: armorpieces.effect_types
   counts:
     use: armorpieces.counts
+  sets:
+    use: armorpieces.sets
 
 sections:
   about: |

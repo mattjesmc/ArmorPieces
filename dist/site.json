@@ -2135,6 +2135,743 @@
         "title": "Wraps"
       }
     ],
+    "sets": [
+      {
+        "armor": "iron",
+        "command": "/armorpieces stage set knight_errant",
+        "count": 12,
+        "description": "Knightly: iron on iron, so every plate part takes the darker variant and reads as one suit, with gold on the guards and one loud red for the crest, the banner and the inlay.",
+        "id": "armorpieces:knight_errant",
+        "name": "knight_errant",
+        "set": {
+          "cloth": {
+            "base": "white",
+            "cloth": "armorpieces:tabard",
+            "patterns": []
+          },
+          "name": "Knight Errant",
+          "pieces": {
+            "back": {
+              "fittings": {
+                "armorpieces:banner": {
+                  "base": "red",
+                  "patterns": []
+                }
+              },
+              "id": "armorpieces:banner",
+              "material": "iron",
+              "pack": "armorpieces"
+            },
+            "belt": {
+              "fittings": {
+                "armorpieces:gemstone": "minecraft:redstone",
+                "armorpieces:guard": "minecraft:gold"
+              },
+              "id": "armorpieces:girdle",
+              "material": "iron",
+              "pack": "armorpieces"
+            },
+            "brow": {
+              "fittings": {
+                "armorpieces:guard": "minecraft:gold"
+              },
+              "id": "armorpieces:great_helm",
+              "material": "iron",
+              "pack": "armorpieces"
+            },
+            "collar": {
+              "id": "armorpieces:gorget",
+              "material": "iron",
+              "pack": "armorpieces"
+            },
+            "crest": {
+              "id": "armorpieces:brush_crest",
+              "material": "redstone",
+              "pack": "armorpieces"
+            },
+            "greaves": {
+              "fittings": {
+                "armorpieces:inlay": "red"
+              },
+              "id": "armorpieces:greaves",
+              "material": "iron",
+              "pack": "armorpieces"
+            },
+            "horns": {
+              "fittings": {
+                "armorpieces:guard": "minecraft:gold"
+              },
+              "id": "armorpieces:cheek_guards",
+              "material": "iron",
+              "pack": "armorpieces"
+            },
+            "knees": {
+              "id": "armorpieces:poleyns",
+              "material": "iron",
+              "pack": "armorpieces"
+            },
+            "pauldrons": {
+              "id": "armorpieces:spaulders",
+              "material": "iron",
+              "pack": "armorpieces"
+            },
+            "spurs": {
+              "fittings": {
+                "armorpieces:guard": "minecraft:gold"
+              },
+              "id": "armorpieces:rowel_spurs",
+              "material": "iron",
+              "pack": "armorpieces"
+            },
+            "tassets": {
+              "id": "armorpieces:tassets",
+              "material": "iron",
+              "pack": "armorpieces"
+            },
+            "vambraces": {
+              "id": "armorpieces:vambraces",
+              "material": "iron",
+              "pack": "armorpieces"
+            }
+          },
+          "skin": "armorpieces:plate",
+          "slots": {
+            "boots": {
+              "material": "iron"
+            },
+            "chestplate": {
+              "material": "iron"
+            },
+            "helmet": {
+              "material": "iron"
+            },
+            "leggings": {
+              "material": "iron"
+            }
+          }
+        },
+        "title": "Knight Errant"
+      },
+      {
+        "armor": "golden",
+        "command": "/armorpieces stage set high_court",
+        "count": 12,
+        "description": "Court: gold and amethyst throughout, purple everywhere a dye is taken. Greaves has no court part, so the wayfarer's boot cuffs stand in - the only socket the theme cannot fill.",
+        "id": "armorpieces:high_court",
+        "name": "high_court",
+        "set": {
+          "cloth": {
+            "base": "purple",
+            "cloth": "armorpieces:tabard",
+            "patterns": []
+          },
+          "name": "High Court",
+          "pieces": {
+            "back": {
+              "fittings": {
+                "armorpieces:banner": {
+                  "base": "purple",
+                  "patterns": []
+                },
+                "armorpieces:guard": "minecraft:gold"
+              },
+              "id": "armorpieces:cloak",
+              "material": "gold",
+              "pack": "armorpieces"
+            },
+            "belt": {
+              "fittings": {
+                "armorpieces:guard": "minecraft:gold",
+                "armorpieces:inlay": "purple"
+              },
+              "id": "armorpieces:sash",
+              "material": "gold",
+              "pack": "armorpieces"
+            },
+            "brow": {
+              "fittings": {
+                "armorpieces:gemstone": "minecraft:amethyst"
+              },
+              "id": "armorpieces:coronet",
+              "material": "gold",
+              "pack": "armorpieces"
+            },
+            "collar": {
+              "fittings": {
+                "armorpieces:gemstone": "minecraft:amethyst",
+                "armorpieces:guard": "minecraft:gold"
+              },
+              "id": "armorpieces:chain_of_office",
+              "material": "gold",
+              "pack": "armorpieces"
+            },
+            "crest": {
+              "id": "armorpieces:feathering",
+              "material": "quartz",
+              "pack": "armorpieces"
+            },
+            "greaves": {
+              "fittings": {
+                "armorpieces:inlay": "purple"
+              },
+              "id": "armorpieces:boot_cuffs",
+              "material": "gold",
+              "pack": "armorpieces"
+            },
+            "horns": {
+              "id": "armorpieces:helm_wings",
+              "material": "gold",
+              "pack": "armorpieces"
+            },
+            "knees": {
+              "fittings": {
+                "armorpieces:inlay": "purple"
+              },
+              "id": "armorpieces:garters",
+              "material": "gold",
+              "pack": "armorpieces"
+            },
+            "pauldrons": {
+              "fittings": {
+                "armorpieces:inlay": "purple"
+              },
+              "id": "armorpieces:epaulettes",
+              "material": "gold",
+              "pack": "armorpieces"
+            },
+            "spurs": {
+              "fittings": {
+                "armorpieces:gemstone": "minecraft:amethyst"
+              },
+              "id": "armorpieces:anklets",
+              "material": "gold",
+              "pack": "armorpieces"
+            },
+            "tassets": {
+              "fittings": {
+                "armorpieces:inlay": "purple"
+              },
+              "id": "armorpieces:loin_panels",
+              "material": "gold",
+              "pack": "armorpieces"
+            },
+            "vambraces": {
+              "fittings": {
+                "armorpieces:gemstone": "minecraft:amethyst"
+              },
+              "id": "armorpieces:bangles",
+              "material": "gold",
+              "pack": "armorpieces"
+            }
+          },
+          "skin": "armorpieces:runic",
+          "slots": {
+            "boots": {
+              "material": "golden"
+            },
+            "chestplate": {
+              "material": "golden"
+            },
+            "helmet": {
+              "material": "golden"
+            },
+            "leggings": {
+              "material": "golden"
+            }
+          }
+        },
+        "title": "High Court"
+      },
+      {
+        "armor": "copper",
+        "command": "/armorpieces stage set wild_hunt",
+        "count": 12,
+        "description": "Beast: copper hide and quartz bone, the two of them alternating socket by socket, over the varangian skin. Belt and back have no beast part; a cord and a pair of pinions carry them.",
+        "id": "armorpieces:wild_hunt",
+        "name": "wild_hunt",
+        "set": {
+          "name": "Wild Hunt",
+          "pieces": {
+            "back": {
+              "id": "armorpieces:pinions",
+              "material": "copper",
+              "pack": "armorpieces"
+            },
+            "belt": {
+              "fittings": {
+                "armorpieces:inlay": "brown"
+              },
+              "id": "armorpieces:cord",
+              "material": "copper",
+              "pack": "armorpieces"
+            },
+            "brow": {
+              "fittings": {
+                "armorpieces:gemstone": "minecraft:redstone"
+              },
+              "id": "armorpieces:bone_mask",
+              "material": "quartz",
+              "pack": "armorpieces"
+            },
+            "collar": {
+              "fittings": {
+                "armorpieces:gemstone": "minecraft:redstone"
+              },
+              "id": "armorpieces:fang_necklace",
+              "material": "quartz",
+              "pack": "armorpieces"
+            },
+            "crest": {
+              "fittings": {
+                "armorpieces:inlay": "brown"
+              },
+              "id": "armorpieces:horsetail",
+              "material": "copper",
+              "pack": "armorpieces"
+            },
+            "greaves": {
+              "fittings": {
+                "armorpieces:guard": "minecraft:copper"
+              },
+              "id": "armorpieces:shin_spikes",
+              "material": "quartz",
+              "pack": "armorpieces"
+            },
+            "horns": {
+              "id": "armorpieces:antlers",
+              "material": "copper",
+              "pack": "armorpieces"
+            },
+            "knees": {
+              "fittings": {
+                "armorpieces:gemstone": "minecraft:redstone"
+              },
+              "id": "armorpieces:fanged_cop",
+              "material": "copper",
+              "pack": "armorpieces"
+            },
+            "pauldrons": {
+              "fittings": {
+                "armorpieces:gemstone": "minecraft:redstone"
+              },
+              "id": "armorpieces:beast_head",
+              "material": "copper",
+              "pack": "armorpieces"
+            },
+            "spurs": {
+              "fittings": {
+                "armorpieces:guard": "minecraft:copper"
+              },
+              "id": "armorpieces:talons",
+              "material": "quartz",
+              "pack": "armorpieces"
+            },
+            "tassets": {
+              "fittings": {
+                "armorpieces:inlay": "brown"
+              },
+              "id": "armorpieces:pelt",
+              "material": "copper",
+              "pack": "armorpieces"
+            },
+            "vambraces": {
+              "fittings": {
+                "armorpieces:guard": "minecraft:copper"
+              },
+              "id": "armorpieces:claws",
+              "material": "quartz",
+              "pack": "armorpieces"
+            }
+          },
+          "skin": "armorpieces:varangian",
+          "slots": {
+            "boots": {
+              "material": "copper"
+            },
+            "chestplate": {
+              "material": "copper"
+            },
+            "helmet": {
+              "material": "copper"
+            },
+            "leggings": {
+              "material": "copper"
+            }
+          }
+        },
+        "title": "Wild Hunt"
+      },
+      {
+        "armor": "leather",
+        "command": "/armorpieces stage set far_road",
+        "count": 12,
+        "description": "Wayfarer: leather under a gambeson, everything copper and brown, iron only where a buckle or a spur has to be metal. The crest and the temples have no wayfarer part.",
+        "id": "armorpieces:far_road",
+        "name": "far_road",
+        "set": {
+          "cloth": {
+            "base": "brown",
+            "cloth": "armorpieces:tunic",
+            "patterns": []
+          },
+          "name": "Far Road",
+          "pieces": {
+            "back": {
+              "fittings": {
+                "armorpieces:inlay": "brown"
+              },
+              "id": "armorpieces:bedroll",
+              "material": "copper",
+              "pack": "armorpieces"
+            },
+            "belt": {
+              "fittings": {
+                "armorpieces:inlay": "brown"
+              },
+              "id": "armorpieces:pouch_belt",
+              "material": "copper",
+              "pack": "armorpieces"
+            },
+            "brow": {
+              "fittings": {
+                "armorpieces:inlay": "brown"
+              },
+              "id": "armorpieces:browband",
+              "material": "copper",
+              "pack": "armorpieces"
+            },
+            "collar": {
+              "fittings": {
+                "armorpieces:guard": "minecraft:iron",
+                "armorpieces:inlay": "brown"
+              },
+              "id": "armorpieces:bandolier",
+              "material": "copper",
+              "pack": "armorpieces"
+            },
+            "crest": {
+              "id": "armorpieces:feathering",
+              "material": "copper",
+              "pack": "armorpieces"
+            },
+            "greaves": {
+              "fittings": {
+                "armorpieces:inlay": "brown"
+              },
+              "id": "armorpieces:puttees",
+              "material": "quartz",
+              "pack": "armorpieces"
+            },
+            "horns": {
+              "fittings": {
+                "armorpieces:guard": "minecraft:iron"
+              },
+              "id": "armorpieces:cheek_guards",
+              "material": "copper",
+              "pack": "armorpieces"
+            },
+            "knees": {
+              "fittings": {
+                "armorpieces:inlay": "brown"
+              },
+              "id": "armorpieces:padding",
+              "material": "copper",
+              "pack": "armorpieces"
+            },
+            "pauldrons": {
+              "fittings": {
+                "armorpieces:inlay": "brown"
+              },
+              "id": "armorpieces:mantle",
+              "material": "copper",
+              "pack": "armorpieces"
+            },
+            "spurs": {
+              "id": "armorpieces:spurs",
+              "material": "iron",
+              "pack": "armorpieces"
+            },
+            "tassets": {
+              "fittings": {
+                "armorpieces:guard": "minecraft:iron"
+              },
+              "id": "armorpieces:thigh_sheath",
+              "material": "copper",
+              "pack": "armorpieces"
+            },
+            "vambraces": {
+              "fittings": {
+                "armorpieces:inlay": "brown"
+              },
+              "id": "armorpieces:wraps",
+              "material": "quartz",
+              "pack": "armorpieces"
+            }
+          },
+          "skin": "armorpieces:gambeson",
+          "slots": {
+            "boots": {
+              "material": "leather"
+            },
+            "chestplate": {
+              "material": "leather"
+            },
+            "helmet": {
+              "material": "leather"
+            },
+            "leggings": {
+              "material": "leather"
+            }
+          }
+        },
+        "title": "Far Road"
+      },
+      {
+        "armor": "diamond",
+        "command": "/armorpieces stage set deep_tide",
+        "count": 12,
+        "description": "Tidal: diamond and lapis on the scale skin, light blue in every dye. Six sockets have no tidal part at all, which is why this one leans hardest on neutral plate.",
+        "id": "armorpieces:deep_tide",
+        "name": "deep_tide",
+        "set": {
+          "name": "Deep Tide",
+          "pieces": {
+            "back": {
+              "fittings": {
+                "armorpieces:guard": "minecraft:copper"
+              },
+              "id": "armorpieces:spine_ridge",
+              "material": "diamond",
+              "pack": "armorpieces"
+            },
+            "belt": {
+              "fittings": {
+                "armorpieces:guard": "minecraft:copper",
+                "armorpieces:inlay": "light_blue"
+              },
+              "id": "armorpieces:sash",
+              "material": "lapis",
+              "pack": "armorpieces"
+            },
+            "brow": {
+              "id": "armorpieces:visor",
+              "material": "diamond",
+              "pack": "armorpieces"
+            },
+            "collar": {
+              "id": "armorpieces:gorget",
+              "material": "diamond",
+              "pack": "armorpieces"
+            },
+            "crest": {
+              "fittings": {
+                "armorpieces:inlay": "light_blue"
+              },
+              "id": "armorpieces:dorsal_fin",
+              "material": "diamond",
+              "pack": "armorpieces"
+            },
+            "greaves": {
+              "fittings": {
+                "armorpieces:inlay": "light_blue"
+              },
+              "id": "armorpieces:swim_fins",
+              "material": "diamond",
+              "pack": "armorpieces"
+            },
+            "horns": {
+              "fittings": {
+                "armorpieces:inlay": "light_blue"
+              },
+              "id": "armorpieces:head_fins",
+              "material": "diamond",
+              "pack": "armorpieces"
+            },
+            "knees": {
+              "fittings": {
+                "armorpieces:inlay": "light_blue"
+              },
+              "id": "armorpieces:garters",
+              "material": "diamond",
+              "pack": "armorpieces"
+            },
+            "pauldrons": {
+              "fittings": {
+                "armorpieces:guard": "minecraft:copper"
+              },
+              "id": "armorpieces:lames",
+              "material": "diamond",
+              "pack": "armorpieces"
+            },
+            "spurs": {
+              "fittings": {
+                "armorpieces:inlay": "light_blue"
+              },
+              "id": "armorpieces:streamers",
+              "material": "diamond",
+              "pack": "armorpieces"
+            },
+            "tassets": {
+              "fittings": {
+                "armorpieces:guard": "minecraft:copper"
+              },
+              "id": "armorpieces:scale_skirt",
+              "material": "diamond",
+              "pack": "armorpieces"
+            },
+            "vambraces": {
+              "fittings": {
+                "armorpieces:gemstone": "minecraft:lapis"
+              },
+              "id": "armorpieces:bangles",
+              "material": "diamond",
+              "pack": "armorpieces"
+            }
+          },
+          "skin": "armorpieces:scale",
+          "slots": {
+            "boots": {
+              "material": "diamond"
+            },
+            "chestplate": {
+              "material": "diamond"
+            },
+            "helmet": {
+              "material": "diamond"
+            },
+            "leggings": {
+              "material": "diamond"
+            }
+          }
+        },
+        "title": "Deep Tide"
+      },
+      {
+        "armor": "netherite",
+        "command": "/armorpieces stage set chitin",
+        "count": 12,
+        "description": "Carapace: netherite and lime over lamellar - the theme has five parts and they are all here, with the beast's claws and talons and a few dark plates filling the other seven.",
+        "id": "armorpieces:chitin",
+        "name": "chitin",
+        "set": {
+          "name": "Chitin",
+          "pieces": {
+            "back": {
+              "fittings": {
+                "armorpieces:inlay": "lime"
+              },
+              "id": "armorpieces:carapace",
+              "material": "netherite",
+              "pack": "armorpieces"
+            },
+            "belt": {
+              "fittings": {
+                "armorpieces:guard": "minecraft:netherite"
+              },
+              "id": "armorpieces:chain_belt",
+              "material": "netherite",
+              "pack": "armorpieces"
+            },
+            "brow": {
+              "fittings": {
+                "armorpieces:gemstone": "minecraft:emerald"
+              },
+              "id": "armorpieces:bone_mask",
+              "material": "netherite",
+              "pack": "armorpieces"
+            },
+            "collar": {
+              "fittings": {
+                "armorpieces:inlay": "lime"
+              },
+              "id": "armorpieces:ruff",
+              "material": "netherite",
+              "pack": "armorpieces"
+            },
+            "crest": {
+              "fittings": {
+                "armorpieces:gemstone": "minecraft:emerald"
+              },
+              "id": "armorpieces:antennae",
+              "material": "netherite",
+              "pack": "armorpieces"
+            },
+            "greaves": {
+              "fittings": {
+                "armorpieces:guard": "minecraft:netherite"
+              },
+              "id": "armorpieces:shin_spikes",
+              "material": "netherite",
+              "pack": "armorpieces"
+            },
+            "horns": {
+              "fittings": {
+                "armorpieces:inlay": "lime"
+              },
+              "id": "armorpieces:aerials",
+              "material": "netherite",
+              "pack": "armorpieces"
+            },
+            "knees": {
+              "fittings": {
+                "armorpieces:gemstone": "minecraft:emerald"
+              },
+              "id": "armorpieces:fanged_cop",
+              "material": "netherite",
+              "pack": "armorpieces"
+            },
+            "pauldrons": {
+              "fittings": {
+                "armorpieces:inlay": "lime"
+              },
+              "id": "armorpieces:wing_cases",
+              "material": "netherite",
+              "pack": "armorpieces"
+            },
+            "spurs": {
+              "fittings": {
+                "armorpieces:guard": "minecraft:netherite"
+              },
+              "id": "armorpieces:talons",
+              "material": "netherite",
+              "pack": "armorpieces"
+            },
+            "tassets": {
+              "fittings": {
+                "armorpieces:guard": "minecraft:netherite"
+              },
+              "id": "armorpieces:mail_fringe",
+              "material": "netherite",
+              "pack": "armorpieces"
+            },
+            "vambraces": {
+              "fittings": {
+                "armorpieces:guard": "minecraft:netherite"
+              },
+              "id": "armorpieces:claws",
+              "material": "netherite",
+              "pack": "armorpieces"
+            }
+          },
+          "skin": "armorpieces:lamellar",
+          "slots": {
+            "boots": {
+              "material": "netherite"
+            },
+            "chestplate": {
+              "material": "netherite"
+            },
+            "helmet": {
+              "material": "netherite"
+            },
+            "leggings": {
+              "material": "netherite"
+            }
+          }
+        },
+        "title": "Chitin"
+      }
+    ],
     "skins": [
       {
         "craftable": true,
@@ -2802,6 +3539,9 @@
       },
       "pieces": {
         "use": "armorpieces.pieces"
+      },
+      "sets": {
+        "use": "armorpieces.sets"
       },
       "skins": {
         "use": "armorpieces.skins"
