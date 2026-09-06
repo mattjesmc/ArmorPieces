@@ -478,9 +478,40 @@
 	 * borrows the other half's folder, so the record still says where it WOULD go and the label
 	 * can say it is missing.
 	 */
+	/*
+	 * The pack being worked in. Every pack discovery finds is one list by default, keyed by
+	 * name with the first pack found winning - which is how the game resolves them too, and
+	 * which makes a pack that redefines the mod's pieces invisible next to the mod's own. So an
+	 * author can choose one pack, and from then on the piece list, the skin halves, the open
+	 * dialogs and the start page see that pack alone. Creating a piece still offers every pack,
+	 * defaulting to this one. Kept in a setting so it survives a restart; cleared if the folder
+	 * has gone.
+	 */
+	function packScope() {
+		const dir = String(Settings.get(ID + '_scope') || '').trim();
+		return dir && fs.existsSync(dir) ? dir : '';
+	}
+
+	function setPackScope(dir) {
+		settings[ID + '_scope'].set(dir || '');
+		Settings.save();
+	}
+
+	/* The packs a list is drawn from: the chosen one, or all of them. */
+	function scopedRoots() {
+		const scope = packScope();
+		return scope ? [scope] : searchRoots();
+	}
+
+	/* Where a pack select starts: on the pack being worked in, when there is one. */
+	function defaultPack(packs) {
+		const at = packs.indexOf(packScope());
+		return String(at > 0 ? at : 0);
+	}
+
 	function allPieces() {
 		const byKey = {};
-		for (const packDir of searchRoots()) {
+		for (const packDir of scopedRoots()) {
 			const halves = halvesIn(packDir);
 			for (const key of Object.keys(halves)) {
 				const half = halves[key];
@@ -1575,11 +1606,11 @@
 				namespace: { label: 'Namespace', type: 'text', value: inRepo ? 'armorpieces' : 'mypack' },
 				anchor: { label: 'Anchor', type: 'select', options: anchorOptions },
 				data_pack: {
-					label: 'Datapack', type: 'select', options: packOptions(packs), value: '0',
+					label: 'Datapack', type: 'select', options: packOptions(packs), value: defaultPack(packs),
 					description: 'Where the part file, its recipe and any fittings go.',
 				},
 				asset_pack: {
-					label: 'Resource pack', type: 'select', options: packOptions(packs), value: '0',
+					label: 'Resource pack', type: 'select', options: packOptions(packs), value: defaultPack(packs),
 					description: 'Where the model, the textures and the language file go. The same folder is fine.',
 				},
 			},
@@ -1675,17 +1706,24 @@
 	const PACKS_DIALOG_TEMPLATE = [
 		'<div class="armorpieces_packs">',
 		'	<p class="ap_dim">Every folder parts are read from and written to. The repository\'s own',
-		'	and the game\'s are found; the rest are yours to add and forget.</p>',
+		'	and the game\'s are found; the rest are yours to add and forget.',
+		'	<template v-if="scope">The piece list shows <b>{{ scopeLabel }}</b> alone -',
+		'		<a href="#" @click.prevent="workIn(null)">show every pack</a>.</template>',
+		'	<template v-else>The piece list shows every pack at once, first found winning by name;',
+		'		<b>Work here</b> narrows it to one.</template></p>',
 		'	<ul>',
-		'		<li v-for="pack in packs" :key="pack.dir">',
+		'		<li v-for="pack in packs" :key="pack.dir" :class="{ ap_scoped: pack.dir === scope }">',
 		'			<div class="ap_head">',
 		'				<span class="ap_name" :title="pack.dir">{{ pack.label }}</span>',
+		'				<span class="ap_tag ap_here" v-if="pack.dir === scope">working here</span>',
 		'				<span class="ap_tag">{{ pack.kind }}</span>',
 		'				<span class="ap_tag" v-if="pack.format">format {{ pack.format }}</span>',
 		'				<span class="ap_tag ap_warn" v-else>no pack.mcmeta</span>',
 		'			</div>',
 		'			<div class="ap_body"><span class="ap_dim">{{ pack.summary }}</span></div>',
 		'			<div class="ap_ops">',
+		'				<button type="button" v-if="pack.dir !== scope" @click="workIn(pack)">Work here</button>',
+		'				<button type="button" v-else @click="workIn(null)">Show all packs</button>',
 		'				<button type="button" v-for="s in installers" :key="s.id"',
 		'					@click="install(pack, s)">{{ s.installLabel }}</button>',
 		'				<button type="button" v-for="s in publishers" :key="s.id"',
@@ -1713,6 +1751,9 @@
 		'.armorpieces_packs .ap_name { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--color-light); }',
 		'.armorpieces_packs .ap_tag { flex: none; font-size: 0.78em; padding: 1px 6px; border-radius: 3px; background: var(--color-ui); color: var(--color-subtle_text); }',
 		'.armorpieces_packs .ap_tag.ap_warn { color: var(--color-close); }',
+		'.armorpieces_packs .ap_tag.ap_here { background: var(--color-accent); color: var(--color-light); }',
+		'.armorpieces_packs li.ap_scoped { outline: 1px solid var(--color-accent); }',
+		'.armorpieces_packs a { color: var(--color-accent); }',
 		'.armorpieces_packs .ap_body { display: flex; align-items: center; gap: 6px; margin-top: 4px; }',
 		'.armorpieces_packs .ap_ops { display: flex; align-items: center; gap: 6px; margin-top: 6px; flex-wrap: wrap; }',
 		'.armorpieces_packs .ap_spacer { flex: 1; }',
@@ -1744,14 +1785,25 @@
 				data: function () {
 					return {
 						packs: [],
+						scope: packScope(),
 						canBrowse: canBrowseFolders(),
 						installers: packSources.filter(function (s) { return !!s.install; }),
 						publishers: packSources.filter(function (s) { return !!s.publish; }),
 					};
 				},
+				computed: {
+					scopeLabel: function () { return this.scope ? packLabel(this.scope) : ''; },
+				},
 				mounted: function () { this.refresh(); },
 				methods: {
+					workIn: function (pack) {
+						setPackScope(pack ? pack.dir : '');
+						this.scope = packScope();
+						Blockbench.showQuickMessage(this.scope
+							? 'Working in ' + packLabel(this.scope) : 'Showing every pack', 2500);
+					},
 					refresh: function () {
+						this.scope = packScope();
 						this.packs = searchRoots().map(function (dir) {
 							const info = packInfo(dir);
 							info.kind = packKind(info);
@@ -1919,7 +1971,7 @@
 			Blockbench.showMessageBox({ title: 'No packs', message: 'Nothing to export. Add or make a pack first.' });
 			return;
 		}
-		const form = { pack: { label: 'Pack', type: 'select', options: packOptions(packs), value: '0' } };
+		const form = { pack: { label: 'Pack', type: 'select', options: packOptions(packs), value: defaultPack(packs) } };
 		if (isApp) {
 			form.zip = {
 				label: 'Zip file', type: 'save', extensions: ['zip'], filetype: 'Pack zip',
@@ -4275,7 +4327,7 @@
 	 */
 	function skinHalves() {
 		const byName = {};
-		const roots = searchRoots();
+		const roots = scopedRoots();
 		for (const packDir of roots) {
 			for (const namespace of namespacesIn(packDir, 'data')) {
 				for (const name of listJson(path.join(packDir, 'data', namespace, ...SKIN_DATA_REL))) {
@@ -5088,11 +5140,11 @@
 						'outline. Blank sheets are the freehand start.',
 				},
 				data_pack: {
-					label: 'Datapack', type: 'select', options: packOptions(packs), value: '0',
+					label: 'Datapack', type: 'select', options: packOptions(packs), value: defaultPack(packs),
 					description: 'Where the armor_skin file and its template recipe go.',
 				},
 				asset_pack: {
-					label: 'Resource pack', type: 'select', options: packOptions(packs), value: '0',
+					label: 'Resource pack', type: 'select', options: packOptions(packs), value: defaultPack(packs),
 					description: 'Where the two sheets and the language file go. The same folder is fine.',
 				},
 			},
@@ -5528,6 +5580,14 @@
 				type: 'text',
 				value: '[]',
 			}));
+			registered.push(new Setting(ID + '_scope', {
+				name: 'Armor Pieces: pack being worked in',
+				description: 'The one pack the piece list shows, or blank for every pack found. ' +
+					'Set from Packs... rather than here.',
+				category: 'edit',
+				type: 'text',
+				value: '',
+			}));
 			registered.push(new Setting(ID + '_library', {
 				name: 'Armor Pieces library',
 				description: 'The index.json of the pack library that Packs... installs from and ' +
@@ -5905,6 +5965,15 @@
 					return { piece: piece.key, anchor: anchor, files: [piece.data, piece.geometry, piece.texture] };
 				},
 				packs: searchRoots,
+				// Every pack with what is in it, and the one being worked in - '' for all of them.
+				packList: function () {
+					return searchRoots().map(function (dir) {
+						const info = packInfo(dir);
+						return { dir: dir, label: info.label, parts: info.parts, data: info.data, assets: info.assets };
+					});
+				},
+				scope: packScope,
+				setScope: function (dir) { setPackScope(dir || ''); return packScope(); },
 				anchors: anchors,
 				// The library: the index it reads, an install into a folder, the submission form.
 				library: libraryIndex,
