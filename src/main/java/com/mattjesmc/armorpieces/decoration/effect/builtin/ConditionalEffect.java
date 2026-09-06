@@ -7,9 +7,11 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.function.BiConsumer;
 import net.minecraft.core.Holder;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.item.equipment.trim.TrimMaterial;
 
 /**
  * {@code armorpieces:if_fitting} - another effect, run only while a fitting holds what it asks for.
@@ -27,8 +29,9 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
  *
  * <p>Sound for {@link Attributes} because the condition is a pure function of the entry, which is
  * what that hook demands: a fitting changes only at the smithing table, which replaces the stack and
- * so re-runs the equipment reconcile. And the same shape is open to any later condition - the
- * predicate is the only thing that would grow.
+ * so re-runs the equipment reconcile. {@link WearerConditionEffect} is the same shape asking about the
+ * WEARER instead, and is the one that had to grow rules about which hooks it may reach; this one has
+ * none, because what it tests cannot change without the stack changing.
  */
 public record ConditionalEffect(FittingPredicate condition, DecorationEffect effect) implements
     DecorationEffect.Ticking,
@@ -48,6 +51,22 @@ public record ConditionalEffect(FittingPredicate condition, DecorationEffect eff
     @Override
     public MapCodec<? extends DecorationEffect> codec() {
         return CODEC;
+    }
+
+    /** A gate implements every hook; what it can actually reach is whatever it wraps. */
+    @Override
+    public boolean reaches(final Class<? extends DecorationEffect> hook) {
+        return this.effect.reaches(hook);
+    }
+
+    @Override
+    public boolean applies(final DecorationEffectContext context) {
+        return this.holds(context) && this.effect.applies(context);
+    }
+
+    @Override
+    public Component description(final Holder<TrimMaterial> material) {
+        return Component.translatable("effect.armorpieces.if_fitting", this.effect.description(material));
     }
 
     private boolean holds(final DecorationEffectContext context) {
@@ -87,6 +106,17 @@ public record ConditionalEffect(FittingPredicate condition, DecorationEffect eff
     ) {
         if (this.effect instanceof Attributes attributes && this.holds(context)) {
             attributes.collectAttributes(context, out);
+        }
+    }
+
+    /** What the fitting could have granted, so that the reconcile can take it back off again. */
+    @Override
+    public void collectPossibleAttributes(
+        final DecorationEffectContext context,
+        final BiConsumer<Holder<Attribute>, AttributeModifier> out
+    ) {
+        if (this.effect instanceof Attributes attributes) {
+            attributes.collectPossibleAttributes(context, out);
         }
     }
 

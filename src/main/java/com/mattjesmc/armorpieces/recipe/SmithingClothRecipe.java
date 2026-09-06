@@ -14,6 +14,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.BannerItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -42,17 +43,19 @@ import org.jspecify.annotations.Nullable;
  * reads them. The banner is consumed, as it is for a shield.
  *
  * <p><b>Which armor may wear one</b> is {@link #CLOTHABLE}, a tag rather than a list in Java, and
- * the mod puts CHEST ARMOR in it and nothing else. A garment is the chestplate's, because the torso
- * box is the chestplate's: a texture can only paint texels that some box of its own item samples, so
- * a chestplate's cloth stops at its waist however much one would like it to hang, and reaching past
- * that would mean a second garment on the leggings - a second smithing operation on a second item -
- * with a piece half-wearing one as the new thing a player could get wrong.
+ * the mod puts CHEST ARMOR in it and nothing else. A garment is the chestplate's because a garment
+ * is the OUTFIT's and the chestplate is what carries the outfit: the cloth reaches two sheets - the
+ * torso and the arms from the chestplate's own, the hem past the waist from the leggings' leg boxes
+ * - and the renderer reads both off this one component, on this one slot. See
+ * {@link com.mattjesmc.armorpieces.client.mixin.EquipmentLayerRendererMixin}.
  *
- * <p>The CAPABILITY is wider than the policy on purpose, which is what the tag is for: leg armor is
- * accepted here, so a pack that ships a hem mask ({@code humanoid_leggings.png}) and adds
- * {@code #minecraft:leg_armor} to the tag gets one with no code. Head and foot armor are refused
- * outright - a helmet renders on the humanoid sheet too, but its model samples none of the torso's
- * texels, and refusing is more honest than baking a texture nothing draws.
+ * <p>So LEG ARMOR is refused, and that is a change of mind rather than a limitation: the hem used to
+ * be a second garment on a second item, which is a second smithing operation and a piece
+ * half-wearing a garment as a new thing a player could get wrong. Nothing on the leggings is read
+ * any more, so accepting a cloth onto them would produce a component that draws nothing. Head and
+ * foot armor are refused for the older reason - a helmet renders on the humanoid sheet too, but its
+ * model samples none of the torso's texels, and refusing is more honest than baking a texture
+ * nothing draws.
  *
  * <p>Unlike a skin this asks the armor for no reforging material, because it takes none: the cloth
  * is worn over the armor rather than forged into it, and the banner is already the cost. What it
@@ -65,8 +68,10 @@ import org.jspecify.annotations.Nullable;
  */
 public class SmithingClothRecipe extends SimpleSmithingRecipe {
     /**
-     * Armor a cloth may be worn over. Chest armor ships in it and nothing else - see the class note -
-     * and a pack disagrees by editing the tag rather than this file.
+     * Armor a cloth may be worn over. Chest armor ships in it and nothing else, and a pack that wants
+     * some other chestplate in it edits the tag rather than this file. Membership is necessary and
+     * not sufficient: {@link #isClothable} still asks the slot, because only the chest slot is read
+     * when the garment is drawn.
      */
     public static final TagKey<Item> CLOTHABLE = TagKey.create(
         Registries.ITEM, Identifier.fromNamespaceAndPath(ArmorPieces.MOD_ID, "clothable_armor"));
@@ -180,10 +185,7 @@ public class SmithingClothRecipe extends SimpleSmithingRecipe {
         if (equippable == null || equippable.assetId().isEmpty()) {
             return false;
         }
-        return switch (equippable.slot()) {
-            case CHEST, LEGS -> baseItem.is(CLOTHABLE);
-            default -> false;
-        };
+        return equippable.slot() == EquipmentSlot.CHEST && baseItem.is(CLOTHABLE);
     }
 
     @Override

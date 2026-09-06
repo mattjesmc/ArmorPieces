@@ -38,9 +38,8 @@ import net.minecraft.world.item.ItemStack;
  *
  * <p>The traversal is four {@code getItemBySlot} calls and, for anything actually decorated, one map
  * lookup per socket. An entity wearing plain armor pays four empty-stack checks; an entity wearing
- * decorated but effectless armor - which is eighteen of the nineteen parts this mod ships, all but
- * {@code pinions} - pays a list emptiness check
- * on top and never builds a context. The per-tick path additionally keeps to a tracked set of
+ * decorated but effectless armor - which is nearly every part this mod ships - pays a list emptiness
+ * check on top and never builds a context. The per-tick path additionally keeps to a tracked set of
  * wearers rather than sweeping the world, so an ordinary server with no effectful parts loaded does
  * no work at all beyond the damage and glide checks, which are already O(1) per event.
  */
@@ -217,7 +216,11 @@ public final class DecorationEffectDispatcher {
      * <p>The event hands over both stacks, which is the whole reason no side table is needed: the
      * modifiers to remove are recomputed from the piece coming off, and they land on the same ids
      * they were added under because {@link DecorationEffect.Attributes} is required to be a pure
-     * function of the part. Modifiers are added TRANSIENTLY, so they are never written to disk and a
+     * function of the part and the wearer's equipment.
+     *
+     * <p>Which is why a HAND change is not ignored any more, though no socket rides on a hand: it is
+     * a moment the equipment half of that rule can change, so the armor slots are reconciled against
+     * it. That is the entire cost of letting a part ask what its wearer is holding. Modifiers are added TRANSIENTLY, so they are never written to disk and a
      * crash cannot leave a player permanently buffed by a part they no longer own - the equip that
      * happens when the entity next loads puts them back.
      */
@@ -227,11 +230,24 @@ public final class DecorationEffectDispatcher {
         final ItemStack previous,
         final ItemStack current
     ) {
-        if (!ARMOR_SLOTS.contains(slot) || !(entity.level() instanceof ServerLevel)) {
+        if (!(entity.level() instanceof ServerLevel)) {
+            return;
+        }
+        if (!ARMOR_SLOTS.contains(slot)) {
+            // A hand changed. No socket rides on a hand, so nothing is equipped or unequipped here -
+            // but a condition may have been about what that hand holds, so the armor slots' modifiers
+            // are recomputed against the new equipment. This is what buys `if_wearer` its equipment
+            // tier: an attribute is still reconciled at every moment it can change, so it can depend
+            // on the wearer's equipment without ever going stale. See WearerConditionEffect.
+            if (slot.getType() == EquipmentSlot.Type.HAND) {
+                for (final EquipmentSlot armorSlot : ARMOR_SLOTS) {
+                    reconcileAttributes(entity, armorSlot, entity.getItemBySlot(armorSlot));
+                }
+            }
             return;
         }
         forStack(entity, slot, previous, DecorationEffect.Attributes.class, (effect, context) -> {
-            effect.collectAttributes(context, (attribute, modifier) -> {
+            effect.collectPossibleAttributes(context, (attribute, modifier) -> {
                 final AttributeInstance instance = entity.getAttribute(attribute);
                 if (instance != null) {
                     instance.removeModifier(scopedId(context.anchor(), modifier.id()));
@@ -244,7 +260,41 @@ public final class DecorationEffectDispatcher {
             return false;
         });
 
-        forStack(entity, slot, current, DecorationEffect.Attributes.class, (effect, context) -> {
+        reconcileAttributes(entity, slot, current);
+        forStack(entity, slot, current, DecorationEffect.Lifecycle.class, (effect, context) -> {
+            effect.onEquip(context);
+            return false;
+        });
+
+        if (isDecorated(entity)) {
+            WEARERS.add(entity);
+        } else {
+            WEARERS.remove(entity);
+        }
+    }
+
+    /**
+     * One armor slot's modifiers, recomputed from scratch: everything the piece could contribute is
+     * removed, and everything it does contribute right now is added back.
+     *
+     * <p>Removing by {@code collectPossibleAttributes} rather than by what is being added is the
+     * whole of it. A gated modifier that has just stopped applying is not offered by
+     * {@code collectAttributes} any more, so an add-only pass would leave it on the entity for ever;
+     * asking instead for what the effect COULD give means a gate takes back exactly what it could
+     * have granted. Modifiers are transient, so none of this is ever written to disk.
+     */
+    private static void reconcileAttributes(
+        final LivingEntity entity,
+        final EquipmentSlot slot,
+        final ItemStack stack
+    ) {
+        forStack(entity, slot, stack, DecorationEffect.Attributes.class, (effect, context) -> {
+            effect.collectPossibleAttributes(context, (attribute, modifier) -> {
+                final AttributeInstance instance = entity.getAttribute(attribute);
+                if (instance != null) {
+                    instance.removeModifier(scopedId(context.anchor(), modifier.id()));
+                }
+            });
             effect.collectAttributes(context, (attribute, modifier) -> {
                 final AttributeInstance instance = entity.getAttribute(attribute);
                 if (instance != null) {
@@ -256,16 +306,6 @@ public final class DecorationEffectDispatcher {
             });
             return false;
         });
-        forStack(entity, slot, current, DecorationEffect.Lifecycle.class, (effect, context) -> {
-            effect.onEquip(context);
-            return false;
-        });
-
-        if (isDecorated(entity)) {
-            WEARERS.add(entity);
-        } else {
-            WEARERS.remove(entity);
-        }
     }
 
     /**

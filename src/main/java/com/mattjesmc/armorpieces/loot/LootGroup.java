@@ -6,6 +6,9 @@ import com.mattjesmc.armorpieces.decoration.ArmorPiecesRegistries;
 import com.mattjesmc.armorpieces.decoration.fitting.Fitting;
 import com.mattjesmc.armorpieces.skin.ArmorSkin;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.Encoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Optional;
@@ -130,6 +133,24 @@ public record LootGroup(
         private static final Codec<TableEntry> BARE = ResourceKey.codec(Registries.LOOT_TABLE)
             .xmap(table -> new TableEntry(table, Optional.empty()), TableEntry::table);
 
-        public static final Codec<TableEntry> CODEC = Codec.withAlternative(BARE, FULL);
+        /**
+         * Reads either form; writes the SHORT one only when there is nothing else to say.
+         *
+         * <p>{@code Codec.withAlternative} would do the reading on its own, but it encodes with its
+         * first codec always - so a table carrying a chance of its own would be written back as a
+         * bare id and the chance lost. Nothing encoded a table entry while these files were only
+         * ever read; {@link com.mattjesmc.armorpieces.config.ArmorPiecesServerConfig} writes its own
+         * file back, and does.
+         */
+        public static final Codec<TableEntry> CODEC = Codec.of(
+            new Encoder<TableEntry>() {
+                @Override
+                public <T> DataResult<T> encode(
+                    final TableEntry input, final DynamicOps<T> ops, final T prefix
+                ) {
+                    return (input.chance().isEmpty() ? BARE : FULL).encode(input, ops, prefix);
+                }
+            },
+            Codec.withAlternative(BARE, FULL));
     }
 }

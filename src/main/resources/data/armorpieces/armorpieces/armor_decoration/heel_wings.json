@@ -6,6 +6,23 @@
   "anchors": [
     "spurs"
   ],
+  "effects": [
+    {
+      "type": "armorpieces:attribute",
+      "id": "armorpieces:heel_wings_jump",
+      "attribute": "minecraft:jump_strength",
+      "amount": {
+        "default": 0.1,
+        "by_material": [
+          {
+            "material": "minecraft:netherite",
+            "value": 0.15
+          }
+        ]
+      },
+      "operation": "add_multiplied_base"
+    }
+  ],
   "loot": [
     {
       "table": "minecraft:chests/end_city_treasure",

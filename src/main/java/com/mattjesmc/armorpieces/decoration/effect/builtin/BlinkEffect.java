@@ -2,10 +2,13 @@ package com.mattjesmc.armorpieces.decoration.effect.builtin;
 
 import com.mattjesmc.armorpieces.decoration.effect.DecorationEffect;
 import com.mattjesmc.armorpieces.decoration.effect.DecorationEffectContext;
+import com.mattjesmc.armorpieces.decoration.effect.MaterialValue;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -18,6 +21,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.equipment.trim.TrimMaterial;
 
 /**
  * {@code armorpieces:blink} - a chance to be somewhere else when the blow lands.
@@ -41,18 +45,23 @@ import net.minecraft.world.entity.LivingEntity;
  * {@code randomTeleport} refuses unsafe destinations, so a blink underground lands short or does not
  * happen at all.
  *
+ * @param chance      how often it works, as a plain number or one that scales with the material -
+ *                    see {@link MaterialValue}, and a netherite plume dodging more often than an
+ *                    iron one is the example that value type was written for.
  * @param damageTypes which damage this answers. Defaults to projectiles, which is the reading of
  *                    "dodge" that makes sense: you cannot sidestep drowning.
  */
 public record BlinkEffect(
-    float chance,
+    MaterialValue<Float> chance,
     double radius,
     TagKey<DamageType> damageTypes,
     int attempts
 ) implements DecorationEffect.Damage {
     public static final MapCodec<BlinkEffect> CODEC = RecordCodecBuilder.mapCodec(
         i -> i.group(
-                ExtraCodecs.floatRange(0.0F, 1.0F).optionalFieldOf("chance", 0.25F).forGetter(BlinkEffect::chance),
+                MaterialValue.codec(ExtraCodecs.floatRange(0.0F, 1.0F))
+                    .optionalFieldOf("chance", MaterialValue.of(0.25F))
+                    .forGetter(BlinkEffect::chance),
                 Codec.doubleRange(1.0, 64.0).optionalFieldOf("radius", 8.0).forGetter(BlinkEffect::radius),
                 TagKey.codec(Registries.DAMAGE_TYPE)
                     .optionalFieldOf("damage_types", DamageTypeTags.IS_PROJECTILE)
@@ -67,6 +76,13 @@ public record BlinkEffect(
         return CODEC;
     }
 
+    /** The chance as a percentage, which is the only number about this a wearer can act on. */
+    @Override
+    public Component description(final Holder<TrimMaterial> material) {
+        return Component.translatable("effect.armorpieces.blink",
+            Math.round(this.chance.get(material) * 100.0F));
+    }
+
     @Override
     public boolean allowDamage(final DecorationEffectContext context, final DamageSource source, final float amount) {
         final ServerLevel level = context.serverLevel();
@@ -74,7 +90,7 @@ public record BlinkEffect(
             return true;
         }
         final RandomSource random = context.random();
-        if (random.nextFloat() >= this.chance) {
+        if (random.nextFloat() >= this.chance.get(context.material())) {
             return true;
         }
 

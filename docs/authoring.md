@@ -80,9 +80,11 @@ fitting's template and the two items of its recipe, and writes
 `recipe/fitting_template_<name>.json` beside the definition when a centre item is given. Effects are rows on the same dialog: pick a built-in
 type and its fields appear, with the ranges, defaults and descriptions read out of the Java
 that defines it, and attribute, mob-effect and damage-tag ids autocompleting from the game.
-Any row can be switched to run *only while* one of the part's fittings holds a chosen
-material or dye, which is `armorpieces:if_fitting` written for you. An effect the dialog
-cannot show — a type from another mod — is kept as it is and shown read-only. *Loot* is rows
+Any row can be switched from *whenever the piece is worn* to *only while a fitting holds* a
+chosen material or dye, or *only while the wearer* matches an entity predicate typed as JSON —
+`armorpieces:if_fitting` and `armorpieces:if_wearer` written for you. A number that may vary by
+material takes a *per material…* button, which adds a row of material and value under it. An
+effect the dialog cannot show — a type from another mod — is kept as it is and shown read-only. *Loot* is rows
 of table, weight and chance, the table id autocompleting from the game's own list with the
 chests first; the summary line says where the part is found. An empty list is no field.
 
@@ -138,12 +140,18 @@ your own copy of the game: *Use my game…* in the menu, or `--jar`, `--minecraf
 on the command line) and are never
 committed. `bb_geo.py` converts `.bbmodel` to the mod's geometry and back.
 
-**Checking one.** `python tools/check_part.py` is the check every shipped part passes: clearance
-and shared planes from `trace_geometry.py`, unpainted faces and stray or coloured paint from
-`sync_decoration_masters.py`. Point it at a shipped part (`check_part.py antlers`, or `--all`), at
-a part of your own, or at whatever is open in Blockbench (`--status`), and it prints what would
-stop the part shipping and what is merely worth knowing. `tools/check_skin.py` is its twin for a
-skin.
+**From an agent.** The same editor drives from an MCP client through `tools/mcp`, a small server
+in front of Blockbench's own MCP plugin: it serves the tools a part author uses (an *authoring*
+profile of the plugin's ninety-odd), adds `armorpieces_open`, `_new`, `_check`, `_save`, `_part`,
+`_set_part`, `_pieces` and `_close` — with the skin workspace's own set beside them,
+`armorpieces_skins`, `_open_skin`, `_skin_sheet`, `_skin_paint`, `_skin_material`, `_skin_check`,
+`_save_skin` and `_close_skin` — and after every editing call appends the check every shipped
+part passes - clearance and shared planes from `trace_geometry.py`, unpainted faces and stray or
+coloured paint from `sync_decoration_masters.py`, together in `tools/check_part.py`, and
+`tools/check_skin.py` for a skin - so the reply that placed a cube on the helmet shell says so.
+Save refuses while problems stand unless told otherwise. `tools/mcp/README.md` has the setup and what the model is told; `check_part.py` runs
+the same report by hand over a shipped part (`check_part.py antlers`, `--all`), a pack piece, or
+the piece open in Blockbench (`--status`).
 
 ## By hand
 
@@ -331,7 +339,29 @@ in it — a table uses the mod's loot function on an armor entry:
 
 The stack has to be armor for the socket's slot and the part has to fit the socket, the same two
 rules the smithing table applies; a mismatch is reported when the table loads, and the armor
-passes through plain. `fittings` is optional and written as it is in `/give`.
+passes through plain. `fittings` is optional and written as it is in `/give`. `part` also takes a
+list or a **tag** — `"part": "#armorpieces:knightly"` — and one member that fits the socket is drawn
+at random, so one function can name a whole theme and let the socket sort it out.
+
+**4c. A table of your own, reaching back.** Everything above is the mod reaching into other people's
+tables. The other direction — your loot table offering one of ours — is the `armorpieces:template`
+pool entry:
+
+```json
+{ "type": "armorpieces:template", "parts": "#armorpieces:knightly", "weight": 3 }
+```
+
+It takes the same four fields a group does (`parts`, `skins`, `cloths`, `fittings`), draws one
+member of the union at random, and hands out exactly the template stack the creative tab holds.
+Write a **tag** rather than a list of ids, and it survives the pack that fills the tag not being
+installed: an empty tag makes the entry drop out of the pool entirely, taking its weight with it,
+where a `minecraft:item` entry naming an absent part fails the whole table to parse. It says nothing
+about how often — it is an ordinary entry in your pool and your conditions and rolls decide that.
+
+**What is out of reach.** All of this is loot tables. A mod that fills a chest from its own code
+never asks the loot system anything, so nothing here — and nothing any datapack could write —
+reaches it. `/armorpieces loot list` is how you find out which it is: if the container's table is
+not in that list, it does not have one.
 
 **Overriding what this mod ships.** Same ids, your pack. A resource pack can restyle any part's
 geometry or texture and a datapack can change where it may be worn.
@@ -362,29 +392,112 @@ Parts are cosmetic by default. A part that should do something while it is worn 
 ]
 ```
 
-Four built-in behaviours reach four of the five hooks from JSON alone, and a fifth type gates
+Four built-in behaviours reach four of the five hooks from JSON alone, and two more types gate
 them:
 
 | `type` | Hooks | Fields |
 | --- | --- | --- |
-| `armorpieces:attribute` | Attributes | `id`, `attribute`, `amount`, `operation` |
-| `armorpieces:mob_effect` | Ticking | `effect`, `amplifier`, `ambient`, `show_particles`, `show_icon` |
-| `armorpieces:blink` | Damage | `chance`, `radius`, `damage_types`, `attempts` |
-| `armorpieces:glide` | Gliding + Ticking | `sink`, `wear_interval` |
+| `armorpieces:attribute` | Attributes | `id`, `attribute`, `amount`\*, `operation` |
+| `armorpieces:mob_effect` | Ticking | `effect`, `amplifier`\*, `ambient`, `show_particles`, `show_icon` |
+| `armorpieces:blink` | Damage | `chance`\*, `radius`, `damage_types`, `attempts` |
+| `armorpieces:glide` | Gliding + Ticking | `sink`\*, `wear_interval` |
 | `armorpieces:if_fitting` | all, forwarded | `if` (a fitting, and optionally `material` or `dye`), `then` (any effect) |
+| `armorpieces:if_wearer` | all, forwarded | `if` (an entity predicate), `then` (any effect) |
 
-The last is what makes a gem more than paint: `{ "type": "armorpieces:if_fitting",
+\* may scale with the material — see below.
+
+**`armorpieces:attribute` is most of what a part would want, and the palette is vanilla's own
+attribute list**: `armor`, `armor_toughness`, `attack_damage`, `attack_speed`, `knockback_resistance`,
+`movement_speed`, `luck`, `max_health`, `jump_strength`, `safe_fall_distance`,
+`fall_damage_multiplier`, `gravity`, `air_drag_modifier`, `bounciness`, `oxygen_bonus`,
+`block_interaction_range`, `submerged_mining_speed` and some thirty others. Feather boots that jump
+further are one entry with no Java at all:
+
+```json
+{ "type": "armorpieces:attribute", "id": "mypack:heel_wings_jump",
+  "attribute": "minecraft:jump_strength", "amount": 0.15, "operation": "add_multiplied_base" }
+```
+
+`id` only has to be unique within the part: the same part in two sockets contributes two modifiers
+that stack, because the socket is prefixed onto the id for you.
+
+### The two gates
+
+`if_fitting` is what makes a gem more than paint: `{ "type": "armorpieces:if_fitting",
 "if": { "fitting": "armorpieces:gemstone", "material": "minecraft:emerald" }, "then": { ... } }`
 runs its effect only while an emerald is set. `material` and `dye` are alternatives — one narrows
 a material fitting, the other a dye fitting, and a condition naming both is refused at load.
 Naming neither is the shortest form: while there is anything in the fitting at all.
 
+`if_wearer` asks about the person wearing the piece instead, in **vanilla's own entity predicate** —
+the same object an advancement or a loot table takes, so what it can ask grows with the game rather
+than with this mod:
+
+```json
+{ "type": "armorpieces:if_wearer",
+  "if": { "equipment": { "mainhand": { "items": "minecraft:air" } } },
+  "then": { "type": "armorpieces:attribute", "id": "mypack:claws_bite",
+            "attribute": "minecraft:attack_damage", "amount": 1.0 } }
+```
+
+Claws that only bite bare-handed, and nothing else needed. **Which conditions are legal depends on
+the hook underneath**, and the rule has one reason: attribute modifiers are applied when equipment
+changes and then left in place, so a modifier that depended on something else would be computed once
+and quietly stay wrong.
+
+- Over an **attribute** effect, `if_wearer` may test **`equipment` only** — what the wearer holds and
+  wears. That is honoured properly: a main- or off-hand change re-checks the armor slots, so the
+  claw appears the moment the hand is empty and is gone the moment it is not. Anything else in the
+  predicate — `location`, `flags`, `effects`, `nbt` — **fails the pack at load**, naming the test that
+  was the problem.
+- Over **`mob_effect`, `blink`** or anything else re-asked at the moment it runs, every test is legal:
+  `{ "flags": { "is_in_water": true } }`, `{ "location": { "dimension": "minecraft:the_nether" } }`,
+  and so on.
+- Over a **glider** it is refused outright: vanilla asks `canGlide` on the client too, where an entity
+  predicate cannot be evaluated. Gate a glider with `if_fitting`, which asks about the part.
+
+The two nest in either order, because each wraps any effect including the other.
+
+### Numbers that scale with the material
+
+The fields marked `*` above take either a plain number or one per material, so a netherite claw and
+an iron claw are one part rather than two:
+
+```json
+"amount": { "default": 1.0,
+            "by_material": [ { "material": "minecraft:netherite", "value": 2.0 },
+                             { "material": "#armorpieces:gemstones", "value": 1.5 } ] }
+```
+
+**The first case that matches wins**, so a single material goes above a tag that contains it. A
+material no case names gets `default`, and a tag nobody installed simply never matches — a reference
+to another pack's materials cannot break yours.
+
 The five hooks are `Ticking` (every server tick worn), `Damage` (a veto — `allowDamage` false
-cancels the hit outright), `Attributes` (equip/unequip), `Gliding` (vanilla's own `canGlide`
-check) and `Lifecycle` (put on and taken off, for state that lives outside the item — the one
-hook no built-in behaviour reaches, so putting anything there means Java). A part has no
-durability of its own, so an effect that costs something spends the *decorated piece's*
-durability — `pinions` wears the chestplate it is bolted to.
+cancels the hit outright), `Attributes` (equip/unequip, and now also a hand change), `Gliding`
+(vanilla's own `canGlide` check) and `Lifecycle` (put on and taken off, for state that lives
+outside the item — the one hook no built-in behaviour reaches, so putting anything there means
+Java). A part has no durability of its own, so an effect that costs something spends the
+*decorated piece's* durability — `pinions` wears the chestplate it is bolted to.
+
+Damage **dealt** by the wearer is not a hook. Fabric offers no damage-modification event —
+`ALLOW_DAMAGE` can only refuse a hit, never enlarge one — and reaching it would mean a mixin into
+the damage path, which every hook here deliberately avoids so that one part's effect cannot break an
+unrelated mod by winning a race for an injection point. Hitting harder is `attack_damage` through
+`armorpieces:attribute`, with vanilla's own formula doing the arithmetic.
+
+### Seeing what a part is doing
+
+A part that carries effects lists them on the piece's tooltip, one line each, with the numbers *that*
+part in *that* material actually gives. What a tooltip cannot show is a condition, since it has no
+wearer to ask — so `/armorpieces effects [<wearer>]` prints what somebody is wearing, socket by
+socket, and marks each effect with whether it is contributing at that moment. It takes any living
+entity, an armor stand included.
+
+Six parts in this mod carry an effect, one per mechanism: `claws` (an equipment condition and a
+per-material number), `head_fins` (a world condition), `heel_wings` (a bare scaled attribute),
+`circlet` (a fitting gate), `cloak` (a dodge) and `pinions` (a glider). Every one of them is a file any pack
+could have written; the other eighty-five parts carry nothing at all.
 
 **A new effect type is the one thing that needs Java**, because behaviour is code. Implement a
 hook, register the codec, and add nothing else:
@@ -510,13 +623,15 @@ the trim's edge line, and under every part. That layering costs nothing, because
 new pass — it is *composited into the armor's own texture*, so it is the armor model. Which is also
 why it moves correctly, clips nothing, and needs no rig.
 
-What it cannot do is hang. A cloth is tight to the torso box: no hem past it, no flare, no side
-slits that swing. A garment that hangs is geometry, which is a part — and a part cannot be under
-anything or take the armor's shading. They are different features.
+What it cannot do is hang. A cloth is tight to the boxes the armor already draws: no flare, no side
+slits that swing, and a hem that reaches the top of the thigh and stops. A garment that hangs is
+geometry, which is a part — and a part cannot be under anything or take the armor's shading. They are
+different features.
 
-A cloth is **one greyscale mask, one data file and a recipe**:
+A cloth is **a greyscale mask per sheet, one data file and a recipe**:
 
     assets/<ns>/textures/entity/cloth/<cloth>/humanoid.png            64x32, on vanilla's armor grid
+    assets/<ns>/textures/entity/cloth/<cloth>/humanoid_leggings.png   the same, for the hem
     data/<ns>/armorpieces/cloth/<cloth>.json                          asset_id, sheet, description, loot
     data/<ns>/recipe/cloth_template_<cloth>.json                      the ring of paper, as a part's is
 
@@ -529,27 +644,45 @@ A cloth is **one greyscale mask, one data file and a recipe**:
 }
 ```
 
-**It stops at the waist, and that is the model's word not the design's.** A chestplate's layer draws
-three boxes - the torso and the two arms - and a texture can only paint texels that some box of its
-own item samples. There is no geometry over the thigh in that layer, so there is nothing to paint: a
-chestplate's garment ends where the chestplate ends.
+**Where the garment reaches is the model's word, not the design's.** A texture can only paint texels
+that some box of its own item samples, so a garment reaches exactly the boxes the armor draws — no
+further, and there are three of them:
 
-A hem on the LEGGINGS' leg boxes was built and looked right - three to five rows read cleanly as
-cloth hanging past the breastplate - and was cut, because it is not the chestplate's to draw. It
-needs the garment applied to the leggings as well, which is a second smithing operation on a second
-item for a few rows of cloth, and it makes "a piece half-wearing a garment" a thing a player can
-have. The capability is still there for a pack that wants it: ship a `humanoid_leggings.png` mask,
-add `#minecraft:leg_armor` to `armorpieces:clothable_armor`, and no code changes. Anything longer
-than a few rows should not go there anyway - a leg box inflates 0.4 where the chest box inflates 1.0,
-so the hem is thinner than the garment above it, and the legs are two boxes that swing apart, so a
-long one splits down the middle at every step.
+    chest   the chestplate's torso box            humanoid.png            the garment
+    waist   the leggings' belt                    humanoid_leggings.png   the join
+    leg     the leggings' two leg boxes           humanoid_leggings.png   the hem
+
+The chestplate's layer draws the torso and the two arms and nothing over the thigh, so its own sheet
+ends at the waist. What continues past it is on the leggings' boxes.
+
+**The garment is still the chestplate's, though, and one component.** The renderer reads
+`armorpieces:cloth` off the CHEST slot when it paints the leggings sheet, so a hem costs no second
+template, no second smithing operation, and there is no such thing as half-wearing a garment. Leg
+armor is refused by the recipe for exactly that reason: nothing on it is read. The rule this buys is
+the one the feature already has a layer up — a garment is worn ON armor, so a tabard over bare legs
+has no geometry to hang a hem on and simply has no hem.
+
+**Cut the waist box even though it lives inside the chestplate.** Every vanilla material scallops the
+bottom row or two of its torso away, and what shows through that scallop is the leggings' belt. Cloth
+on the chest box stops there, correctly — the armor is what ends it — and without cloth on the belt
+behind it a garment reads as two bands with the armor's own metal between them. The rest of the box
+is transparent on every material, so the armor cuts it away for free: paint the whole face and only
+the belt survives.
+
+**A hem is short on purpose.** Three to five rows, and the two shipped cloths deliberately differ —
+the tunic closes round each leg and goes to five, the tabard is two flat panels and stops at three.
+Two things bound it. A leg box inflates 0.4 where the chest box inflates 1.0, so the garment above
+overhangs the hem by half a texel: make the hem's top row its darkest and the step reads as cloth
+tucked under cloth. And the legs are two boxes that swing apart, so a long hem splits down the middle
+at every step. Anything that genuinely hangs is geometry, which is a part.
 
 `check_authoring.py` refuses a cloth with no mask at all, which would be a garment the game puts on
-a piece of armor and then draws nothing for.
+a piece of armor and then draws nothing for. One sheet and not the other is fine: it is a garment
+that does not reach that far.
 
 ### What the mask says
 
-One sheet, three jobs at once:
+Each sheet, three jobs at once:
 
 - **Alpha is how far the garment reaches.** Where it is transparent, the armor is untouched. Reach
   generously: how far it *can* reach is the armor's to say — see below.
@@ -571,9 +704,13 @@ cuts straight through the legs at every step. Leave it empty, as vanilla does.
   at the hem. 127 is the dye exactly; below goes toward black and above toward white, on the same
   three-stop ramp a dye fitting and a horn's ivory already use.
 - **The two torso panels are where the design lands.** `chest.front` (20,20 8x12) and `chest.back`
-  (32,20 8x12). Everywhere else the mask covers takes the base colour alone — the sides, the
-  shoulders and the hem underside, which are four texels wide at most and could not carry a charge
-  anyway.
+  (32,20 8x12) — and the same two rectangles on the leggings sheet, which is the `waist` box, because
+  vanilla lays the two nets out identically. That is what makes a garment's two halves line up, and
+  it is why the belt band carries the design's own bottom rows rather than a stripe of flat dye.
+  Everywhere else the mask covers takes the base colour alone — the sides, the shoulders, and every
+  face of the leg boxes, which are four texels wide at most and could not carry a charge anyway. So
+  **a hem never takes the pattern**, front face included: it is a garment seen below the design, not
+  the design continued onto the thigh.
 
 Both panels get the design **the right way round**. A banner's back is mirrored because a banner is
 one sheet of cloth read from behind; a tabard is two panels, each read from outside.
@@ -590,9 +727,10 @@ instead when there is a skin. The bake runs at 256x128 so a charge has room, ups
 own texels nearest so the plate still reads at vanilla resolution.
 
 `python tools/preview_cloth.py` is the reference implementation of all of that and writes a contact
-sheet of your garment in three designs on five materials — `--light 0` to see the pattern alone,
-`--light 0.45` to see it overdone. `python tools/paint_cloth_masks.py` is how the two shipped masks
-are cut, and reads its rectangles out of `skin_sheets.py` so a cut and a bake cannot disagree.
+sheet of your garment in three designs on five materials, both sheets stacked in each cell —
+`--light 0` to see the pattern alone, `--light 0.45` to see it overdone, `--sheet humanoid` for one
+half. `python tools/paint_cloth_masks.py` is how the four shipped masks are cut, and reads its
+rectangles out of `skin_sheets.py` so a cut and a bake cannot disagree.
 
 **The template's own icon draws itself**, as a skin's does, but from a different half of the art: a
 skin is a surface, so its icon is a swatch of that surface; a cloth is a *shape*, so its icon is the
@@ -605,7 +743,9 @@ and the select for every cloth with art in the resources.
 every other recipe in this mod; a cloth's colour is not a material, so here it means the design —
 base colour and up to six layers, made at a loom, which is already the best pattern editor the game
 has. The banner is consumed, as it is for a shield. Leave the third slot empty and the garment comes
-off. What may wear one is `#armorpieces:clothable_armor`, which ships chest armor and nothing else.
+off. What may wear one is `#armorpieces:clothable_armor`, which ships chest armor and nothing else —
+and the chest SLOT besides, since that is the only slot the renderer reads a garment from. It is
+also place 1 of the piece's own row at the advanced smithing table, beside the trim and the skin.
 
 ## Judging the result in game
 
@@ -633,10 +773,47 @@ per fitting with the part's materials down the rows. `skins [<skin>]` puts every
 and every armor material across the columns — the one view whose columns are the armor rather than
 the trim, because that is the axis a skin's colour comes from. `clear` removes them all.
 
-`loot <table> [rolls]` is numbers rather than stands: it rolls the table, a thousand times unless
-told otherwise, and counts what the mod put in it — templates by part, decorated armor by what it
-wears — against everything else the table dropped, so a chance and a weight can be judged without
-opening a thousand chests.
+`/armorpieces loot` is numbers rather than stands, and it is where a question about loot is
+answered. `list [<filter>]` prints the loot table ids this world actually loaded, `+` against the
+ones the mod adds to — the way to learn what a modded chest's table is called, since nothing else
+in the game will tell you. `explain <table>` says what was added to one table and why: every group
+and every `loot` row that offered a member, at what chance and weight, and the number that ended up
+on the pool. `groups` lists the loaded groups with the server config applied, so one that has been
+turned off or re-tuned says so. `roll <table> [rolls]` rolls the table, a thousand times unless told
+otherwise, and counts what the mod put in it — all four template families, and decorated armor by
+what it wears — against everything else the table dropped, so the theory can be checked against a
+measurement.
+
+### Tuning it as a server
+
+Loot content is pack data, but *how much of it* is not, and a server owner should not have to author
+a datapack to say so. `config/armorpieces-server.json` is written on first run and re-read at the
+start of every datapack reload, so `/reload` picks up an edit and there is no second command:
+
+```json
+{ "enabled": true,
+  "chance_multiplier": 1.0,
+  "groups": {
+    "armorpieces:knightly": {
+      "chance": 0.05,
+      "weight": 2,
+      "add": [ "somemod:chests/vault", { "table": "somemod:chests/deep_vault", "chance": 0.3 } ],
+      "remove": [ "minecraft:chests/desert_pyramid" ]
+    },
+    "armorpieces:court": { "enabled": false }
+  } }
+```
+
+Every key is optional and absent means "as the pack wrote it". `chance_multiplier` scales every
+chance the mod ends up putting on a table — groups and `loot` rows alike — and is the one knob for
+"half as much of this mod" without naming a group; `enabled: false` at the top is the off switch.
+Per group: `enabled` drops one theme, `chance` and `weight` replace the group's own, `add` joins
+tables the pack never named (a modded container needs no datapack at all) and `remove` takes tables
+away. What a group *contains* is deliberately not overridable — different members are a different
+group, which is content, which is a datapack.
+
+The invariants survive all of it: still one pool per table, still one roll, and the chance is still
+a property of the table rather than of a part.
 
 `/armorpieces table` opens the advanced smithing table wherever you stand, behind the same
 permission level and for the same reason: a piece can be dressed and undressed — Remove is the one

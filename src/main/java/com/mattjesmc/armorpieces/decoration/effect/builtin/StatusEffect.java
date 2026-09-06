@@ -2,14 +2,17 @@ package com.mattjesmc.armorpieces.decoration.effect.builtin;
 
 import com.mattjesmc.armorpieces.decoration.effect.DecorationEffect;
 import com.mattjesmc.armorpieces.decoration.effect.DecorationEffectContext;
+import com.mattjesmc.armorpieces.decoration.effect.MaterialValue;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.item.equipment.trim.TrimMaterial;
 
 /**
  * {@code armorpieces:mob_effect} - a status effect held for as long as the part is worn.
@@ -30,6 +33,8 @@ import net.minecraft.world.effect.MobEffectInstance;
  * a weaker one from a part - vanilla's own precedence rules decide, and this behaves like every other
  * source of the same effect.
  *
+ * @param amplifier      the level, as a plain number or one that scales with the material - see
+ *                       {@link MaterialValue}. Zero is level I.
  * @param ambient        true by default, so the wearer gets the faded HUD border a beacon gives
  *                       rather than the solid one a potion gives.
  * @param showParticles  false by default: a permanent effect that spat particles every tick would be
@@ -37,7 +42,7 @@ import net.minecraft.world.effect.MobEffectInstance;
  */
 public record StatusEffect(
     Holder<MobEffect> effect,
-    int amplifier,
+    MaterialValue<Integer> amplifier,
     boolean ambient,
     boolean showParticles,
     boolean showIcon
@@ -49,7 +54,9 @@ public record StatusEffect(
     public static final MapCodec<StatusEffect> CODEC = RecordCodecBuilder.mapCodec(
         i -> i.group(
                 BuiltInRegistries.MOB_EFFECT.holderByNameCodec().fieldOf("effect").forGetter(StatusEffect::effect),
-                ExtraCodecs.intRange(0, 255).optionalFieldOf("amplifier", 0).forGetter(StatusEffect::amplifier),
+                MaterialValue.codec(ExtraCodecs.intRange(0, 255))
+                    .optionalFieldOf("amplifier", MaterialValue.of(0))
+                    .forGetter(StatusEffect::amplifier),
                 Codec.BOOL.optionalFieldOf("ambient", true).forGetter(StatusEffect::ambient),
                 Codec.BOOL.optionalFieldOf("show_particles", false).forGetter(StatusEffect::showParticles),
                 Codec.BOOL.optionalFieldOf("show_icon", true).forGetter(StatusEffect::showIcon)
@@ -68,6 +75,18 @@ public record StatusEffect(
             return;
         }
         context.wearer().addEffect(new MobEffectInstance(
-            this.effect, DURATION_TICKS, this.amplifier, this.ambient, this.showParticles, this.showIcon));
+            this.effect, DURATION_TICKS, this.amplifier.get(context.material()),
+            this.ambient, this.showParticles, this.showIcon));
+    }
+
+    /** The effect's own name, with vanilla's potency numeral after it exactly as a potion reads. */
+    @Override
+    public Component description(final Holder<TrimMaterial> material) {
+        final Component name = Component.translatable(this.effect.value().getDescriptionId());
+        final int amplifier = this.amplifier.get(material);
+        return amplifier == 0
+            ? name
+            : Component.translatable("potion.withAmplifier", name,
+                Component.translatable("potion.potency." + amplifier));
     }
 }

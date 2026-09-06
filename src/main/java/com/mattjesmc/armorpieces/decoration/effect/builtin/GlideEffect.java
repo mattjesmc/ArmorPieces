@@ -2,11 +2,15 @@ package com.mattjesmc.armorpieces.decoration.effect.builtin;
 
 import com.mattjesmc.armorpieces.decoration.effect.DecorationEffect;
 import com.mattjesmc.armorpieces.decoration.effect.DecorationEffectContext;
+import com.mattjesmc.armorpieces.decoration.effect.MaterialValue;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.Holder;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.equipment.trim.TrimMaterial;
 import net.minecraft.world.level.gameevent.GameEvent;
 
 /**
@@ -35,13 +39,17 @@ import net.minecraft.world.level.gameevent.GameEvent;
  * item and cannot break separately, so what it costs has to be the armor's own durability.
  *
  * @param sink         blocks per tick per tick of extra downward pull while gliding. Zero leaves
- *                     vanilla's glide untouched.
+ *                     vanilla's glide untouched; a plain number or one that scales with the material,
+ *                     see {@link MaterialValue}.
  * @param wearInterval ticks between one point of damage to the piece. Zero never wears it.
  */
-public record GlideEffect(double sink, int wearInterval) implements DecorationEffect.Gliding, DecorationEffect.Ticking {
+public record GlideEffect(MaterialValue<Double> sink, int wearInterval) implements
+    DecorationEffect.Gliding, DecorationEffect.Ticking {
     public static final MapCodec<GlideEffect> CODEC = RecordCodecBuilder.mapCodec(
         i -> i.group(
-                Codec.doubleRange(0.0, 1.0).optionalFieldOf("sink", 0.02).forGetter(GlideEffect::sink),
+                MaterialValue.codec(Codec.doubleRange(0.0, 1.0))
+                    .optionalFieldOf("sink", MaterialValue.of(0.02))
+                    .forGetter(GlideEffect::sink),
                 ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("wear_interval", 5).forGetter(GlideEffect::wearInterval)
             )
             .apply(i, GlideEffect::new)
@@ -62,14 +70,21 @@ public record GlideEffect(double sink, int wearInterval) implements DecorationEf
         return !context.stack().nextDamageWillBreak();
     }
 
+    /** Nothing about a glider reduces to a number a tooltip could show, so it says what it is. */
+    @Override
+    public Component description(final Holder<TrimMaterial> material) {
+        return Component.translatable("effect.armorpieces.glide");
+    }
+
     @Override
     public void tick(final DecorationEffectContext context) {
         final LivingEntity wearer = context.wearer();
         if (!wearer.isFallFlying()) {
             return;
         }
-        if (this.sink > 0.0) {
-            wearer.setDeltaMovement(wearer.getDeltaMovement().add(0.0, -this.sink, 0.0));
+        final double sink = this.sink.get(context.material());
+        if (sink > 0.0) {
+            wearer.setDeltaMovement(wearer.getDeltaMovement().add(0.0, -sink, 0.0));
         }
         if (this.wearInterval > 0 && wearer.tickCount % this.wearInterval == 0) {
             context.stack().hurtAndBreak(1, wearer, context.slot());

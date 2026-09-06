@@ -9,6 +9,19 @@
   "fittings": [
     "armorpieces:gemstone"
   ],
+  "effects": [
+    {
+      "type": "armorpieces:if_fitting",
+      "if": {
+        "fitting": "armorpieces:gemstone",
+        "material": "minecraft:emerald"
+      },
+      "then": {
+        "type": "armorpieces:mob_effect",
+        "effect": "minecraft:hero_of_the_village"
+      }
+    }
+  ],
   "loot": [
     {
       "table": "minecraft:chests/ancient_city",

@@ -17,8 +17,11 @@ Each field is reduced to a kind an editor can build a control for:
     enum                 a select over `options`
     id                   a text field; `registry` says which ids it takes, for autocomplete
     tag                  a text field for `#namespace:name`; `registry` says which tags
+    scaled               a number that may instead be one per material; `value` is the number's
+                         own kind, bounds and all, so the control is the same control
     fitting_predicate    the `if` of if_fitting - the plugin builds its own control for this
-    effect               a nested effect - the `then` of if_fitting
+    entity_predicate     the `if` of if_wearer - vanilla's entity predicate, as JSON
+    effect               a nested effect - the `then` of a gate
     unknown              a codec this parser does not recognise; the plugin shows it read-only
 
 Usage:
@@ -76,7 +79,7 @@ def _params(javadoc: str) -> dict[str, str]:
             out[current] += " " + line.strip()
         else:
             current = None
-    return {k: re.sub(r"\{@code ([^}]*)\}", r"\1", v) for k, v in out.items()}
+    return {k: re.sub(r"\{@(?:code|link) ([^}]*)\}", r"\1", v) for k, v in out.items()}
 
 
 def _summary(javadoc: str) -> str:
@@ -91,6 +94,11 @@ def _literal(value: str):
     value = value.strip()
     if value in CONSTANTS:
         return CONSTANTS[value]
+    # A default for a per-material field is written as the bare number it scales from, which is
+    # also how that field is written in a file when no material changes it.
+    scaled = re.fullmatch(r"MaterialValue\.of\((.*)\)", value)
+    if scaled:
+        return _literal(scaled.group(1))
     if value in ("true", "false"):
         return value == "true"
     m = re.fullmatch(r"-?\d+(\.\d+)?[FfDd]?", value)
@@ -103,6 +111,11 @@ def _literal(value: str):
 def _kind(codec: str) -> dict:
     """A codec expression, reduced to a control."""
     codec = codec.strip()
+    # First, because what it wraps is a number codec the rest of this function would otherwise
+    # match: a scaled field is that number's control, plus a way to say it per material.
+    m = re.fullmatch(r"MaterialValue\.codec\((.*)\)", codec)
+    if m:
+        return {"kind": "scaled", "value": _kind(m.group(1))}
     m = re.search(r"(?:intRange)\(\s*(-?\d+),\s*(-?\d+)\s*\)", codec)
     if m:
         return {"kind": "int", "min": int(m.group(1)), "max": int(m.group(2))}
@@ -131,6 +144,8 @@ def _kind(codec: str) -> dict:
         return {"kind": "enum", "options": OPERATIONS}
     if "FittingPredicate.CODEC" in codec:
         return {"kind": "fitting_predicate"}
+    if "WearerPredicate.CODEC" in codec:
+        return {"kind": "entity_predicate"}
     if "DecorationEffect.CODEC" in codec:
         return {"kind": "effect"}
     return {"kind": "unknown", "codec": codec}

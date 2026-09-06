@@ -9,9 +9,11 @@ import com.mattjesmc.armorpieces.registry.ModDataComponents;
 import com.mattjesmc.armorpieces.skin.ArmorSkinValue;
 import java.util.List;
 import net.minecraft.client.renderer.entity.layers.EquipmentLayerRenderer;
+import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
@@ -56,6 +58,23 @@ import org.spongepowered.asm.mixin.injection.At;
  * <p>Both may apply to one layer - single-layer armor that is skinned AND clothed - and then the
  * order here is the order on the body: the skin decides what the plate is, and the cloth is laid
  * over what the skin produced.
+ *
+ * <h3>The hem, and why the leggings do not own it</h3>
+ *
+ * <p>A garment reaches two sheets. The chestplate's draws the torso and the two arms and stops at
+ * the waist; the hem past it is on the leggings' leg boxes, which are the only geometry down there.
+ * A skin is a property of one PIECE and is read off the piece being drawn - but a cloth is a
+ * property of the OUTFIT, so the leggings sheet reads {@code armorpieces:cloth} off the CHEST slot
+ * instead of off the leggings in hand. One garment, one component, one smithing operation, and a
+ * piece half-wearing a garment is not a thing that can be made.
+ *
+ * <p>The rule that costs is the same one the feature already has a layer up: a garment is worn on
+ * armor, so a tabard over bare legs has no geometry to hang a hem on and simply has no hem. And a
+ * cloth on a pair of leggings - which nothing crafts any more - draws nothing at all.
+ *
+ * <p>Everything else about the hem stays per-piece. The pixels it is composited onto and the form it
+ * is shaded by are the LEGGINGS', because that is the armor the hem is worn on: a skinned pair
+ * shades the hem with its own master, exactly as an unskinned one shades it with vanilla's.
  */
 @Mixin(EquipmentLayerRenderer.class)
 public class EquipmentLayerRendererMixin {
@@ -77,6 +96,7 @@ public class EquipmentLayerRendererMixin {
     private Object armorpieces$texture(
         final Object original,
         final @Local(argsOnly = true) EquipmentClientInfo.LayerType layerType,
+        final @Local(argsOnly = true, ordinal = 0) Object renderState,
         final @Local(argsOnly = true) ItemStack itemStack,
         final @Local List<EquipmentClientInfo.Layer> layers,
         final @Local EquipmentClientInfo.Layer layer
@@ -85,7 +105,7 @@ public class EquipmentLayerRendererMixin {
             return original;
         }
         final ArmorSkinValue skin = itemStack.get(ModDataComponents.SKIN);
-        final ClothValue cloth = itemStack.get(ModDataComponents.CLOTH);
+        final ClothValue cloth = cloth(layerType, itemStack, renderState);
         if (skin == null && cloth == null) {
             return original;
         }
@@ -112,6 +132,27 @@ public class EquipmentLayerRendererMixin {
             }
         }
         return result;
+    }
+
+    /**
+     * The garment this layer is drawing, which is not always the one on the stack in hand.
+     *
+     * <p>On the leggings sheet it is the CHEST slot's, read off the render state - see the class
+     * note. The render state is the erased {@code S} of {@code renderLayers}; every humanoid one
+     * carries the four armor stacks already, since that is what {@code HumanoidArmorLayer} submits
+     * them from, and a render state that is not humanoid has no chest slot to ask about.
+     */
+    private static @Nullable ClothValue cloth(
+        final EquipmentClientInfo.LayerType layerType,
+        final ItemStack itemStack,
+        final Object renderState
+    ) {
+        if (layerType != EquipmentClientInfo.LayerType.HUMANOID_LEGGINGS) {
+            return itemStack.get(ModDataComponents.CLOTH);
+        }
+        return renderState instanceof HumanoidRenderState humanoid
+            ? humanoid.chestEquipment.get(ModDataComponents.CLOTH)
+            : null;
     }
 
     /** The shell layer's own texture - what the armor's lighting is measured from. */

@@ -1,5 +1,6 @@
 package com.mattjesmc.armorpieces.decoration;
 
+import com.mattjesmc.armorpieces.decoration.effect.DecorationEffect;
 import com.mattjesmc.armorpieces.decoration.fitting.Fitting;
 import com.mattjesmc.armorpieces.decoration.fitting.FittingValue;
 import com.mojang.serialization.Codec;
@@ -99,6 +100,14 @@ public record ArmorDecorations(Map<DecorationAnchor, DecorationEntry> entries) i
             }
             consumer.accept(CommonComponents.space()
                 .append(entry.decoration().value().copyWithStyle(entry.material())));
+            // What the part DOES, one line each, above what is set in it - a wearer cares more about
+            // the armor point than about the gem that grants it. The numbers are the ones this part
+            // in this material actually gives, since a value may scale with the material. Nearly
+            // every part contributes nothing and adds no line at all.
+            for (final DecorationEffect effect : entry.decoration().value().effects()) {
+                consumer.accept(CommonComponents.space().append(CommonComponents.space())
+                    .append(effect.description(entry.material()).copy().withStyle(ChatFormatting.BLUE)));
+            }
             // What is set in the part's fittings, one line each under the part, in the part's own
             // order rather than the map's so the list is stable across re-fittings. An empty fitting
             // is not listed: a circlet without its stone is still just a circlet.

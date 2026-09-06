@@ -55,9 +55,33 @@ import effect_schema  # noqa: E402
 import preview_material  # noqa: E402
 
 GATE = "armorpieces:if_fitting"
+WEARER_GATE = "armorpieces:if_wearer"
+# Either gate may wrap an effect; neither may wrap the other, which the dialog would have to fold
+# into two rows and cannot.
+GATES = (GATE, WEARER_GATE)
 
 # A loot table id, which unlike an item id may carry slashes: minecraft:chests/trial_chambers/reward.
 TABLE_ID = re.compile(r"^[a-z0-9_.-]+:[a-z0-9_./-]+$")
+
+
+def _number(value) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+
+def _scaled_ok(value) -> bool:
+    """Whether the dialog would write this per-material number back exactly as it is: a bare number,
+    or the two keys in the plugin's order with at least one case in it - a case list that is empty
+    is written back as the bare number, so a file spelling it out would be rewritten."""
+    if not isinstance(value, dict):
+        return _number(value)
+    if list(value) != ["default", "by_material"] or not _number(value["default"]):
+        return False
+    cases = value["by_material"]
+    if not isinstance(cases, list) or not cases:
+        return False
+    return all(isinstance(case, dict) and list(case) == ["material", "value"]
+               and isinstance(case["material"], str) and _number(case["value"])
+               for case in cases)
 
 
 def _effect_editable(effect, schema) -> bool:
@@ -71,10 +95,23 @@ def _effect_editable(effect, schema) -> bool:
         if not isinstance(condition.get("material", ""), str) or not isinstance(condition.get("dye", ""), str):
             return False
         effect = effect.get("then", {})
-        if not isinstance(effect, dict) or effect.get("type") == GATE:
+        if not isinstance(effect, dict) or effect.get("type") in GATES:
+            return False
+    elif effect.get("type") == WEARER_GATE:
+        # The condition is vanilla's entity predicate, which the dialog edits as JSON rather than
+        # as controls - so any object is showable, and only its shape in the file has to be the
+        # shape a save writes: two spaces of indent, inside the effect list.
+        if not isinstance(effect.get("if"), dict):
+            return False
+        effect = effect.get("then", {})
+        if not isinstance(effect, dict) or effect.get("type") in GATES:
             return False
     definition = schema.get(effect.get("type"))
-    return bool(definition) and set(effect) - {"type"} <= {f["name"] for f in definition["fields"]}
+    if not definition or set(effect) - {"type"} > {f["name"] for f in definition["fields"]}:
+        return False
+    return all(_scaled_ok(effect[field["name"]])
+               for field in definition["fields"]
+               if field["kind"] == "scaled" and field["name"] in effect)
 
 
 def _loot_row_ok(row) -> bool:

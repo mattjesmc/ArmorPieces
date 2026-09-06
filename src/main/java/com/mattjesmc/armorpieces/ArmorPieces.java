@@ -1,6 +1,7 @@
 package com.mattjesmc.armorpieces;
 
 import com.mattjesmc.armorpieces.command.StageCommand;
+import com.mattjesmc.armorpieces.config.ArmorPiecesServerConfig;
 import com.mattjesmc.armorpieces.decoration.ArmorPiecesRegistries;
 import com.mattjesmc.armorpieces.decoration.effect.DecorationEffectDispatcher;
 import com.mattjesmc.armorpieces.decoration.effect.DecorationEffects;
@@ -10,6 +11,7 @@ import com.mattjesmc.armorpieces.registry.ModBlocks;
 import com.mattjesmc.armorpieces.registry.ModCreativeTabs;
 import com.mattjesmc.armorpieces.registry.ModDataComponents;
 import com.mattjesmc.armorpieces.registry.ModItems;
+import com.mattjesmc.armorpieces.registry.ModLootEntries;
 import com.mattjesmc.armorpieces.registry.ModLootFunctions;
 import com.mattjesmc.armorpieces.registry.ModMenus;
 import com.mattjesmc.armorpieces.registry.ModRecipeSerializers;
@@ -65,6 +67,10 @@ public class ArmorPieces implements ModInitializer {
         ModRecipeSerializers.register();
         ModMenus.register();          // the table's menu; its screen is registered on the client
         ModLootFunctions.register();  // set_decoration, for tables that hand out decorated armor
+        ModLootEntries.register();    // armorpieces:template, for a foreign table naming a tag of ours
+        // How much of this mod the world hands out, as the SERVER owner has it. Read here and again
+        // at the start of every datapack reload, because loot tables are built as the packs load.
+        ArmorPiecesServerConfig.register();
         // Parts that name a loot table are added to it as it loads. See DecorationLootTables.
         DecorationLootTables.register();
         // A preview of the whole cross product, for judging parts against each other rather than

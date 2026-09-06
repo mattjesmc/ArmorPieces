@@ -51,6 +51,17 @@ public record ArmorPiecesConfig(boolean firstPersonParts) {
                 .forGetter(ArmorPiecesConfig::firstPersonParts)
         ).apply(instance, ArmorPiecesConfig::new));
 
+    /**
+     * The codec the file is WRITTEN with, mandatory where {@link #CODEC} is optional. An optional
+     * field is omitted on encode when it holds its default, so a player who has changed nothing was
+     * being handed an empty {@code {}} - a settings file with no settings visible in it, which is
+     * the opposite of what the round-trip below is for.
+     */
+    private static final Codec<ArmorPiecesConfig> WRITE_CODEC = RecordCodecBuilder.create(instance ->
+        instance.group(
+            Codec.BOOL.fieldOf("first_person_parts").forGetter(ArmorPiecesConfig::firstPersonParts)
+        ).apply(instance, ArmorPiecesConfig::new));
+
     private static final String FILE_NAME = ArmorPieces.MOD_ID + ".json";
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
@@ -101,7 +112,7 @@ public record ArmorPiecesConfig(boolean firstPersonParts) {
 
     private static void write(final Path path, final ArmorPiecesConfig config) {
         try {
-            final JsonElement json = CODEC.encodeStart(JsonOps.INSTANCE, config).getOrThrow();
+            final JsonElement json = WRITE_CODEC.encodeStart(JsonOps.INSTANCE, config).getOrThrow();
             Files.createDirectories(path.getParent());
             Files.writeString(path, GSON.toJson(json) + "\n", StandardCharsets.UTF_8);
         } catch (final IOException | RuntimeException failure) {

@@ -2,6 +2,49 @@
 
 ## Unreleased
 
+**A part can ask about the person wearing it.** `armorpieces:if_wearer` gates any effect on
+**vanilla's own entity predicate** - the object an advancement or a loot table takes - so what a part
+can ask about grows with the game rather than with this mod: what is in the hands, what else is worn,
+where the wearer is, what they are doing. It sits beside `if_fitting`, which asks about the part, and
+the two nest in either order.
+
+**And the rule about where it is legal is the design, not a limitation.** Attribute modifiers are
+applied when equipment changes and then left in place, so a condition that could change underneath
+one would be silently wrong. Rather than forbid the useful case, the reconcile was widened: a
+main- or off-hand change now re-checks the armor slots, so an `equipment` condition over an attribute
+effect is honoured at every moment it can change - claws that only bite bare-handed are a file, not a
+mixin. Every other test over an attribute effect **fails the pack at load**, with a message naming
+the test that was the problem, and a wearer condition over a glider is refused too, because vanilla
+asks `canGlide` on the client where an entity predicate cannot be evaluated.
+
+**Numbers that scale with the material.** `amount`, `amplifier`, `chance` and `sink` each take either
+a plain number or one per material: a list of cases naming a material or a tag of them, first match
+wins, everything else the default. A netherite claw and an iron claw are one part with one number
+written twice, a material a pack invents tomorrow is covered by the tag it joins, and a tag nobody
+installed simply never matches. The dialog in Blockbench grew the control for it, out of the same
+schema it reads from the Java.
+
+**What a part does is finally visible.** A piece's tooltip lists what each part contributes, with the
+numbers *that* part in *that* material actually gives - vanilla's own "+1 Armor" spelling for a
+modifier, the effect's own name for a status effect. What a tooltip cannot show is a condition, since
+it has no wearer to ask, so `/armorpieces effects [<wearer>]` prints what somebody is wearing socket
+by socket and marks each effect with whether it is contributing at that moment. It takes any living
+entity, an armor stand included.
+
+**Six parts carry an effect, one per mechanism.** The system shipped, was documented and then went
+almost unused - one part in ninety-one. It is still content this mod mostly does not have, on
+purpose: `claws` bite bare-handed and bite harder in netherite, `head_fins` give a swimmer dolphin's
+grace, `heel_wings` jump, `circlet` set with an emerald makes its wearer a hero of the village,
+`cloak` blinks out of the path of an arrow more often the finer its material, and `pinions` still
+fly. Every one of them is a file any pack could have written, which is the whole point of listing
+them.
+
+**Damage the wearer deals is still not a hook, and that is now written down.** Fabric offers no
+damage-modification event - `ALLOW_DAMAGE` is a veto, not a pipeline - and reaching it would mean a
+mixin into the damage path, which every hook here avoids so that one part cannot break an unrelated
+mod by winning a race for an injection point. Hitting harder is `attack_damage` through
+`armorpieces:attribute`, with vanilla's formula doing the arithmetic.
+
 **Your library, from the editor.** `Packs...` gains a third source beside a zip and the public
 library: *From your library...* and *Upload to your library...* talk to an account on the site
 that serves the library index - by the page's own session on the web, and on the desktop by a
@@ -33,6 +76,49 @@ preview asks for the game. **Use my game...** in the plugin's menu, and `--jar`,
 `--from-dir` on the command line, extract the real textures from the launcher's jar or any resource
 pack, onto that machine and nowhere else. This is what lets the web build ship without
 redistributing a single game file.
+
+**Cloth past the waist.** A garment now reaches the leggings' leg boxes, which is the only geometry
+there is over the thigh, and the two shipped cloths get a hem: five rows for the tunic, which closes
+round each leg, three for the tabard, which is two flat panels and splits sooner at a stride. The
+belt behind the chestplate's scalloped bottom is clothed too, so the join reads as one garment
+instead of two bands with the armor's own metal between them, and the hem's top row is its darkest
+because the garment above genuinely overhangs it.
+
+**And it is still ONE garment.** The leggings do not own the hem and never carry a component: the
+renderer reads `armorpieces:cloth` off the CHEST slot when it paints the leggings sheet. One
+template, one smithing operation, and a piece half-wearing a garment is not a thing that can be
+made - which is why leg armor is now refused by the recipe rather than accepted as a wider
+capability. The rule that costs is the one the feature already had a layer up: a garment is worn ON
+armor, so a tabard over bare legs has no hem. The hem takes the base colour and never the pattern,
+and it is shaded by the LEGGINGS - a skinned pair's form comes through it exactly as the chest's
+does.
+
+**Loot answers to the server, not only to the pack.** `config/armorpieces-server.json` is written on
+first run and re-read at the start of every datapack reload, so `/reload` picks up an edit and there
+is no second command to remember. It overrides the loot groups rather than replacing them, keyed by
+group id: a group turned off, its chance or weight replaced, tables added to it or taken from it,
+and one `chance_multiplier` over everything the mod puts in a table. Pack authors go on authoring
+content; a server owner tunes it without writing a datapack that overrides somebody else's files.
+What a group *contains* is deliberately not overridable - different members are a different group,
+which is content. Every invariant survives: still one pool per table, still one roll, and the chance
+is still a property of the table.
+
+**`/armorpieces loot`, because none of this was visible.** The pool the mod adds is buried in a
+built loot table, its odds come from several files at once, and a modded pack's table ids are
+unguessable - so "inject into any modded container" was true and unusable. `list [<filter>]` prints
+the loot table ids the world actually loaded, marking the ones the mod adds to. `explain <table>`
+says what was added and why: every group and `loot` row that offered a member, at what chance and
+weight, and the number that ended up on the pool. `groups` lists the loaded groups with the server
+config applied. `roll <table> [rolls]` is `stage loot` moved here and fixed - it counted part
+templates and dropped skins, cloths and fitting templates into "everything else", so it disagreed
+with what the table actually held.
+
+**A loot table of somebody else's can name a tag of ours.** The new `armorpieces:template` pool
+entry takes `parts`, `skins`, `cloths` and `fittings` the way a group does and hands out one
+member's template. A tag is the reference that survives its members not being installed: an empty
+tag makes the entry drop out of the pool, taking its weight with it, where a `minecraft:item` entry
+naming an absent part fails the whole table to parse. `armorpieces:set_decoration` takes the same
+form - `"part": "#armorpieces:knightly"` - and draws a member that fits the socket.
 
 ## 0.3.0
 

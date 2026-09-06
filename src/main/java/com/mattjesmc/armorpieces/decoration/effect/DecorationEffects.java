@@ -7,6 +7,7 @@ import com.mattjesmc.armorpieces.decoration.effect.builtin.BlinkEffect;
 import com.mattjesmc.armorpieces.decoration.effect.builtin.ConditionalEffect;
 import com.mattjesmc.armorpieces.decoration.effect.builtin.GlideEffect;
 import com.mattjesmc.armorpieces.decoration.effect.builtin.StatusEffect;
+import com.mattjesmc.armorpieces.decoration.effect.builtin.WearerConditionEffect;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.Identifier;
@@ -86,14 +87,17 @@ public final class DecorationEffects {
      * refuse a hit), and a glider (the one that proves a part can change how the wearer moves).
      * {@link DecorationEffect.Lifecycle} is the hook none of them reach, and deliberately so: what it
      * is for is state living outside the item, which is the one thing a JSON field cannot describe.
-     * {@code if_fitting} is a fifth registration but not a fifth behaviour - it gates the others.
      *
-     * <p>Nineteen of the twenty parts this mod ships use none of them and stay purely cosmetic,
-     * which is a choice about this mod's content rather than a limit of the system. The twentieth is
-     * {@code pinions} - an elytra cut down and bolted to a back bracket - and it exists so that this
-     * registry has one worked example inside the mod rather than only in a test pack: the part is
-     * still two files and a PNG, and the only thing that makes it fly is a
-     * {@code "type": "armorpieces:glide"} entry any pack could have written.
+     * <p>Two more registrations are gates rather than behaviours - they run one of the four only while
+     * something is true. {@code if_fitting} asks about the part, {@code if_wearer} about the person
+     * wearing it, and every numeric field of the four can be a number per material rather than one
+     * number. Between them, most of what a part might want to do is a question of what its file says,
+     * not of what Java exists.
+     *
+     * <p>Nearly every part this mod ships uses none of it and stays purely cosmetic, which is a
+     * choice about this mod's content rather than a limit of the system: a handful carry effects so
+     * that each mechanism has one worked example inside the mod rather than only in the
+     * documentation, and the effects those parts carry are entries any pack could have written.
      */
     public static void register() {
         register("attribute", AttributeEffect.CODEC);
@@ -103,6 +107,10 @@ public final class DecorationEffects {
         // Not a fifth behaviour but a gate on the other four: runs its effect only while one of the
         // part's fittings holds what it asks for, which is how a gem comes to mean something.
         register("if_fitting", ConditionalEffect.CODEC);
+        // Nor a sixth: the same gate asking about the WEARER rather than the part, in vanilla's own
+        // entity predicate. It is the one registration with load-time rules of its own - see the
+        // class - because what it asks can change while the piece stays on.
+        register("if_wearer", WearerConditionEffect.CODEC);
         ArmorPieces.LOGGER.info(
             "[Armor Pieces] Registered {} decoration effect types.", ArmorPiecesRegistries.DECORATION_EFFECT_TYPES.size());
     }

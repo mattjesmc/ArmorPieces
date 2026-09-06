@@ -3634,11 +3634,16 @@
 	/*
 	 * An effect is a row of fields, and the fields come from the Java that defines the effect
 	 * type: effect_schema.py parses each built-in record's codec and javadoc into names, kinds,
-	 * ranges, defaults and descriptions, so a default tuned in Java is the default here. The one
-	 * built-in that is not a row is if_fitting, which gates another effect on a fitting; the dialog
-	 * shows that as a switch on the row it wraps, "only while <fitting> holds <value>".
+	 * ranges, defaults and descriptions, so a default tuned in Java is the default here. The two
+	 * built-ins that are not rows are the gates - if_fitting, which asks about the part, and
+	 * if_wearer, which asks about the person wearing it; the dialog shows either as a condition on
+	 * the row it wraps. A fitting gate is two selects, because a fitting has a known set of values;
+	 * a wearer gate is vanilla's entity predicate, which is edited as JSON. Writing controls for
+	 * that predicate would be writing a second advancement editor, and it would go out of date the
+	 * first time vanilla added a field.
 	 */
 	const GATE_TYPE = 'armorpieces:if_fitting';
+	const WEARER_GATE_TYPE = 'armorpieces:if_wearer';
 	let schemaCache = null;
 	let idsCache = null;
 	let tablesCache = null;
@@ -3711,56 +3716,96 @@
 	}
 
 	function blankValue(field) {
+		if (field.kind === 'scaled') return { default: field.default !== undefined ? field.default : 0, by_material: [] };
 		if (field.default !== undefined) return field.default;
 		if (field.kind === 'bool') return false;
 		if (field.kind === 'enum') return field.options[0];
 		return '';
 	}
 
+	function isGate(effect) {
+		return !!effect && (effect.type === GATE_TYPE || effect.type === WEARER_GATE_TYPE);
+	}
+
+	function isNumber(value) {
+		return typeof value === 'number' && isFinite(value);
+	}
+
+	/*
+	 * A per-material number as the dialog holds it: always the long form, so one control can edit
+	 * either spelling, and effectFromRow writes the short one back when no material changes it.
+	 * Null for a value the file spells in a shape a save would not reproduce - the whole effect is
+	 * then kept read-only rather than quietly rewritten.
+	 */
+	function scaledValue(value) {
+		if (isNumber(value)) return { default: value, by_material: [] };
+		if (!value || typeof value !== 'object' || Array.isArray(value) || !isNumber(value.default)) return null;
+		if (!Array.isArray(value.by_material) || !value.by_material.length) return null;
+		const cases = [];
+		for (const one of value.by_material) {
+			if (!one || typeof one !== 'object' || typeof one.material !== 'string' || !isNumber(one.value)) return null;
+			cases.push({ material: one.material, value: one.value });
+		}
+		return { default: value.default, by_material: cases };
+	}
+
 	/*
 	 * An effect from the data file as a dialog row: its type, its fields with the schema's defaults
 	 * filled in for the ones it omits, any key the schema does not know kept aside, and an
-	 * if_fitting wrapper folded into the gate. Whatever this cannot represent - a type from another
-	 * mod, a gate over a tag or a list of materials, a gate inside a gate - is kept whole and shown
+	 * if_fitting or if_wearer wrapper folded into the gate. Whatever this cannot represent - a type
+	 * from another mod, a fitting gate over a tag or a list of materials, a gate inside a gate, a
+	 * per-material number written in a shape a save would not reproduce - is kept whole and shown
 	 * read-only, so it round-trips through the dialog untouched.
 	 */
 	function effectRow(effect) {
 		const schema = effectSchema();
 		let inner = effect;
-		let gate = null;
-		if (effect && effect.type === GATE_TYPE && effect.if && effect.then
-			&& typeof effect.if.fitting === 'string' && effect.then.type !== GATE_TYPE) {
+		let gate = { kind: 'none', fitting: '', value: '', json: '{}' };
+		if (effect && effect.type === GATE_TYPE && effect.if && effect.then && !isGate(effect.then)
+			&& typeof effect.if.fitting === 'string') {
 			const keys = Object.keys(effect.if);
 			if (!keys.every(function (k) { return k === 'fitting' || k === 'material' || k === 'dye'; })) {
 				return { raw: effect };
 			}
 			const value = effect.if.material !== undefined ? effect.if.material : effect.if.dye;
 			if (value !== undefined && typeof value !== 'string') return { raw: effect };
-			gate = { fitting: effect.if.fitting, value: value || '' };
+			gate = { kind: 'fitting', fitting: effect.if.fitting, value: value || '', json: '{}' };
+			inner = effect.then;
+		} else if (effect && effect.type === WEARER_GATE_TYPE && effect.if && effect.then && !isGate(effect.then)
+			&& typeof effect.if === 'object' && !Array.isArray(effect.if)) {
+			gate = { kind: 'wearer', fitting: '', value: '', json: JSON.stringify(effect.if, null, 1) };
 			inner = effect.then;
 		}
 		const def = inner && schema[inner.type];
-		if (!def || inner.type === GATE_TYPE) return { raw: effect };
+		if (!def || isGate(inner)) return { raw: effect };
 		const fields = {};
 		const extra = {};
 		for (const key of Object.keys(inner)) {
 			if (key === 'type') continue;
-			if (def.fields.some(function (f) { return f.name === key; })) fields[key] = inner[key];
-			else extra[key] = inner[key];
+			const field = def.fields.find(function (f) { return f.name === key; });
+			if (!field) {
+				extra[key] = inner[key];
+			} else if (field.kind === 'scaled') {
+				const scaled = scaledValue(inner[key]);
+				if (!scaled) return { raw: effect };
+				fields[key] = scaled;
+			} else {
+				fields[key] = inner[key];
+			}
 		}
 		for (const field of def.fields) {
 			if (!(field.name in fields)) fields[field.name] = blankValue(field);
 		}
-		return {
-			raw: null, type: inner.type, fields: fields, extra: extra, present: Object.keys(inner),
-			gated: !!gate, gate: gate || { fitting: '', value: '' },
-		};
+		return { raw: null, type: inner.type, fields: fields, extra: extra, present: Object.keys(inner), gate: gate };
 	}
 
 	function blankEffect(type) {
 		const fields = {};
 		for (const field of effectSchema()[type].fields) fields[field.name] = blankValue(field);
-		return { raw: null, type: type, fields: fields, extra: {}, present: [], gated: false, gate: { fitting: '', value: '' } };
+		return {
+			raw: null, type: type, fields: fields, extra: {}, present: [],
+			gate: { kind: 'none', fitting: '', value: '', json: '{}' },
+		};
 	}
 
 	/*
@@ -3774,25 +3819,59 @@
 		for (const field of effectSchema()[row.type].fields) {
 			let value = row.fields[field.name];
 			if (field.kind === 'int' || field.kind === 'number') {
-				value = Number(value);
-				if (isNaN(value)) value = field.default !== undefined ? field.default : 0;
-				if (field.kind === 'int') value = Math.round(value);
+				value = numberFor(field, value);
+			} else if (field.kind === 'scaled') {
+				value = scaledFor(field, value);
 			} else if (field.kind === 'bool') {
 				value = !!value;
 			} else if (typeof value === 'string') {
 				value = value.trim();
 			}
-			const isDefault = field.default !== undefined && value === field.default;
+			const isDefault = field.default !== undefined && canonical(value) === canonical(field.default);
 			if (field.required || !isDefault || row.present.includes(field.name)) out[field.name] = value;
 		}
 		Object.assign(out, row.extra);
-		if (!row.gated || !row.gate.fitting) return out;
-		const condition = { fitting: row.gate.fitting };
-		if (row.gate.value) {
-			const fitting = fittings.find(function (f) { return f.id === row.gate.fitting; });
-			condition[fitting && fitting.type === 'armorpieces:dye' ? 'dye' : 'material'] = row.gate.value;
+		if (row.gate.kind === 'fitting' && row.gate.fitting) {
+			const condition = { fitting: row.gate.fitting };
+			if (row.gate.value) {
+				const fitting = fittings.find(function (f) { return f.id === row.gate.fitting; });
+				condition[fitting && fitting.type === 'armorpieces:dye' ? 'dye' : 'material'] = row.gate.value;
+			}
+			return { type: GATE_TYPE, if: condition, then: out };
 		}
-		return { type: GATE_TYPE, if: condition, then: out };
+		if (row.gate.kind === 'wearer') {
+			// Parsed rather than trusted: onConfirm refuses a row whose JSON does not parse, so this
+			// only ever sees text that did - and a gate that somehow got here broken is dropped
+			// rather than written as a file the game would refuse to load.
+			try {
+				return { type: WEARER_GATE_TYPE, if: JSON.parse(row.gate.json), then: out };
+			} catch (err) {
+				console.error(err);
+			}
+		}
+		return out;
+	}
+
+	/* One number, coerced the way its field's codec would take it. */
+	function numberFor(field, value) {
+		const kind = field.kind === 'scaled' ? field.value : field;
+		let number = Number(value);
+		if (isNaN(number)) number = 0;
+		if (kind.kind === 'int') number = Math.round(number);
+		if (kind.min !== undefined) number = Math.max(kind.min, number);
+		if (kind.max !== undefined) number = Math.min(kind.max, number);
+		return number;
+	}
+
+	/* The long form back as the file's: a bare number unless a material actually changes it. */
+	function scaledFor(field, value) {
+		const base = numberFor(field, value && value.default);
+		const cases = ((value && value.by_material) || [])
+			.filter(function (one) { return String(one.material || '').trim(); })
+			.map(function (one) {
+				return { material: String(one.material).trim(), value: numberFor(field, one.value) };
+			});
+		return cases.length ? { default: base, by_material: cases } : base;
 	}
 
 	/* The first thing wrong with a row the game would refuse to load, or '' when it is fine. */
@@ -3803,6 +3882,23 @@
 			const value = row.fields[field.name];
 			if (field.required && (field.kind === 'id' || field.kind === 'tag') && !String(value || '').trim()) {
 				return def.label + ' needs ' + field.name;
+			}
+			if (field.kind === 'scaled') {
+				const bad = (value.by_material || []).find(function (one) {
+					return String(one.material || '').trim() && !/^#?[a-z0-9_.-]+:[a-z0-9_.-]+$/.test(String(one.material).trim());
+				});
+				if (bad) return 'A material looks like minecraft:netherite, or #armorpieces:precious for a tag';
+			}
+		}
+		if (row.gate.kind === 'wearer') {
+			let parsed = null;
+			try {
+				parsed = JSON.parse(row.gate.json);
+			} catch (err) {
+				return 'The wearer condition is not valid JSON';
+			}
+			if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+				return 'A wearer condition is an object, like {"flags": {"is_sneaking": true}}';
 			}
 		}
 		return '';
@@ -3821,7 +3917,7 @@
 
 	function effectLabel(effect) {
 		const schema = effectSchema();
-		const inner = effect && effect.type === GATE_TYPE && effect.then ? effect.then : effect;
+		const inner = isGate(effect) && effect.then ? effect.then : effect;
 		const def = inner && schema[inner.type];
 		return (def ? def.label : String(inner && inner.type)) + (inner !== effect ? ' (gated)' : '');
 	}
@@ -3924,19 +4020,52 @@
 		'						</select>',
 		'						<input v-else-if="f.kind === \'int\' || f.kind === \'number\'" type="number" class="dark_bordered"',
 		'							:min="f.min" :max="f.max" :step="f.kind === \'int\' ? 1 : \'any\'" v-model.number="e.fields[f.name]">',
+		'						<div v-else-if="f.kind === \'scaled\'" class="ap_scaled">',
+		'							<div class="ap_scaled_head">',
+		'								<input type="number" class="dark_bordered" :min="f.value.min" :max="f.value.max"',
+		'									:step="f.value.kind === \'int\' ? 1 : \'any\'" v-model.number="e.fields[f.name].default">',
+		'								<button type="button" @click="addCase(e, f)"',
+		'									title="A different number for one material, or for a tag of them">per material...</button>',
+		'							</div>',
+		'							<div class="ap_case" v-for="(c, ci) in e.fields[f.name].by_material" :key="ci">',
+		'								<input type="text" class="dark_bordered ap_case_material" v-model="c.material"',
+		'									placeholder="minecraft:netherite or #armorpieces:precious">',
+		'								<input type="number" class="dark_bordered ap_case_value" :min="f.value.min" :max="f.value.max"',
+		'									:step="f.value.kind === \'int\' ? 1 : \'any\'" v-model.number="c.value">',
+		'								<i class="material-icons" title="Remove" @click="removeCase(e, f, ci)">clear</i>',
+		'							</div>',
+		'						</div>',
 		'						<input v-else type="text" class="dark_bordered" v-model="e.fields[f.name]" :list="listFor(f)"',
 		'							:placeholder="f.required ? \'required\' : \'\'">',
 		'					</div>',
 		'					<div class="ap_field ap_gate">',
-		'						<label><input type="checkbox" v-model="e.gated" @change="gateOn(e)"> only while</label>',
-		'						<select class="dark_bordered" v-model="e.gate.fitting" :disabled="!e.gated">',
+		'						<label>runs</label>',
+		'						<select class="dark_bordered" v-model="e.gate.kind" @change="gateOn(e)">',
+		'							<option value="none">whenever the piece is worn</option>',
+		'							<option value="fitting">only while a fitting holds...</option>',
+		'							<option value="wearer">only while the wearer...</option>',
+		'						</select>',
+		'					</div>',
+		'					<div class="ap_field" v-if="e.gate.kind === \'fitting\'">',
+		'						<label></label>',
+		'						<select class="dark_bordered" v-model="e.gate.fitting">',
 		'							<option v-for="f in fittings" :key="f.id" :value="f.id">{{ f.label }}</option>',
 		'						</select>',
 		'						<span>holds</span>',
-		'						<select class="dark_bordered" v-model="e.gate.value" :disabled="!e.gated">',
+		'						<select class="dark_bordered" v-model="e.gate.value">',
 		'							<option value="">anything</option>',
 		'							<option v-for="o in gateOptions(e)" :key="o.id" :value="o.id">{{ o.label }}</option>',
 		'						</select>',
+		'					</div>',
+		'					<div class="ap_field" v-else-if="e.gate.kind === \'wearer\'">',
+		'						<label></label>',
+		'						<div class="ap_column">',
+		'							<textarea class="dark_bordered ap_predicate" rows="4" v-model="e.gate.json"',
+		'								spellcheck="false"></textarea>',
+		'							<p class="ap_dim">Vanilla\'s entity predicate, as in an advancement: equipment, flags, ',
+		'							location, effects. An attribute effect may only test equipment - anything else is ',
+		'							refused when the pack loads, because a modifier cannot be re-checked.</p>',
+		'						</div>',
 		'					</div>',
 		'				</template>',
 		'			</div>',
@@ -3994,7 +4123,16 @@
 		'.armorpieces_part .ap_field > label { width: 110px; flex-shrink: 0; }',
 		'.armorpieces_part .ap_field > input[type=text], .armorpieces_part .ap_field > input[type=number], .armorpieces_part .ap_field > select { flex: 1; min-width: 0; }',
 		'.armorpieces_part .ap_gate { margin-top: 6px; border-top: 1px solid var(--color-border); padding-top: 4px; }',
-		'.armorpieces_part .ap_gate > label { display: inline-flex; align-items: center; gap: 4px; width: auto; }',
+		'.armorpieces_part .ap_scaled { flex: 1; min-width: 0; }',
+		'.armorpieces_part .ap_scaled_head { display: flex; align-items: center; gap: 6px; }',
+		'.armorpieces_part .ap_scaled_head > input { flex: 1; min-width: 0; }',
+		'.armorpieces_part .ap_scaled_head > button { flex-shrink: 0; margin: 0; }',
+		'.armorpieces_part .ap_case { display: flex; align-items: center; gap: 6px; margin-top: 3px; }',
+		'.armorpieces_part .ap_case .ap_case_material { flex: 1; min-width: 0; }',
+		'.armorpieces_part .ap_case .ap_case_value { width: 64px; }',
+		'.armorpieces_part .ap_case .material-icons { cursor: pointer; opacity: 0.6; }',
+		'.armorpieces_part .ap_case .material-icons:hover { opacity: 1; }',
+		'.armorpieces_part .ap_predicate { width: 100%; font-family: monospace; font-size: 0.9em; resize: vertical; }',
 		'.armorpieces_part .ap_loot { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }',
 		'.armorpieces_part .ap_loot > label { width: auto; padding: 0; color: var(--color-subtle_text); }',
 		'.armorpieces_part .ap_loot .ap_loot_table { flex: 1; min-width: 0; }',
@@ -4043,7 +4181,7 @@
 						available: availableFittings(piece).map(fittingRow),
 						effects: (data.effects || []).map(effectRow),
 						schema: schema,
-						types: Object.keys(schema).filter(function (id) { return id !== GATE_TYPE; })
+						types: Object.keys(schema).filter(function (id) { return id !== GATE_TYPE && id !== WEARER_GATE_TYPE; })
 							.map(function (id) { return { id: id, label: schema[id].label, summary: schema[id].summary }; }),
 						ids: registryIds(),
 						loot: (data.loot || []).map(lootRow),
@@ -4072,9 +4210,19 @@
 						event.target.value = '';
 					},
 					gateOn: function (effect) {
-						if (effect.gated && !effect.gate.fitting && this.fittings.length) {
+						if (effect.gate.kind === 'fitting' && !effect.gate.fitting && this.fittings.length) {
 							effect.gate.fitting = this.fittings[0].id;
 						}
+						if (effect.gate.kind === 'wearer' && !effect.gate.json.trim()) {
+							effect.gate.json = '{}';
+						}
+					},
+					addCase: function (effect, field) {
+						const value = effect.fields[field.name];
+						value.by_material.push({ material: '', value: value.default });
+					},
+					removeCase: function (effect, field, i) {
+						effect.fields[field.name].by_material.splice(i, 1);
 					},
 					gateOptions: function (effect) {
 						const fitting = this.fittings.find(function (f) { return f.id === effect.gate.fitting; });

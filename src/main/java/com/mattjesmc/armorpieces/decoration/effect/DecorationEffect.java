@@ -9,9 +9,12 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import net.minecraft.core.Holder;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.item.equipment.trim.TrimMaterial;
 
 /**
  * A behaviour a decorative part carries - the gameplay half of a part, and the one half of it that
@@ -56,6 +59,56 @@ public interface DecorationEffect {
 
     /** This effect's entry in {@code armorpieces:decoration_effect_type}. Names it in JSON. */
     MapCodec<? extends DecorationEffect> codec();
+
+    // ---- What an effect can be asked about itself -----------------------------------------------
+
+    /**
+     * Whether this effect can ever reach {@code hook} - {@code instanceof}, except through a wrapper.
+     *
+     * <p>A gate like {@code if_fitting} implements EVERY hook, because it cannot know which one the
+     * effect it wraps needs; that is right for dispatch and wrong for every other question, since
+     * asking a gate whether it contributes attributes would always say yes. Wrappers override this to
+     * forward to what they wrap, so "does this part change an attribute" has an honest answer however
+     * deeply the effect is nested - which is what the load-time rules on
+     * {@link com.mattjesmc.armorpieces.decoration.effect.builtin.WearerConditionEffect} and the
+     * tooltip both ask.
+     */
+    default boolean reaches(final Class<? extends DecorationEffect> hook) {
+        return hook.isInstance(this);
+    }
+
+    /**
+     * Whether the effect is contributing anything at this moment, for the benefit of a reader.
+     *
+     * <p>Nothing dispatches on this - a gate decides for itself, per hook, whether to forward - so an
+     * effect that answers it wrongly changes no behaviour. It exists because a condition is invisible
+     * otherwise: {@code /armorpieces effects} prints a worn part's effects and marks the ones that
+     * are not doing anything right now, which is the difference between a player believing a part is
+     * broken and seeing that they are holding the wrong thing.
+     */
+    default boolean applies(final DecorationEffectContext context) {
+        return true;
+    }
+
+    /**
+     * One line saying what this effect contributes, for the piece's tooltip and for
+     * {@code /armorpieces effects}.
+     *
+     * <p>The material is passed because a value may scale with it ({@link MaterialValue}), so the
+     * line a player reads is the number that part in that material actually gives - not the range it
+     * could give.
+     *
+     * <p>The default is the effect type's own id as a translation key, {@code effect.<ns>.<path>},
+     * falling back to the id itself when no pack ships a language file for it. That is the honest
+     * answer for a third-party effect this mod knows nothing about, and a mod that wants a real line
+     * either ships the key or overrides this.
+     */
+    default Component description(final Holder<TrimMaterial> material) {
+        final Identifier id = ArmorPiecesRegistries.DECORATION_EFFECT_TYPES.getKey(this.codec());
+        return id == null
+            ? Component.literal("?")
+            : Component.translatableWithFallback(id.toLanguageKey("effect"), id.toString());
+    }
 
     // ---- The hooks ------------------------------------------------------------------------------
 
@@ -104,8 +157,16 @@ public interface DecorationEffect {
      * Contributes attribute modifiers for as long as the piece is worn.
      *
      * <p>Applied and removed on equipment change rather than re-derived per tick, so this must be a
-     * pure function of the part, its material and its socket - a modifier that depends on the world
-     * or on chance will be silently wrong, because it is computed once and left in place.
+     * pure function of the part, its material, its socket and THE WEARER'S EQUIPMENT - a modifier that
+     * depends on the world or on chance will be silently wrong, because it is computed once and left
+     * in place.
+     *
+     * <p>Equipment is in that list because the dispatcher reconciles the armor slots again whenever a
+     * hand changes, which is what makes a claw that only bites bare-handed expressible without
+     * weakening the rule. Everything else a wearer might be doing - where they are, how much health
+     * they have, whether they are sneaking - is still outside it, and
+     * {@link com.mattjesmc.armorpieces.decoration.effect.builtin.WearerConditionEffect} refuses such a
+     * condition at load rather than letting it half-work.
      *
      * <p>The dispatcher re-ids every modifier it receives into the socket it came from, so the same
      * part worn in two sockets contributes two modifiers rather than one that overwrites itself. The
@@ -113,6 +174,23 @@ public interface DecorationEffect {
      */
     interface Attributes extends DecorationEffect {
         void collectAttributes(DecorationEffectContext context, BiConsumer<Holder<Attribute>, AttributeModifier> out);
+
+        /**
+         * Every modifier this effect COULD contribute, conditions ignored - what the dispatcher takes
+         * back off when it reconciles.
+         *
+         * <p>A conditional modifier is added while its condition holds and has to come off when it
+         * stops holding, at which point {@link #collectAttributes} no longer offers it and a removal
+         * would have nothing to name. Removing by this instead means a gate takes back exactly what it
+         * could have given. Only ids reach the removal, so an effect whose VALUE varies has nothing to
+         * do here; only one whose PRESENCE varies overrides it, which in practice means the gates.
+         */
+        default void collectPossibleAttributes(
+            final DecorationEffectContext context,
+            final BiConsumer<Holder<Attribute>, AttributeModifier> out
+        ) {
+            this.collectAttributes(context, out);
+        }
     }
 
     /**
