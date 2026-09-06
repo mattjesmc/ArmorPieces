@@ -344,16 +344,29 @@ def build_bbmodel(geo, name, anchor_geo=(0.0, 0.0, 0.0), reference=None, texture
                              part_children, locked=False, color=4))
 
     ref_elements, ref_groups = reference if reference is not None else ([], [])
-    all_groups = ref_groups + groups
+    return assemble(
+        name,
+        (int(geo.get("texture_width", 64)), int(geo.get("texture_height", 32))),
+        ref_elements + elements, ref_groups + groups,
+        parenting={part_uuid: part_parent} if part_parent is not None else None,
+        textures=textures, animations=animations, model_format=model_format)
 
+
+def assemble(name, resolution, elements, groups, parenting=None, textures=None,
+             animations=None, model_format="modded_entity"):
+    """Groups and elements into a Blockbench project: the outliner, nested, and the wrapper.
+
+    `parenting` is {child group uuid: parent group uuid}, which is all that hanging a part off a
+    limb amounts to - group origins are absolute, so re-parenting moves nothing. A project with one
+    part uses it once; the wardrobe rig, which hangs a piece off each of a dozen bones, uses it a
+    dozen times, and that is the whole difference between them."""
+    all_groups = list(groups)
     tree_by_uuid = {g["uuid"]: g.pop("_tree") for g in all_groups}
 
-    # Hanging the part off a bone is just re-parenting it in the tree; the loop below then sees the
-    # part uuid as claimed and stops emitting it at the top of the outliner.
-    if part_parent is not None:
-        if part_parent not in tree_by_uuid:
-            raise KeyError(f"part_parent {part_parent} is not one of the reference groups")
-        tree_by_uuid[part_parent]["children"].append(part_uuid)
+    for child, parent in (parenting or {}).items():
+        if parent not in tree_by_uuid:
+            raise KeyError(f"parent {parent} is not one of the groups")
+        tree_by_uuid[parent]["children"].append(child)
     # Only groups nothing else claims as a child sit at the top of the outliner.
     claimed = {c for t in tree_by_uuid.values() for c in t["children"] if c in tree_by_uuid}
 
@@ -369,11 +382,8 @@ def build_bbmodel(geo, name, anchor_geo=(0.0, 0.0, 0.0), reference=None, texture
         "name": name,
         "model_identifier": name,
         "modded_entity_flip_y": True,
-        "resolution": {
-            "width": int(geo.get("texture_width", 64)),
-            "height": int(geo.get("texture_height", 32)),
-        },
-        "elements": ref_elements + elements,
+        "resolution": {"width": int(resolution[0]), "height": int(resolution[1])},
+        "elements": list(elements),
         "groups": all_groups,
         "outliner": outliner,
         "textures": textures or [],

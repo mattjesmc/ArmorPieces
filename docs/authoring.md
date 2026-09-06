@@ -324,9 +324,11 @@ fired. Any table will do, a mob's or a fishing pool's as much as a chest's.
 A part with no recipe and no route into the world cannot be had in survival at all, so
 `check_authoring.py` fails on it; a part that means to be creative-only says so with an empty
 `"loot": []`. The mod ships six groups over the six themes its parts are drawn in — `knightly`,
-`court`, `beast`, `wayfarer`, `tidal`, `carapace` — holding all ninety-one parts, the fourteen
-skins divided between them, and the four fitting templates in every one. Craftable recipes are kept
-only where the centre item genuinely is the part or what it is made of; everything else is found.
+`court`, `beast`, `wayfarer`, `tidal`, `carapace` — holding every part, the skins divided between
+them, and every fitting template in every one. Craftable recipes are kept only where the centre item
+genuinely is the part or what it is made of; everything else is found. (How many of each there are
+is on the [wiki](https://armorpieces.com/wiki/loot/), counted from the datapack at build time
+rather than written down here.)
 
 For decorated armor rather than a template — a helmet already wearing a circlet with an emerald
 in it — a table uses the mod's loot function on an armor entry:

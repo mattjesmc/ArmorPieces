@@ -1,0 +1,1074 @@
+{
+  "badges": [],
+  "extra": {},
+  "gen": {
+    "counts": [
+      {
+        "description": "the pieces, over every socket",
+        "id": "pieces",
+        "name": "pieces",
+        "text": "91",
+        "title": "91",
+        "value": 91,
+        "word": "91"
+      },
+      {
+        "description": "the armor skins",
+        "id": "skins",
+        "name": "skins",
+        "text": "14",
+        "title": "fourteen",
+        "value": 14,
+        "word": "fourteen"
+      },
+      {
+        "description": "the cloths",
+        "id": "cloths",
+        "name": "cloths",
+        "text": "2",
+        "title": "two",
+        "value": 2,
+        "word": "two"
+      },
+      {
+        "description": "the fittings",
+        "id": "fittings",
+        "name": "fittings",
+        "text": "4",
+        "title": "four",
+        "value": 4,
+        "word": "four"
+      },
+      {
+        "description": "the sockets a piece can hang on",
+        "id": "sockets",
+        "name": "sockets",
+        "text": "12",
+        "title": "twelve",
+        "value": 12,
+        "word": "twelve"
+      },
+      {
+        "description": "the loot groups",
+        "id": "loot_groups",
+        "name": "loot_groups",
+        "text": "6",
+        "title": "six",
+        "value": 6,
+        "word": "six"
+      },
+      {
+        "description": "the effect types a piece may carry",
+        "id": "effect_types",
+        "name": "effect_types",
+        "text": "6",
+        "title": "six",
+        "value": 6,
+        "word": "six"
+      },
+      {
+        "description": "the pieces with a template recipe; the rest are found",
+        "id": "craftable",
+        "name": "craftable",
+        "text": "31",
+        "title": "31",
+        "value": 31,
+        "word": "31"
+      },
+      {
+        "description": "the fewest pieces any socket has to choose from",
+        "id": "least_per_socket",
+        "name": "least_per_socket",
+        "text": "6",
+        "title": "six",
+        "value": 6,
+        "word": "six"
+      }
+    ],
+    "loot_groups": [
+      {
+        "chance": 0.1,
+        "count": 15,
+        "description": "bastion_other, bastion_hoglin_stable, {'table': 'bastion_treasure', 'chance': 0.2}, nether_bridge, jungle_temple, {'table': 'abandoned_mineshaft', 'chance': 0.06}",
+        "id": "armorpieces:beast",
+        "name": "beast",
+        "pieces": [
+          "armorpieces:antlers",
+          "armorpieces:beast_head",
+          "armorpieces:bone_mask",
+          "armorpieces:claws",
+          "armorpieces:ears",
+          "armorpieces:fang_necklace",
+          "armorpieces:fanged_cop",
+          "armorpieces:horns",
+          "armorpieces:horsetail",
+          "armorpieces:mantle",
+          "armorpieces:pelt",
+          "armorpieces:savoyard",
+          "armorpieces:shin_spikes",
+          "armorpieces:talons",
+          "armorpieces:tusks"
+        ],
+        "skins": [
+          "armorpieces:varangian"
+        ],
+        "tables": [
+          "minecraft:chests/bastion_other",
+          "minecraft:chests/bastion_hoglin_stable",
+          "{'table': 'minecraft:chests/bastion_treasure', 'chance': 0.2}",
+          "minecraft:chests/nether_bridge",
+          "minecraft:chests/jungle_temple",
+          "{'table': 'minecraft:chests/abandoned_mineshaft', 'chance': 0.06}"
+        ],
+        "title": "Beast"
+      },
+      {
+        "chance": 0.1,
+        "count": 4,
+        "description": "{'table': 'end_city_treasure', 'chance': 0.15}, jungle_temple, {'table': 'abandoned_mineshaft', 'chance': 0.05}",
+        "id": "armorpieces:carapace",
+        "name": "carapace",
+        "pieces": [
+          "armorpieces:aerials",
+          "armorpieces:antennae",
+          "armorpieces:carapace",
+          "armorpieces:wing_cases"
+        ],
+        "skins": [
+          "armorpieces:lamellar"
+        ],
+        "tables": [
+          "{'table': 'minecraft:chests/end_city_treasure', 'chance': 0.15}",
+          "minecraft:chests/jungle_temple",
+          "{'table': 'minecraft:chests/abandoned_mineshaft', 'chance': 0.05}"
+        ],
+        "title": "Carapace"
+      },
+      {
+        "chance": 0.1,
+        "count": 24,
+        "description": "{'table': 'woodland_mansion', 'chance': 0.18}, {'table': 'ancient_city', 'chance': 0.15}, {'table': 'end_city_treasure', 'chance': 0.15}, desert_pyramid, village/village_temple, village/village_cartographer",
+        "id": "armorpieces:court",
+        "name": "court",
+        "pieces": [
+          "armorpieces:anklets",
+          "armorpieces:bangles",
+          "armorpieces:banner",
+          "armorpieces:bells",
+          "armorpieces:brooch",
+          "armorpieces:chain_belt",
+          "armorpieces:chain_of_office",
+          "armorpieces:circlet",
+          "armorpieces:cloak",
+          "armorpieces:cord",
+          "armorpieces:coronet",
+          "armorpieces:cuffs",
+          "armorpieces:epaulettes",
+          "armorpieces:feathering",
+          "armorpieces:garters",
+          "armorpieces:heel_wings",
+          "armorpieces:laurel",
+          "armorpieces:loin_panels",
+          "armorpieces:pendant",
+          "armorpieces:pinions",
+          "armorpieces:ruff",
+          "armorpieces:sash",
+          "armorpieces:streamers",
+          "armorpieces:wing_roots"
+        ],
+        "skins": [
+          "armorpieces:runic",
+          "armorpieces:hoplite",
+          "armorpieces:samurai"
+        ],
+        "tables": [
+          "{'table': 'minecraft:chests/woodland_mansion', 'chance': 0.18}",
+          "{'table': 'minecraft:chests/ancient_city', 'chance': 0.15}",
+          "{'table': 'minecraft:chests/end_city_treasure', 'chance': 0.15}",
+          "minecraft:chests/desert_pyramid",
+          "minecraft:chests/village/village_temple",
+          "minecraft:chests/village/village_cartographer"
+        ],
+        "title": "Court"
+      },
+      {
+        "chance": 0.1,
+        "count": 29,
+        "description": "stronghold_corridor, stronghold_crossing, simple_dungeon, pillager_outpost, {'table': 'trial_chambers/reward', 'chance': 0.18}, {'table': 'trial_chambers/reward_rare', 'chance': 0.25}, {'table': 'woodland_mansion', 'chance': 0.15}",
+        "id": "armorpieces:knightly",
+        "name": "knightly",
+        "pieces": [
+          "armorpieces:barbute",
+          "armorpieces:bellows_visor",
+          "armorpieces:brush_crest",
+          "armorpieces:buckler",
+          "armorpieces:cheek_guards",
+          "armorpieces:comb",
+          "armorpieces:fauld",
+          "armorpieces:frog_mouth",
+          "armorpieces:girdle",
+          "armorpieces:gorget",
+          "armorpieces:great_helm",
+          "armorpieces:greaves",
+          "armorpieces:helm_wings",
+          "armorpieces:knee_studs",
+          "armorpieces:lames",
+          "armorpieces:mail_fringe",
+          "armorpieces:nasal",
+          "armorpieces:poleyns",
+          "armorpieces:rowel_spurs",
+          "armorpieces:sallet_slit",
+          "armorpieces:spaulders",
+          "armorpieces:spectacle_visor",
+          "armorpieces:spiked_pauldrons",
+          "armorpieces:spire",
+          "armorpieces:spurs",
+          "armorpieces:tassets",
+          "armorpieces:vambraces",
+          "armorpieces:visor",
+          "armorpieces:winged_cops"
+        ],
+        "skins": [
+          "armorpieces:plate",
+          "armorpieces:gothic",
+          "armorpieces:milanese",
+          "armorpieces:mail",
+          "armorpieces:chainmail",
+          "armorpieces:lorica"
+        ],
+        "tables": [
+          "minecraft:chests/stronghold_corridor",
+          "minecraft:chests/stronghold_crossing",
+          "minecraft:chests/simple_dungeon",
+          "minecraft:chests/pillager_outpost",
+          "{'table': 'minecraft:chests/trial_chambers/reward', 'chance': 0.18}",
+          "{'table': 'minecraft:chests/trial_chambers/reward_rare', 'chance': 0.25}",
+          "{'table': 'minecraft:chests/woodland_mansion', 'chance': 0.15}"
+        ],
+        "title": "Knightly"
+      },
+      {
+        "chance": 0.12,
+        "count": 6,
+        "description": "underwater_ruin_big, {'table': 'underwater_ruin_small', 'chance': 0.07}, {'table': 'shipwreck_treasure', 'chance': 0.18}, {'table': 'buried_treasure', 'chance': 0.15}",
+        "id": "armorpieces:tidal",
+        "name": "tidal",
+        "pieces": [
+          "armorpieces:dorsal_fin",
+          "armorpieces:head_fins",
+          "armorpieces:scale_shins",
+          "armorpieces:scale_skirt",
+          "armorpieces:spine_ridge",
+          "armorpieces:swim_fins"
+        ],
+        "skins": [
+          "armorpieces:scale"
+        ],
+        "tables": [
+          "minecraft:chests/underwater_ruin_big",
+          "{'table': 'minecraft:chests/underwater_ruin_small', 'chance': 0.07}",
+          "{'table': 'minecraft:chests/shipwreck_treasure', 'chance': 0.18}",
+          "{'table': 'minecraft:chests/buried_treasure', 'chance': 0.15}"
+        ],
+        "title": "Tidal"
+      },
+      {
+        "chance": 0.08,
+        "count": 13,
+        "description": "village/village_armorer, village/village_tannery, village/village_shepherd, village/village_taiga_house, village/village_snowy_house, {'table': 'igloo_chest', 'chance': 0.15}, shipwreck_supply, ruined_portal",
+        "id": "armorpieces:wayfarer",
+        "name": "wayfarer",
+        "pieces": [
+          "armorpieces:bandolier",
+          "armorpieces:bedroll",
+          "armorpieces:boot_cuffs",
+          "armorpieces:browband",
+          "armorpieces:buckled_belt",
+          "armorpieces:mittens",
+          "armorpieces:padding",
+          "armorpieces:pouch_belt",
+          "armorpieces:puttees",
+          "armorpieces:quiver",
+          "armorpieces:scarf",
+          "armorpieces:thigh_sheath",
+          "armorpieces:wraps"
+        ],
+        "skins": [
+          "armorpieces:gambeson",
+          "armorpieces:brigandine"
+        ],
+        "tables": [
+          "minecraft:chests/village/village_armorer",
+          "minecraft:chests/village/village_tannery",
+          "minecraft:chests/village/village_shepherd",
+          "minecraft:chests/village/village_taiga_house",
+          "minecraft:chests/village/village_snowy_house",
+          "{'table': 'minecraft:chests/igloo_chest', 'chance': 0.15}",
+          "minecraft:chests/shipwreck_supply",
+          "minecraft:chests/ruined_portal"
+        ],
+        "title": "Wayfarer"
+      }
+    ]
+  },
+  "header": {
+    "align": "center",
+    "banner": "banners/header.png",
+    "heading_with_banner": false,
+    "section_banner_width": null,
+    "show_title": false,
+    "width": null
+  },
+  "is_html": false,
+  "links": {},
+  "minecraft": {
+    "loaders": [],
+    "versions": []
+  },
+  "platform": "site",
+  "raw": {
+    "assets": {
+      "base_url": "https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/",
+      "dir": "docs/assets"
+    },
+    "custom_sections": [
+      {
+        "body": "A **loot group** is one data file naming a category of vanilla loot tables and a tag of\npieces found in them, one per theme. Armor skins are divided over the same groups, and a\nfitting template turns up in every one of them. A pack adds a whole look to the world with\none group, or drops one piece into one chest from the piece's own data file, which is the one\nthing a datapack could not do for itself, since it can only replace a vanilla table whole.\n",
+        "id": "groups",
+        "title": "Loot groups"
+      },
+      {
+        "after": "groups",
+        "columns": [
+          {
+            "field": "name",
+            "title": "Group"
+          },
+          {
+            "field": "count",
+            "title": "Pieces"
+          },
+          {
+            "field": "chance",
+            "title": "Chance"
+          },
+          {
+            "field": "description",
+            "title": "Found in"
+          }
+        ],
+        "elements": [
+          {
+            "chance": 0.1,
+            "count": 15,
+            "description": "bastion_other, bastion_hoglin_stable, {'table': 'bastion_treasure', 'chance': 0.2}, nether_bridge, jungle_temple, {'table': 'abandoned_mineshaft', 'chance': 0.06}",
+            "id": "armorpieces:beast",
+            "name": "beast",
+            "pieces": [
+              "armorpieces:antlers",
+              "armorpieces:beast_head",
+              "armorpieces:bone_mask",
+              "armorpieces:claws",
+              "armorpieces:ears",
+              "armorpieces:fang_necklace",
+              "armorpieces:fanged_cop",
+              "armorpieces:horns",
+              "armorpieces:horsetail",
+              "armorpieces:mantle",
+              "armorpieces:pelt",
+              "armorpieces:savoyard",
+              "armorpieces:shin_spikes",
+              "armorpieces:talons",
+              "armorpieces:tusks"
+            ],
+            "skins": [
+              "armorpieces:varangian"
+            ],
+            "tables": [
+              "minecraft:chests/bastion_other",
+              "minecraft:chests/bastion_hoglin_stable",
+              "{'table': 'minecraft:chests/bastion_treasure', 'chance': 0.2}",
+              "minecraft:chests/nether_bridge",
+              "minecraft:chests/jungle_temple",
+              "{'table': 'minecraft:chests/abandoned_mineshaft', 'chance': 0.06}"
+            ],
+            "title": "Beast"
+          },
+          {
+            "chance": 0.1,
+            "count": 4,
+            "description": "{'table': 'end_city_treasure', 'chance': 0.15}, jungle_temple, {'table': 'abandoned_mineshaft', 'chance': 0.05}",
+            "id": "armorpieces:carapace",
+            "name": "carapace",
+            "pieces": [
+              "armorpieces:aerials",
+              "armorpieces:antennae",
+              "armorpieces:carapace",
+              "armorpieces:wing_cases"
+            ],
+            "skins": [
+              "armorpieces:lamellar"
+            ],
+            "tables": [
+              "{'table': 'minecraft:chests/end_city_treasure', 'chance': 0.15}",
+              "minecraft:chests/jungle_temple",
+              "{'table': 'minecraft:chests/abandoned_mineshaft', 'chance': 0.05}"
+            ],
+            "title": "Carapace"
+          },
+          {
+            "chance": 0.1,
+            "count": 24,
+            "description": "{'table': 'woodland_mansion', 'chance': 0.18}, {'table': 'ancient_city', 'chance': 0.15}, {'table': 'end_city_treasure', 'chance': 0.15}, desert_pyramid, village/village_temple, village/village_cartographer",
+            "id": "armorpieces:court",
+            "name": "court",
+            "pieces": [
+              "armorpieces:anklets",
+              "armorpieces:bangles",
+              "armorpieces:banner",
+              "armorpieces:bells",
+              "armorpieces:brooch",
+              "armorpieces:chain_belt",
+              "armorpieces:chain_of_office",
+              "armorpieces:circlet",
+              "armorpieces:cloak",
+              "armorpieces:cord",
+              "armorpieces:coronet",
+              "armorpieces:cuffs",
+              "armorpieces:epaulettes",
+              "armorpieces:feathering",
+              "armorpieces:garters",
+              "armorpieces:heel_wings",
+              "armorpieces:laurel",
+              "armorpieces:loin_panels",
+              "armorpieces:pendant",
+              "armorpieces:pinions",
+              "armorpieces:ruff",
+              "armorpieces:sash",
+              "armorpieces:streamers",
+              "armorpieces:wing_roots"
+            ],
+            "skins": [
+              "armorpieces:runic",
+              "armorpieces:hoplite",
+              "armorpieces:samurai"
+            ],
+            "tables": [
+              "{'table': 'minecraft:chests/woodland_mansion', 'chance': 0.18}",
+              "{'table': 'minecraft:chests/ancient_city', 'chance': 0.15}",
+              "{'table': 'minecraft:chests/end_city_treasure', 'chance': 0.15}",
+              "minecraft:chests/desert_pyramid",
+              "minecraft:chests/village/village_temple",
+              "minecraft:chests/village/village_cartographer"
+            ],
+            "title": "Court"
+          },
+          {
+            "chance": 0.1,
+            "count": 29,
+            "description": "stronghold_corridor, stronghold_crossing, simple_dungeon, pillager_outpost, {'table': 'trial_chambers/reward', 'chance': 0.18}, {'table': 'trial_chambers/reward_rare', 'chance': 0.25}, {'table': 'woodland_mansion', 'chance': 0.15}",
+            "id": "armorpieces:knightly",
+            "name": "knightly",
+            "pieces": [
+              "armorpieces:barbute",
+              "armorpieces:bellows_visor",
+              "armorpieces:brush_crest",
+              "armorpieces:buckler",
+              "armorpieces:cheek_guards",
+              "armorpieces:comb",
+              "armorpieces:fauld",
+              "armorpieces:frog_mouth",
+              "armorpieces:girdle",
+              "armorpieces:gorget",
+              "armorpieces:great_helm",
+              "armorpieces:greaves",
+              "armorpieces:helm_wings",
+              "armorpieces:knee_studs",
+              "armorpieces:lames",
+              "armorpieces:mail_fringe",
+              "armorpieces:nasal",
+              "armorpieces:poleyns",
+              "armorpieces:rowel_spurs",
+              "armorpieces:sallet_slit",
+              "armorpieces:spaulders",
+              "armorpieces:spectacle_visor",
+              "armorpieces:spiked_pauldrons",
+              "armorpieces:spire",
+              "armorpieces:spurs",
+              "armorpieces:tassets",
+              "armorpieces:vambraces",
+              "armorpieces:visor",
+              "armorpieces:winged_cops"
+            ],
+            "skins": [
+              "armorpieces:plate",
+              "armorpieces:gothic",
+              "armorpieces:milanese",
+              "armorpieces:mail",
+              "armorpieces:chainmail",
+              "armorpieces:lorica"
+            ],
+            "tables": [
+              "minecraft:chests/stronghold_corridor",
+              "minecraft:chests/stronghold_crossing",
+              "minecraft:chests/simple_dungeon",
+              "minecraft:chests/pillager_outpost",
+              "{'table': 'minecraft:chests/trial_chambers/reward', 'chance': 0.18}",
+              "{'table': 'minecraft:chests/trial_chambers/reward_rare', 'chance': 0.25}",
+              "{'table': 'minecraft:chests/woodland_mansion', 'chance': 0.15}"
+            ],
+            "title": "Knightly"
+          },
+          {
+            "chance": 0.12,
+            "count": 6,
+            "description": "underwater_ruin_big, {'table': 'underwater_ruin_small', 'chance': 0.07}, {'table': 'shipwreck_treasure', 'chance': 0.18}, {'table': 'buried_treasure', 'chance': 0.15}",
+            "id": "armorpieces:tidal",
+            "name": "tidal",
+            "pieces": [
+              "armorpieces:dorsal_fin",
+              "armorpieces:head_fins",
+              "armorpieces:scale_shins",
+              "armorpieces:scale_skirt",
+              "armorpieces:spine_ridge",
+              "armorpieces:swim_fins"
+            ],
+            "skins": [
+              "armorpieces:scale"
+            ],
+            "tables": [
+              "minecraft:chests/underwater_ruin_big",
+              "{'table': 'minecraft:chests/underwater_ruin_small', 'chance': 0.07}",
+              "{'table': 'minecraft:chests/shipwreck_treasure', 'chance': 0.18}",
+              "{'table': 'minecraft:chests/buried_treasure', 'chance': 0.15}"
+            ],
+            "title": "Tidal"
+          },
+          {
+            "chance": 0.08,
+            "count": 13,
+            "description": "village/village_armorer, village/village_tannery, village/village_shepherd, village/village_taiga_house, village/village_snowy_house, {'table': 'igloo_chest', 'chance': 0.15}, shipwreck_supply, ruined_portal",
+            "id": "armorpieces:wayfarer",
+            "name": "wayfarer",
+            "pieces": [
+              "armorpieces:bandolier",
+              "armorpieces:bedroll",
+              "armorpieces:boot_cuffs",
+              "armorpieces:browband",
+              "armorpieces:buckled_belt",
+              "armorpieces:mittens",
+              "armorpieces:padding",
+              "armorpieces:pouch_belt",
+              "armorpieces:puttees",
+              "armorpieces:quiver",
+              "armorpieces:scarf",
+              "armorpieces:thigh_sheath",
+              "armorpieces:wraps"
+            ],
+            "skins": [
+              "armorpieces:gambeson",
+              "armorpieces:brigandine"
+            ],
+            "tables": [
+              "minecraft:chests/village/village_armorer",
+              "minecraft:chests/village/village_tannery",
+              "minecraft:chests/village/village_shepherd",
+              "minecraft:chests/village/village_taiga_house",
+              "minecraft:chests/village/village_snowy_house",
+              "{'table': 'minecraft:chests/igloo_chest', 'chance': 0.15}",
+              "minecraft:chests/shipwreck_supply",
+              "minecraft:chests/ruined_portal"
+            ],
+            "title": "Wayfarer"
+          }
+        ],
+        "id": "shipped-groups",
+        "layout": "table",
+        "title": "The groups that ship"
+      },
+      {
+        "after": "shipped-groups",
+        "body": "One pool per table, rolled once. A chest's odds of holding something of the mod's stay put\nhowever many pieces are added: another piece changes *which* one you find, never how often. A\nloot function can also put a piece on a piece of armor a table drops, gem and all.\n",
+        "id": "chance",
+        "title": "The chance belongs to the table"
+      },
+      {
+        "after": "chance",
+        "body": "A minority of pieces have a template recipe, where the centre item is plainly the piece or\nwhat it is made of. The rest are found only. A server can turn any recipe off by\n[overriding it](/wiki/getting-started/#switching-a-recipe-off).\n",
+        "id": "crafting",
+        "title": "Crafting"
+      },
+      {
+        "after": "crafting",
+        "columns": [
+          {
+            "field": "value",
+            "title": "How many"
+          },
+          {
+            "field": "description",
+            "title": "What"
+          }
+        ],
+        "elements": [
+          {
+            "description": "the pieces, over every socket",
+            "id": "pieces",
+            "name": "pieces",
+            "text": "91",
+            "title": "91",
+            "value": 91,
+            "word": "91"
+          },
+          {
+            "description": "the armor skins",
+            "id": "skins",
+            "name": "skins",
+            "text": "14",
+            "title": "fourteen",
+            "value": 14,
+            "word": "fourteen"
+          },
+          {
+            "description": "the loot groups",
+            "id": "loot_groups",
+            "name": "loot_groups",
+            "text": "6",
+            "title": "six",
+            "value": 6,
+            "word": "six"
+          },
+          {
+            "description": "the pieces with a template recipe; the rest are found",
+            "id": "craftable",
+            "name": "craftable",
+            "text": "31",
+            "title": "31",
+            "value": 31,
+            "word": "31"
+          }
+        ],
+        "id": "how-many",
+        "layout": "table",
+        "title": "How many are made and how many are found"
+      }
+    ],
+    "generators": {
+      "counts": {
+        "use": "armorpieces.counts"
+      },
+      "loot_groups": {
+        "use": "armorpieces.loot_groups"
+      }
+    },
+    "name": "Finding pieces",
+    "root": "../..",
+    "sections": {
+      "about": "Most pieces are found rather than made. Each theme turns up in the structures that suit it:\nknightly gear in strongholds and trial chambers, beast trophies in bastions, court jewellery in\nmansions and ancient cities, tidal pieces in shipwrecks and ocean ruins, wayfarer gear on the\nroad, carapace in the deep.\n",
+      "configuration": false,
+      "credits": false,
+      "dependencies": false,
+      "faq": false,
+      "incompatibilities": false,
+      "installation": false,
+      "license": false
+    },
+    "shared_sections": false,
+    "slug": "loot",
+    "tagline": "Where pieces, skins and fitting templates turn up, and why the odds never change.",
+    "toc": false
+  },
+  "sections": [
+    {
+      "banner": null,
+      "body": "Most pieces are found rather than made. Each theme turns up in the structures that suit it:\nknightly gear in strongholds and trial chambers, beast trophies in bastions, court jewellery in\nmansions and ancient cities, tidal pieces in shipwrecks and ocean ruins, wayfarer gear on the\nroad, carapace in the deep.",
+      "data": {},
+      "empty_text": null,
+      "id": "about",
+      "layout": "list",
+      "options": {},
+      "targets": null,
+      "title": "About"
+    },
+    {
+      "banner": null,
+      "body": "A **loot group** is one data file naming a category of vanilla loot tables and a tag of\npieces found in them, one per theme. Armor skins are divided over the same groups, and a\nfitting template turns up in every one of them. A pack adds a whole look to the world with\none group, or drops one piece into one chest from the piece's own data file, which is the one\nthing a datapack could not do for itself, since it can only replace a vanilla table whole.",
+      "data": {},
+      "empty_text": null,
+      "id": "groups",
+      "layout": "list",
+      "options": {},
+      "targets": null,
+      "title": "Loot groups"
+    },
+    {
+      "banner": null,
+      "body": null,
+      "data": {
+        "columns": [
+          {
+            "field": "name",
+            "title": "Group"
+          },
+          {
+            "field": "count",
+            "title": "Pieces"
+          },
+          {
+            "field": "chance",
+            "title": "Chance"
+          },
+          {
+            "field": "description",
+            "title": "Found in"
+          }
+        ],
+        "elements": [
+          {
+            "chance": 0.1,
+            "count": 15,
+            "description": "bastion_other, bastion_hoglin_stable, {'table': 'bastion_treasure', 'chance': 0.2}, nether_bridge, jungle_temple, {'table': 'abandoned_mineshaft', 'chance': 0.06}",
+            "id": "armorpieces:beast",
+            "name": "beast",
+            "pieces": [
+              "armorpieces:antlers",
+              "armorpieces:beast_head",
+              "armorpieces:bone_mask",
+              "armorpieces:claws",
+              "armorpieces:ears",
+              "armorpieces:fang_necklace",
+              "armorpieces:fanged_cop",
+              "armorpieces:horns",
+              "armorpieces:horsetail",
+              "armorpieces:mantle",
+              "armorpieces:pelt",
+              "armorpieces:savoyard",
+              "armorpieces:shin_spikes",
+              "armorpieces:talons",
+              "armorpieces:tusks"
+            ],
+            "skins": [
+              "armorpieces:varangian"
+            ],
+            "tables": [
+              "minecraft:chests/bastion_other",
+              "minecraft:chests/bastion_hoglin_stable",
+              "{'table': 'minecraft:chests/bastion_treasure', 'chance': 0.2}",
+              "minecraft:chests/nether_bridge",
+              "minecraft:chests/jungle_temple",
+              "{'table': 'minecraft:chests/abandoned_mineshaft', 'chance': 0.06}"
+            ],
+            "title": "Beast"
+          },
+          {
+            "chance": 0.1,
+            "count": 4,
+            "description": "{'table': 'end_city_treasure', 'chance': 0.15}, jungle_temple, {'table': 'abandoned_mineshaft', 'chance': 0.05}",
+            "id": "armorpieces:carapace",
+            "name": "carapace",
+            "pieces": [
+              "armorpieces:aerials",
+              "armorpieces:antennae",
+              "armorpieces:carapace",
+              "armorpieces:wing_cases"
+            ],
+            "skins": [
+              "armorpieces:lamellar"
+            ],
+            "tables": [
+              "{'table': 'minecraft:chests/end_city_treasure', 'chance': 0.15}",
+              "minecraft:chests/jungle_temple",
+              "{'table': 'minecraft:chests/abandoned_mineshaft', 'chance': 0.05}"
+            ],
+            "title": "Carapace"
+          },
+          {
+            "chance": 0.1,
+            "count": 24,
+            "description": "{'table': 'woodland_mansion', 'chance': 0.18}, {'table': 'ancient_city', 'chance': 0.15}, {'table': 'end_city_treasure', 'chance': 0.15}, desert_pyramid, village/village_temple, village/village_cartographer",
+            "id": "armorpieces:court",
+            "name": "court",
+            "pieces": [
+              "armorpieces:anklets",
+              "armorpieces:bangles",
+              "armorpieces:banner",
+              "armorpieces:bells",
+              "armorpieces:brooch",
+              "armorpieces:chain_belt",
+              "armorpieces:chain_of_office",
+              "armorpieces:circlet",
+              "armorpieces:cloak",
+              "armorpieces:cord",
+              "armorpieces:coronet",
+              "armorpieces:cuffs",
+              "armorpieces:epaulettes",
+              "armorpieces:feathering",
+              "armorpieces:garters",
+              "armorpieces:heel_wings",
+              "armorpieces:laurel",
+              "armorpieces:loin_panels",
+              "armorpieces:pendant",
+              "armorpieces:pinions",
+              "armorpieces:ruff",
+              "armorpieces:sash",
+              "armorpieces:streamers",
+              "armorpieces:wing_roots"
+            ],
+            "skins": [
+              "armorpieces:runic",
+              "armorpieces:hoplite",
+              "armorpieces:samurai"
+            ],
+            "tables": [
+              "{'table': 'minecraft:chests/woodland_mansion', 'chance': 0.18}",
+              "{'table': 'minecraft:chests/ancient_city', 'chance': 0.15}",
+              "{'table': 'minecraft:chests/end_city_treasure', 'chance': 0.15}",
+              "minecraft:chests/desert_pyramid",
+              "minecraft:chests/village/village_temple",
+              "minecraft:chests/village/village_cartographer"
+            ],
+            "title": "Court"
+          },
+          {
+            "chance": 0.1,
+            "count": 29,
+            "description": "stronghold_corridor, stronghold_crossing, simple_dungeon, pillager_outpost, {'table': 'trial_chambers/reward', 'chance': 0.18}, {'table': 'trial_chambers/reward_rare', 'chance': 0.25}, {'table': 'woodland_mansion', 'chance': 0.15}",
+            "id": "armorpieces:knightly",
+            "name": "knightly",
+            "pieces": [
+              "armorpieces:barbute",
+              "armorpieces:bellows_visor",
+              "armorpieces:brush_crest",
+              "armorpieces:buckler",
+              "armorpieces:cheek_guards",
+              "armorpieces:comb",
+              "armorpieces:fauld",
+              "armorpieces:frog_mouth",
+              "armorpieces:girdle",
+              "armorpieces:gorget",
+              "armorpieces:great_helm",
+              "armorpieces:greaves",
+              "armorpieces:helm_wings",
+              "armorpieces:knee_studs",
+              "armorpieces:lames",
+              "armorpieces:mail_fringe",
+              "armorpieces:nasal",
+              "armorpieces:poleyns",
+              "armorpieces:rowel_spurs",
+              "armorpieces:sallet_slit",
+              "armorpieces:spaulders",
+              "armorpieces:spectacle_visor",
+              "armorpieces:spiked_pauldrons",
+              "armorpieces:spire",
+              "armorpieces:spurs",
+              "armorpieces:tassets",
+              "armorpieces:vambraces",
+              "armorpieces:visor",
+              "armorpieces:winged_cops"
+            ],
+            "skins": [
+              "armorpieces:plate",
+              "armorpieces:gothic",
+              "armorpieces:milanese",
+              "armorpieces:mail",
+              "armorpieces:chainmail",
+              "armorpieces:lorica"
+            ],
+            "tables": [
+              "minecraft:chests/stronghold_corridor",
+              "minecraft:chests/stronghold_crossing",
+              "minecraft:chests/simple_dungeon",
+              "minecraft:chests/pillager_outpost",
+              "{'table': 'minecraft:chests/trial_chambers/reward', 'chance': 0.18}",
+              "{'table': 'minecraft:chests/trial_chambers/reward_rare', 'chance': 0.25}",
+              "{'table': 'minecraft:chests/woodland_mansion', 'chance': 0.15}"
+            ],
+            "title": "Knightly"
+          },
+          {
+            "chance": 0.12,
+            "count": 6,
+            "description": "underwater_ruin_big, {'table': 'underwater_ruin_small', 'chance': 0.07}, {'table': 'shipwreck_treasure', 'chance': 0.18}, {'table': 'buried_treasure', 'chance': 0.15}",
+            "id": "armorpieces:tidal",
+            "name": "tidal",
+            "pieces": [
+              "armorpieces:dorsal_fin",
+              "armorpieces:head_fins",
+              "armorpieces:scale_shins",
+              "armorpieces:scale_skirt",
+              "armorpieces:spine_ridge",
+              "armorpieces:swim_fins"
+            ],
+            "skins": [
+              "armorpieces:scale"
+            ],
+            "tables": [
+              "minecraft:chests/underwater_ruin_big",
+              "{'table': 'minecraft:chests/underwater_ruin_small', 'chance': 0.07}",
+              "{'table': 'minecraft:chests/shipwreck_treasure', 'chance': 0.18}",
+              "{'table': 'minecraft:chests/buried_treasure', 'chance': 0.15}"
+            ],
+            "title": "Tidal"
+          },
+          {
+            "chance": 0.08,
+            "count": 13,
+            "description": "village/village_armorer, village/village_tannery, village/village_shepherd, village/village_taiga_house, village/village_snowy_house, {'table': 'igloo_chest', 'chance': 0.15}, shipwreck_supply, ruined_portal",
+            "id": "armorpieces:wayfarer",
+            "name": "wayfarer",
+            "pieces": [
+              "armorpieces:bandolier",
+              "armorpieces:bedroll",
+              "armorpieces:boot_cuffs",
+              "armorpieces:browband",
+              "armorpieces:buckled_belt",
+              "armorpieces:mittens",
+              "armorpieces:padding",
+              "armorpieces:pouch_belt",
+              "armorpieces:puttees",
+              "armorpieces:quiver",
+              "armorpieces:scarf",
+              "armorpieces:thigh_sheath",
+              "armorpieces:wraps"
+            ],
+            "skins": [
+              "armorpieces:gambeson",
+              "armorpieces:brigandine"
+            ],
+            "tables": [
+              "minecraft:chests/village/village_armorer",
+              "minecraft:chests/village/village_tannery",
+              "minecraft:chests/village/village_shepherd",
+              "minecraft:chests/village/village_taiga_house",
+              "minecraft:chests/village/village_snowy_house",
+              "{'table': 'minecraft:chests/igloo_chest', 'chance': 0.15}",
+              "minecraft:chests/shipwreck_supply",
+              "minecraft:chests/ruined_portal"
+            ],
+            "title": "Wayfarer"
+          }
+        ]
+      },
+      "empty_text": null,
+      "id": "shipped-groups",
+      "layout": "table",
+      "options": {
+        "columns": [
+          {
+            "field": "name",
+            "title": "Group"
+          },
+          {
+            "field": "count",
+            "title": "Pieces"
+          },
+          {
+            "field": "chance",
+            "title": "Chance"
+          },
+          {
+            "field": "description",
+            "title": "Found in"
+          }
+        ]
+      },
+      "targets": null,
+      "title": "The groups that ship"
+    },
+    {
+      "banner": null,
+      "body": "One pool per table, rolled once. A chest's odds of holding something of the mod's stay put\nhowever many pieces are added: another piece changes *which* one you find, never how often. A\nloot function can also put a piece on a piece of armor a table drops, gem and all.",
+      "data": {},
+      "empty_text": null,
+      "id": "chance",
+      "layout": "list",
+      "options": {},
+      "targets": null,
+      "title": "The chance belongs to the table"
+    },
+    {
+      "banner": null,
+      "body": "A minority of pieces have a template recipe, where the centre item is plainly the piece or\nwhat it is made of. The rest are found only. A server can turn any recipe off by\n[overriding it](/wiki/getting-started/#switching-a-recipe-off).",
+      "data": {},
+      "empty_text": null,
+      "id": "crafting",
+      "layout": "list",
+      "options": {},
+      "targets": null,
+      "title": "Crafting"
+    },
+    {
+      "banner": null,
+      "body": null,
+      "data": {
+        "columns": [
+          {
+            "field": "value",
+            "title": "How many"
+          },
+          {
+            "field": "description",
+            "title": "What"
+          }
+        ],
+        "elements": [
+          {
+            "description": "the pieces, over every socket",
+            "id": "pieces",
+            "name": "pieces",
+            "text": "91",
+            "title": "91",
+            "value": 91,
+            "word": "91"
+          },
+          {
+            "description": "the armor skins",
+            "id": "skins",
+            "name": "skins",
+            "text": "14",
+            "title": "fourteen",
+            "value": 14,
+            "word": "fourteen"
+          },
+          {
+            "description": "the loot groups",
+            "id": "loot_groups",
+            "name": "loot_groups",
+            "text": "6",
+            "title": "six",
+            "value": 6,
+            "word": "six"
+          },
+          {
+            "description": "the pieces with a template recipe; the rest are found",
+            "id": "craftable",
+            "name": "craftable",
+            "text": "31",
+            "title": "31",
+            "value": 31,
+            "word": "31"
+          }
+        ]
+      },
+      "empty_text": null,
+      "id": "how-many",
+      "layout": "table",
+      "options": {
+        "columns": [
+          {
+            "field": "value",
+            "title": "How many"
+          },
+          {
+            "field": "description",
+            "title": "What"
+          }
+        ]
+      },
+      "targets": null,
+      "title": "How many are made and how many are found"
+    }
+  ],
+  "target": "site",
+  "toc": null
+}

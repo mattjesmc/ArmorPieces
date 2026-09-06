@@ -1,0 +1,83 @@
+# The wiki's "Armor skins" page. The list of skins is read out of the datapack rather than named
+# in prose; everything else came across verbatim from ArmorPiecesSite/content/wiki/skins.md.
+name: Armor skins
+slug: skins
+tagline: "The armor's own texture, changed: what a skin is, how it is coloured, and how it goes on."
+
+# This page describes the repository two folders up, not docs/wiki: its data, its
+# language file, its .modpage/generators.
+root: ../..
+
+assets:
+  dir: docs/assets
+  base_url: https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/
+
+toc: false
+
+# Not a marketplace page: no Dependencies heading saying "none".
+shared_sections: false
+
+generators:
+  skins:
+    use: armorpieces.skins
+
+sections:
+  about: |
+    A skin is the one thing in the mod that changes the armor **itself** rather than adding to it.
+    Those below ship with the mod; a pack adds its own.
+
+  faq: false
+  dependencies: false
+  incompatibilities: false
+  installation: false
+  configuration: false
+  license: false
+  credits: false
+
+custom_sections:
+  - id: shipped
+    title: The skins that ship
+    layout: table
+    columns:
+      - {field: title, title: Skin}
+      - {field: id, title: Id}
+      - {field: craftable, title: Has a recipe}
+      - {field: loot, title: Found}
+    elements: {from: skins}
+
+  - id: colour
+    title: How it is coloured
+    after: shipped
+    body: |
+      A skin is drawn once, in grey, as one master pair on vanilla's own armor grid: `humanoid.png`
+      for the helmet, chestplate and boots, `humanoid_leggings.png` for the belt and legs. At load
+      the mod recolours it through **eight shades taken from that armor material's own vanilla
+      texture**, with vanilla's panel edges and shadows mixed back over it. So a skinned iron
+      helmet still reads as iron, gold as gold, and a modded armor material is skinned for free
+      from the texture it already ships. No palette is authored and nothing goes out of date with
+      a Minecraft update.
+
+  - id: applying
+    title: Applying one
+    after: colour
+    body: |
+      At a smithing table or the advanced table: the skin's template, the armor, and **the armor's
+      own material**. Re-skinning is re-forging, and it costs the metal the piece is made of. Skins
+      are [found in the world](/wiki/loot/) alongside the pieces, divided over the same loot groups.
+
+  - id: removing
+    title: Removing one
+    after: applying
+    body: |
+      The advanced smithing table's row for the armor itself holds its trim, its skin and its
+      cloth; pick the skin and Remove.
+
+  - id: making
+    title: Making one
+    after: removing
+    body: |
+      The [editor](/wiki/editor/) opens a skin workspace: the figure wearing all four slots at
+      once, the two sheets painted in place, judged live on every material. A new skin can start
+      from an outline, the mod's own plate or vanilla's where the game's sheets are present, so it
+      is drawn where the armor really is and the check holds it to that outline. The
+      [authoring guide](/wiki/authoring/#skins) has the details.

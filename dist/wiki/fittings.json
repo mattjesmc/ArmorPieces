@@ -1,0 +1,561 @@
+{
+  "badges": [],
+  "extra": {},
+  "gen": {
+    "fittings": [
+      {
+        "count": 2,
+        "description": "",
+        "id": "armorpieces:banner",
+        "ingredients": "",
+        "kind": "banner",
+        "name": "banner",
+        "pieces": [
+          "armorpieces:banner",
+          "armorpieces:cloak"
+        ],
+        "title": "Banner",
+        "type": null
+      },
+      {
+        "count": 14,
+        "description": "Gems",
+        "id": "armorpieces:gemstone",
+        "ingredients": "Gems",
+        "kind": "material",
+        "name": "gemstone",
+        "pieces": [
+          "armorpieces:anklets",
+          "armorpieces:antennae",
+          "armorpieces:bangles",
+          "armorpieces:beast_head",
+          "armorpieces:bone_mask",
+          "armorpieces:chain_of_office",
+          "armorpieces:circlet",
+          "armorpieces:coronet",
+          "armorpieces:fang_necklace",
+          "armorpieces:fanged_cop",
+          "armorpieces:girdle",
+          "armorpieces:pendant",
+          "armorpieces:savoyard",
+          "armorpieces:spire"
+        ],
+        "title": "Gemstone",
+        "type": null
+      },
+      {
+        "count": 32,
+        "description": "Metals",
+        "id": "armorpieces:guard",
+        "ingredients": "Metals",
+        "kind": "material",
+        "name": "guard",
+        "pieces": [
+          "armorpieces:bandolier",
+          "armorpieces:bells",
+          "armorpieces:buckled_belt",
+          "armorpieces:buckler",
+          "armorpieces:chain_belt",
+          "armorpieces:chain_of_office",
+          "armorpieces:cheek_guards",
+          "armorpieces:claws",
+          "armorpieces:cloak",
+          "armorpieces:comb",
+          "armorpieces:fauld",
+          "armorpieces:frog_mouth",
+          "armorpieces:girdle",
+          "armorpieces:great_helm",
+          "armorpieces:knee_studs",
+          "armorpieces:lames",
+          "armorpieces:mail_fringe",
+          "armorpieces:nasal",
+          "armorpieces:quiver",
+          "armorpieces:rowel_spurs",
+          "armorpieces:sallet_slit",
+          "armorpieces:sash",
+          "armorpieces:scale_shins",
+          "armorpieces:scale_skirt",
+          "armorpieces:shin_spikes",
+          "armorpieces:spectacle_visor",
+          "armorpieces:spiked_pauldrons",
+          "armorpieces:spine_ridge",
+          "armorpieces:talons",
+          "armorpieces:thigh_sheath",
+          "armorpieces:tusks",
+          "armorpieces:winged_cops"
+        ],
+        "title": "Guard",
+        "type": null
+      },
+      {
+        "count": 32,
+        "description": "",
+        "id": "armorpieces:inlay",
+        "ingredients": "",
+        "kind": "dye",
+        "name": "inlay",
+        "pieces": [
+          "armorpieces:aerials",
+          "armorpieces:bandolier",
+          "armorpieces:barbute",
+          "armorpieces:bedroll",
+          "armorpieces:bellows_visor",
+          "armorpieces:boot_cuffs",
+          "armorpieces:browband",
+          "armorpieces:carapace",
+          "armorpieces:claws",
+          "armorpieces:cord",
+          "armorpieces:cuffs",
+          "armorpieces:dorsal_fin",
+          "armorpieces:ears",
+          "armorpieces:epaulettes",
+          "armorpieces:garters",
+          "armorpieces:greaves",
+          "armorpieces:head_fins",
+          "armorpieces:horsetail",
+          "armorpieces:laurel",
+          "armorpieces:loin_panels",
+          "armorpieces:mantle",
+          "armorpieces:padding",
+          "armorpieces:pelt",
+          "armorpieces:pouch_belt",
+          "armorpieces:puttees",
+          "armorpieces:ruff",
+          "armorpieces:sash",
+          "armorpieces:scarf",
+          "armorpieces:streamers",
+          "armorpieces:swim_fins",
+          "armorpieces:wing_cases",
+          "armorpieces:wraps"
+        ],
+        "title": "Inlay",
+        "type": null
+      }
+    ]
+  },
+  "header": {
+    "align": "center",
+    "banner": "banners/header.png",
+    "heading_with_banner": false,
+    "section_banner_width": null,
+    "show_title": false,
+    "width": null
+  },
+  "is_html": false,
+  "links": {},
+  "minecraft": {
+    "loaders": [],
+    "versions": []
+  },
+  "platform": "site",
+  "raw": {
+    "assets": {
+      "base_url": "https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/",
+      "dir": "docs/assets"
+    },
+    "custom_sections": [
+      {
+        "columns": [
+          {
+            "field": "name",
+            "title": "Fitting"
+          },
+          {
+            "field": "kind",
+            "title": "Kind"
+          },
+          {
+            "field": "ingredients",
+            "title": "Takes"
+          },
+          {
+            "field": "count",
+            "title": "Pieces that have one"
+          }
+        ],
+        "elements": [
+          {
+            "count": 2,
+            "description": "",
+            "id": "armorpieces:banner",
+            "ingredients": "",
+            "kind": "banner",
+            "name": "banner",
+            "pieces": [
+              "armorpieces:banner",
+              "armorpieces:cloak"
+            ],
+            "title": "Banner",
+            "type": null
+          },
+          {
+            "count": 14,
+            "description": "Gems",
+            "id": "armorpieces:gemstone",
+            "ingredients": "Gems",
+            "kind": "material",
+            "name": "gemstone",
+            "pieces": [
+              "armorpieces:anklets",
+              "armorpieces:antennae",
+              "armorpieces:bangles",
+              "armorpieces:beast_head",
+              "armorpieces:bone_mask",
+              "armorpieces:chain_of_office",
+              "armorpieces:circlet",
+              "armorpieces:coronet",
+              "armorpieces:fang_necklace",
+              "armorpieces:fanged_cop",
+              "armorpieces:girdle",
+              "armorpieces:pendant",
+              "armorpieces:savoyard",
+              "armorpieces:spire"
+            ],
+            "title": "Gemstone",
+            "type": null
+          },
+          {
+            "count": 32,
+            "description": "Metals",
+            "id": "armorpieces:guard",
+            "ingredients": "Metals",
+            "kind": "material",
+            "name": "guard",
+            "pieces": [
+              "armorpieces:bandolier",
+              "armorpieces:bells",
+              "armorpieces:buckled_belt",
+              "armorpieces:buckler",
+              "armorpieces:chain_belt",
+              "armorpieces:chain_of_office",
+              "armorpieces:cheek_guards",
+              "armorpieces:claws",
+              "armorpieces:cloak",
+              "armorpieces:comb",
+              "armorpieces:fauld",
+              "armorpieces:frog_mouth",
+              "armorpieces:girdle",
+              "armorpieces:great_helm",
+              "armorpieces:knee_studs",
+              "armorpieces:lames",
+              "armorpieces:mail_fringe",
+              "armorpieces:nasal",
+              "armorpieces:quiver",
+              "armorpieces:rowel_spurs",
+              "armorpieces:sallet_slit",
+              "armorpieces:sash",
+              "armorpieces:scale_shins",
+              "armorpieces:scale_skirt",
+              "armorpieces:shin_spikes",
+              "armorpieces:spectacle_visor",
+              "armorpieces:spiked_pauldrons",
+              "armorpieces:spine_ridge",
+              "armorpieces:talons",
+              "armorpieces:thigh_sheath",
+              "armorpieces:tusks",
+              "armorpieces:winged_cops"
+            ],
+            "title": "Guard",
+            "type": null
+          },
+          {
+            "count": 32,
+            "description": "",
+            "id": "armorpieces:inlay",
+            "ingredients": "",
+            "kind": "dye",
+            "name": "inlay",
+            "pieces": [
+              "armorpieces:aerials",
+              "armorpieces:bandolier",
+              "armorpieces:barbute",
+              "armorpieces:bedroll",
+              "armorpieces:bellows_visor",
+              "armorpieces:boot_cuffs",
+              "armorpieces:browband",
+              "armorpieces:carapace",
+              "armorpieces:claws",
+              "armorpieces:cord",
+              "armorpieces:cuffs",
+              "armorpieces:dorsal_fin",
+              "armorpieces:ears",
+              "armorpieces:epaulettes",
+              "armorpieces:garters",
+              "armorpieces:greaves",
+              "armorpieces:head_fins",
+              "armorpieces:horsetail",
+              "armorpieces:laurel",
+              "armorpieces:loin_panels",
+              "armorpieces:mantle",
+              "armorpieces:padding",
+              "armorpieces:pelt",
+              "armorpieces:pouch_belt",
+              "armorpieces:puttees",
+              "armorpieces:ruff",
+              "armorpieces:sash",
+              "armorpieces:scarf",
+              "armorpieces:streamers",
+              "armorpieces:swim_fins",
+              "armorpieces:wing_cases",
+              "armorpieces:wraps"
+            ],
+            "title": "Inlay",
+            "type": null
+          }
+        ],
+        "id": "shipped",
+        "layout": "table",
+        "title": "The fittings that ship"
+      },
+      {
+        "after": "shipped",
+        "body": "One smithing step per fitting: the fitting's template, the decorated armor, and the material.\nEvery piece on the armor that has a place of that kind is offered the material, so one gem\nfills the stone of each piece that has one, or of the one socket you pick at the advanced\nsmithing table. **The same template with the third slot empty takes the fitting out again.**\nRe-applying a piece at its own socket template keeps what is set in its fittings, so changing\na circlet's metal does not cost the gem.\n",
+        "id": "applying",
+        "title": "Applying one"
+      },
+      {
+        "after": "applying",
+        "body": "A fitting is data: a pack declares a new one in its own `fitting` folder, names the tag or\nlist of materials it accepts, and gets its template from a recipe. A piece names the fittings\nit has and ships one greyscale **mask** per masked fitting, saying where on the piece that\nmaterial goes. An effect can be gated on a fitting's value. The\n[authoring guide](/wiki/authoring/) covers the files; the [editor](/wiki/editor/) paints the\nmasks and previews any material in them live.\n",
+        "id": "authors",
+        "title": "For pack authors"
+      }
+    ],
+    "generators": {
+      "fittings": {
+        "use": "armorpieces.fittings"
+      }
+    },
+    "name": "Fittings",
+    "root": "../..",
+    "sections": {
+      "about": "Some pieces have a second colour, set separately: a gem in the circlet, a metal buckle and a\ndyed strap on the sash, an inlay on the greaves, a banner on the back banner. A piece declares\nthe places it has for one, and a **fitting template** fills each.\n",
+      "configuration": false,
+      "credits": false,
+      "dependencies": false,
+      "faq": false,
+      "incompatibilities": false,
+      "installation": false,
+      "license": false
+    },
+    "shared_sections": false,
+    "slug": "fittings",
+    "tagline": "A second material on a piece: gems, guard metals, dyed inlays and banners.",
+    "toc": false
+  },
+  "sections": [
+    {
+      "banner": null,
+      "body": "Some pieces have a second colour, set separately: a gem in the circlet, a metal buckle and a\ndyed strap on the sash, an inlay on the greaves, a banner on the back banner. A piece declares\nthe places it has for one, and a **fitting template** fills each.",
+      "data": {},
+      "empty_text": null,
+      "id": "about",
+      "layout": "list",
+      "options": {},
+      "targets": null,
+      "title": "About"
+    },
+    {
+      "banner": null,
+      "body": null,
+      "data": {
+        "columns": [
+          {
+            "field": "name",
+            "title": "Fitting"
+          },
+          {
+            "field": "kind",
+            "title": "Kind"
+          },
+          {
+            "field": "ingredients",
+            "title": "Takes"
+          },
+          {
+            "field": "count",
+            "title": "Pieces that have one"
+          }
+        ],
+        "elements": [
+          {
+            "count": 2,
+            "description": "",
+            "id": "armorpieces:banner",
+            "ingredients": "",
+            "kind": "banner",
+            "name": "banner",
+            "pieces": [
+              "armorpieces:banner",
+              "armorpieces:cloak"
+            ],
+            "title": "Banner",
+            "type": null
+          },
+          {
+            "count": 14,
+            "description": "Gems",
+            "id": "armorpieces:gemstone",
+            "ingredients": "Gems",
+            "kind": "material",
+            "name": "gemstone",
+            "pieces": [
+              "armorpieces:anklets",
+              "armorpieces:antennae",
+              "armorpieces:bangles",
+              "armorpieces:beast_head",
+              "armorpieces:bone_mask",
+              "armorpieces:chain_of_office",
+              "armorpieces:circlet",
+              "armorpieces:coronet",
+              "armorpieces:fang_necklace",
+              "armorpieces:fanged_cop",
+              "armorpieces:girdle",
+              "armorpieces:pendant",
+              "armorpieces:savoyard",
+              "armorpieces:spire"
+            ],
+            "title": "Gemstone",
+            "type": null
+          },
+          {
+            "count": 32,
+            "description": "Metals",
+            "id": "armorpieces:guard",
+            "ingredients": "Metals",
+            "kind": "material",
+            "name": "guard",
+            "pieces": [
+              "armorpieces:bandolier",
+              "armorpieces:bells",
+              "armorpieces:buckled_belt",
+              "armorpieces:buckler",
+              "armorpieces:chain_belt",
+              "armorpieces:chain_of_office",
+              "armorpieces:cheek_guards",
+              "armorpieces:claws",
+              "armorpieces:cloak",
+              "armorpieces:comb",
+              "armorpieces:fauld",
+              "armorpieces:frog_mouth",
+              "armorpieces:girdle",
+              "armorpieces:great_helm",
+              "armorpieces:knee_studs",
+              "armorpieces:lames",
+              "armorpieces:mail_fringe",
+              "armorpieces:nasal",
+              "armorpieces:quiver",
+              "armorpieces:rowel_spurs",
+              "armorpieces:sallet_slit",
+              "armorpieces:sash",
+              "armorpieces:scale_shins",
+              "armorpieces:scale_skirt",
+              "armorpieces:shin_spikes",
+              "armorpieces:spectacle_visor",
+              "armorpieces:spiked_pauldrons",
+              "armorpieces:spine_ridge",
+              "armorpieces:talons",
+              "armorpieces:thigh_sheath",
+              "armorpieces:tusks",
+              "armorpieces:winged_cops"
+            ],
+            "title": "Guard",
+            "type": null
+          },
+          {
+            "count": 32,
+            "description": "",
+            "id": "armorpieces:inlay",
+            "ingredients": "",
+            "kind": "dye",
+            "name": "inlay",
+            "pieces": [
+              "armorpieces:aerials",
+              "armorpieces:bandolier",
+              "armorpieces:barbute",
+              "armorpieces:bedroll",
+              "armorpieces:bellows_visor",
+              "armorpieces:boot_cuffs",
+              "armorpieces:browband",
+              "armorpieces:carapace",
+              "armorpieces:claws",
+              "armorpieces:cord",
+              "armorpieces:cuffs",
+              "armorpieces:dorsal_fin",
+              "armorpieces:ears",
+              "armorpieces:epaulettes",
+              "armorpieces:garters",
+              "armorpieces:greaves",
+              "armorpieces:head_fins",
+              "armorpieces:horsetail",
+              "armorpieces:laurel",
+              "armorpieces:loin_panels",
+              "armorpieces:mantle",
+              "armorpieces:padding",
+              "armorpieces:pelt",
+              "armorpieces:pouch_belt",
+              "armorpieces:puttees",
+              "armorpieces:ruff",
+              "armorpieces:sash",
+              "armorpieces:scarf",
+              "armorpieces:streamers",
+              "armorpieces:swim_fins",
+              "armorpieces:wing_cases",
+              "armorpieces:wraps"
+            ],
+            "title": "Inlay",
+            "type": null
+          }
+        ]
+      },
+      "empty_text": null,
+      "id": "shipped",
+      "layout": "table",
+      "options": {
+        "columns": [
+          {
+            "field": "name",
+            "title": "Fitting"
+          },
+          {
+            "field": "kind",
+            "title": "Kind"
+          },
+          {
+            "field": "ingredients",
+            "title": "Takes"
+          },
+          {
+            "field": "count",
+            "title": "Pieces that have one"
+          }
+        ]
+      },
+      "targets": null,
+      "title": "The fittings that ship"
+    },
+    {
+      "banner": null,
+      "body": "One smithing step per fitting: the fitting's template, the decorated armor, and the material.\nEvery piece on the armor that has a place of that kind is offered the material, so one gem\nfills the stone of each piece that has one, or of the one socket you pick at the advanced\nsmithing table. **The same template with the third slot empty takes the fitting out again.**\nRe-applying a piece at its own socket template keeps what is set in its fittings, so changing\na circlet's metal does not cost the gem.",
+      "data": {},
+      "empty_text": null,
+      "id": "applying",
+      "layout": "list",
+      "options": {},
+      "targets": null,
+      "title": "Applying one"
+    },
+    {
+      "banner": null,
+      "body": "A fitting is data: a pack declares a new one in its own `fitting` folder, names the tag or\nlist of materials it accepts, and gets its template from a recipe. A piece names the fittings\nit has and ships one greyscale **mask** per masked fitting, saying where on the piece that\nmaterial goes. An effect can be gated on a fitting's value. The\n[authoring guide](/wiki/authoring/) covers the files; the [editor](/wiki/editor/) paints the\nmasks and previews any material in them live.",
+      "data": {},
+      "empty_text": null,
+      "id": "authors",
+      "layout": "list",
+      "options": {},
+      "targets": null,
+      "title": "For pack authors"
+    }
+  ],
+  "target": "site",
+  "toc": null
+}

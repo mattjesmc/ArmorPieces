@@ -930,25 +930,34 @@
 		'			<li v-if="!shown.length" class="ap_dim">Nothing matches.</li>',
 		'		</ul>',
 		'		<p class="ap_dim">Read from <a href="#" @click.prevent="open(home)">{{ url }}</a>.',
-		'			Your own packs go in through Submit... in Packs....</p>',
+		'			<template v-if="note">{{ note }}</template>',
+		'			<template v-else>Your own packs go in through Submit... in Packs....</template></p>',
 		'	</template>',
 		'</div>',
 	].join('\n');
 
 	/*
-	 * Browse the library and pick an entry. The list is the index, filtered; what happens to the
+	 * Browse a library and pick an entry. The list is an index, filtered; what happens to the
 	 * pick is the caller's, because the manager installs into a pack and the start page of the
 	 * web build installs into a new one.
+	 *
+	 * `options` says WHICH library: the public catalogue by default, or - for the account
+	 * source - your own, which is the same shape at another URL. One dialog, two libraries,
+	 * which is the point of the two of them having one shape.
 	 */
-	function libraryDialog(onPick) {
+	function libraryDialog(onPick, options) {
+		options = options || {};
+		const load = options.load || libraryIndex;
 		const dialog = new Dialog({
 			id: ID + '_library',
-			title: 'Armor Pieces Library',
+			title: options.title || 'Armor Pieces Library',
 			width: 640,
 			singleButton: true,
 			component: {
 				data: function () {
-					return { loading: true, error: '', entries: [], term: '', url: libraryUrl(), home: LIBRARY_HOME };
+					return { loading: true, error: '', entries: [], term: '',
+						url: options.url || libraryUrl(), home: options.home || LIBRARY_HOME,
+						note: options.note || '' };
 				},
 				computed: {
 					shown: function () {
@@ -962,7 +971,7 @@
 				},
 				mounted: function () {
 					const vue = this;
-					libraryIndex(function (index) {
+					load(function (index) {
 						vue.entries = index.entries;
 						vue.loading = false;
 					}, function (err) {
@@ -1235,61 +1244,68 @@
 		});
 	}
 
-	/* Install one of your packs: pick the pack and the version, fetch, unpack. */
+	/* Your library as an index in the same shape as the public catalogue, so one dialog reads
+	 * both. Your own packs come back marked `own` with the pack id, and the packs you SAVED come
+	 * back too - a shelf is an install list, which is what "choose a set of packs to use" means. */
+	function myLibraryIndex(done, fail) {
+		siteJson('/api/me/library.json', function (index) {
+			if (!index || !Array.isArray(index.entries)) return fail(new Error('not a library index'));
+			// The URLs are the site's own; make them absolute, as the public index's are made.
+			index.entries.forEach(function (entry) {
+				entry.packs = (entry.packs || []).map(function (pack) {
+					return Object.assign({}, pack, { url: new URL(pack.url, siteOrigin() + '/').href });
+				});
+			});
+			done(index);
+		}, fail);
+	}
+
+	/* One thing off your shelf, into a pack here.
+	 *
+	 * A pack of your own opens from its WORKING COPY - the draft the site autosaves, which is
+	 * what the site's own forms and this editor are both editing - rather than from its last
+	 * published version. Anything else on the shelf is somebody's published pack and installs
+	 * exactly as a catalogue entry does, because it is one. */
 	function installFromAccount(dest, done) {
 		withAccount(function () {
-			siteJson('/api/me/packs', function (data) {
-				const packs = data.packs || [];
-				if (!packs.length) {
-					Blockbench.showMessageBox({ title: 'Your library is empty', message: 'Upload a pack from the site, or from Packs... > Upload to your library...' });
-					return;
-				}
-				const options = {};
-				for (const pack of packs) {
-					for (const version of pack.versions || []) {
-						options[pack.id + '/' + version.id] = pack.name + ' - version ' + version.number +
-							(version.label ? ' (' + version.label + ')' : '') + (version.id === pack.current ? ' - current' : '');
+			libraryDialog(function (entry) {
+				if (!entry.own || !entry.packId) return installEntry(entry, dest, done);
+				fetchBytes(siteOrigin() + '/api/me/packs/' + entry.packId + '/draft', function (bytes) {
+					const scratch = path.join(tempDir(), 'draft.zip');
+					fs.writeFileSync(scratch, bytes);
+					try {
+						const report = tool('import_pack.py', [scratch, dest, '--force']);
+						done((report.trim() || ('Unpacked into ' + dest)) + ' - the working copy');
+					} catch (err) {
+						Blockbench.showMessageBox({ title: 'Import failed', message: String((err && err.stderr) || (err && err.message) || err) });
 					}
-				}
-				new Dialog({
-					id: ID + '_account_install',
-					title: 'From your library',
-					form: {
-						which: { label: 'Pack and version', type: 'select', options: options, value: Object.keys(options)[0] },
-					},
-					onConfirm: function (result) {
-						this.hide();
-						const key = String(result.which || '');
-						const pack = packs.find(function (p) { return key.indexOf(p.id + '/') === 0; });
-						const version = pack && (pack.versions || []).find(function (v) { return key === pack.id + '/' + v.id; });
-						if (!version) return;
-						fetchBytes(siteOrigin() + version.download, function (bytes) {
-							const scratch = path.join(tempDir(), 'account.zip');
-							fs.writeFileSync(scratch, bytes);
-							try {
-								const report = tool('import_pack.py', [scratch, dest, '--force']);
-								done(report.trim() || ('Unpacked into ' + dest));
-							} catch (err) {
-								Blockbench.showMessageBox({ title: 'Import failed', message: String((err && err.stderr) || (err && err.message) || err) });
-							}
-						}, function (err) {
-							Blockbench.showMessageBox({ title: 'Could not download', message: String((err && err.message) || err) });
-						}, siteOptions());
-					},
-				}).show();
-			}, function (err) {
-				Blockbench.showMessageBox({ title: 'Could not list your packs', message: String((err && err.message) || err) });
+				}, function (err) {
+					Blockbench.showMessageBox({ title: 'Could not download the working copy', message: String((err && err.message) || err) });
+				}, siteOptions());
+			}, {
+				title: 'From your library',
+				load: myLibraryIndex,
+				url: siteOrigin() + '/api/me/library.json',
+				home: siteOrigin() + '/library/',
+				note: 'Your own packs open from their working copy; the rest are packs you saved.',
 			});
 		});
 	}
 
-	/* Publish a pack folder: zip it, send it as a new pack or a new version, choose visibility. */
+	/* Send a pack folder up: zip it, and put it somewhere.
+	 *
+	 * Three places, and the difference between them is the point. A pack's WORKING COPY is where
+	 * a session of editing goes - saved as often as you like, published to nobody, and what the
+	 * site's own forms are editing at the same time. A VERSION is the deliberate, sequential,
+	 * publishable thing cut out of it. A NEW PACK is both at once for something that did not
+	 * exist yet. */
 	function publishToAccount(dir, done) {
 		withAccount(function () {
 			siteJson('/api/me/packs', function (data) {
 				const packs = data.packs || [];
 				const targets = { '': 'A new pack' };
-				for (const pack of packs) targets[pack.id] = 'New version of ' + pack.name;
+				for (const pack of packs) targets['draft:' + pack.id] = 'The working copy of ' + pack.name;
+				for (const pack of packs) targets[pack.id] = 'A new version of ' + pack.name;
 				const info = packInfo(dir);
 				const slug = info.label.toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'pack';
 				new Dialog({
@@ -1319,7 +1335,11 @@
 						const target = String(result.target || '');
 						const headers = { 'x-pack-label': encodeURIComponent(String(result.label || '').trim()) };
 						let url = siteOrigin() + '/api/me/packs';
-						if (target) {
+						let method = 'POST';
+						if (target.indexOf('draft:') === 0) {
+							url += '/' + target.slice(6) + '/draft';
+							method = 'PUT';
+						} else if (target) {
 							url += '/' + target + '/versions';
 						} else {
 							headers['x-pack-slug'] = encodeURIComponent(String(result.slug || slug).trim().toLowerCase());
@@ -1330,12 +1350,17 @@
 						sendBytes(url, bytes, function (body) {
 							let answer = null;
 							try { answer = JSON.parse(body); } catch (err) { /* text */ }
+							if (method === 'PUT') {
+								return done(answer && answer.changed === false
+									? 'The working copy already said that; nothing changed.'
+									: 'Saved to the working copy. Cut a version on the site when it is ready.');
+							}
 							const removed = answer && answer.report && answer.report.removed;
 							done('Uploaded' + (removed ? ' (' + removed + ' file(s) that were not pack files were dropped)' : '') +
 								(answer && answer.pack ? ': ' + answer.pack.name : ''));
 						}, function (err) {
 							Blockbench.showMessageBox({ title: 'Upload refused', message: String((err && err.message) || err) });
-						}, siteOptions({ contentType: 'application/zip', headers: headers }));
+						}, siteOptions({ contentType: 'application/zip', headers: headers, method: method }));
 					},
 				}).show();
 			}, function (err) {
@@ -1863,6 +1888,88 @@
 		enterWorkspace();
 		publishStatus('open', { model: true, sheets: 'all' });
 		Blockbench.showQuickMessage(piece.name + ' on ' + anchor + figureNote(figure), 2500);
+		return true;
+	}
+
+	/*
+	 * WEAR: the figure in a whole set, for looking at.
+	 *
+	 * This is the wardrobe's renderer, and it is deliberately the SAME renderer as everything
+	 * else - bb_rig.py builds one project holding the figure and every piece in the set, each at
+	 * its anchor and each painted for its own trim material, and this opens it. A layered
+	 * paper-doll of tinted thumbnails would be faster and would be right at one fixed camera; it
+	 * could not turn round, could not order two pieces on one bone by depth, and would be a
+	 * second renderer to keep true to the first.
+	 *
+	 * Nothing about it is a workspace: there is no piece being authored, no anchor, no sheets to
+	 * paint. It opens as an ordinary `free` project with everything locked, which is what
+	 * bb_rig --wear writes.
+	 */
+	function wear(set, options) {
+		options = options || {};
+		const out = tempDir();
+		const spec = path.join(out, 'set.json');
+		fs.writeFileSync(spec, JSON.stringify(set || {}, null, 2), 'utf8');
+		const args = ['--wear', spec, '--out-dir', out];
+		if (options.slim) args.push('--slim');
+		if (options.animate === false) args.push('--no-animation');
+		(options.packs || []).forEach(function (dir) { args.push('--pack', dir); });
+		tool('bb_rig.py', args);
+
+		// bb_rig names the file after the set; ask the folder rather than repeating its rule.
+		const file = fs.readdirSync(out)
+			.filter(function (name) { return /^wear_.*\.bbmodel$/.test(name); })
+			.map(function (name) { return path.join(out, name); })[0];
+		if (!file) throw new Error('bb_rig --wear wrote no project');
+		const content = JSON.parse(fs.readFileSync(file, 'utf8'));
+		const figure = content.armorpieces_figure || null;
+		const worn = content.armorpieces_set || set || {};
+		delete content.armorpieces_figure;
+		delete content.armorpieces_set;
+		Codecs.project.load(content, { path: file, content: content });
+		Project[ID + '_worn'] = worn;
+		Project[ID + '_figure'] = figure;
+		Project.name = String((set && set.name) || 'set');
+		// Scratch, like a rig: there is nothing here anyone should save over a piece.
+		Project.save_path = '';
+		Project.export_path = '';
+		if (options.view !== false) viewMode(true);
+		return { worn: (figure && figure.worn) || [], figure: figure };
+	}
+
+	// The stylesheet that turns the editor into a viewer. Cosmetic on purpose: it hides chrome
+	// rather than removing it, so leaving view mode is one element going away and nothing in
+	// Blockbench has been reached into.
+	const VIEW_CSS = [
+		'#left_bar, #right_bar, #status_bar, #mode_selector, #toolbar_wrapper, .toolbar_wrapper,',
+		'#title_bar, #tab_bar, #panel_outliner, #panel_element, #panel_uv, #panel_textures,',
+		'#panel_color, #panel_animations, #panel_keyframe, #panel_variable_placeholders',
+		'	{ display: none !important; }',
+		'#work_screen { grid-template-columns: 0 1fr 0 !important; }',
+		'#center, #preview { width: 100% !important; }',
+		'#preview { cursor: grab; }',
+	].join('\n');
+
+	/*
+	 * View mode: an orbiting canvas and nothing else.
+	 *
+	 * The site's wardrobe frames this editor and wants a figure, not an editor - and the pack
+	 * page frames it and wants the whole thing. One switch, and the difference between them is a
+	 * stylesheet, so no code path has to know which of the two it is running in.
+	 */
+	function viewMode(on) {
+		const id = ID + '_view_css';
+		const existing = document.getElementById(id);
+		if (!on) {
+			if (existing) existing.remove();
+			return false;
+		}
+		if (!existing) {
+			const style = document.createElement('style');
+			style.id = id;
+			style.textContent = VIEW_CSS;
+			document.head.appendChild(style);
+		}
 		return true;
 	}
 
@@ -6744,6 +6851,13 @@
 				},
 				openFor: openFor,
 				close: closeFor,
+				// The wardrobe: a whole set on the figure, and the chrome-less canvas it is
+				// looked at in. What the site's /wardrobe/ drives through an iframe.
+				wear: wear,
+				viewMode: viewMode,
+				worn: function () {
+					return (typeof Project !== 'undefined' && Project && Project[ID + '_worn']) || null;
+				},
 				create: function (dataPack, assetPack, namespace, name, anchor) {
 					const piece = createPiece(dataPack, assetPack, namespace, name, anchor);
 					if (!openPiece(piece, anchor)) throw new Error('created ' + piece.key + ' but could not open it');
@@ -6773,6 +6887,50 @@
 				useGame: useGameDialog,
 				// The site: where it is, whether this editor is signed in, and the sign-in itself.
 				site: function () { return { origin: siteOrigin(), signedIn: isApp ? !!siteToken() : null }; },
+				/*
+				 * One of your site packs' WORKING COPIES, in a pack here, opened for editing. This
+				 * is what a deep link into the editor from the site's pack page uses: the page
+				 * knows the pack id and nothing about folders, and this knows folders and nothing
+				 * about why. Idempotent: a second call over the same pack re-imports into the same
+				 * folder, so it is a refresh rather than a second copy.
+				 */
+				openDraft: function (packId, name, done, fail) {
+					const id = String(packId || '').trim();
+					if (!id) return fail && fail(new Error('no pack id'));
+					const dir = path.join(packHome(), 'site-' + id.slice(0, 8));
+					fetchBytes(siteOrigin() + '/api/me/packs/' + id + '/draft', function (bytes) {
+						try {
+							fs.mkdirSync(dir, { recursive: true });
+							const scratch = path.join(tempDir(), 'draft.zip');
+							fs.writeFileSync(scratch, bytes);
+							tool('import_pack.py', [scratch, dir, '--force']);
+							const list = userPacks();
+							if (!list.includes(dir)) { list.push(dir); setUserPacks(list); }
+							setPackScope(dir);
+							if (done) done(dir);
+						} catch (err) {
+							if (fail) fail(err instanceof Error ? err : new Error(String(err)));
+						}
+					}, function (err) {
+						if (fail) fail(err instanceof Error ? err : new Error(String(err)));
+					}, siteOptions());
+				},
+				/* And back: the pack folder as this site pack's working copy. */
+				saveDraft: function (packId, dir, done, fail) {
+					const out = path.join(tempDir(), 'draft-out.zip');
+					try {
+						tool('export_pack.py', [dir, out]);
+					} catch (err) {
+						return fail && fail(err instanceof Error ? err : new Error(String(err)));
+					}
+					sendBytes(siteOrigin() + '/api/me/packs/' + String(packId) + '/draft',
+						fs.readFileSync(out), function (body) {
+							let answer = null;
+							try { answer = JSON.parse(body); } catch (err) { /* text */ }
+							if (done) done(answer || {});
+						}, function (err) { if (fail) fail(err); },
+						siteOptions({ contentType: 'application/zip', method: 'PUT' }));
+				},
 				signIn: function (then) { signInDialog(then || null); },
 				signOut: signOut,
 				setSiteToken: function (token) { setSetting(ID + '_site_token', String(token || '')); return !!siteToken(); },

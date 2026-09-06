@@ -1,0 +1,97 @@
+# The wiki's "Pieces and sockets" page, as a DOCUMENT: prose where prose belongs, and the socket
+# table read out of DecorationAnchor.java rather than typed out a third time.
+#
+# The prose came across verbatim from ArmorPiecesSite/content/wiki/pieces.md. What changed is the
+# table, which used to be twelve hand-written rows in this file and twelve more in the site's
+# TypeScript, and the sentence that counted them.
+name: Pieces and sockets
+slug: pieces
+tagline: The twelve sockets, what sits on each, and how a piece takes its colour.
+
+# This page describes the repository two folders up, not docs/wiki: its data, its
+# language file, its .modpage/generators.
+root: ../..
+
+assets:
+  dir: docs/assets
+  base_url: https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/
+
+toc: false
+
+# Not a marketplace page: no Dependencies heading saying "none".
+shared_sections: false
+
+generators:
+  sockets:
+    use: armorpieces.sockets
+  counts:
+    use: armorpieces.counts
+
+sections:
+  about: |
+    A piece is real geometry hung on the body, not paint on the texture: a model in a resource
+    pack, a greyscale master texture, and a small data file that says which socket it fits and what
+    it does. Every socket has several pieces to choose from in the mod alone, so the choice is the
+    expressive act.
+
+  # The pages below are the ones the site renders; none of the marketplace sections apply.
+  faq: false
+  dependencies: false
+  incompatibilities: false
+  installation: false
+  configuration: false
+  license: false
+  credits: false
+
+custom_sections:
+  - id: sockets
+    title: The sockets
+    layout: table
+    columns:
+      - {field: name, title: Socket}
+      - {field: slot, title: Armor}
+      - {field: description, title: Where}
+      - {field: count, title: Pieces}
+    elements: {from: sockets}
+
+  - id: mirrored
+    title: Mirrored sockets
+    after: sockets
+    body: |
+      A mirrored socket is modelled once and drawn on both sides. The pieces on the arms are also
+      drawn on the first-person hand, close to the camera and meant to be; `first_person_parts` in
+      the config turns that off.
+
+  - id: colour
+    title: Colour
+    after: mirrored
+    body: |
+      One greyscale master per piece is mapped onto each trim material's own palette at load time,
+      the same palette vanilla uses for the trim. A circlet applied with gold is gold; with
+      amethyst, amethyst. A new trim material, from vanilla or another mod, costs a piece no new
+      art at all. A piece may also carry a **static layer**, painted in real colour, for whatever
+      on it is never the material: a feather, a leather strap.
+
+  - id: fittings
+    title: Fittings
+    after: colour
+    body: |
+      A piece can declare places for a second material. See [Fittings](/wiki/fittings/).
+
+  - id: behaviour
+    title: Behaviour
+    after: fittings
+    body: |
+      A piece may carry effects, configured in the same data file: attributes, mob effects, a
+      dodge, gliding. The `pinions` are a cut-down elytra that actually flies. Effects can be gated
+      on a fitting, so the circlet grants Hero of the Village only with an emerald in it. The
+      [authoring guide](/wiki/authoring/) lists every effect type.
+
+  - id: what-is-here
+    title: What is here
+    after: behaviour
+    layout: table
+    columns:
+      - {field: value, title: How many}
+      - {field: description, title: What}
+    elements: {from: counts}

@@ -27,8 +27,13 @@ remappedSrc/
 # modpage's texture cache. Regenerable, and its contents are verbatim vanilla item/block PNGs
 # extracted from the game - not ours to redistribute. The rendered recipe images under
 # docs/assets/recipes/ ARE tracked: the store pages link to them by raw.githubusercontent URL, so
-# they have to exist in the repo.
-.modpage/
+# they have to exist in the repo. The generators ARE tracked: they are the code that counts the
+# mod's own data into the pages and into dist/site.json, so a clone must be able to rebuild them.
+# The pattern excludes the directory's CONTENTS rather than the directory, because git cannot
+# re-include a path inside an excluded directory.
+.modpage/*
+!.modpage/generators/
+.modpage/generators/__pycache__/
 
 # IDE
 .idea/

@@ -1,0 +1,30 @@
+{
+  "name": "The knight",
+  "material": "iron",
+  "slots": {
+    "helmet": { "material": "iron", "trim": null },
+    "chestplate": { "material": "iron", "trim": null },
+    "leggings": { "material": "iron", "trim": null },
+    "boots": { "material": "iron", "trim": null }
+  },
+  "skin": "armorpieces:plate",
+  "cloth": {
+    "cloth": "armorpieces:tabard",
+    "base": "white",
+    "patterns": [["cross", "red"], ["border", "red"]]
+  },
+  "pieces": {
+    "crest": { "id": "armorpieces:brush_crest", "material": "gold" },
+    "brow": { "id": "armorpieces:circlet", "material": "gold", "fittings": { "gemstone": "minecraft:emerald" } },
+    "horns": { "id": "armorpieces:helm_wings", "material": "gold" },
+    "pauldrons": { "id": "armorpieces:spaulders", "material": "iron" },
+    "back": { "id": "armorpieces:mantle", "material": "iron" },
+    "collar": { "id": "armorpieces:gorget", "material": "gold" },
+    "vambraces": { "id": "armorpieces:vambraces", "material": "iron" },
+    "belt": { "id": "armorpieces:buckled_belt", "material": "gold" },
+    "tassets": { "id": "armorpieces:tassets", "material": "iron" },
+    "knees": { "id": "armorpieces:poleyns", "material": "iron" },
+    "spurs": { "id": "armorpieces:spurs", "material": "gold" },
+    "greaves": { "id": "armorpieces:greaves", "material": "iron" }
+  }
+}

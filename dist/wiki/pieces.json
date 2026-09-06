@@ -1,0 +1,908 @@
+{
+  "badges": [],
+  "extra": {},
+  "gen": {
+    "counts": [
+      {
+        "description": "the pieces, over every socket",
+        "id": "pieces",
+        "name": "pieces",
+        "text": "91",
+        "title": "91",
+        "value": 91,
+        "word": "91"
+      },
+      {
+        "description": "the armor skins",
+        "id": "skins",
+        "name": "skins",
+        "text": "14",
+        "title": "fourteen",
+        "value": 14,
+        "word": "fourteen"
+      },
+      {
+        "description": "the cloths",
+        "id": "cloths",
+        "name": "cloths",
+        "text": "2",
+        "title": "two",
+        "value": 2,
+        "word": "two"
+      },
+      {
+        "description": "the fittings",
+        "id": "fittings",
+        "name": "fittings",
+        "text": "4",
+        "title": "four",
+        "value": 4,
+        "word": "four"
+      },
+      {
+        "description": "the sockets a piece can hang on",
+        "id": "sockets",
+        "name": "sockets",
+        "text": "12",
+        "title": "twelve",
+        "value": 12,
+        "word": "twelve"
+      },
+      {
+        "description": "the loot groups",
+        "id": "loot_groups",
+        "name": "loot_groups",
+        "text": "6",
+        "title": "six",
+        "value": 6,
+        "word": "six"
+      },
+      {
+        "description": "the effect types a piece may carry",
+        "id": "effect_types",
+        "name": "effect_types",
+        "text": "6",
+        "title": "six",
+        "value": 6,
+        "word": "six"
+      },
+      {
+        "description": "the pieces with a template recipe; the rest are found",
+        "id": "craftable",
+        "name": "craftable",
+        "text": "31",
+        "title": "31",
+        "value": 31,
+        "word": "31"
+      },
+      {
+        "description": "the fewest pieces any socket has to choose from",
+        "id": "least_per_socket",
+        "name": "least_per_socket",
+        "text": "6",
+        "title": "six",
+        "value": 6,
+        "word": "six"
+      }
+    ],
+    "sockets": [
+      {
+        "bone": "head",
+        "count": 7,
+        "description": "Top of the skull, pointing up",
+        "id": "crest",
+        "name": "crest",
+        "pair": false,
+        "slot": "helmet",
+        "title": "Crest",
+        "value": "7 pieces"
+      },
+      {
+        "bone": "head",
+        "count": 14,
+        "description": "Across the forehead, on the front face of the head",
+        "id": "brow",
+        "name": "brow",
+        "pair": false,
+        "slot": "helmet",
+        "title": "Brow",
+        "value": "14 pieces"
+      },
+      {
+        "bone": "head",
+        "count": 8,
+        "description": "Both temples, mirrored",
+        "id": "horns",
+        "name": "horns",
+        "pair": true,
+        "slot": "helmet",
+        "title": "Temples",
+        "value": "8 pieces"
+      },
+      {
+        "bone": "left_arm",
+        "count": 7,
+        "description": "Both shoulders, mirrored, riding on the arms so they swing with them",
+        "id": "pauldrons",
+        "name": "pauldrons",
+        "pair": true,
+        "slot": "chestplate",
+        "title": "Shoulders",
+        "value": "7 pieces"
+      },
+      {
+        "bone": "body",
+        "count": 8,
+        "description": "Upper back",
+        "id": "back",
+        "name": "back",
+        "pair": false,
+        "slot": "chestplate",
+        "title": "Back",
+        "value": "8 pieces"
+      },
+      {
+        "bone": "body",
+        "count": 8,
+        "description": "Base of the throat, on the front of the chest",
+        "id": "collar",
+        "name": "collar",
+        "pair": false,
+        "slot": "chestplate",
+        "title": "Collar",
+        "value": "8 pieces"
+      },
+      {
+        "bone": "left_arm",
+        "count": 7,
+        "description": "Both forearms, mirrored, riding on the arms",
+        "id": "vambraces",
+        "name": "vambraces",
+        "pair": true,
+        "slot": "chestplate",
+        "title": "Forearms",
+        "value": "7 pieces"
+      },
+      {
+        "bone": "body",
+        "count": 7,
+        "description": "Waistline, at the bottom of the torso",
+        "id": "belt",
+        "name": "belt",
+        "pair": false,
+        "slot": "leggings",
+        "title": "Waist",
+        "value": "7 pieces"
+      },
+      {
+        "bone": "left_leg",
+        "count": 6,
+        "description": "Both hips, mirrored, riding on the legs",
+        "id": "tassets",
+        "name": "tassets",
+        "pair": true,
+        "slot": "leggings",
+        "title": "Hips",
+        "value": "6 pieces"
+      },
+      {
+        "bone": "left_leg",
+        "count": 6,
+        "description": "Both knees, mirrored, on the front of the legs",
+        "id": "knees",
+        "name": "knees",
+        "pair": true,
+        "slot": "leggings",
+        "title": "Knees",
+        "value": "6 pieces"
+      },
+      {
+        "bone": "left_leg",
+        "count": 7,
+        "description": "Both heels, mirrored, at the back of the ankle",
+        "id": "spurs",
+        "name": "spurs",
+        "pair": true,
+        "slot": "boots",
+        "title": "Heels",
+        "value": "7 pieces"
+      },
+      {
+        "bone": "left_leg",
+        "count": 6,
+        "description": "Both shins, mirrored, on the front of the lower leg",
+        "id": "greaves",
+        "name": "greaves",
+        "pair": true,
+        "slot": "boots",
+        "title": "Shins",
+        "value": "6 pieces"
+      }
+    ]
+  },
+  "header": {
+    "align": "center",
+    "banner": "banners/header.png",
+    "heading_with_banner": false,
+    "section_banner_width": null,
+    "show_title": false,
+    "width": null
+  },
+  "is_html": false,
+  "links": {},
+  "minecraft": {
+    "loaders": [],
+    "versions": []
+  },
+  "platform": "site",
+  "raw": {
+    "assets": {
+      "base_url": "https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/",
+      "dir": "docs/assets"
+    },
+    "custom_sections": [
+      {
+        "columns": [
+          {
+            "field": "name",
+            "title": "Socket"
+          },
+          {
+            "field": "slot",
+            "title": "Armor"
+          },
+          {
+            "field": "description",
+            "title": "Where"
+          },
+          {
+            "field": "count",
+            "title": "Pieces"
+          }
+        ],
+        "elements": [
+          {
+            "bone": "head",
+            "count": 7,
+            "description": "Top of the skull, pointing up",
+            "id": "crest",
+            "name": "crest",
+            "pair": false,
+            "slot": "helmet",
+            "title": "Crest",
+            "value": "7 pieces"
+          },
+          {
+            "bone": "head",
+            "count": 14,
+            "description": "Across the forehead, on the front face of the head",
+            "id": "brow",
+            "name": "brow",
+            "pair": false,
+            "slot": "helmet",
+            "title": "Brow",
+            "value": "14 pieces"
+          },
+          {
+            "bone": "head",
+            "count": 8,
+            "description": "Both temples, mirrored",
+            "id": "horns",
+            "name": "horns",
+            "pair": true,
+            "slot": "helmet",
+            "title": "Temples",
+            "value": "8 pieces"
+          },
+          {
+            "bone": "left_arm",
+            "count": 7,
+            "description": "Both shoulders, mirrored, riding on the arms so they swing with them",
+            "id": "pauldrons",
+            "name": "pauldrons",
+            "pair": true,
+            "slot": "chestplate",
+            "title": "Shoulders",
+            "value": "7 pieces"
+          },
+          {
+            "bone": "body",
+            "count": 8,
+            "description": "Upper back",
+            "id": "back",
+            "name": "back",
+            "pair": false,
+            "slot": "chestplate",
+            "title": "Back",
+            "value": "8 pieces"
+          },
+          {
+            "bone": "body",
+            "count": 8,
+            "description": "Base of the throat, on the front of the chest",
+            "id": "collar",
+            "name": "collar",
+            "pair": false,
+            "slot": "chestplate",
+            "title": "Collar",
+            "value": "8 pieces"
+          },
+          {
+            "bone": "left_arm",
+            "count": 7,
+            "description": "Both forearms, mirrored, riding on the arms",
+            "id": "vambraces",
+            "name": "vambraces",
+            "pair": true,
+            "slot": "chestplate",
+            "title": "Forearms",
+            "value": "7 pieces"
+          },
+          {
+            "bone": "body",
+            "count": 7,
+            "description": "Waistline, at the bottom of the torso",
+            "id": "belt",
+            "name": "belt",
+            "pair": false,
+            "slot": "leggings",
+            "title": "Waist",
+            "value": "7 pieces"
+          },
+          {
+            "bone": "left_leg",
+            "count": 6,
+            "description": "Both hips, mirrored, riding on the legs",
+            "id": "tassets",
+            "name": "tassets",
+            "pair": true,
+            "slot": "leggings",
+            "title": "Hips",
+            "value": "6 pieces"
+          },
+          {
+            "bone": "left_leg",
+            "count": 6,
+            "description": "Both knees, mirrored, on the front of the legs",
+            "id": "knees",
+            "name": "knees",
+            "pair": true,
+            "slot": "leggings",
+            "title": "Knees",
+            "value": "6 pieces"
+          },
+          {
+            "bone": "left_leg",
+            "count": 7,
+            "description": "Both heels, mirrored, at the back of the ankle",
+            "id": "spurs",
+            "name": "spurs",
+            "pair": true,
+            "slot": "boots",
+            "title": "Heels",
+            "value": "7 pieces"
+          },
+          {
+            "bone": "left_leg",
+            "count": 6,
+            "description": "Both shins, mirrored, on the front of the lower leg",
+            "id": "greaves",
+            "name": "greaves",
+            "pair": true,
+            "slot": "boots",
+            "title": "Shins",
+            "value": "6 pieces"
+          }
+        ],
+        "id": "sockets",
+        "layout": "table",
+        "title": "The sockets"
+      },
+      {
+        "after": "sockets",
+        "body": "A mirrored socket is modelled once and drawn on both sides. The pieces on the arms are also\ndrawn on the first-person hand, close to the camera and meant to be; `first_person_parts` in\nthe config turns that off.\n",
+        "id": "mirrored",
+        "title": "Mirrored sockets"
+      },
+      {
+        "after": "mirrored",
+        "body": "One greyscale master per piece is mapped onto each trim material's own palette at load time,\nthe same palette vanilla uses for the trim. A circlet applied with gold is gold; with\namethyst, amethyst. A new trim material, from vanilla or another mod, costs a piece no new\nart at all. A piece may also carry a **static layer**, painted in real colour, for whatever\non it is never the material: a feather, a leather strap.\n",
+        "id": "colour",
+        "title": "Colour"
+      },
+      {
+        "after": "colour",
+        "body": "A piece can declare places for a second material. See [Fittings](/wiki/fittings/).\n",
+        "id": "fittings",
+        "title": "Fittings"
+      },
+      {
+        "after": "fittings",
+        "body": "A piece may carry effects, configured in the same data file: attributes, mob effects, a\ndodge, gliding. The `pinions` are a cut-down elytra that actually flies. Effects can be gated\non a fitting, so the circlet grants Hero of the Village only with an emerald in it. The\n[authoring guide](/wiki/authoring/) lists every effect type.\n",
+        "id": "behaviour",
+        "title": "Behaviour"
+      },
+      {
+        "after": "behaviour",
+        "columns": [
+          {
+            "field": "value",
+            "title": "How many"
+          },
+          {
+            "field": "description",
+            "title": "What"
+          }
+        ],
+        "elements": [
+          {
+            "description": "the pieces, over every socket",
+            "id": "pieces",
+            "name": "pieces",
+            "text": "91",
+            "title": "91",
+            "value": 91,
+            "word": "91"
+          },
+          {
+            "description": "the armor skins",
+            "id": "skins",
+            "name": "skins",
+            "text": "14",
+            "title": "fourteen",
+            "value": 14,
+            "word": "fourteen"
+          },
+          {
+            "description": "the cloths",
+            "id": "cloths",
+            "name": "cloths",
+            "text": "2",
+            "title": "two",
+            "value": 2,
+            "word": "two"
+          },
+          {
+            "description": "the fittings",
+            "id": "fittings",
+            "name": "fittings",
+            "text": "4",
+            "title": "four",
+            "value": 4,
+            "word": "four"
+          },
+          {
+            "description": "the sockets a piece can hang on",
+            "id": "sockets",
+            "name": "sockets",
+            "text": "12",
+            "title": "twelve",
+            "value": 12,
+            "word": "twelve"
+          },
+          {
+            "description": "the loot groups",
+            "id": "loot_groups",
+            "name": "loot_groups",
+            "text": "6",
+            "title": "six",
+            "value": 6,
+            "word": "six"
+          },
+          {
+            "description": "the effect types a piece may carry",
+            "id": "effect_types",
+            "name": "effect_types",
+            "text": "6",
+            "title": "six",
+            "value": 6,
+            "word": "six"
+          },
+          {
+            "description": "the pieces with a template recipe; the rest are found",
+            "id": "craftable",
+            "name": "craftable",
+            "text": "31",
+            "title": "31",
+            "value": 31,
+            "word": "31"
+          },
+          {
+            "description": "the fewest pieces any socket has to choose from",
+            "id": "least_per_socket",
+            "name": "least_per_socket",
+            "text": "6",
+            "title": "six",
+            "value": 6,
+            "word": "six"
+          }
+        ],
+        "id": "what-is-here",
+        "layout": "table",
+        "title": "What is here"
+      }
+    ],
+    "generators": {
+      "counts": {
+        "use": "armorpieces.counts"
+      },
+      "sockets": {
+        "use": "armorpieces.sockets"
+      }
+    },
+    "name": "Pieces and sockets",
+    "root": "../..",
+    "sections": {
+      "about": "A piece is real geometry hung on the body, not paint on the texture: a model in a resource\npack, a greyscale master texture, and a small data file that says which socket it fits and what\nit does. Every socket has several pieces to choose from in the mod alone, so the choice is the\nexpressive act.\n",
+      "configuration": false,
+      "credits": false,
+      "dependencies": false,
+      "faq": false,
+      "incompatibilities": false,
+      "installation": false,
+      "license": false
+    },
+    "shared_sections": false,
+    "slug": "pieces",
+    "tagline": "The twelve sockets, what sits on each, and how a piece takes its colour.",
+    "toc": false
+  },
+  "sections": [
+    {
+      "banner": null,
+      "body": "A piece is real geometry hung on the body, not paint on the texture: a model in a resource\npack, a greyscale master texture, and a small data file that says which socket it fits and what\nit does. Every socket has several pieces to choose from in the mod alone, so the choice is the\nexpressive act.",
+      "data": {},
+      "empty_text": null,
+      "id": "about",
+      "layout": "list",
+      "options": {},
+      "targets": null,
+      "title": "About"
+    },
+    {
+      "banner": null,
+      "body": null,
+      "data": {
+        "columns": [
+          {
+            "field": "name",
+            "title": "Socket"
+          },
+          {
+            "field": "slot",
+            "title": "Armor"
+          },
+          {
+            "field": "description",
+            "title": "Where"
+          },
+          {
+            "field": "count",
+            "title": "Pieces"
+          }
+        ],
+        "elements": [
+          {
+            "bone": "head",
+            "count": 7,
+            "description": "Top of the skull, pointing up",
+            "id": "crest",
+            "name": "crest",
+            "pair": false,
+            "slot": "helmet",
+            "title": "Crest",
+            "value": "7 pieces"
+          },
+          {
+            "bone": "head",
+            "count": 14,
+            "description": "Across the forehead, on the front face of the head",
+            "id": "brow",
+            "name": "brow",
+            "pair": false,
+            "slot": "helmet",
+            "title": "Brow",
+            "value": "14 pieces"
+          },
+          {
+            "bone": "head",
+            "count": 8,
+            "description": "Both temples, mirrored",
+            "id": "horns",
+            "name": "horns",
+            "pair": true,
+            "slot": "helmet",
+            "title": "Temples",
+            "value": "8 pieces"
+          },
+          {
+            "bone": "left_arm",
+            "count": 7,
+            "description": "Both shoulders, mirrored, riding on the arms so they swing with them",
+            "id": "pauldrons",
+            "name": "pauldrons",
+            "pair": true,
+            "slot": "chestplate",
+            "title": "Shoulders",
+            "value": "7 pieces"
+          },
+          {
+            "bone": "body",
+            "count": 8,
+            "description": "Upper back",
+            "id": "back",
+            "name": "back",
+            "pair": false,
+            "slot": "chestplate",
+            "title": "Back",
+            "value": "8 pieces"
+          },
+          {
+            "bone": "body",
+            "count": 8,
+            "description": "Base of the throat, on the front of the chest",
+            "id": "collar",
+            "name": "collar",
+            "pair": false,
+            "slot": "chestplate",
+            "title": "Collar",
+            "value": "8 pieces"
+          },
+          {
+            "bone": "left_arm",
+            "count": 7,
+            "description": "Both forearms, mirrored, riding on the arms",
+            "id": "vambraces",
+            "name": "vambraces",
+            "pair": true,
+            "slot": "chestplate",
+            "title": "Forearms",
+            "value": "7 pieces"
+          },
+          {
+            "bone": "body",
+            "count": 7,
+            "description": "Waistline, at the bottom of the torso",
+            "id": "belt",
+            "name": "belt",
+            "pair": false,
+            "slot": "leggings",
+            "title": "Waist",
+            "value": "7 pieces"
+          },
+          {
+            "bone": "left_leg",
+            "count": 6,
+            "description": "Both hips, mirrored, riding on the legs",
+            "id": "tassets",
+            "name": "tassets",
+            "pair": true,
+            "slot": "leggings",
+            "title": "Hips",
+            "value": "6 pieces"
+          },
+          {
+            "bone": "left_leg",
+            "count": 6,
+            "description": "Both knees, mirrored, on the front of the legs",
+            "id": "knees",
+            "name": "knees",
+            "pair": true,
+            "slot": "leggings",
+            "title": "Knees",
+            "value": "6 pieces"
+          },
+          {
+            "bone": "left_leg",
+            "count": 7,
+            "description": "Both heels, mirrored, at the back of the ankle",
+            "id": "spurs",
+            "name": "spurs",
+            "pair": true,
+            "slot": "boots",
+            "title": "Heels",
+            "value": "7 pieces"
+          },
+          {
+            "bone": "left_leg",
+            "count": 6,
+            "description": "Both shins, mirrored, on the front of the lower leg",
+            "id": "greaves",
+            "name": "greaves",
+            "pair": true,
+            "slot": "boots",
+            "title": "Shins",
+            "value": "6 pieces"
+          }
+        ]
+      },
+      "empty_text": null,
+      "id": "sockets",
+      "layout": "table",
+      "options": {
+        "columns": [
+          {
+            "field": "name",
+            "title": "Socket"
+          },
+          {
+            "field": "slot",
+            "title": "Armor"
+          },
+          {
+            "field": "description",
+            "title": "Where"
+          },
+          {
+            "field": "count",
+            "title": "Pieces"
+          }
+        ]
+      },
+      "targets": null,
+      "title": "The sockets"
+    },
+    {
+      "banner": null,
+      "body": "A mirrored socket is modelled once and drawn on both sides. The pieces on the arms are also\ndrawn on the first-person hand, close to the camera and meant to be; `first_person_parts` in\nthe config turns that off.",
+      "data": {},
+      "empty_text": null,
+      "id": "mirrored",
+      "layout": "list",
+      "options": {},
+      "targets": null,
+      "title": "Mirrored sockets"
+    },
+    {
+      "banner": null,
+      "body": "One greyscale master per piece is mapped onto each trim material's own palette at load time,\nthe same palette vanilla uses for the trim. A circlet applied with gold is gold; with\namethyst, amethyst. A new trim material, from vanilla or another mod, costs a piece no new\nart at all. A piece may also carry a **static layer**, painted in real colour, for whatever\non it is never the material: a feather, a leather strap.",
+      "data": {},
+      "empty_text": null,
+      "id": "colour",
+      "layout": "list",
+      "options": {},
+      "targets": null,
+      "title": "Colour"
+    },
+    {
+      "banner": null,
+      "body": "A piece can declare places for a second material. See [Fittings](/wiki/fittings/).",
+      "data": {},
+      "empty_text": null,
+      "id": "fittings",
+      "layout": "list",
+      "options": {},
+      "targets": null,
+      "title": "Fittings"
+    },
+    {
+      "banner": null,
+      "body": "A piece may carry effects, configured in the same data file: attributes, mob effects, a\ndodge, gliding. The `pinions` are a cut-down elytra that actually flies. Effects can be gated\non a fitting, so the circlet grants Hero of the Village only with an emerald in it. The\n[authoring guide](/wiki/authoring/) lists every effect type.",
+      "data": {},
+      "empty_text": null,
+      "id": "behaviour",
+      "layout": "list",
+      "options": {},
+      "targets": null,
+      "title": "Behaviour"
+    },
+    {
+      "banner": null,
+      "body": null,
+      "data": {
+        "columns": [
+          {
+            "field": "value",
+            "title": "How many"
+          },
+          {
+            "field": "description",
+            "title": "What"
+          }
+        ],
+        "elements": [
+          {
+            "description": "the pieces, over every socket",
+            "id": "pieces",
+            "name": "pieces",
+            "text": "91",
+            "title": "91",
+            "value": 91,
+            "word": "91"
+          },
+          {
+            "description": "the armor skins",
+            "id": "skins",
+            "name": "skins",
+            "text": "14",
+            "title": "fourteen",
+            "value": 14,
+            "word": "fourteen"
+          },
+          {
+            "description": "the cloths",
+            "id": "cloths",
+            "name": "cloths",
+            "text": "2",
+            "title": "two",
+            "value": 2,
+            "word": "two"
+          },
+          {
+            "description": "the fittings",
+            "id": "fittings",
+            "name": "fittings",
+            "text": "4",
+            "title": "four",
+            "value": 4,
+            "word": "four"
+          },
+          {
+            "description": "the sockets a piece can hang on",
+            "id": "sockets",
+            "name": "sockets",
+            "text": "12",
+            "title": "twelve",
+            "value": 12,
+            "word": "twelve"
+          },
+          {
+            "description": "the loot groups",
+            "id": "loot_groups",
+            "name": "loot_groups",
+            "text": "6",
+            "title": "six",
+            "value": 6,
+            "word": "six"
+          },
+          {
+            "description": "the effect types a piece may carry",
+            "id": "effect_types",
+            "name": "effect_types",
+            "text": "6",
+            "title": "six",
+            "value": 6,
+            "word": "six"
+          },
+          {
+            "description": "the pieces with a template recipe; the rest are found",
+            "id": "craftable",
+            "name": "craftable",
+            "text": "31",
+            "title": "31",
+            "value": 31,
+            "word": "31"
+          },
+          {
+            "description": "the fewest pieces any socket has to choose from",
+            "id": "least_per_socket",
+            "name": "least_per_socket",
+            "text": "6",
+            "title": "six",
+            "value": 6,
+            "word": "six"
+          }
+        ]
+      },
+      "empty_text": null,
+      "id": "what-is-here",
+      "layout": "table",
+      "options": {
+        "columns": [
+          {
+            "field": "value",
+            "title": "How many"
+          },
+          {
+            "field": "description",
+            "title": "What"
+          }
+        ]
+      },
+      "targets": null,
+      "title": "What is here"
+    }
+  ],
+  "target": "site",
+  "toc": null
+}

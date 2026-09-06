@@ -1,0 +1,631 @@
+{
+  "badges": [],
+  "extra": {},
+  "gen": {
+    "skins": [
+      {
+        "craftable": true,
+        "description": "",
+        "id": "armorpieces:brigandine",
+        "key": "skin.armorpieces.brigandine",
+        "kind": "skin",
+        "loot": true,
+        "name": "brigandine",
+        "title": "Brigandine"
+      },
+      {
+        "craftable": true,
+        "description": "",
+        "id": "armorpieces:chainmail",
+        "key": "skin.armorpieces.chainmail",
+        "kind": "skin",
+        "loot": true,
+        "name": "chainmail",
+        "title": "Chainmail"
+      },
+      {
+        "craftable": true,
+        "description": "",
+        "id": "armorpieces:gambeson",
+        "key": "skin.armorpieces.gambeson",
+        "kind": "skin",
+        "loot": true,
+        "name": "gambeson",
+        "title": "Gambeson"
+      },
+      {
+        "craftable": true,
+        "description": "",
+        "id": "armorpieces:gothic",
+        "key": "skin.armorpieces.gothic",
+        "kind": "skin",
+        "loot": true,
+        "name": "gothic",
+        "title": "Gothic"
+      },
+      {
+        "craftable": true,
+        "description": "",
+        "id": "armorpieces:hoplite",
+        "key": "skin.armorpieces.hoplite",
+        "kind": "skin",
+        "loot": true,
+        "name": "hoplite",
+        "title": "Hoplite"
+      },
+      {
+        "craftable": true,
+        "description": "",
+        "id": "armorpieces:lamellar",
+        "key": "skin.armorpieces.lamellar",
+        "kind": "skin",
+        "loot": true,
+        "name": "lamellar",
+        "title": "Lamellar"
+      },
+      {
+        "craftable": true,
+        "description": "",
+        "id": "armorpieces:lorica",
+        "key": "skin.armorpieces.lorica",
+        "kind": "skin",
+        "loot": true,
+        "name": "lorica",
+        "title": "Lorica"
+      },
+      {
+        "craftable": true,
+        "description": "",
+        "id": "armorpieces:mail",
+        "key": "skin.armorpieces.mail",
+        "kind": "skin",
+        "loot": true,
+        "name": "mail",
+        "title": "Mail"
+      },
+      {
+        "craftable": true,
+        "description": "",
+        "id": "armorpieces:milanese",
+        "key": "skin.armorpieces.milanese",
+        "kind": "skin",
+        "loot": true,
+        "name": "milanese",
+        "title": "Milanese"
+      },
+      {
+        "craftable": true,
+        "description": "",
+        "id": "armorpieces:plate",
+        "key": "skin.armorpieces.plate",
+        "kind": "skin",
+        "loot": true,
+        "name": "plate",
+        "title": "Plate"
+      },
+      {
+        "craftable": true,
+        "description": "",
+        "id": "armorpieces:runic",
+        "key": "skin.armorpieces.runic",
+        "kind": "skin",
+        "loot": true,
+        "name": "runic",
+        "title": "Runic"
+      },
+      {
+        "craftable": true,
+        "description": "",
+        "id": "armorpieces:samurai",
+        "key": "skin.armorpieces.samurai",
+        "kind": "skin",
+        "loot": true,
+        "name": "samurai",
+        "title": "Samurai"
+      },
+      {
+        "craftable": true,
+        "description": "",
+        "id": "armorpieces:scale",
+        "key": "skin.armorpieces.scale",
+        "kind": "skin",
+        "loot": true,
+        "name": "scale",
+        "title": "Scale"
+      },
+      {
+        "craftable": true,
+        "description": "",
+        "id": "armorpieces:varangian",
+        "key": "skin.armorpieces.varangian",
+        "kind": "skin",
+        "loot": true,
+        "name": "varangian",
+        "title": "Varangian"
+      }
+    ]
+  },
+  "header": {
+    "align": "center",
+    "banner": "banners/header.png",
+    "heading_with_banner": false,
+    "section_banner_width": null,
+    "show_title": false,
+    "width": null
+  },
+  "is_html": false,
+  "links": {},
+  "minecraft": {
+    "loaders": [],
+    "versions": []
+  },
+  "platform": "site",
+  "raw": {
+    "assets": {
+      "base_url": "https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/",
+      "dir": "docs/assets"
+    },
+    "custom_sections": [
+      {
+        "columns": [
+          {
+            "field": "title",
+            "title": "Skin"
+          },
+          {
+            "field": "id",
+            "title": "Id"
+          },
+          {
+            "field": "craftable",
+            "title": "Has a recipe"
+          },
+          {
+            "field": "loot",
+            "title": "Found"
+          }
+        ],
+        "elements": [
+          {
+            "craftable": true,
+            "description": "",
+            "id": "armorpieces:brigandine",
+            "key": "skin.armorpieces.brigandine",
+            "kind": "skin",
+            "loot": true,
+            "name": "brigandine",
+            "title": "Brigandine"
+          },
+          {
+            "craftable": true,
+            "description": "",
+            "id": "armorpieces:chainmail",
+            "key": "skin.armorpieces.chainmail",
+            "kind": "skin",
+            "loot": true,
+            "name": "chainmail",
+            "title": "Chainmail"
+          },
+          {
+            "craftable": true,
+            "description": "",
+            "id": "armorpieces:gambeson",
+            "key": "skin.armorpieces.gambeson",
+            "kind": "skin",
+            "loot": true,
+            "name": "gambeson",
+            "title": "Gambeson"
+          },
+          {
+            "craftable": true,
+            "description": "",
+            "id": "armorpieces:gothic",
+            "key": "skin.armorpieces.gothic",
+            "kind": "skin",
+            "loot": true,
+            "name": "gothic",
+            "title": "Gothic"
+          },
+          {
+            "craftable": true,
+            "description": "",
+            "id": "armorpieces:hoplite",
+            "key": "skin.armorpieces.hoplite",
+            "kind": "skin",
+            "loot": true,
+            "name": "hoplite",
+            "title": "Hoplite"
+          },
+          {
+            "craftable": true,
+            "description": "",
+            "id": "armorpieces:lamellar",
+            "key": "skin.armorpieces.lamellar",
+            "kind": "skin",
+            "loot": true,
+            "name": "lamellar",
+            "title": "Lamellar"
+          },
+          {
+            "craftable": true,
+            "description": "",
+            "id": "armorpieces:lorica",
+            "key": "skin.armorpieces.lorica",
+            "kind": "skin",
+            "loot": true,
+            "name": "lorica",
+            "title": "Lorica"
+          },
+          {
+            "craftable": true,
+            "description": "",
+            "id": "armorpieces:mail",
+            "key": "skin.armorpieces.mail",
+            "kind": "skin",
+            "loot": true,
+            "name": "mail",
+            "title": "Mail"
+          },
+          {
+            "craftable": true,
+            "description": "",
+            "id": "armorpieces:milanese",
+            "key": "skin.armorpieces.milanese",
+            "kind": "skin",
+            "loot": true,
+            "name": "milanese",
+            "title": "Milanese"
+          },
+          {
+            "craftable": true,
+            "description": "",
+            "id": "armorpieces:plate",
+            "key": "skin.armorpieces.plate",
+            "kind": "skin",
+            "loot": true,
+            "name": "plate",
+            "title": "Plate"
+          },
+          {
+            "craftable": true,
+            "description": "",
+            "id": "armorpieces:runic",
+            "key": "skin.armorpieces.runic",
+            "kind": "skin",
+            "loot": true,
+            "name": "runic",
+            "title": "Runic"
+          },
+          {
+            "craftable": true,
+            "description": "",
+            "id": "armorpieces:samurai",
+            "key": "skin.armorpieces.samurai",
+            "kind": "skin",
+            "loot": true,
+            "name": "samurai",
+            "title": "Samurai"
+          },
+          {
+            "craftable": true,
+            "description": "",
+            "id": "armorpieces:scale",
+            "key": "skin.armorpieces.scale",
+            "kind": "skin",
+            "loot": true,
+            "name": "scale",
+            "title": "Scale"
+          },
+          {
+            "craftable": true,
+            "description": "",
+            "id": "armorpieces:varangian",
+            "key": "skin.armorpieces.varangian",
+            "kind": "skin",
+            "loot": true,
+            "name": "varangian",
+            "title": "Varangian"
+          }
+        ],
+        "id": "shipped",
+        "layout": "table",
+        "title": "The skins that ship"
+      },
+      {
+        "after": "shipped",
+        "body": "A skin is drawn once, in grey, as one master pair on vanilla's own armor grid: `humanoid.png`\nfor the helmet, chestplate and boots, `humanoid_leggings.png` for the belt and legs. At load\nthe mod recolours it through **eight shades taken from that armor material's own vanilla\ntexture**, with vanilla's panel edges and shadows mixed back over it. So a skinned iron\nhelmet still reads as iron, gold as gold, and a modded armor material is skinned for free\nfrom the texture it already ships. No palette is authored and nothing goes out of date with\na Minecraft update.\n",
+        "id": "colour",
+        "title": "How it is coloured"
+      },
+      {
+        "after": "colour",
+        "body": "At a smithing table or the advanced table: the skin's template, the armor, and **the armor's\nown material**. Re-skinning is re-forging, and it costs the metal the piece is made of. Skins\nare [found in the world](/wiki/loot/) alongside the pieces, divided over the same loot groups.\n",
+        "id": "applying",
+        "title": "Applying one"
+      },
+      {
+        "after": "applying",
+        "body": "The advanced smithing table's row for the armor itself holds its trim, its skin and its\ncloth; pick the skin and Remove.\n",
+        "id": "removing",
+        "title": "Removing one"
+      },
+      {
+        "after": "removing",
+        "body": "The [editor](/wiki/editor/) opens a skin workspace: the figure wearing all four slots at\nonce, the two sheets painted in place, judged live on every material. A new skin can start\nfrom an outline, the mod's own plate or vanilla's where the game's sheets are present, so it\nis drawn where the armor really is and the check holds it to that outline. The\n[authoring guide](/wiki/authoring/#skins) has the details.\n",
+        "id": "making",
+        "title": "Making one"
+      }
+    ],
+    "generators": {
+      "skins": {
+        "use": "armorpieces.skins"
+      }
+    },
+    "name": "Armor skins",
+    "root": "../..",
+    "sections": {
+      "about": "A skin is the one thing in the mod that changes the armor **itself** rather than adding to it.\nThose below ship with the mod; a pack adds its own.\n",
+      "configuration": false,
+      "credits": false,
+      "dependencies": false,
+      "faq": false,
+      "incompatibilities": false,
+      "installation": false,
+      "license": false
+    },
+    "shared_sections": false,
+    "slug": "skins",
+    "tagline": "The armor's own texture, changed: what a skin is, how it is coloured, and how it goes on.",
+    "toc": false
+  },
+  "sections": [
+    {
+      "banner": null,
+      "body": "A skin is the one thing in the mod that changes the armor **itself** rather than adding to it.\nThose below ship with the mod; a pack adds its own.",
+      "data": {},
+      "empty_text": null,
+      "id": "about",
+      "layout": "list",
+      "options": {},
+      "targets": null,
+      "title": "About"
+    },
+    {
+      "banner": null,
+      "body": null,
+      "data": {
+        "columns": [
+          {
+            "field": "title",
+            "title": "Skin"
+          },
+          {
+            "field": "id",
+            "title": "Id"
+          },
+          {
+            "field": "craftable",
+            "title": "Has a recipe"
+          },
+          {
+            "field": "loot",
+            "title": "Found"
+          }
+        ],
+        "elements": [
+          {
+            "craftable": true,
+            "description": "",
+            "id": "armorpieces:brigandine",
+            "key": "skin.armorpieces.brigandine",
+            "kind": "skin",
+            "loot": true,
+            "name": "brigandine",
+            "title": "Brigandine"
+          },
+          {
+            "craftable": true,
+            "description": "",
+            "id": "armorpieces:chainmail",
+            "key": "skin.armorpieces.chainmail",
+            "kind": "skin",
+            "loot": true,
+            "name": "chainmail",
+            "title": "Chainmail"
+          },
+          {
+            "craftable": true,
+            "description": "",
+            "id": "armorpieces:gambeson",
+            "key": "skin.armorpieces.gambeson",
+            "kind": "skin",
+            "loot": true,
+            "name": "gambeson",
+            "title": "Gambeson"
+          },
+          {
+            "craftable": true,
+            "description": "",
+            "id": "armorpieces:gothic",
+            "key": "skin.armorpieces.gothic",
+            "kind": "skin",
+            "loot": true,
+            "name": "gothic",
+            "title": "Gothic"
+          },
+          {
+            "craftable": true,
+            "description": "",
+            "id": "armorpieces:hoplite",
+            "key": "skin.armorpieces.hoplite",
+            "kind": "skin",
+            "loot": true,
+            "name": "hoplite",
+            "title": "Hoplite"
+          },
+          {
+            "craftable": true,
+            "description": "",
+            "id": "armorpieces:lamellar",
+            "key": "skin.armorpieces.lamellar",
+            "kind": "skin",
+            "loot": true,
+            "name": "lamellar",
+            "title": "Lamellar"
+          },
+          {
+            "craftable": true,
+            "description": "",
+            "id": "armorpieces:lorica",
+            "key": "skin.armorpieces.lorica",
+            "kind": "skin",
+            "loot": true,
+            "name": "lorica",
+            "title": "Lorica"
+          },
+          {
+            "craftable": true,
+            "description": "",
+            "id": "armorpieces:mail",
+            "key": "skin.armorpieces.mail",
+            "kind": "skin",
+            "loot": true,
+            "name": "mail",
+            "title": "Mail"
+          },
+          {
+            "craftable": true,
+            "description": "",
+            "id": "armorpieces:milanese",
+            "key": "skin.armorpieces.milanese",
+            "kind": "skin",
+            "loot": true,
+            "name": "milanese",
+            "title": "Milanese"
+          },
+          {
+            "craftable": true,
+            "description": "",
+            "id": "armorpieces:plate",
+            "key": "skin.armorpieces.plate",
+            "kind": "skin",
+            "loot": true,
+            "name": "plate",
+            "title": "Plate"
+          },
+          {
+            "craftable": true,
+            "description": "",
+            "id": "armorpieces:runic",
+            "key": "skin.armorpieces.runic",
+            "kind": "skin",
+            "loot": true,
+            "name": "runic",
+            "title": "Runic"
+          },
+          {
+            "craftable": true,
+            "description": "",
+            "id": "armorpieces:samurai",
+            "key": "skin.armorpieces.samurai",
+            "kind": "skin",
+            "loot": true,
+            "name": "samurai",
+            "title": "Samurai"
+          },
+          {
+            "craftable": true,
+            "description": "",
+            "id": "armorpieces:scale",
+            "key": "skin.armorpieces.scale",
+            "kind": "skin",
+            "loot": true,
+            "name": "scale",
+            "title": "Scale"
+          },
+          {
+            "craftable": true,
+            "description": "",
+            "id": "armorpieces:varangian",
+            "key": "skin.armorpieces.varangian",
+            "kind": "skin",
+            "loot": true,
+            "name": "varangian",
+            "title": "Varangian"
+          }
+        ]
+      },
+      "empty_text": null,
+      "id": "shipped",
+      "layout": "table",
+      "options": {
+        "columns": [
+          {
+            "field": "title",
+            "title": "Skin"
+          },
+          {
+            "field": "id",
+            "title": "Id"
+          },
+          {
+            "field": "craftable",
+            "title": "Has a recipe"
+          },
+          {
+            "field": "loot",
+            "title": "Found"
+          }
+        ]
+      },
+      "targets": null,
+      "title": "The skins that ship"
+    },
+    {
+      "banner": null,
+      "body": "A skin is drawn once, in grey, as one master pair on vanilla's own armor grid: `humanoid.png`\nfor the helmet, chestplate and boots, `humanoid_leggings.png` for the belt and legs. At load\nthe mod recolours it through **eight shades taken from that armor material's own vanilla\ntexture**, with vanilla's panel edges and shadows mixed back over it. So a skinned iron\nhelmet still reads as iron, gold as gold, and a modded armor material is skinned for free\nfrom the texture it already ships. No palette is authored and nothing goes out of date with\na Minecraft update.",
+      "data": {},
+      "empty_text": null,
+      "id": "colour",
+      "layout": "list",
+      "options": {},
+      "targets": null,
+      "title": "How it is coloured"
+    },
+    {
+      "banner": null,
+      "body": "At a smithing table or the advanced table: the skin's template, the armor, and **the armor's\nown material**. Re-skinning is re-forging, and it costs the metal the piece is made of. Skins\nare [found in the world](/wiki/loot/) alongside the pieces, divided over the same loot groups.",
+      "data": {},
+      "empty_text": null,
+      "id": "applying",
+      "layout": "list",
+      "options": {},
+      "targets": null,
+      "title": "Applying one"
+    },
+    {
+      "banner": null,
+      "body": "The advanced smithing table's row for the armor itself holds its trim, its skin and its\ncloth; pick the skin and Remove.",
+      "data": {},
+      "empty_text": null,
+      "id": "removing",
+      "layout": "list",
+      "options": {},
+      "targets": null,
+      "title": "Removing one"
+    },
+    {
+      "banner": null,
+      "body": "The [editor](/wiki/editor/) opens a skin workspace: the figure wearing all four slots at\nonce, the two sheets painted in place, judged live on every material. A new skin can start\nfrom an outline, the mod's own plate or vanilla's where the game's sheets are present, so it\nis drawn where the armor really is and the check holds it to that outline. The\n[authoring guide](/wiki/authoring/#skins) has the details.",
+      "data": {},
+      "empty_text": null,
+      "id": "making",
+      "layout": "list",
+      "options": {},
+      "targets": null,
+      "title": "Making one"
+    }
+  ],
+  "target": "site",
+  "toc": null
+}

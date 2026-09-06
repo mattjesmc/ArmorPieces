@@ -20,10 +20,17 @@ whole point of these rigs is that they agree with the code.
 The body numbers below are the one thing this file does hardcode, and they were read out of the
 compiled HumanoidModel.createMesh / LayerDefinitions rather than remembered.
 
+A rig can also hold a whole OUTFIT rather than one socket's part: `--wear <set.json>` builds the
+figure wearing every piece in a set, each at its anchor and each painted for its own trim material,
+with the armor underneath wearing the set's base materials, its skin and its cloth. That rig is
+locked from end to end, because it is for looking at rather than for working in - it is what the
+site's wardrobe shows.
+
 Usage:
     python tools/bb_rig.py --all
     python tools/bb_rig.py crest
     python tools/bb_rig.py crest --part src/main/resources/.../feathering.json
+    python tools/bb_rig.py --wear docs/examples/set.json
 """
 
 from __future__ import annotations
@@ -40,7 +47,9 @@ from PIL import Image
 
 import mc_humanoid
 import vanilla_assets
-from bb_geo import PART_GROUP, RIG_DIR, build_bbmodel, det_uuid, flip_point, make_group, num
+import preview_material
+from bb_geo import (PART_GROUP, RIG_DIR, assemble as bb_assemble, bone_to_group,
+                    build_bbmodel, det_uuid, flip_point, make_group, num)
 
 # Minecraft ticks per second. The walk cycle's length is a tick count; Blockbench's timeline is in
 # seconds.
@@ -132,7 +141,8 @@ def ref_cube(box, pivot, uid, color, texture_index, locked=True):
     }
 
 
-def build_reference(anchor_name, slim=False, texture_index=None, paint_armor=False):
+def build_reference(anchor_name, slim=False, texture_index=None, paint_armor=False,
+                    slot_texture=None):
     """The locked player wearing all four armor slots, as (elements, groups, bone_uuids).
 
     One group per posed bone, not one group per layer. That is the change that makes the rig worth
@@ -158,11 +168,15 @@ def build_reference(anchor_name, slim=False, texture_index=None, paint_armor=Fal
     for box in mc_humanoid.player_boxes(slim):
         add(dict(box, tex_key="skin"), "skin", COLOR_BODY)
     for slot, spec in mc_humanoid.ARMOR_SLOTS.items():
+        # `slot_texture` lets each slot wear its own sheet, which is what a wardrobe needs: four
+        # armor pieces are four items and may be four materials. Without it every slot samples the
+        # one layer texture its deformation uses, which is what a part or skin rig wants.
+        key = (slot_texture or {}).get(slot, spec["texture"])
         for box in mc_humanoid.armor_boxes(slot):
             # A skin rig is the one case where the armor is the thing being worked on: its cubes
             # are unlocked so the brush reaches them, and the bone groups above them have to be
             # unlocked too, since a locked group locks its subtree.
-            add(dict(box, tex_key=spec["texture"]), slot, COLOR_ARMOR, locked=not paint_armor)
+            add(dict(box, tex_key=key), slot, COLOR_ARMOR, locked=not paint_armor)
 
     groups, bone_uuids = [], {}
     for bone, pivot in mc_humanoid.BONES.items():
@@ -390,6 +404,260 @@ def build_animation(anchor_name, label, amplitude, bone_uuids, samples=8):
     }
 
 
+# ---- a whole outfit: the wardrobe --------------------------------------------------------------
+#
+# A SET is what the site's wardrobe saves: per socket a piece with its trim material and its
+# fittings' values, per armor slot a base material, and a skin or a cloth over the lot. `--wear`
+# builds ONE project holding the figure and every piece in the set, each at its anchor, each
+# painted the way the game would paint it - so a set can be looked at before it is owned.
+#
+# Nothing here is a second renderer. The armor sheets come from bake_skin.py and preview_cloth.py,
+# which are the ports of SkinBake and ClothTextureManager; each piece's sheet comes from
+# preview_material.py, which is the port of DecorationTextureManager. This file only decides where
+# things hang, which is the one thing it has always known.
+
+SET_SLOTS = ("helmet", "chestplate", "leggings", "boots")
+
+
+def pack_dirs(packs=None) -> list[Path]:
+    """Where a worn piece's files are looked for. The mod's own resources by default, so a set of
+    shipped pieces needs no arguments; a pack folder can be named for anything else."""
+    return [Path(p) for p in (packs or [ROOT / "src" / "main" / "resources"])]
+
+
+def _find(dirs: list[Path], relative: str) -> Path | None:
+    for d in dirs:
+        candidate = d / relative
+        if candidate.exists():
+            return candidate
+    return None
+
+
+def _split(piece_id: str) -> tuple[str, str]:
+    namespace, _, name = str(piece_id).rpartition(":")
+    return (namespace or "armorpieces"), name
+
+
+def resolve_worn(piece_id: str, dirs: list[Path]) -> dict:
+    """One worn piece's files: its geometry, its data (which says what socket it goes in and what
+    fittings it has), its greyscale master and the sheets beside it."""
+    namespace, name = _split(piece_id)
+    geo_path = _find(dirs, f"assets/{namespace}/armorpieces/decoration/{name}.json")
+    data_path = _find(dirs, f"data/{namespace}/armorpieces/armor_decoration/{name}.json")
+    if geo_path is None:
+        raise SystemExit(f"error: {piece_id}: no geometry at "
+                         f"assets/{namespace}/armorpieces/decoration/{name}.json in {dirs[0]}")
+    master = _find(dirs, f"assets/{namespace}/textures/entity/decoration/{name}.png")
+    data = json.loads(data_path.read_text(encoding="utf-8")) if data_path else {}
+    masks = {}
+    for fitting in data.get("fittings", []) or []:
+        _, fname = _split(fitting)
+        found = _find(dirs, f"assets/{namespace}/textures/entity/decoration/{name}_{fname}.png")
+        if found is not None:
+            masks[fname] = found
+    return {
+        "id": piece_id, "namespace": namespace, "name": name,
+        "geo": json.loads(geo_path.read_text(encoding="utf-8")),
+        "master": master,
+        "static": _find(dirs, f"assets/{namespace}/textures/entity/decoration/{name}_static.png"),
+        "masks": masks,
+        "anchors": [a for a in (data.get("anchors") or []) if isinstance(a, str)],
+    }
+
+
+def mirror_geo(bone: dict) -> dict:
+    """One bone, mirrored across the X = 0 plane of its anchor.
+
+    This is what `poseStack.scale(-1, 1, 1)` does to the second half of a mirrored pair, done to
+    the geometry instead - because a Blockbench group has no negative scale, and half a pair of
+    pauldrons in a wardrobe would be a worse lie than no pauldrons at all. A pivot's X flips; a
+    cube spans from its far edge back; rotations about Y and Z flip and the one about X does not;
+    and the box's own UV mirror flips, which is what a negative scale does to which texel lands on
+    which side."""
+    out = dict(bone)
+    px, py, pz = bone.get("pivot", [0, 0, 0])
+    out["pivot"] = [-px, py, pz]
+    if bone.get("rotation"):
+        rx, ry, rz = bone["rotation"]
+        out["rotation"] = [rx, -ry, -rz]
+    cubes = []
+    for cube in bone.get("cubes", []) or []:
+        ox, oy, oz = cube["origin"]
+        sx, sy, sz = cube["size"]
+        cubes.append(dict(cube, origin=[-(ox + sx), oy, oz], mirror=not cube.get("mirror", False)))
+    if cubes:
+        out["cubes"] = cubes
+    if bone.get("children"):
+        out["children"] = [mirror_geo(child) for child in bone["children"]]
+    return out
+
+
+def armor_sheets(spec: dict, slim: bool, out_dir: Path) -> tuple[dict, dict]:
+    """The four slots' armor textures for a set, as ({key: path}, {slot: key}).
+
+    Plain, a slot wears its material's own vanilla sheet. A SKIN replaces that sheet with the
+    skin's master baked through the material's own eight shades (bake_skin.py). A CLOTH is
+    composited on top of whatever the sheet is by then (preview_cloth.py), which is the order the
+    game draws them in - the skin decides what the plate is, the cloth is laid over it."""
+    import bake_skin
+    import preview_cloth
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    slots = spec.get("slots") or {}
+    skin_id = spec.get("skin")
+    cloth = spec.get("cloth") or {}
+    cloth_id = cloth.get("cloth") if isinstance(cloth, dict) else cloth
+
+    paths: dict[str, Path] = {}
+    slot_texture: dict[str, str] = {}
+    for slot in SET_SLOTS:
+        material = str((slots.get(slot) or {}).get("material") or spec.get("material") or "iron")
+        sheet = "humanoid_leggings" if slot == "leggings" else "humanoid"
+        key = f"armor_{slot}"
+        slot_texture[slot] = key
+        target = out_dir / f"{key}.png"
+        image = None
+        if skin_id:
+            _, skin_name = _split(skin_id)
+            try:
+                written = bake_skin.bake_skin(skin_name, material, out_dir / "baked")
+                baked = next((p for p in written if p.stem == sheet), None)
+                if baked is not None:
+                    image = Image.open(baked).convert("RGBA")
+            except (SystemExit, OSError, KeyError, ValueError) as err:
+                print(f"note: {skin_id} on {material} did not bake ({err}); "
+                      f"the plain material is worn", file=sys.stderr)
+        # A cloth is the CHEST slot's component in the game, and it reaches both the chest sheet
+        # and the leggings one, which is where the hem is. Nothing else wears it.
+        if cloth_id and slot in ("chestplate", "leggings"):
+            _, cloth_name = _split(cloth_id)
+            try:
+                worn = preview_cloth.bake(
+                    cloth_name, material, str(cloth.get("base") or "white"),
+                    [tuple(layer) for layer in (cloth.get("patterns") or [])],
+                    sheet=str(cloth.get("sheet") or "shield"), armor_sheet=sheet,
+                    armor_override=image)
+                if worn is not None:
+                    image = worn
+            except (SystemExit, OSError, KeyError, ValueError) as err:
+                print(f"note: {cloth_id} on {material} did not bake ({err}); "
+                      f"nothing is worn over the armor", file=sys.stderr)
+        if image is None:
+            _, armor, leggings, _desc = figure(material, slim)
+            source = leggings if sheet == "humanoid_leggings" and leggings.is_file() else armor
+            if not source.is_file():
+                # No sheet for this material at all: wear what the figure has.
+                _, source, _l, _d = figure("iron", slim)
+            paths[key] = source
+            continue
+        image.save(target)
+        paths[key] = target
+    return paths, slot_texture
+
+
+def build_worn_rig(spec: dict, out_dir=RIG_DIR, slim=False, packs=None, animate=True):
+    """The figure wearing a whole set: every piece at its anchor, painted, everything locked.
+
+    Locked because this is a VIEWER, not a workspace. A wardrobe is for looking at a set from every
+    side before owning it; the moment something in it can be dragged, the picture stops being what
+    the game would draw. Returns (model, what is worn)."""
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    dirs = pack_dirs(packs)
+    anchors = parse_anchors()
+    name = str(spec.get("name") or "set")
+    label = re.sub(r"[^A-Za-z0-9_-]+", "_", name).strip("_").lower() or "set"
+
+    # The figure, then the four slots' sheets - each a texture of its own, so four materials, a
+    # skin and a cloth can all be seen at once.
+    head_material = str((spec.get("slots", {}).get("helmet") or {}).get("material")
+                        or spec.get("material") or "iron")
+    skin_path, _armor, _leggings, description = figure(head_material, slim)
+    sheets, slot_texture = armor_sheets(spec, slim, out_dir)
+
+    textures, index = [], {}
+    index["skin"] = 0
+    textures.append(texture_entry("skin", skin_path, det_uuid(f"wear/{label}/texture/skin"),
+                                  (64, 64), out_dir))
+    for key, path in sheets.items():
+        index[key] = len(textures)
+        textures.append(texture_entry(key, path, det_uuid(f"wear/{label}/texture/{key}"),
+                                      (64, 32), out_dir))
+    # build_reference falls back to these two keys for anything not named per slot.
+    index.setdefault("armor", index["armor_chestplate"])
+    index.setdefault("armor_leggings", index["armor_leggings"])
+
+    elements, groups, bone_uuids = build_reference(
+        f"wear_{label}", slim, index, slot_texture=slot_texture)
+
+    # One group per worn piece per attachment: exactly the frames ArmorDecorationLayer enters.
+    parenting: dict[str, str] = {}
+    worn_report = []
+    for socket, entry in sorted((spec.get("pieces") or {}).items()):
+        if not entry:
+            continue
+        piece_id = entry if isinstance(entry, str) else entry.get("id")
+        if not piece_id:
+            continue
+        options = entry if isinstance(entry, dict) else {}
+        if socket not in anchors:
+            print(f"note: no socket called {socket}; {piece_id} is not worn", file=sys.stderr)
+            continue
+        piece = resolve_worn(piece_id, dirs)
+        material = str(options.get("material") or "iron")
+        # A set carries the game's own values, which are namespaced ids (`minecraft:emerald`);
+        # preview_material speaks the bare vocabulary the command line does. A hex colour has no
+        # namespace to drop.
+        fittings = [(k, str(v) if str(v).startswith("#") else _split(str(v))[1])
+                    for k, v in (options.get("fittings") or {}).items()]
+
+        texture_key = None
+        if piece["master"] is not None:
+            painted = out_dir / f"{label}_{socket}.png"
+            preview_material.preview(
+                piece["name"], material, painted,
+                master_override=piece["master"], static_override=piece["static"],
+                fittings=fittings, mask_overrides=piece["masks"])
+            with Image.open(painted) as image:
+                uv = image.size
+            texture_key = len(textures)
+            index[f"piece_{socket}"] = texture_key
+            textures.append(texture_entry(
+                f"piece_{socket}", painted, det_uuid(f"wear/{label}/texture/{socket}"), uv, out_dir))
+
+        for half, attachment in enumerate(anchors[socket]["attachments"]):
+            pivot = mc_humanoid.BONES[attachment["part"]]
+            anchor_geo = tuple(pivot[i] + attachment["offset"][i] for i in range(3))
+            origin_bb = flip_point(list(anchor_geo))
+            bones = piece["geo"].get("bones", [])
+            if attachment.get("mirror"):
+                bones = [mirror_geo(bone) for bone in bones]
+            children = []
+            for i, bone in enumerate(bones):
+                children.append(bone_to_group(
+                    bone, origin_bb, f"wear/{label}/{socket}/{half}/{bone.get('name', i)}",
+                    elements, groups, texture_key))
+            guid = det_uuid(f"wear/{label}/{socket}/{half}")
+            groups.append(make_group(f"{socket}_{half}" if half else socket, guid, origin_bb,
+                                     [0, 0, 0], children, locked=True, color=4))
+            parenting[guid] = bone_uuids[attachment["part"]]
+        worn_report.append({"socket": socket, "id": piece_id, "material": material,
+                            "halves": len(anchors[socket]["attachments"])})
+
+    animations = None
+    if animate:
+        animations = [
+            build_animation(f"wear_{label}", "walk", mc_humanoid.WALK_AMPLITUDE, bone_uuids),
+            build_animation(f"wear_{label}", "sprint", mc_humanoid.SPRINT_AMPLITUDE, bone_uuids),
+        ]
+
+    model = bb_assemble(f"wear_{label}", (64, 32), elements, groups, parenting=parenting,
+                        textures=textures, animations=animations, model_format="free")
+    model["armorpieces_figure"] = dict(description, worn=[w["id"] for w in worn_report])
+    model["armorpieces_set"] = spec
+    return model, worn_report
+
+
 def build_rig(anchor_name, anchors, part_geo=None, resolution=None, out_dir=RIG_DIR,
               slim=False, material="iron", master=None, animate=True):
     anchor = anchors[anchor_name]
@@ -454,6 +722,13 @@ def main():
     ap.add_argument("--skin", type=Path,
                     help="build a SKIN rig instead: the figure wearing the master pair in this "
                          "folder (tools/skin_masters/<name>), armor unlocked and paintable")
+    ap.add_argument("--wear", type=Path, metavar="SET.JSON",
+                    help="build a WARDROBE rig instead: the figure wearing a whole set - a piece "
+                         "in each socket with its material and its fittings, a base material per "
+                         "armor slot, a skin and a cloth. Everything locked; it is for looking at")
+    ap.add_argument("--pack", type=Path, action="append", metavar="DIR",
+                    help="a pack folder a worn piece may come from; repeat for more "
+                         "(default: the mod's own src/main/resources)")
     args = ap.parse_args()
 
     if args.list_anchors:
@@ -481,6 +756,20 @@ def main():
             sys.exit(f"error: neither the game's textures ({ASSETS}) nor the studio figure "
                      f"({STUDIO}) is here. Run python tools/studio_figure.py, or "
                      f"python tools/vanilla_assets.py with a jar.")
+
+    if args.wear:
+        spec = json.loads(args.wear.read_text(encoding="utf-8"))
+        args.out_dir.mkdir(parents=True, exist_ok=True)
+        model, worn = build_worn_rig(spec, out_dir=args.out_dir, slim=args.slim,
+                                     packs=args.pack, animate=not args.no_animation)
+        label = model["name"]
+        out = args.out_dir / f"{label}.bbmodel"
+        out.write_text(json.dumps(model, indent=2) + "\n", encoding="utf-8")
+        for entry in worn:
+            pair = " (a pair)" if entry["halves"] > 1 else ""
+            print(f"{entry['socket']:10s} {entry['id']:32s} in {entry['material']}{pair}")
+        print(f"{len(worn)} worn -> {out}")
+        return
 
     if args.skin:
         args.out_dir.mkdir(parents=True, exist_ok=True)

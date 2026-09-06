@@ -1,0 +1,87 @@
+# The wiki's "Finding pieces" page. The group list and the recipe count come out of the datapack;
+# the prose came across verbatim from ArmorPiecesSite/content/wiki/loot.md.
+name: Finding pieces
+slug: loot
+tagline: Where pieces, skins and fitting templates turn up, and why the odds never change.
+
+# This page describes the repository two folders up, not docs/wiki: its data, its
+# language file, its .modpage/generators.
+root: ../..
+
+assets:
+  dir: docs/assets
+  base_url: https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/
+
+toc: false
+
+# Not a marketplace page: no Dependencies heading saying "none".
+shared_sections: false
+
+generators:
+  loot_groups:
+    use: armorpieces.loot_groups
+  counts:
+    use: armorpieces.counts
+
+sections:
+  about: |
+    Most pieces are found rather than made. Each theme turns up in the structures that suit it:
+    knightly gear in strongholds and trial chambers, beast trophies in bastions, court jewellery in
+    mansions and ancient cities, tidal pieces in shipwrecks and ocean ruins, wayfarer gear on the
+    road, carapace in the deep.
+
+  faq: false
+  dependencies: false
+  incompatibilities: false
+  installation: false
+  configuration: false
+  license: false
+  credits: false
+
+custom_sections:
+  - id: groups
+    title: Loot groups
+    body: |
+      A **loot group** is one data file naming a category of vanilla loot tables and a tag of
+      pieces found in them, one per theme. Armor skins are divided over the same groups, and a
+      fitting template turns up in every one of them. A pack adds a whole look to the world with
+      one group, or drops one piece into one chest from the piece's own data file, which is the one
+      thing a datapack could not do for itself, since it can only replace a vanilla table whole.
+
+  - id: shipped-groups
+    title: The groups that ship
+    after: groups
+    layout: table
+    columns:
+      - {field: name, title: Group}
+      - {field: count, title: Pieces}
+      - {field: chance, title: Chance}
+      - {field: description, title: Found in}
+    elements: {from: loot_groups}
+
+  - id: chance
+    title: The chance belongs to the table
+    after: shipped-groups
+    body: |
+      One pool per table, rolled once. A chest's odds of holding something of the mod's stay put
+      however many pieces are added: another piece changes *which* one you find, never how often. A
+      loot function can also put a piece on a piece of armor a table drops, gem and all.
+
+  - id: crafting
+    title: Crafting
+    after: chance
+    body: |
+      A minority of pieces have a template recipe, where the centre item is plainly the piece or
+      what it is made of. The rest are found only. A server can turn any recipe off by
+      [overriding it](/wiki/getting-started/#switching-a-recipe-off).
+
+  - id: how-many
+    title: How many are made and how many are found
+    after: crafting
+    layout: table
+    columns:
+      - {field: value, title: How many}
+      - {field: description, title: What}
+    elements:
+      from: counts
+      where: {id: [pieces, craftable, loot_groups, skins]}

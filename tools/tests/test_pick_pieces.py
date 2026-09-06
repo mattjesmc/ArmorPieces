@@ -204,6 +204,146 @@ class PickTests(unittest.TestCase):
             with self.assertRaises(pick_pieces.PickError):
                 pick_pieces.pick([[a]], ["somebody:nothing"], Path(tmp) / "mine", own=True)
 
+    def test_duplicates_a_piece_under_another_id(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            a = make_pack(Path(tmp) / "a", credits={"pack": {"author": "somebody", "license": "CC-BY-4.0"}})
+            written = pick_pieces.pick([[a]], ["somebody:great_helm"], a, as_id="mine:tall_helm")
+            self.assertEqual(set(written), {"mine:tall_helm"})
+            # Every file that carried the name is there under the new one, and the old is untouched.
+            for relative in [
+                "data/mine/armorpieces/armor_decoration/tall_helm.json",
+                "data/mine/recipe/template_tall_helm.json",
+                "assets/mine/armorpieces/decoration/tall_helm.json",
+                "assets/mine/textures/entity/decoration/tall_helm.png",
+                "assets/mine/textures/entity/decoration/tall_helm_plume.png",
+                "data/somebody/armorpieces/armor_decoration/great_helm.json",
+            ]:
+                self.assertTrue((a / relative).is_file(), relative)
+            body = json.loads((a / "data/mine/armorpieces/armor_decoration/tall_helm.json").read_text(encoding="utf-8"))
+            self.assertEqual(body["asset_id"], "mine:tall_helm")
+            self.assertEqual(body["description"]["translate"], "decoration.mine.tall_helm")
+            # The fitting is the source pack's and keeps its own id.
+            self.assertEqual(body["fittings"], ["somebody:plume"])
+            lang = json.loads((a / "assets/mine/lang/en_us.json").read_text(encoding="utf-8"))
+            self.assertEqual(lang["decoration.mine.tall_helm"], "Great Helm")
+            # It belongs to the same loot group, beside the original.
+            tag = json.loads((a / "data/somebody/tags/armorpieces/armor_decoration/knightly.json").read_text())
+            self.assertIn("mine:tall_helm", tag["values"])
+            self.assertIn("somebody:great_helm", tag["values"])
+            credits = json.loads((a / pack_manifest.CREDITS_FILE).read_text(encoding="utf-8"))
+            self.assertEqual(credits["pieces"]["mine:tall_helm"]["source"], "somebody:great_helm")
+            # And the pack reads back with both.
+            m = pack_manifest.manifest([a])
+            self.assertEqual(m["counts"]["pieces"], 2)
+            self.assertEqual({p["id"] for p in m["pieces"]}, {"somebody:great_helm", "mine:tall_helm"})
+
+    def test_duplicates_a_skin_and_a_cloth(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            a = make_pack(Path(tmp) / "a", credits={"pack": {"author": "somebody", "license": "CC0-1.0"}})
+            write(a / "assets/somebody/models/item/cloth_template_surcoat.json",
+                  {"parent": "minecraft:item/generated", "textures": {"layer0": "somebody:item/cloth_template_surcoat"}})
+            write(a / "assets/somebody/textures/item/cloth_template_surcoat.png", PNG)
+            pick_pieces.pick([[a]], ["somebody:brigandine"], a, as_id="mine:scale")
+            pick_pieces.pick([[a]], ["somebody:surcoat"], a, as_id="mine:tabard")
+            self.assertTrue((a / "assets/mine/textures/entity/skin/scale/humanoid.png").is_file())
+            self.assertTrue((a / "assets/mine/textures/entity/skin/scale/humanoid_leggings.png").is_file())
+            self.assertTrue((a / "assets/mine/textures/item/cloth_template_tabard.png").is_file())
+            model = json.loads((a / "assets/mine/models/item/cloth_template_tabard.json").read_text(encoding="utf-8"))
+            self.assertEqual(model["textures"]["layer0"], "mine:item/cloth_template_tabard")
+            body = json.loads((a / "data/mine/armorpieces/cloth/tabard.json").read_text(encoding="utf-8"))
+            self.assertEqual(body["asset_id"], "mine:tabard")
+            self.assertEqual(body["sheet"], "shield")
+            m = pack_manifest.manifest([a])
+            self.assertEqual(m["counts"], {"pieces": 1, "skins": 2, "cloths": 2})
+
+    def test_duplicating_refuses_a_taken_id_and_a_bad_one(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            a = make_pack(Path(tmp) / "a", credits={"pack": {"author": "somebody", "license": "CC0-1.0"}})
+            for bad, why in [("nocolon", "namespaced"), ("mine:Tall", "lower-case"),
+                             ("somebody:great_helm", "already has")]:
+                with self.assertRaises(pick_pieces.PickError) as ctx:
+                    pick_pieces.pick([[a]], ["somebody:great_helm"], a, as_id=bad)
+                self.assertIn(why, str(ctx.exception))
+            with self.assertRaises(pick_pieces.PickError) as ctx:
+                pick_pieces.pick([[a]], ["somebody:great_helm", "somebody:surcoat"], a, as_id="mine:x")
+            self.assertIn("exactly one id", str(ctx.exception))
+            pick_pieces.pick([[a]], ["somebody:great_helm"], a, as_id="mine:tall_helm")
+            with self.assertRaises(pick_pieces.PickError) as ctx:
+                pick_pieces.pick([[a]], ["somebody:great_helm"], a, as_id="mine:tall_helm")
+            self.assertIn("already holds", str(ctx.exception))
+
+    def test_duplicating_still_refuses_all_rights_reserved(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            a = make_pack(Path(tmp) / "a")  # no credits: all rights reserved
+            with self.assertRaises(pick_pieces.PickError) as ctx:
+                pick_pieces.pick([[a]], ["somebody:great_helm"], Path(tmp) / "mine", as_id="mine:tall_helm")
+            self.assertIn("all rights reserved", str(ctx.exception))
+
+    def test_drops_an_entry_and_leaves_what_is_shared(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            a = make_pack(Path(tmp) / "a", credits={"pack": {"author": "somebody", "license": "CC0-1.0"}})
+            dest = Path(tmp) / "mine"
+            pick_pieces.pick([[a]], ["somebody:great_helm", "somebody:surcoat"], dest)
+            removed = pick_pieces.drop(dest, ["somebody:great_helm"])
+            self.assertIn("data/somebody/armorpieces/armor_decoration/great_helm.json", removed["somebody:great_helm"])
+            for gone in [
+                "data/somebody/armorpieces/armor_decoration/great_helm.json",
+                "data/somebody/recipe/template_great_helm.json",
+                "assets/somebody/armorpieces/decoration/great_helm.json",
+                "assets/somebody/textures/entity/decoration/great_helm.png",
+                "assets/somebody/textures/entity/decoration/great_helm_plume.png",
+                # The tag held only it, so the file went with it.
+                "data/somebody/tags/armorpieces/armor_decoration/knightly.json",
+            ]:
+                self.assertFalse((dest / gone).exists(), gone)
+            # The cloth, the fitting and the loot group are still needed or still shared.
+            for kept in [
+                "data/somebody/armorpieces/cloth/surcoat.json",
+                "data/somebody/armorpieces/fitting/plume.json",
+                "data/somebody/armorpieces/loot_group/knightly.json",
+            ]:
+                self.assertTrue((dest / kept).is_file(), kept)
+            lang = json.loads((dest / "assets/somebody/lang/en_us.json").read_text(encoding="utf-8"))
+            self.assertNotIn("decoration.somebody.great_helm", lang)
+            self.assertIn("cloth.somebody.surcoat", lang)
+            credits = json.loads((dest / pack_manifest.CREDITS_FILE).read_text(encoding="utf-8"))
+            self.assertNotIn("somebody:great_helm", credits["pieces"])
+            m = pack_manifest.manifest([dest])
+            self.assertEqual(m["counts"], {"pieces": 0, "skins": 0, "cloths": 1})
+
+    def test_a_move_is_a_pick_then_a_drop(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            a = make_pack(Path(tmp) / "a", credits={"pack": {"author": "somebody", "license": "CC0-1.0"}})
+            b = Path(tmp) / "b"
+            pick_pieces.pick([[a]], ["somebody:great_helm"], b)
+            pick_pieces.drop(a, ["somebody:great_helm"])
+            self.assertEqual(pack_manifest.manifest([a])["counts"]["pieces"], 0)
+            self.assertEqual(pack_manifest.manifest([b])["counts"]["pieces"], 1)
+
+    def test_dropping_an_id_the_pack_does_not_have(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            a = make_pack(Path(tmp) / "a", credits={"pack": {"author": "somebody", "license": "CC0-1.0"}})
+            with self.assertRaises(pick_pieces.PickError):
+                pick_pieces.drop(a, ["somebody:nothing"])
+
+    def test_a_reindented_shared_file_is_not_a_collision(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            credits = {"pack": {"author": "somebody", "license": "CC0-1.0"}}
+            a = make_pack(Path(tmp) / "a", credits=credits)
+            dest = Path(tmp) / "mine"
+            pick_pieces.pick([[a]], ["somebody:great_helm"], dest)
+            # A pack that has been through sanitize_pack.py comes back re-indented. The fitting
+            # says exactly the same thing; copying beside it must not be refused over whitespace.
+            fitting = dest / "data/somebody/armorpieces/fitting/plume.json"
+            fitting.write_text(json.dumps(json.loads(fitting.read_text()), indent=4) + "\n", encoding="utf-8")
+            pick_pieces.pick([[a]], ["somebody:great_helm"], dest, as_id="mine:tall_helm")
+            self.assertEqual(pack_manifest.manifest([dest])["counts"]["pieces"], 2)
+            # A fitting that genuinely differs is still a collision.
+            fitting.write_text(json.dumps({"type": "armorpieces:trim"}, indent=2) + "\n", encoding="utf-8")
+            with self.assertRaises(pick_pieces.PickError) as ctx:
+                pick_pieces.pick([[a]], ["somebody:great_helm"], dest, as_id="mine:third_helm")
+            self.assertIn("different content", str(ctx.exception))
+
     def test_the_mods_pieces_compose_with_own(self):
         with tempfile.TemporaryDirectory() as tmp:
             dest = Path(tmp) / "mine"

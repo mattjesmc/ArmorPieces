@@ -1,0 +1,69 @@
+# The wiki's "Fittings" page. The table of fittings is read out of the datapack and the language
+# file; the prose came across verbatim from ArmorPiecesSite/content/wiki/fittings.md.
+name: Fittings
+slug: fittings
+tagline: "A second material on a piece: gems, guard metals, dyed inlays and banners."
+
+# This page describes the repository two folders up, not docs/wiki: its data, its
+# language file, its .modpage/generators.
+root: ../..
+
+assets:
+  dir: docs/assets
+  base_url: https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/
+
+toc: false
+
+# Not a marketplace page: no Dependencies heading saying "none".
+shared_sections: false
+
+generators:
+  fittings:
+    use: armorpieces.fittings
+
+sections:
+  about: |
+    Some pieces have a second colour, set separately: a gem in the circlet, a metal buckle and a
+    dyed strap on the sash, an inlay on the greaves, a banner on the back banner. A piece declares
+    the places it has for one, and a **fitting template** fills each.
+
+  faq: false
+  dependencies: false
+  incompatibilities: false
+  installation: false
+  configuration: false
+  license: false
+  credits: false
+
+custom_sections:
+  - id: shipped
+    title: The fittings that ship
+    layout: table
+    columns:
+      - {field: name, title: Fitting}
+      - {field: kind, title: Kind}
+      - {field: ingredients, title: Takes}
+      - {field: count, title: Pieces that have one}
+    elements: {from: fittings}
+
+  - id: applying
+    title: Applying one
+    after: shipped
+    body: |
+      One smithing step per fitting: the fitting's template, the decorated armor, and the material.
+      Every piece on the armor that has a place of that kind is offered the material, so one gem
+      fills the stone of each piece that has one, or of the one socket you pick at the advanced
+      smithing table. **The same template with the third slot empty takes the fitting out again.**
+      Re-applying a piece at its own socket template keeps what is set in its fittings, so changing
+      a circlet's metal does not cost the gem.
+
+  - id: authors
+    title: For pack authors
+    after: applying
+    body: |
+      A fitting is data: a pack declares a new one in its own `fitting` folder, names the tag or
+      list of materials it accepts, and gets its template from a recipe. A piece names the fittings
+      it has and ships one greyscale **mask** per masked fitting, saying where on the piece that
+      material goes. An effect can be gated on a fitting's value. The
+      [authoring guide](/wiki/authoring/) covers the files; the [editor](/wiki/editor/) paints the
+      masks and previews any material in them live.
