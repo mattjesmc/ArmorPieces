@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+**Your library, from the editor.** `Packs...` gains a third source beside a zip and the public
+library: *From your library...* and *Upload to your library...* talk to an account on the site
+that serves the library index - by the page's own session on the web, and on the desktop by a
+device token minted through *Sign in to the site...*, an eight-character code approved in the
+browser and kept in a setting. `sendBytes` is the platform function a POST needs, beside
+`fetchBytes`. `tools/sanitize_pack.py` re-encodes every PNG and JSON of an unpacked pack and
+throws out anything else, which is what an upload goes through before it is stored.
+
 **Pieces as the unit.** `tools/pack_manifest.py` lists what a pack holds - every piece, skin and
 cloth with its socket, fittings, license, author and the files it is made of - and
 `tools/pick_pieces.py` copies entries between packs by id, file set, language line, loot-group tags

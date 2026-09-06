@@ -365,6 +365,62 @@
 		});
 	}
 
+	/*
+	 * Bytes to a URL: the other direction, for publishing to a site with accounts. The same two
+	 * paths as fetchBytes, the same options, and the answer is the response body as text - every
+	 * endpoint this is used against answers JSON.
+	 */
+	function sendBytes(url, bytes, done, fail, options) {
+		options = options || {};
+		const headers = Object.assign({ 'content-type': options.contentType || 'application/octet-stream' }, options.headers || {});
+		const local = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//i.test(url);
+		if (isApp && !local) {
+			if (!/^https:\/\//i.test(url)) return fail(new Error('Only https URLs can be posted to: ' + url));
+			const target = new URL(url);
+			const req = https.request({
+				method: options.method || 'POST', hostname: target.hostname, port: target.port || 443,
+				path: target.pathname + target.search,
+				headers: Object.assign({ 'user-agent': 'armorpieces-blockbench', 'content-length': bytes.length }, headers),
+			}, function (res) {
+				const chunks = [];
+				res.on('data', function (chunk) { chunks.push(chunk); });
+				res.on('end', function () {
+					const body = Buffer.concat(chunks).toString('utf8');
+					if ((res.statusCode || 0) >= 200 && (res.statusCode || 0) < 300) return done(body);
+					fail(new Error(errorIn(body) || (target.href + ' answered ' + res.statusCode)));
+				});
+				res.on('error', fail);
+			});
+			req.on('error', fail);
+			req.end(Buffer.from(bytes));
+			return;
+		}
+		let absolute;
+		try {
+			absolute = new URL(url, window.location.href).href;
+		} catch (err) {
+			return fail(new Error('Not a URL: ' + url));
+		}
+		const init = { method: options.method || 'POST', headers: headers, body: bytes };
+		if (options.credentials) init.credentials = options.credentials;
+		fetch(absolute, init).then(function (res) {
+			return res.text().then(function (body) {
+				if (!res.ok) throw new Error(errorIn(body) || (absolute + ' answered ' + res.status + ' ' + res.statusText));
+				return body;
+			});
+		}).then(done, function (err) { fail(err instanceof Error ? err : new Error(String(err))); });
+	}
+
+	/* The `error` field of a JSON answer, when there is one. */
+	function errorIn(body) {
+		try {
+			const parsed = JSON.parse(body);
+			return parsed && parsed.error ? String(parsed.error) : '';
+		} catch (err) {
+			return '';
+		}
+	}
+
 	/* Every resource pack folder and every world datapack folder under a game directory. */
 	function packsUnderGameDir(dir) {
 		const roots = subdirs(path.join(dir, 'resourcepacks'));
@@ -1029,6 +1085,272 @@
 			libraryDialog(function (entry) { installEntry(entry, dest, done); });
 		},
 		publish: submitDialog,
+	});
+
+	// ---- your library ----------------------------------------------------------------------------
+
+	/*
+	 * The third source: a library of one's own, on the site that serves the public one. The
+	 * site is wherever the library index lives; its accounts API sits beside it. On the web
+	 * the page's own session cookie does the authenticating (fetchBytes with credentials); on
+	 * the desktop a device token does, minted once through Sign in... - an eight-character
+	 * code shown here, approved in the browser, and kept in a setting. Nothing here decides
+	 * what a library holds or who may see it; the site does.
+	 */
+	function siteOrigin() {
+		try {
+			return new URL(libraryUrl()).origin;
+		} catch (err) {
+			return '';
+		}
+	}
+
+	function siteToken() {
+		return isApp ? String(Settings.get(ID + '_site_token') || '').trim() : '';
+	}
+
+	function setSetting(key, value) {
+		if (typeof settings !== 'undefined' && settings[key]) {
+			settings[key].value = value;
+			if (typeof Settings !== 'undefined' && Settings.saveLocalStorages) Settings.saveLocalStorages();
+		}
+	}
+
+	/* How a request to the site is authenticated on this platform. */
+	function siteOptions(extra) {
+		const options = Object.assign({}, extra || {});
+		if (isApp) {
+			const token = siteToken();
+			if (token) options.headers = Object.assign({ authorization: 'Bearer ' + token }, options.headers || {});
+		} else {
+			options.credentials = 'include';
+		}
+		return options;
+	}
+
+	function siteJson(path, done, fail) {
+		fetchBytes(siteOrigin() + path, function (bytes) {
+			try {
+				done(JSON.parse(new TextDecoder().decode(bytes)));
+			} catch (err) {
+				fail(new Error('The site answered something that is not JSON'));
+			}
+		}, fail, siteOptions());
+	}
+
+	function signedOut(err) {
+		return /answered 401/.test(String((err && err.message) || err));
+	}
+
+	/*
+	 * Sign in. On the web that is the site's own account page in a new tab, after which the
+	 * page's cookie is there for the asking. On the desktop it is the device flow: ask the site
+	 * for a code, open the approval page, poll until the token comes back, keep it.
+	 */
+	function signInDialog(then) {
+		const origin = siteOrigin();
+		if (!origin) {
+			Blockbench.showMessageBox({ title: 'No site', message: 'The library setting does not name a site.' });
+			return;
+		}
+		if (!isApp) {
+			Blockbench.showMessageBox({
+				title: 'Sign in',
+				message: 'Sign in on the site\'s account page, then come back here: the editor uses ' +
+					'the same session.',
+				buttons: ['Open the account page', 'Done', 'Cancel'], confirm: 0, cancel: 2,
+			}, function (answer) {
+				if (answer === 0) Blockbench.openLink(origin + '/account/');
+				if (answer === 1 && then) then();
+			});
+			return;
+		}
+		const label = 'Blockbench on ' + (os.hostname ? os.hostname() : 'this computer');
+		sendBytes(origin + '/api/device/start', new TextEncoder().encode(JSON.stringify({ label: label })), function (body) {
+			const start = JSON.parse(body);
+			let timer = null;
+			const dialog = new Dialog({
+				id: ID + '_sign_in',
+				title: 'Sign in to ' + origin.replace(/^https?:\/\//, ''),
+				lines: [
+					'<p>Approve this editor on the site. The code is</p>',
+					'<p style="font-size:2rem;font-family:monospace;letter-spacing:.15em;text-align:center">' + start.code + '</p>',
+					'<p>Open the page below, sign in if you are not, and confirm the code. This editor is ' +
+					'listed under your devices and can be revoked there. The code is good for fifteen minutes.</p>',
+					'<p class="ap_dim">' + start.url + '</p>',
+				],
+				buttons: ['Open the approval page', 'Cancel'],
+				confirmIndex: 0, cancelIndex: 1,
+				onConfirm: function () { Blockbench.openLink(start.url); },
+				onCancel: function () { if (timer) clearInterval(timer); },
+			});
+			dialog.show();
+			Blockbench.openLink(start.url);
+			timer = setInterval(function () {
+				fetchBytes(origin + '/api/device/poll?code=' + encodeURIComponent(start.code) +
+					'&secret=' + encodeURIComponent(start.secret), function (bytes) {
+					let poll;
+					try { poll = JSON.parse(new TextDecoder().decode(bytes)); } catch (err) { return; }
+					if (poll.status === 'approved' && poll.token) {
+						clearInterval(timer);
+						setSetting(ID + '_site_token', poll.token);
+						dialog.hide();
+						Blockbench.showQuickMessage('Signed in', 2000);
+						if (then) then();
+					} else if (poll.status === 'expired') {
+						clearInterval(timer);
+						dialog.hide();
+						Blockbench.showMessageBox({ title: 'Sign-in expired', message: 'The code was not approved in time. Try again.' });
+					}
+				}, function () { /* keep polling */ });
+			}, (start.interval || 3) * 1000);
+		}, function (err) {
+			Blockbench.showMessageBox({ title: 'Could not start the sign-in', message: String((err && err.message) || err) });
+		});
+	}
+
+	function signOut() {
+		if (isApp) {
+			setSetting(ID + '_site_token', '');
+			Blockbench.showQuickMessage('Signed out of the site on this device; revoke it on the site too', 3000);
+		} else {
+			Blockbench.openLink(siteOrigin() + '/account/');
+		}
+	}
+
+	/* Something that needs the account: run it, and offer to sign in when the site says no. */
+	function withAccount(run) {
+		siteJson('/api/me', function (me) { run(me); }, function (err) {
+			if (!signedOut(err)) {
+				Blockbench.showMessageBox({ title: 'The site did not answer', message: String((err && err.message) || err) });
+				return;
+			}
+			Blockbench.showMessageBox({
+				title: 'Sign in first',
+				message: 'Your library on ' + siteOrigin().replace(/^https?:\/\//, '') + ' needs an account.',
+				buttons: ['Sign in...', 'Cancel'], confirm: 0, cancel: 1,
+			}, function (answer) {
+				if (answer === 0) signInDialog(function () { withAccount(run); });
+			});
+		});
+	}
+
+	/* Install one of your packs: pick the pack and the version, fetch, unpack. */
+	function installFromAccount(dest, done) {
+		withAccount(function () {
+			siteJson('/api/me/packs', function (data) {
+				const packs = data.packs || [];
+				if (!packs.length) {
+					Blockbench.showMessageBox({ title: 'Your library is empty', message: 'Upload a pack from the site, or from Packs... > Upload to your library...' });
+					return;
+				}
+				const options = {};
+				for (const pack of packs) {
+					for (const version of pack.versions || []) {
+						options[pack.id + '/' + version.id] = pack.name + ' - version ' + version.number +
+							(version.label ? ' (' + version.label + ')' : '') + (version.id === pack.current ? ' - current' : '');
+					}
+				}
+				new Dialog({
+					id: ID + '_account_install',
+					title: 'From your library',
+					form: {
+						which: { label: 'Pack and version', type: 'select', options: options, value: Object.keys(options)[0] },
+					},
+					onConfirm: function (result) {
+						this.hide();
+						const key = String(result.which || '');
+						const pack = packs.find(function (p) { return key.indexOf(p.id + '/') === 0; });
+						const version = pack && (pack.versions || []).find(function (v) { return key === pack.id + '/' + v.id; });
+						if (!version) return;
+						fetchBytes(siteOrigin() + version.download, function (bytes) {
+							const scratch = path.join(tempDir(), 'account.zip');
+							fs.writeFileSync(scratch, bytes);
+							try {
+								const report = tool('import_pack.py', [scratch, dest, '--force']);
+								done(report.trim() || ('Unpacked into ' + dest));
+							} catch (err) {
+								Blockbench.showMessageBox({ title: 'Import failed', message: String((err && err.stderr) || (err && err.message) || err) });
+							}
+						}, function (err) {
+							Blockbench.showMessageBox({ title: 'Could not download', message: String((err && err.message) || err) });
+						}, siteOptions());
+					},
+				}).show();
+			}, function (err) {
+				Blockbench.showMessageBox({ title: 'Could not list your packs', message: String((err && err.message) || err) });
+			});
+		});
+	}
+
+	/* Publish a pack folder: zip it, send it as a new pack or a new version, choose visibility. */
+	function publishToAccount(dir, done) {
+		withAccount(function () {
+			siteJson('/api/me/packs', function (data) {
+				const packs = data.packs || [];
+				const targets = { '': 'A new pack' };
+				for (const pack of packs) targets[pack.id] = 'New version of ' + pack.name;
+				const info = packInfo(dir);
+				const slug = info.label.toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'pack';
+				new Dialog({
+					id: ID + '_account_publish',
+					title: 'Upload to your library',
+					form: {
+						target: { label: 'Upload as', type: 'select', options: targets, value: '' },
+						name: { label: 'Name', type: 'text', value: info.label },
+						slug: { label: 'Slug', type: 'text', value: slug, description: 'Letters, digits and hyphens; part of the URL. For a new pack.' },
+						visibility: {
+							label: 'Visibility', type: 'select', value: 'private',
+							options: { private: 'Private - only you', unlisted: 'Unlisted - anyone with the link', public: 'Public - in the gallery, after review' },
+							description: 'For a new pack. A version of an existing pack keeps its visibility.',
+						},
+						label: { label: 'Version label', type: 'text', value: '', description: 'Optional, e.g. 1.1' },
+					},
+					onConfirm: function (result) {
+						this.hide();
+						const out = path.join(tempDir(), 'upload.zip');
+						try {
+							tool('export_pack.py', [dir, out]);
+						} catch (err) {
+							Blockbench.showMessageBox({ title: 'Could not zip the pack', message: String((err && err.stderr) || (err && err.message) || err) });
+							return;
+						}
+						const bytes = fs.readFileSync(out);
+						const target = String(result.target || '');
+						const headers = { 'x-pack-label': encodeURIComponent(String(result.label || '').trim()) };
+						let url = siteOrigin() + '/api/me/packs';
+						if (target) {
+							url += '/' + target + '/versions';
+						} else {
+							headers['x-pack-slug'] = encodeURIComponent(String(result.slug || slug).trim().toLowerCase());
+							headers['x-pack-name'] = encodeURIComponent(String(result.name || info.label).trim());
+							headers['x-pack-visibility'] = encodeURIComponent(String(result.visibility || 'private'));
+						}
+						Blockbench.showQuickMessage('Uploading...', 2000);
+						sendBytes(url, bytes, function (body) {
+							let answer = null;
+							try { answer = JSON.parse(body); } catch (err) { /* text */ }
+							const removed = answer && answer.report && answer.report.removed;
+							done('Uploaded' + (removed ? ' (' + removed + ' file(s) that were not pack files were dropped)' : '') +
+								(answer && answer.pack ? ': ' + answer.pack.name : ''));
+						}, function (err) {
+							Blockbench.showMessageBox({ title: 'Upload refused', message: String((err && err.message) || err) });
+						}, siteOptions({ contentType: 'application/zip', headers: headers }));
+					},
+				}).show();
+			}, function (err) {
+				Blockbench.showMessageBox({ title: 'Could not list your packs', message: String((err && err.message) || err) });
+			});
+		});
+	}
+
+	registerPackSource({
+		id: 'account',
+		label: 'your library',
+		installLabel: 'From your library...',
+		publishLabel: 'Upload to your library...',
+		install: installFromAccount,
+		publish: publishToAccount,
 	});
 
 	/*
@@ -5885,6 +6207,14 @@
 				value: LIBRARY_INDEX,
 				onChange: function () { libraryCache = null; },
 			}));
+			registered.push(new Setting(ID + '_site_token', {
+				name: 'Armor Pieces site token',
+				description: 'The device token Sign in to the site... keeps, so this editor can reach ' +
+					'your library. Revoke it on the site; blank it here to sign out.',
+				category: 'edit',
+				type: 'password',
+				value: '',
+			}));
 			registered.push(new Setting(ID + '_python', {
 				name: 'Armor Pieces Python',
 				description: 'Python executable used to run the repo tools.',
@@ -6041,6 +6371,19 @@
 				icon: 'videogame_asset',
 				click: useGameDialog,
 			});
+			const signIn = new Action(ID + '_sign_in', {
+				name: 'Sign in to the site...',
+				description: 'Your library on the site that serves the pack library: install from it, upload to it.',
+				icon: 'account_circle',
+				click: function () { signInDialog(null); },
+			});
+			const signOutAction = new Action(ID + '_sign_out', {
+				name: 'Sign out of the site',
+				description: 'Forget the device token on this computer.',
+				icon: 'logout',
+				condition: function () { return !!siteToken() || !isApp; },
+				click: signOut,
+			});
 
 			// One submenu, not six loose entries in Tools. `children` is also what makes cleanup
 			// tractable: there is exactly one menu node to remove on unload, and forgetting it is
@@ -6051,10 +6394,10 @@
 				icon: 'shield',
 				children: [open, create, save, '_',
 					openSkinAction, newSkinAction, editSkinAction, saveSkinAction, '_',
-					packs, createPack, exportZip, '_', useGame],
+					packs, createPack, exportZip, '_', useGame, '_', signIn, signOutAction],
 			});
 			registered.push(open, save, create, openSkinAction, newSkinAction, editSkinAction,
-				saveSkinAction, packs, createPack, exportZip, useGame, menu);
+				saveSkinAction, packs, createPack, exportZip, useGame, signIn, signOutAction, menu);
 			MenuBar.addAction(menu, 'tools');
 			registered.push(Blockbench.addCSS(PACKS_DIALOG_CSS));
 			registered.push(Blockbench.addCSS(LIBRARY_DIALOG_CSS));
@@ -6280,6 +6623,12 @@
 				// cannot click. `figure` is what the open rig's reference is wearing.
 				gameStatus: gameStatus,
 				useGame: useGameDialog,
+				// The site: where it is, whether this editor is signed in, and the sign-in itself.
+				site: function () { return { origin: siteOrigin(), signedIn: isApp ? !!siteToken() : null }; },
+				signIn: function (then) { signInDialog(then || null); },
+				signOut: signOut,
+				setSiteToken: function (token) { setSetting(ID + '_site_token', String(token || '')); return !!siteToken(); },
+				siteJson: siteJson,
 				// Credits: the author and license an id resolves to in its pack, and setting them.
 				credit: function (key) {
 					const piece = allPieces().find(function (p) { return p.key === key; });
