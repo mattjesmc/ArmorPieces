@@ -1,0 +1,9 @@
+{
+  "pack": {
+    "author": "mattjes",
+    "license": "ARR",
+    "homepage": "https://github.com/mattjesmc/ArmorPieces",
+    "license_url": "https://github.com/mattjesmc/ArmorPieces/blob/main/LICENSE"
+  },
+  "pieces": {}
+}

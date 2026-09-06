@@ -443,6 +443,73 @@
 	 * world's datapacks/, and every writer here goes to the right one. `pack` is the datapack, kept
 	 * under its old name because every datapack-side writer reads it.
 	 */
+	// ---- credits --------------------------------------------------------------------------------
+
+	/*
+	 * Who made a piece and under what license: `armorpieces-credits.json` at a pack's root, a
+	 * file the game ignores, with a pack-level default and a per-piece override. The keys are
+	 * namespaced ids and cover pieces, skins and cloths alike; pack_manifest.py reads the same
+	 * file and pick_pieces.py carries it along. A pack without the file is all rights reserved by
+	 * its author, which is what copyright law says anyway - so `ARR` is the default here too.
+	 */
+	const CREDITS_FILE = 'armorpieces-credits.json';
+	const LICENSE_OPTIONS = {
+		'ARR': 'All rights reserved - listed, downloadable as your pack, never composed into another',
+		'CC0-1.0': 'CC0 1.0 - public domain',
+		'CC-BY-4.0': 'CC BY 4.0 - with credit',
+		'CC-BY-SA-4.0': 'CC BY-SA 4.0 - with credit, share alike',
+		'CC-BY-NC-4.0': 'CC BY-NC 4.0 - with credit, not commercially',
+		'CC-BY-NC-SA-4.0': 'CC BY-NC-SA 4.0 - with credit, not commercially, share alike',
+	};
+
+	function readCredits(dirs) {
+		const out = { pack: {}, pieces: {} };
+		for (const dir of dirs) {
+			if (!dir) continue;
+			const found = readJsonOr(path.join(dir, CREDITS_FILE), null);
+			if (!found || typeof found !== 'object') continue;
+			if (found.pack && typeof found.pack === 'object') Object.assign(out.pack, found.pack);
+			if (found.pieces && typeof found.pieces === 'object') {
+				for (const key of Object.keys(found.pieces)) {
+					out.pieces[key] = Object.assign({}, out.pieces[key] || {}, found.pieces[key]);
+				}
+			}
+		}
+		return out;
+	}
+
+	/* The author and license one id resolves to: its own entry over the pack's default. */
+	function creditOf(dirs, key) {
+		const credits = readCredits(dirs);
+		const own = credits.pieces[key] || {};
+		const license = String(own.license || credits.pack.license || 'ARR');
+		return {
+			author: String(own.author || credits.pack.author || ''),
+			license: LICENSE_OPTIONS[license] ? license : 'ARR',
+		};
+	}
+
+	/* Write one id's credit into the pack's file, keeping everything else in it. The datapack
+	   half carries the file: it is the half that names the piece. */
+	function writeCredit(dir, key, credit) {
+		const file = path.join(dir, CREDITS_FILE);
+		const current = readJsonOr(file, null) || {};
+		if (!current.pieces || typeof current.pieces !== 'object') current.pieces = {};
+		if (!current.pack || typeof current.pack !== 'object') current.pack = {};
+		const entry = {};
+		if (credit.author) entry.author = credit.author;
+		entry.license = credit.license || 'ARR';
+		// A piece that only repeats the pack's default needs no line of its own.
+		const inherited = { author: String(current.pack.author || ''), license: String(current.pack.license || 'ARR') };
+		if (inherited.author === (credit.author || '') && inherited.license === entry.license) {
+			delete current.pieces[key];
+		} else {
+			current.pieces[key] = entry;
+		}
+		writeJson(file, current);
+		return file;
+	}
+
 	function pieceRecord(dataPack, assetPack, namespace, name) {
 		const dataDir = path.join(dataPack, 'data', namespace, ...DATA_REL);
 		const assetDir = path.join(assetPack, 'assets', namespace, ...ASSET_REL);
@@ -602,6 +669,9 @@
 			// the standalone zips the build writes carry.
 			format: packFormatOf(pack),
 			description: pack ? pack.description : null,
+			// From armorpieces-credits.json, when the pack has one; all rights reserved otherwise.
+			license: readCredits([dir]).pack.license || 'ARR',
+			author: readCredits([dir]).pack.author || '',
 			// Forgetting a folder only does anything if being in the author's list is the only
 			// reason it shows up. A pack that is found anyway has to be deleted or left alone.
 			mine: userPacks().indexOf(dir) !== -1 && autoRoots().indexOf(dir) === -1,
@@ -1614,6 +1684,11 @@
 			Project[ID + '_name'] = null;
 			notes.push('name');
 		}
+		if (Project[ID + '_credit']) {
+			writeCredit(piece.dataPack, piece.key, Project[ID + '_credit']);
+			Project[ID + '_credit'] = null;
+			notes.push('credits');
+		}
 
 		// Geometry: write the live project to a scratch file and let bb_geo do the conversion, so
 		// the export path here is the same one the command line uses.
@@ -1857,6 +1932,7 @@
 		'				<span class="ap_tag ap_here" v-if="pack.dir === scope">working here</span>',
 		'				<span class="ap_tag">{{ pack.kind }}</span>',
 		'				<span class="ap_tag" v-if="pack.format">format {{ pack.format }}</span>',
+		'				<span class="ap_tag" :title="\'From armorpieces-credits.json; All rights reserved without one\'">{{ pack.license }}</span>',
 		'				<span class="ap_tag ap_warn" v-else>no pack.mcmeta</span>',
 		'			</div>',
 		'			<div class="ap_body"><span class="ap_dim">{{ pack.summary }}</span></div>',
@@ -3552,6 +3628,18 @@
 		'			<p class="ap_dim">Parts are cosmetic unless they carry an effect. Hover a field for what it does.</p>',
 		'		</div>',
 		'	</div>',
+		'	<div class="dialog_bar form_bar">',
+		'		<label class="name_space_left">Credits</label>',
+		'		<div class="ap_column">',
+		'			<input type="text" class="dark_bordered" v-model="author" placeholder="author" title="Who made this piece">',
+		'			<select class="dark_bordered" v-model="license" title="What others may do with it">',
+		'				<option v-for="(label, id) in licenses" :key="id" :value="id">{{ label }}</option>',
+		'			</select>',
+		'			<p class="ap_dim">Written to armorpieces-credits.json in the pack, beside the pieces. A pack ',
+		'			library and a composer read it; the game does not. All rights reserved keeps the piece ',
+		'			yours - it is listed and downloaded as your pack and never copied into another.</p>',
+		'		</div>',
+		'	</div>',
 		'</div>',
 	].join('\n');
 
@@ -3613,6 +3701,7 @@
 			group.anchors.push({ id: name, part: table[name].part, checked: listed.includes(name) });
 		}
 		const shown = displayName(piece, data);
+		const credit = Project[ID + '_credit'] || creditOf([piece.dataPack, piece.assetPack], piece.key);
 
 		// Assigned below, so the New... button can hand the dialog to newFitting, which hides it
 		// behind its own and shows it again - Vue state intact - when that one is done.
@@ -3637,6 +3726,9 @@
 						ids: registryIds(),
 						loot: (data.loot || []).map(lootRow),
 						tables: lootTables(),
+						author: credit.author,
+						license: credit.license,
+						licenses: LICENSE_OPTIONS,
 					};
 				},
 				methods: {
@@ -3726,7 +3818,8 @@
 				applyPartEdit(piece, data, shown, vue.name, chosen,
 					vue.fittings.map(function (f) { return f.id; }),
 					vue.effects.map(function (row) { return effectFromRow(row, vue.fittings); }),
-					vue.loot.map(lootFromRow));
+					vue.loot.map(lootFromRow),
+					{ author: String(vue.author || '').trim(), license: vue.license });
 			},
 		});
 		dialog.show();
@@ -3932,9 +4025,21 @@
 		}).show();
 	}
 
-	function applyPartEdit(piece, data, shown, name, chosen, fittingIds, effects, loot) {
+	function applyPartEdit(piece, data, shown, name, chosen, fittingIds, effects, loot, credit) {
 		const s = state();
 		let changed = false;
+
+		// Credits: held until Save writes the pack's credits file, like the name.
+		if (credit) {
+			const was = creditOf([piece.dataPack, piece.assetPack], piece.key);
+			if (credit.author !== was.author || credit.license !== was.license) {
+				Project[ID + '_credit'] = credit;
+				markDirty();
+				changed = true;
+			} else {
+				Project[ID + '_credit'] = null;
+			}
+		}
 
 		// Effects: compared with keys in a fixed order, so a row that merely re-spells what the
 		// file said does not count as a change. Absent stays absent while the list is empty.
@@ -4691,6 +4796,11 @@
 				Project[ID + '_skin_name'] = null;
 				notes.push('name');
 			}
+			if (Project[ID + '_skin_credit']) {
+				writeCredit(half.dataPack, half.key, Project[ID + '_skin_credit']);
+				Project[ID + '_skin_credit'] = null;
+				notes.push('credits');
+			}
 			const s = skinState();
 			notes.push(writeTemplateRecipe(half.recipe, {
 				id: 'armorpieces:skin_template',
@@ -5153,6 +5263,16 @@
 		'			lower than a part\'s and the tables fewer.</p>',
 		'		</div>',
 		'	</div>',
+		'	<div class="dialog_bar form_bar">',
+		'		<label class="name_space_left">Credits</label>',
+		'		<div class="ap_column">',
+		'			<input type="text" class="dark_bordered" v-model="author" placeholder="author" title="Who drew this skin">',
+		'			<select class="dark_bordered" v-model="license" title="What others may do with it">',
+		'				<option v-for="(label, id) in licenses" :key="id" :value="id">{{ label }}</option>',
+		'			</select>',
+		'			<p class="ap_dim">Written to armorpieces-credits.json in the pack on Save.</p>',
+		'		</div>',
+		'	</div>',
 		'</div>',
 	].join('\n');
 
@@ -5174,6 +5294,7 @@
 			return;
 		}
 		const shown = skinDisplayName(half, data);
+		const credit = Project[ID + '_skin_credit'] || creditOf([half.dataPack, half.assetPack], half.key);
 		new Dialog({
 			id: ID + '_skin_edit',
 			title: 'Skin ' + half.key,
@@ -5185,6 +5306,9 @@
 						editable: shown.editable,
 						loot: (data.loot || []).map(lootRow),
 						tables: lootTables(),
+						author: credit.author,
+						license: credit.license,
+						licenses: LICENSE_OPTIONS,
 					};
 				},
 				methods: {
@@ -5203,14 +5327,25 @@
 					}
 				}
 				this.hide();
-				applySkinEdit(half, data, shown, vue.name, vue.loot.map(lootFromRow));
+				applySkinEdit(half, data, shown, vue.name, vue.loot.map(lootFromRow),
+					{ author: String(vue.author || '').trim(), license: vue.license });
 			},
 		}).show();
 	}
 
 	/* The dialog's answers onto the held data object. Nothing is written until Save. */
-	function applySkinEdit(half, data, shown, name, loot) {
+	function applySkinEdit(half, data, shown, name, loot, credit) {
 		let changed = false;
+		if (credit) {
+			const was = creditOf([half.dataPack, half.assetPack], half.key);
+			if (credit.author !== was.author || credit.license !== was.license) {
+				Project[ID + '_skin_credit'] = credit;
+				markSkinDirty();
+				changed = true;
+			} else {
+				Project[ID + '_skin_credit'] = null;
+			}
+		}
 		if (loot && JSON.stringify(loot) !== JSON.stringify(data.loot || [])) {
 			if (loot.length) data.loot = loot;
 			else delete data.loot;
@@ -6145,6 +6280,18 @@
 				// cannot click. `figure` is what the open rig's reference is wearing.
 				gameStatus: gameStatus,
 				useGame: useGameDialog,
+				// Credits: the author and license an id resolves to in its pack, and setting them.
+				credit: function (key) {
+					const piece = allPieces().find(function (p) { return p.key === key; });
+					if (!piece) throw new Error('no piece ' + key);
+					return creditOf([piece.dataPack, piece.assetPack], key);
+				},
+				setCredit: function (key, author, license) {
+					const piece = allPieces().find(function (p) { return p.key === key; });
+					if (!piece) throw new Error('no piece ' + key);
+					if (!LICENSE_OPTIONS[license]) throw new Error('unknown license ' + license);
+					return writeCredit(piece.dataPack, key, { author: String(author || '').trim(), license: license });
+				},
 				installGame: function (file) { return installGame(['--jar', file]); },
 				figure: function () {
 					return (typeof Project !== 'undefined' && Project && Project[ID + '_figure']) || null;

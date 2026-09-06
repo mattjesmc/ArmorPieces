@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+**Pieces as the unit.** `tools/pack_manifest.py` lists what a pack holds - every piece, skin and
+cloth with its socket, fittings, license, author and the files it is made of - and
+`tools/pick_pieces.py` copies entries between packs by id, file set, language line, loot-group tags
+and fittings included, refusing an all-rights-reserved entry unless told the pieces are yours, two
+different entries under one id, and an id the destination already holds with other content. The
+license lives in `armorpieces-credits.json` at the pack root, a file the game ignores, with a
+pack-level default and a per-piece override; the plugin's Part and Skin dialogs have an author and
+a license field that write it, the pack manager shows it, and the mod's own pack now carries one.
+`export_pack.py --reproducible` writes the same bytes for the same files. Tests under
+`tools/tests`.
+
 **The editor without the game.** The Blockbench toolchain no longer needs Mojang's textures on
 the machine: `vanilla_assets.py --bake` writes the numbers the tools derive from them - the sixteen
 trim ramps, the eight shades per armor material, the item, registry and loot lists - into
