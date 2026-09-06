@@ -45,9 +45,13 @@ dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-    // The bake test only. JUnit is a build-time dependency and ships in nothing.
+    // The tests only. JUnit is a build-time dependency and ships in nothing.
     testImplementation "org.junit.jupiter:junit-jupiter:5.10.2"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.10.2"
+    // Boots the tests inside Fabric, mixins applied. The codec tests need it: registering a dynamic
+    // registry goes through a Fabric mixin into BuiltInRegistries, so the class that declares this
+    // mod's registries cannot even initialise in a bare JVM.
+    testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"
 
     // This mod genuinely needs Fabric API: DynamicRegistries (the decoration registry),
     // ResourceManagerHelper (the geometry loader) and LivingEntityRenderLayerRegistrationCallback

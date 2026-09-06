@@ -56,8 +56,11 @@ public record ArmorPiecesConfig(boolean firstPersonParts) {
      * field is omitted on encode when it holds its default, so a player who has changed nothing was
      * being handed an empty {@code {}} - a settings file with no settings visible in it, which is
      * the opposite of what the round-trip below is for.
+     *
+     * <p>Package-private rather than private so {@code ConfigCodecTest} can hold it to the rule
+     * that costs nothing to break: a field added to {@link #CODEC} has to be added here too.
      */
-    private static final Codec<ArmorPiecesConfig> WRITE_CODEC = RecordCodecBuilder.create(instance ->
+    static final Codec<ArmorPiecesConfig> WRITE_CODEC = RecordCodecBuilder.create(instance ->
         instance.group(
             Codec.BOOL.fieldOf("first_person_parts").forGetter(ArmorPiecesConfig::firstPersonParts)
         ).apply(instance, ArmorPiecesConfig::new));

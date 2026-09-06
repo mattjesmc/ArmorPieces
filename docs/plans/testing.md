@@ -152,6 +152,27 @@ addressing mode for `click` to pair with the slots `get_screen` already reports.
 5. **Tier 3.** Goldens, once asks 2 and 4 land. Until then the frames go to `review_post` and a
    person answers, which is the honest version of the same check.
 
+## As built
+
+Tier 0 and tier 1 run. `tools/gate.py` is the runner; `check_lang.py` and `check_effect_schema.py`
+are new checks; tier 1 is `gradlew build`, and the JUnit half grew from one test to six classes.
+
+The one thing that changed shape in the building: **tier 1 needed Fabric after all.** A codec that
+names a registry cannot be BUILT in a bare JVM - `ArmorPiecesRegistries` registers its dynamic
+registries in its static initialiser, which goes through a Fabric mixin into `BuiltInRegistries`, so
+the class fails to initialise and every test touching it fails with `NoClassDefFoundError` rather
+than anything about registries. `fabric-loader-junit` (a test dependency, matching `loader_version`)
+runs the tests under Knot with mixins applied, and `GameBootstrap.once()` then calls
+`Bootstrap.bootStrap()` for the built-in registries themselves - vanilla refuses to register into
+them before that, with "Not bootstrapped". Two layers, two different failures, and neither is a
+game: no world, no server, no client. That is the line between tier 1 and tier 2.
+
+The four traps of 0.4.0 are `ConfigCodecTest` (both write codecs, asserted against the record's own
+component count so the test does not need editing when a field is added), `TableEntryCodecTest`,
+`MemberSetTest` and `WearerPredicateTest`. What is still owed here is the row above them: every
+shipped part, skin, cloth and loot group decoded and re-encoded to its own bytes, which needs a
+`RegistryOps` over a registry access rather than plain `JsonOps`.
+
 ## What the gate is not
 
 It is not CI. It needs a game, and the toolchain needs Mojang's textures on the machine; the web

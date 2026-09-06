@@ -13,6 +13,16 @@ tiers that drive the game itself are designed in `docs/plans/testing.md`. Two ch
 `check_effect_schema.py` asserts the Blockbench dialog's schema still names every registered effect
 type with every field classified.
 
+**The four traps that cost 0.4.0 three game cycles are now four tests.** `gradlew test` boots under
+`fabric-loader-junit`, so a codec that names a registry can be built and read outside a game at all,
+and the class of bug that was only ever found by playing costs a second instead: a settings file
+that writes itself as `{}` because `optionalFieldOf` omits its own field on encode - asserted
+against the record's component count, so a field added to one codec and not the other fails without
+anyone editing the test; a loot table entry whose own chance is dropped by an encoder that always
+writes the first alternative; a tag nobody installed resolving to an empty set instead of taking the
+whole loot table down; and a sub-predicate name that arrives full-id on the client and bare in the
+file, which loaded on the server and disconnected the client.
+
 **A part can ask about the person wearing it.** `armorpieces:if_wearer` gates any effect on
 **vanilla's own entity predicate** - the object an advancement or a loot table takes - so what a part
 can ask about grows with the game rather than with this mod: what is in the hands, what else is worn,

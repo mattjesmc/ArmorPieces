@@ -107,8 +107,11 @@ public record ArmorPiecesServerConfig(
      * {@link #CODEC}'s optional fields are omitted on encode when they hold the default, so a server
      * that has changed nothing would be handed an empty {@code {}} and no way to discover a single
      * knob. Reading stays forgiving; writing shows the whole dashboard at the values in force.
+     *
+     * <p>Package-private rather than private so {@code ConfigCodecTest} can hold it to the rule
+     * that costs nothing to break: a field added to {@link #CODEC} has to be added here too.
      */
-    private static final Codec<ArmorPiecesServerConfig> WRITE_CODEC = RecordCodecBuilder.create(i ->
+    static final Codec<ArmorPiecesServerConfig> WRITE_CODEC = RecordCodecBuilder.create(i ->
         i.group(
             Codec.BOOL.fieldOf("enabled").forGetter(ArmorPiecesServerConfig::enabled),
             Codec.floatRange(0.0f, 100.0f).fieldOf("chance_multiplier")
