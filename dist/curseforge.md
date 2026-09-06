@@ -159,13 +159,13 @@ The release that turned a set of parts into a wardrobe.
 
 *The six themed sets, every socket filled — knightly, court, beast, wayfarer, tidal, carapace*
 
-![Sixty sets with nothing about them chosen — armor, skin, cloth, part, material and every fitting rolled](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/gallery/wardrobe.png)
-
-*Sixty sets with nothing about them chosen — armor, skin, cloth, part, material and every fitting rolled*
-
 ![Every armor skin on one diamond suit — the plate itself changed, not something hung on it](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/gallery/skins.png)
 
 *Every armor skin on one diamond suit — the plate itself changed, not something hung on it*
+
+![Sixty sets with nothing about them chosen — armor, skin, cloth, part, material and every fitting rolled](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/gallery/wardrobe.png)
+
+*Sixty sets with nothing about them chosen — armor, skin, cloth, part, material and every fitting rolled*
 
 ![One circlet, seven gems — the fitting takes a second material](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/gallery/fittings.png)
 

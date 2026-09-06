@@ -174,13 +174,13 @@ The release that turned a set of parts into a wardrobe.
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/gallery/wardrobe.png" alt="Sixty sets with nothing about them chosen — armor, skin, cloth, part, material and every fitting rolled">
-  <br><sub><i>Sixty sets with nothing about them chosen — armor, skin, cloth, part, material and every fitting rolled</i></sub>
+  <img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/gallery/skins.png" alt="Every armor skin on one diamond suit — the plate itself changed, not something hung on it">
+  <br><sub><i>Every armor skin on one diamond suit — the plate itself changed, not something hung on it</i></sub>
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/gallery/skins.png" alt="Every armor skin on one diamond suit — the plate itself changed, not something hung on it">
-  <br><sub><i>Every armor skin on one diamond suit — the plate itself changed, not something hung on it</i></sub>
+  <img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/gallery/wardrobe.png" alt="Sixty sets with nothing about them chosen — armor, skin, cloth, part, material and every fitting rolled">
+  <br><sub><i>Sixty sets with nothing about them chosen — armor, skin, cloth, part, material and every fitting rolled</i></sub>
 </p>
 
 <p align="center">

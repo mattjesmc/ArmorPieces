@@ -492,6 +492,13 @@ def mirror_geo(bone: dict) -> dict:
     return out
 
 
+def armor_material(value) -> str:
+    """The sheet name for an armor slot's material. A set says what the item says - `golden`
+    for a golden_helmet - and the game's armor sheet for it is `gold`; nothing else differs."""
+    name = str(value or "iron").strip().lower().removeprefix("minecraft:")
+    return "gold" if name == "golden" else name
+
+
 def armor_sheets(spec: dict, slim: bool, out_dir: Path) -> tuple[dict, dict]:
     """The four slots' armor textures for a set, as ({key: path}, {slot: key}).
 
@@ -511,7 +518,7 @@ def armor_sheets(spec: dict, slim: bool, out_dir: Path) -> tuple[dict, dict]:
     paths: dict[str, Path] = {}
     slot_texture: dict[str, str] = {}
     for slot in SET_SLOTS:
-        material = str((slots.get(slot) or {}).get("material") or spec.get("material") or "iron")
+        material = armor_material((slots.get(slot) or {}).get("material") or spec.get("material"))
         sheet = "humanoid_leggings" if slot == "leggings" else "humanoid"
         key = f"armor_{slot}"
         slot_texture[slot] = key
@@ -543,8 +550,21 @@ def armor_sheets(spec: dict, slim: bool, out_dir: Path) -> tuple[dict, dict]:
                 print(f"note: {cloth_id} on {material} did not bake ({err}); "
                       f"nothing is worn over the armor", file=sys.stderr)
         if image is None:
-            _, armor, leggings, _desc = figure(material, slim)
+            _, armor, leggings, desc = figure(material, slim)
             source = leggings if sheet == "humanoid_leggings" and leggings.is_file() else armor
+            if desc["figure"] != "vanilla":
+                # No game sheet for this material - the web bundle has none at all - so the
+                # studio figure would wear iron whatever the set says. The studio figure is the
+                # mod's own `plate` skin baked in iron; bake it in THIS material instead, through
+                # the ramps tools/.webcache carries, and the armor keeps its colour.
+                try:
+                    written = bake_skin.bake_skin("plate", material, out_dir / "baked")
+                    baked = next((p for p in written if p.stem == sheet), None)
+                    if baked is not None:
+                        source = baked
+                except (SystemExit, OSError, KeyError, ValueError) as err:
+                    print(f"note: plate on {material} did not bake ({err}); "
+                          f"the studio figure's own sheet is worn", file=sys.stderr)
             if not source.is_file():
                 # No sheet for this material at all: wear what the figure has.
                 _, source, _l, _d = figure("iron", slim)
@@ -570,8 +590,8 @@ def build_worn_rig(spec: dict, out_dir=RIG_DIR, slim=False, packs=None, animate=
 
     # The figure, then the four slots' sheets - each a texture of its own, so four materials, a
     # skin and a cloth can all be seen at once.
-    head_material = str((spec.get("slots", {}).get("helmet") or {}).get("material")
-                        or spec.get("material") or "iron")
+    head_material = armor_material((spec.get("slots", {}).get("helmet") or {}).get("material")
+                                   or spec.get("material"))
     skin_path, _armor, _leggings, description = figure(head_material, slim)
     sheets, slot_texture = armor_sheets(spec, slim, out_dir)
 
@@ -608,7 +628,9 @@ def build_worn_rig(spec: dict, out_dir=RIG_DIR, slim=False, packs=None, animate=
         # A set carries the game's own values, which are namespaced ids (`minecraft:emerald`);
         # preview_material speaks the bare vocabulary the command line does. A hex colour has no
         # namespace to drop.
-        fittings = [(k, str(v) if str(v).startswith("#") else _split(str(v))[1])
+        # The key is namespaced too (`armorpieces:gemstone`), and the masks resolve_worn found
+        # are keyed by the bare name, which is how the file on disk is called.
+        fittings = [(_split(str(k))[1], str(v) if str(v).startswith("#") else _split(str(v))[1])
                     for k, v in (options.get("fittings") or {}).items()]
 
         texture_key = None

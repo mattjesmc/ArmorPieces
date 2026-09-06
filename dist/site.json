@@ -2723,6 +2723,11 @@
         "after": "gallery",
         "body": "A diamond set in vanilla is one look plus a trim. Eighteen patterns times eleven materials,\nplus untrimmed, is **199** states per piece — and **1,568,239,201** for a set of four.\n\nNow count that same diamond set with this mod installed. Each piece keeps all 199 of its trims\nand gains a skin\n(fourteen, or bare), a part in each of its sockets, each part in one of eleven materials, each\npart's fittings filled or left empty — a gem from seven, a metal from four, an inlay from\nsixteen dyes — and the chestplate a tunic or a tabard on top.\n\n| | Vanilla diamond | With Armor Pieces |\n| --- | ---: | ---: |\n| Helmet | 199 | 1,833,029,934,300 |\n| Chestplate | 199 | 5,113,599,898,358,700 |\n| Leggings | 199 | 1,839,405,834,600 |\n| Boots | 199 | 1,187,185,245 |\n| **Full set** | **1,568,239,201** | **20,468,798,559,625,822,847,874,604,407,037,697,665,836,570,000,000** |\n\nThat is **2 × 10⁴⁹** — about 10⁴⁰ times the whole of vanilla, and roughly a sixth of the atoms\nin the Earth. Some smaller ways to hold it:\n\n- **The boots alone** come to 1,187,185,245 arrangements: three quarters of every trimmed\n  diamond set vanilla can build, on your feet.\n- **The helmet alone** is 1,169 times vanilla's entire four-piece space.\n- **Shape alone**, before a single colour is chosen — which part sits in which socket, and\n  nothing else — is 368,709,304,320 distinct silhouettes. 235 times vanilla's fully trimmed\n  space, in pure geometry.\n- Pick a set a second and you exhaust vanilla in fifty years. You exhaust this one in\n  4.7 × 10³¹ times the age of the universe.\n\nAnd all of that **counts a banner as a single design**, which it is not. A banner is sixteen\nbase colours and up to six layers of forty-two patterns in sixteen dyes:\n**1,475,646,641,940,097,552** banners, any of which can go on the back banner, the cloak, the\ntunic or the tabard. Count them properly and the chestplate alone reaches 7.7 × 10⁵⁰, and a\nfull set:\n\n**3.07 × 10⁸⁴** — over thirty thousand distinct diamond sets for every atom in the observable\nuniverse. (There are about 7.3 × 10⁷⁹ of those, if you take Planck's numbers and the baryons\nthey imply.)\n\nAnd every number on this page is **diamond alone**, because that is what vanilla is being\ncompared against. Diamond is one of seven armor materials, six of which take a skin — which\nmultiplies the whole table by about thirteen hundred again, before leather has been dyed.\n\nNobody at spawn is wearing yours.\n",
         "id": "how-many-sets",
+        "targets": [
+          "readme",
+          "modrinth",
+          "curseforge"
+        ],
         "title": "How many sets is that?"
       },
       {
@@ -2917,12 +2922,12 @@
             "src": "gallery/sets.png"
           },
           {
-            "caption": "Sixty sets with nothing about them chosen — armor, skin, cloth, part, material and every fitting rolled",
-            "src": "gallery/wardrobe.png"
-          },
-          {
             "caption": "Every armor skin on one diamond suit — the plate itself changed, not something hung on it",
             "src": "gallery/skins.png"
+          },
+          {
+            "caption": "Sixty sets with nothing about them chosen — armor, skin, cloth, part, material and every fitting rolled",
+            "src": "gallery/wardrobe.png"
           },
           {
             "caption": "One circlet, seven gems — the fitting takes a second material",
@@ -3380,14 +3385,14 @@
             "src": "gallery/sets.png"
           },
           {
-            "alt": "Sixty sets with nothing about them chosen — armor, skin, cloth, part, material and every fitting rolled",
-            "caption": "Sixty sets with nothing about them chosen — armor, skin, cloth, part, material and every fitting rolled",
-            "src": "gallery/wardrobe.png"
-          },
-          {
             "alt": "Every armor skin on one diamond suit — the plate itself changed, not something hung on it",
             "caption": "Every armor skin on one diamond suit — the plate itself changed, not something hung on it",
             "src": "gallery/skins.png"
+          },
+          {
+            "alt": "Sixty sets with nothing about them chosen — armor, skin, cloth, part, material and every fitting rolled",
+            "caption": "Sixty sets with nothing about them chosen — armor, skin, cloth, part, material and every fitting rolled",
+            "src": "gallery/wardrobe.png"
           },
           {
             "alt": "One circlet, seven gems — the fitting takes a second material",
@@ -3407,17 +3412,6 @@
       "options": {},
       "targets": null,
       "title": "Gallery"
-    },
-    {
-      "banner": null,
-      "body": "A diamond set in vanilla is one look plus a trim. Eighteen patterns times eleven materials,\nplus untrimmed, is **199** states per piece — and **1,568,239,201** for a set of four.\n\nNow count that same diamond set with this mod installed. Each piece keeps all 199 of its trims\nand gains a skin\n(fourteen, or bare), a part in each of its sockets, each part in one of eleven materials, each\npart's fittings filled or left empty — a gem from seven, a metal from four, an inlay from\nsixteen dyes — and the chestplate a tunic or a tabard on top.\n\n| | Vanilla diamond | With Armor Pieces |\n| --- | ---: | ---: |\n| Helmet | 199 | 1,833,029,934,300 |\n| Chestplate | 199 | 5,113,599,898,358,700 |\n| Leggings | 199 | 1,839,405,834,600 |\n| Boots | 199 | 1,187,185,245 |\n| **Full set** | **1,568,239,201** | **20,468,798,559,625,822,847,874,604,407,037,697,665,836,570,000,000** |\n\nThat is **2 × 10⁴⁹** — about 10⁴⁰ times the whole of vanilla, and roughly a sixth of the atoms\nin the Earth. Some smaller ways to hold it:\n\n- **The boots alone** come to 1,187,185,245 arrangements: three quarters of every trimmed\n  diamond set vanilla can build, on your feet.\n- **The helmet alone** is 1,169 times vanilla's entire four-piece space.\n- **Shape alone**, before a single colour is chosen — which part sits in which socket, and\n  nothing else — is 368,709,304,320 distinct silhouettes. 235 times vanilla's fully trimmed\n  space, in pure geometry.\n- Pick a set a second and you exhaust vanilla in fifty years. You exhaust this one in\n  4.7 × 10³¹ times the age of the universe.\n\nAnd all of that **counts a banner as a single design**, which it is not. A banner is sixteen\nbase colours and up to six layers of forty-two patterns in sixteen dyes:\n**1,475,646,641,940,097,552** banners, any of which can go on the back banner, the cloak, the\ntunic or the tabard. Count them properly and the chestplate alone reaches 7.7 × 10⁵⁰, and a\nfull set:\n\n**3.07 × 10⁸⁴** — over thirty thousand distinct diamond sets for every atom in the observable\nuniverse. (There are about 7.3 × 10⁷⁹ of those, if you take Planck's numbers and the baryons\nthey imply.)\n\nAnd every number on this page is **diamond alone**, because that is what vanilla is being\ncompared against. Diamond is one of seven armor materials, six of which take a skin — which\nmultiplies the whole table by about thirteen hundred again, before leather has been dyed.\n\nNobody at spawn is wearing yours.",
-      "data": {},
-      "empty_text": null,
-      "id": "how-many-sets",
-      "layout": "list",
-      "options": {},
-      "targets": null,
-      "title": "How many sets is that?"
     },
     {
       "banner": null,

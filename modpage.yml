@@ -184,12 +184,14 @@ sections:
 
   gallery:
     images:
+      # In this order on purpose: the site lays the introduction's paragraphs over these images
+      # one by one, and the paragraphs go pieces, skins, cloth, fittings, found.
       - src: gallery/sets.png
         caption: The six themed sets, every socket filled — knightly, court, beast, wayfarer, tidal, carapace
-      - src: gallery/wardrobe.png
-        caption: Sixty sets with nothing about them chosen — armor, skin, cloth, part, material and every fitting rolled
       - src: gallery/skins.png
         caption: Every armor skin on one diamond suit — the plate itself changed, not something hung on it
+      - src: gallery/wardrobe.png
+        caption: Sixty sets with nothing about them chosen — armor, skin, cloth, part, material and every fitting rolled
       - src: gallery/fittings.png
         caption: One circlet, seven gems — the fitting takes a second material
       - src: gallery/table.png
@@ -401,9 +403,11 @@ custom_sections:
         fitting masks in place, previews any trim material live, and on Save writes every file into
         *your* datapack and resource pack — which it makes, finds and zips for you.
 
+  # The store pages' party piece; the website is not a mod description and leaves it out.
   - id: how-many-sets
     title: How many sets is that?
     after: gallery
+    targets: [readme, modrinth, curseforge]
     body: |
       A diamond set in vanilla is one look plus a trim. Eighteen patterns times eleven materials,
       plus untrimmed, is **199** states per piece — and **1,568,239,201** for a set of four.

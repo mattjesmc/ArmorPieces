@@ -1937,6 +1937,49 @@
 		return { worn: (figure && figure.worn) || [], figure: figure };
 	}
 
+	/*
+	 * PREVIEW, for a caller that cannot click: the material preview on the open piece, in one
+	 * trim material, with its fittings filled. The thumbnail renderers ask for it so a gallery
+	 * shows a piece in colour rather than as the greyscale master it is painted on. It drives the
+	 * same state the dialog drives - `preview`, `material` and the per-fitting values - and then
+	 * runs the same three steps onFormChange runs for those keys, so there is no second path.
+	 *
+	 *   fittings: 'fill'                   every previewable fitting takes its first option
+	 *   fittings: {gemstone: 'emerald'}    named fittings by option value, bare or namespaced
+	 *   on: false                          the preview off again
+	 */
+	function previewFor(options) {
+		options = options || {};
+		if (!isWorkspace()) throw new Error('no piece is open: preview needs a piece workspace');
+		const s = state();
+		s.preview = options.on !== false;
+		if (options.material) s.material = String(options.material);
+		else if (!s.material) s.material = Settings.get(ID + '_material') || 'iron';
+		const fittings = previewFittings();
+		const bare = function (value) { return String(value || '').replace(/^[^:]+:/, ''); };
+		if (options.fittings === 'fill') {
+			fittings.forEach(function (fitting) {
+				const first = (fitting.options || [])[0];
+				if (first) s.fittings[fitting.name] = first.value;
+			});
+		} else if (options.fittings && typeof options.fittings === 'object') {
+			Object.keys(options.fittings).forEach(function (name) {
+				const fitting = fittings.find(function (f) { return f.name === bare(name); });
+				if (!fitting) return;
+				const wanted = options.fittings[name];
+				if (!wanted) { s.fittings[fitting.name] = ''; return; }
+				const option = (fitting.options || []).find(function (o) {
+					return o.value === wanted || bare(o.value) === bare(wanted);
+				});
+				if (option) s.fittings[fitting.name] = option.value;
+			});
+		}
+		if (s.preview) refreshPreviewMaterial();
+		applyTextures();
+		syncForm();
+		return { preview: s.preview, material: s.material, fittings: Object.assign({}, s.fittings) };
+	}
+
 	// The stylesheet that turns the editor into a viewer. Cosmetic on purpose: it hides chrome
 	// rather than removing it, so leaving view mode is one element going away and nothing in
 	// Blockbench has been reached into.
@@ -6855,6 +6898,8 @@
 				// looked at in. What the site's /wardrobe/ drives through an iframe.
 				wear: wear,
 				viewMode: viewMode,
+				// The material preview on the open piece, for the thumbnail renderers.
+				preview: previewFor,
 				worn: function () {
 					return (typeof Project !== 'undefined' && Project && Project[ID + '_worn']) || null;
 				},
