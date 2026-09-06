@@ -18,7 +18,8 @@ recoloured master in the order given, later over earlier, which is the order the
 list them - see DecorationTextureManager.applyMask. A fitting that draws its own geometry, like the
 banner, has no mask and is not previewed here.
 
-Palettes come from tools/.mcassets, so run tools/vanilla_assets.py first.
+Palettes come from tools/.mcassets when the game has been extracted there, and from the ramps
+baked into tools/.webcache when it has not - same numbers, from the same function.
 
 Usage:
     python tools/preview_material.py spaulders gold
@@ -37,6 +38,8 @@ import sys
 from pathlib import Path
 
 from PIL import Image
+
+import vanilla_assets
 
 ROOT = Path(__file__).resolve().parent.parent
 MASTERS = ROOT / "tools" / "decoration_masters"
@@ -142,14 +145,27 @@ def static_ramp(rgb):
         (round(r + (255 - r) * 0.5), round(g + (255 - g) * 0.5), round(b + (255 - b) * 0.5)))
 
 
+def _cached_ramps() -> dict:
+    return vanilla_assets.cached("material_ramps") or {}
+
+
+def has_palette(material: str) -> bool:
+    """Whether this material can be previewed: its palette is extracted, or its ramp is baked."""
+    return (PALETTES / f"{material}.png").is_file() or material in _cached_ramps()
+
+
 def material_ramp(material: str):
-    """The ramp for a trim material by its palette suffix, or an exit if the palette is not here."""
+    """The ramp for a trim material by its palette suffix: from the game's palette when it is here,
+    else from the baked copy of exactly this answer, else an exit that says how to get either."""
     key_path = PALETTES / "trim_palette.png"
     palette_path = PALETTES / f"{material}.png"
-    if not key_path.is_file() or not palette_path.is_file():
-        sys.exit(f"error: no palette for {material!r} in {PALETTES}. "
-                 f"Run: python tools/vanilla_assets.py")
-    return palette_ramp(key_path, palette_path)
+    if key_path.is_file() and palette_path.is_file():
+        return palette_ramp(key_path, palette_path)
+    baked = _cached_ramps().get(material)
+    if baked is not None:
+        return [tuple(rgb) for rgb in baked]
+    sys.exit(f"error: no palette for {material!r} in {PALETTES} and no baked ramp for it. "
+             f"Run: python tools/vanilla_assets.py (or Use my game... in the editor)")
 
 
 def parse_hex(colour: str):
@@ -294,8 +310,8 @@ def _lang(pack_dirs: list[Path], namespace: str) -> dict:
         lang = pack / "assets" / namespace / "lang" / "en_us.json"
         if lang.is_file():
             return _read_json(lang)
-    vanilla = ASSETS / "lang" / "en_us.json"
-    return _read_json(vanilla) if namespace == "minecraft" and vanilla.is_file() else {}
+    # Vanilla's own: the whole file when the game is here, the baked subset when it is not.
+    return vanilla_assets.vanilla_lang() if namespace == "minecraft" else {}
 
 
 def _translate(pack_dirs: list[Path], namespace: str, key: str, fallback: str) -> str:
@@ -317,12 +333,15 @@ def _tag_members(pack_dirs: list[Path], registry: str, tag: str, seen: set | Non
         return []
     seen.add(tag)
     namespace, name = _split_id(tag)
-    # Vanilla's own tags come last, from the copy vanilla_assets.py takes out of the jar.
+    # Vanilla's own tags come last, from the copy vanilla_assets.py takes out of the jar - or,
+    # without the jar, from the members it baked.
     path = _find(pack_dirs + [ASSETS], "data", namespace, "tags", registry, f"{name}.json")
     if path is None:
-        return []
+        values = vanilla_assets.registry().get("tags", {}).get(registry, {}).get(tag, [])
+    else:
+        values = _read_json(path).get("values", [])
     members: list[str] = []
-    for entry in _read_json(path).get("values", []):
+    for entry in values:
         value = entry.get("id") if isinstance(entry, dict) else entry
         if not isinstance(value, str):
             continue
@@ -344,7 +363,7 @@ def _material_options(pack_dirs: list[Path], materials) -> list[dict]:
     options = []
     for material in ids:
         namespace, name = _split_id(material)
-        if not (PALETTES / f"{name}.png").is_file():
+        if not has_palette(name):
             continue
         label = _translate(pack_dirs, namespace, f"trim_material.{namespace}.{name}", name)
         options.append({"value": name, "id": material, "label": label.removesuffix(" Material"),
@@ -444,22 +463,25 @@ def fitting_choices(pack: Path) -> dict:
     materials it resolves to. The Blockbench plugin's New Fitting dialog is built from this."""
     pack_dirs = _pack_dirs(pack)
     materials, seen = [], set()
-    # Every trim material registered: vanilla's from the jar copy, then any a pack defines. Only
-    # ones with a palette here are offered, for the same reason _material_options skips them.
-    for directory in [ASSETS] + pack_dirs:
+    # Every trim material registered: vanilla's from the jar copy - or from the list baked when
+    # the jar was last here - then any a pack defines. Only ones with a palette here are offered,
+    # for the same reason _material_options skips them.
+    registered: list[str] = list(vanilla_assets.registry().get("trim_material", []))
+    for directory in pack_dirs:
         data = directory / "data"
         if not data.is_dir():
             continue
         for path in sorted(data.glob("*/trim_material/*.json")):
-            material = f"{path.parents[1].name}:{path.stem}"
-            if material in seen or not (PALETTES / f"{path.stem}.png").is_file():
-                continue
-            seen.add(material)
-            namespace, name = _split_id(material)
-            label = _translate(pack_dirs, namespace, f"trim_material.{namespace}.{name}", name)
-            materials.append({"value": material, "label": label.removesuffix(" Material")})
+            registered.append(f"{path.parents[1].name}:{path.stem}")
+    for material in registered:
+        namespace, name = _split_id(material)
+        if material in seen or not has_palette(name):
+            continue
+        seen.add(material)
+        label = _translate(pack_dirs, namespace, f"trim_material.{namespace}.{name}", name)
+        materials.append({"value": material, "label": label.removesuffix(" Material")})
     tags, seen = [], set()
-    for directory in pack_dirs + [ASSETS]:
+    for directory in pack_dirs:
         data = directory / "data"
         if not data.is_dir():
             continue
@@ -469,6 +491,11 @@ def fitting_choices(pack: Path) -> dict:
                 continue
             seen.add(tag)
             tags.append({"id": f"#{tag}", "members": _tag_members(pack_dirs, "trim_material", tag)})
+    for tag in vanilla_assets.registry().get("tags", {}).get("trim_material", {}):
+        if tag in seen:
+            continue
+        seen.add(tag)
+        tags.append({"id": f"#{tag}", "members": _tag_members(pack_dirs, "trim_material", tag)})
     return {"materials": materials, "tags": tags}
 
 

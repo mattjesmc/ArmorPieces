@@ -313,8 +313,13 @@
 	 * that allow a page to (CORS) - GitHub's raw files and jsDelivr do, GitHub release assets and
 	 * Google Drive do not. Both hand `done` a Uint8Array and `fail` an Error, so a caller reads
 	 * the same either way; where a browser is refused, the caller says so and offers the link.
+	 *
+	 * `options` is what a request to a site with accounts needs: `headers` (a bearer token on the
+	 * desktop) and `credentials` ('include' in a browser, so the page's own session cookie goes
+	 * along on its own origin). Both are optional and the library's public index needs neither.
 	 */
-	function fetchBytes(url, done, fail) {
+	function fetchBytes(url, done, fail, options) {
+		options = options || {};
 		// Plain http is allowed only on this machine - a library served by `npm run serve` while
 		// the site is being worked on - and goes through the page's fetch below even on the
 		// desktop, because Blockbench's plugin require offers https and not http. That server
@@ -322,8 +327,9 @@
 		const local = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//i.test(url);
 		if (isApp && !local) {
 			if (!/^https:\/\//i.test(url)) return fail(new Error('Only https URLs can be fetched: ' + url));
+			const headers = Object.assign({ 'user-agent': 'armorpieces-blockbench' }, options.headers || {});
 			const follow = function (target, left) {
-				https.get(target, { headers: { 'user-agent': 'armorpieces-blockbench' } }, function (res) {
+				https.get(target, { headers: headers }, function (res) {
 					const status = res.statusCode || 0;
 					if (status >= 300 && status < 400 && res.headers.location && left > 0) {
 						res.resume();
@@ -348,7 +354,10 @@
 		} catch (err) {
 			return fail(new Error('Not a URL: ' + url));
 		}
-		fetch(absolute).then(function (res) {
+		const init = {};
+		if (options.headers) init.headers = options.headers;
+		if (options.credentials) init.credentials = options.credentials;
+		fetch(absolute, init).then(function (res) {
 			if (!res.ok) throw new Error(absolute + ' answered ' + res.status + ' ' + res.statusText);
 			return res.arrayBuffer();
 		}).then(function (buffer) { done(new Uint8Array(buffer)); }, function (err) {
@@ -968,6 +977,126 @@
 		return dir.replace(/[\\\/]+$/, '') + '.zip';
 	}
 
+	// ---- the game -------------------------------------------------------------------------------
+
+	/*
+	 * What the toolchain has of the game. The figure wears real armor, the material preview has
+	 * every palette and the cloth preview composites real banner sprites only where the game's
+	 * textures have been extracted - which a clone built with gradle has had done for it, and a
+	 * browser has not. Without them the tools run on the numbers vanilla_assets.py baked (the
+	 * ramps, the lists) and the figure wears the studio set, and everything still opens.
+	 *
+	 * Use my game... points vanilla_assets.py at a copy the author already owns - the launcher's
+	 * jar, the .minecraft folder, or any resource pack - and what it extracts stays on this
+	 * machine: in the repository's asset cache on the desktop, in the same virtual filesystem the
+	 * packs live in on the web. Nothing is uploaded anywhere. It is the same tool either way.
+	 */
+	function gameStatus() {
+		return JSON.parse(tool('vanilla_assets.py', ['--status']));
+	}
+
+	/* Everything remembered from the tools that a new set of textures would change. */
+	function forgetGameCaches() {
+		ramps.material = {};
+		ramps.static = {};
+		for (const key of Object.keys(skinRamps)) delete skinRamps[key];
+		for (const key of Object.keys(skinLights)) delete skinLights[key];
+		itemCache = null;
+		schemaCache = null;
+		tablesCache = null;
+		if (typeof Project !== 'undefined' && Project) Project[ID + '_fittings'] = null;
+	}
+
+	function installGame(args) {
+		let report;
+		try {
+			report = tool('vanilla_assets.py', args).trim();
+		} catch (err) {
+			console.error(err);
+			Blockbench.showMessageBox({
+				title: 'Could not read the game',
+				message: String((err && err.stderr) || (err && err.message) || err),
+			});
+			return null;
+		}
+		forgetGameCaches();
+		Blockbench.showMessageBox({
+			title: 'Game assets extracted',
+			message: report + '\n\nReopen the piece or skin to see the figure in vanilla armor. ' +
+				'Start from now offers vanilla\'s outlines, and every material that ships a texture ' +
+				'previews in its own colours.',
+		});
+		return report;
+	}
+
+	function takeGame(done) {
+		Blockbench.import({
+			title: 'Your Minecraft client jar, or a resource pack',
+			extensions: ['jar', 'zip'], type: 'Minecraft jar or resource pack', readtype: 'buffer',
+		}, function (files) {
+			const file = files && files[0];
+			if (!file) return;
+			const content = file.content;
+			if (content) {
+				const name = String(file.name || '').toLowerCase().endsWith('.jar') ? 'game.jar' : 'game.zip';
+				const scratch = path.join(tempDir(), name);
+				fs.writeFileSync(scratch, content instanceof ArrayBuffer ? new Uint8Array(content) : content);
+				done(scratch, true);
+			} else if (file.path) {
+				done(file.path, false);
+			}
+		});
+	}
+
+	function useGameDialog() {
+		let status = null;
+		try {
+			status = gameStatus();
+		} catch (err) {
+			console.error(err);
+		}
+		const has = !!(status && status.game);
+		const lines = [
+			has
+				? 'The game\'s textures are here (Minecraft ' + status.version + '): the figure wears ' +
+					'vanilla armor, the material preview has ' + status.palettes.length + ' palettes' +
+					(status.patterns ? ', the cloth preview has the banner patterns' : '') +
+					', and a new skin can start from vanilla\'s outlines.'
+				: 'The game\'s textures are not here. The figure wears the studio set - the mod\'s ' +
+					'plate skin in iron, on the same boxes - the material preview runs on the ramps ' +
+					'baked from the game, and a new skin starts from the plate outline.',
+			'',
+			'Point the editor at your own copy of the game and it extracts what it needs - the ' +
+			'player skin, the armor sheets, the trim palettes and the banner patterns - onto this ' +
+			'machine and nowhere else. ' + (isApp
+				? 'Pick the client jar (.minecraft/versions/<version>/<version>.jar), your .minecraft ' +
+					'folder, or any resource pack.'
+				: 'Pick the client jar (.minecraft/versions/<version>/<version>.jar) or any resource ' +
+					'pack zip. It is kept in this browser\'s storage beside your packs; nothing is uploaded.'),
+		];
+		const buttons = isApp
+			? ['Choose a jar or zip...', 'Choose a .minecraft folder...', 'Close']
+			: ['Choose a jar or zip...', 'Close'];
+		Blockbench.showMessageBox({
+			title: 'Use my game', message: lines.join('\n'),
+			buttons: buttons, confirm: 0, cancel: buttons.length - 1,
+		}, function (answer) {
+			if (answer === 0) {
+				takeGame(function (file, scratch) {
+					installGame(['--jar', file]);
+					// The jar is tens of megabytes and only the extracted few hundred kilobytes are
+					// wanted; in a browser leaving it would keep it in storage.
+					if (scratch) {
+						try { fs.rmSync(file); } catch (err) { /* scratch */ }
+					}
+				});
+			} else if (isApp && answer === 1) {
+				const dir = Blockbench.pickDirectory({ title: 'Your .minecraft folder', startpath: minecraftDir() });
+				if (dir) installGame(['--minecraft', dir]);
+			}
+		});
+	}
+
 	/*
 	 * Zip a pack and put it where the author can get at it. Both callers - the manager's per-pack
 	 * button and the Export Pack... menu entry - end here, and so does either platform: the tool
@@ -1306,12 +1435,17 @@
 
 		const file = path.join(out, anchor + '.bbmodel');
 		const content = JSON.parse(fs.readFileSync(file, 'utf8'));
+		// Which set the figure wears - the game's, or the studio set where the game's textures are
+		// not here. bb_rig says; the note is taken off before Blockbench sees the project.
+		const figure = content.armorpieces_figure || null;
+		delete content.armorpieces_figure;
 		// The rig is written as `free`, which is what it is. Loading it as the plugin's own format
 		// is what turns the trimmed-down workspace on; the format shares every flag with `free`.
 		content.meta.model_format = ID;
 		Codecs.project.load(content, { path: file, content: content });
 
 		Project[ID + '_piece'] = piece;
+		Project[ID + '_figure'] = figure;
 		Project[ID + '_texture'] = texture;
 		Project[ID + '_fittings'] = null;
 		Project[ID + '_data'] = carry && carry.data ? carry.data : readJsonOr(piece.data, null);
@@ -1336,8 +1470,13 @@
 		Project[ID + '_saved_index'] = 0;
 		enterWorkspace();
 		publishStatus('open', { model: true, sheets: 'all' });
-		Blockbench.showQuickMessage(piece.name + ' on ' + anchor, 2000);
+		Blockbench.showQuickMessage(piece.name + ' on ' + anchor + figureNote(figure), 2500);
 		return true;
+	}
+
+	/* ' - studio figure' when the game's textures are not here, so nobody mistakes the set. */
+	function figureNote(figure) {
+		return figure && figure.figure === 'studio' ? ' - ' + figure.label : '';
 	}
 
 	/*
@@ -4491,9 +4630,12 @@
 		tool('bb_rig.py', ['--skin', entry.dir, '--out-dir', out]);
 		const file = path.join(out, 'skin_' + name + '.bbmodel');
 		const content = JSON.parse(fs.readFileSync(file, 'utf8'));
+		const figure = content.armorpieces_figure || null;
+		delete content.armorpieces_figure;
 		Codecs.project.load(content, { path: file, content: content });
 
 		Project[ID + '_skin'] = entry;
+		Project[ID + '_figure'] = figure;
 		Project[ID + '_skin_material'] = '';
 		Project[ID + '_skin_state'] = defaultSkinState();
 		loadSkinHalf(Project, entry);
@@ -4507,7 +4649,7 @@
 		// skin yet. Now that it is one, bring the workspace up - the same bargain openPiece makes.
 		enterSkinWorkspace();
 		publishSkin('open');
-		Blockbench.showQuickMessage('Skin ' + name, 2000);
+		Blockbench.showQuickMessage('Skin ' + name + figureNote(figure), 2500);
 		return { skin: name, reused: false, dir: entry.dir };
 	}
 
@@ -5124,8 +5266,18 @@
 			return;
 		}
 		const inRepo = packs[0].startsWith(root);
+		// The mod's own plate outline is always here; vanilla's appear once the game's sheets have
+		// been extracted (Use my game...). The tool says which, so this list never guesses.
 		const seedOptions = { '': 'Blank sheets' };
-		for (const material of SKIN_MATERIALS) seedOptions[material] = "Vanilla's " + material + ' outline';
+		let outlines = [];
+		try {
+			outlines = JSON.parse(tool('skin_sheets.py', ['--outlines']));
+		} catch (err) {
+			console.error(err);
+		}
+		for (const outline of outlines) seedOptions[outline.value] = outline.label;
+		const seedDefault = outlines.some(function (o) { return o.value === 'iron'; })
+			? 'iron' : (outlines[0] ? outlines[0].value : '');
 
 		new Dialog({
 			id: ID + '_new_skin',
@@ -5134,10 +5286,11 @@
 				name: { label: 'Name', type: 'text', value: '', placeholder: 'brigandine' },
 				namespace: { label: 'Namespace', type: 'text', value: inRepo ? 'armorpieces' : 'mypack' },
 				seed: {
-					label: 'Start from', type: 'select', options: seedOptions, value: 'iron',
-					description: 'A seeded skin starts as a flat grey on vanilla\'s own silhouette, ' +
-						'so it is drawn where the armor really is and the check holds it to that ' +
-						'outline. Blank sheets are the freehand start.',
+					label: 'Start from', type: 'select', options: seedOptions, value: seedDefault,
+					description: 'A seeded skin starts as a flat grey on an existing silhouette - the ' +
+						'mod\'s plate, or vanilla\'s where the game\'s sheets are here - so it is drawn ' +
+						'where the armor really is and the check holds it to that outline. Blank ' +
+						'sheets are the freehand start.',
 				},
 				data_pack: {
 					label: 'Datapack', type: 'select', options: packOptions(packs), value: defaultPack(packs),
@@ -5747,6 +5900,12 @@
 				icon: 'archive',
 				click: exportPack,
 			});
+			const useGame = new Action(ID + '_use_game', {
+				name: 'Use my game...',
+				description: 'Point the editor at your copy of Minecraft, so the figure wears real armor.',
+				icon: 'videogame_asset',
+				click: useGameDialog,
+			});
 
 			// One submenu, not six loose entries in Tools. `children` is also what makes cleanup
 			// tractable: there is exactly one menu node to remove on unload, and forgetting it is
@@ -5757,10 +5916,10 @@
 				icon: 'shield',
 				children: [open, create, save, '_',
 					openSkinAction, newSkinAction, editSkinAction, saveSkinAction, '_',
-					packs, createPack, exportZip],
+					packs, createPack, exportZip, '_', useGame],
 			});
 			registered.push(open, save, create, openSkinAction, newSkinAction, editSkinAction,
-				saveSkinAction, packs, createPack, exportZip, menu);
+				saveSkinAction, packs, createPack, exportZip, useGame, menu);
 			MenuBar.addAction(menu, 'tools');
 			registered.push(Blockbench.addCSS(PACKS_DIALOG_CSS));
 			registered.push(Blockbench.addCSS(LIBRARY_DIALOG_CSS));
@@ -5982,6 +6141,14 @@
 				submit: submitDialog,
 				submissionUrl: submissionUrl,
 				packSources: function () { return packSources.map(function (s) { return s.id; }); },
+				// The game: what is here, the dialog, and an install from a path for a caller that
+				// cannot click. `figure` is what the open rig's reference is wearing.
+				gameStatus: gameStatus,
+				useGame: useGameDialog,
+				installGame: function (file) { return installGame(['--jar', file]); },
+				figure: function () {
+					return (typeof Project !== 'undefined' && Project && Project[ID + '_figure']) || null;
+				},
 				paintFaces: paintFaces,
 				// The sheets the part's fittings need, created where the panel would create them.
 				ensureSheets: function () {

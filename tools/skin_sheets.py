@@ -53,6 +53,10 @@ from PIL import Image
 import mc_humanoid
 from sync_decoration_masters import ROOT, face_rects
 
+# The mod's own skins, one of which stands in for a vanilla outline when the game is not here.
+SHIPPED_SKINS = ROOT / "src" / "main" / "resources" / "assets" / "armorpieces" / "textures" / "entity" / "skin"
+STUDIO_OUTLINE = "plate"
+
 MASTERS = ROOT / "tools" / "skin_masters"
 ASSETS = ROOT / "tools" / ".mcassets"
 
@@ -265,8 +269,36 @@ def show(image: Image.Image, sheet: str, title: str = "") -> str:
     return "\n".join(out)
 
 
+def outline_source(material: str, sheet: str) -> Path | None:
+    """Where an outline's sheet is: a vanilla material's extracted sheet, or one of the mod's own
+    skins by name - `plate` is the studio figure's, and is always here."""
+    folder = {"humanoid": "armor", "humanoid_leggings": "armor_leggings"}[sheet]
+    vanilla = ASSETS / folder / f"{material}.png"
+    if vanilla.is_file():
+        return vanilla
+    shipped = SHIPPED_SKINS / material / f"{sheet}.png"
+    if shipped.is_file():
+        return shipped
+    authored = MASTERS / material / f"{sheet}.png"
+    return authored if authored.is_file() else None
+
+
+def outlines() -> list[dict]:
+    """What a new skin can start from, for a dialog: the mod's plate outline first, since it is
+    always here, then every vanilla material whose sheets have been extracted."""
+    out = [{"value": STUDIO_OUTLINE, "label": "The mod's plate outline", "source": "armorpieces"}]
+    from vanilla_assets import ARMOR_MATERIALS
+    for material in ARMOR_MATERIALS:
+        if material == "leather_overlay":
+            continue
+        if (ASSETS / "armor" / f"{material}.png").is_file():
+            out.append({"value": material, "label": f"Vanilla's {material} outline", "source": "vanilla"})
+    return out
+
+
 def seed(name: str, material: str = "iron", level: int = 8) -> list[Path]:
-    """Start a skin as vanilla's own silhouette at one flat grey.
+    """Start a skin as an existing silhouette at one flat grey: vanilla's own for a material whose
+    sheets are extracted, or the mod's `plate` where they are not.
 
     A skin seeded this way can only get its silhouette wrong by erasing, which the check sees -
     so the drawing is purely shading, which is the part worth a session's attention. It also
@@ -275,11 +307,12 @@ def seed(name: str, material: str = "iron", level: int = 8) -> list[Path]:
     target = MASTERS / name
     target.mkdir(parents=True, exist_ok=True)
     written = []
-    for sheet, folder in (("humanoid", "armor"), ("humanoid_leggings", "armor_leggings")):
-        source = ASSETS / folder / f"{material}.png"
-        if not source.is_file():
-            raise SystemExit(f"no vanilla {material} sheet at {source} "
-                             f"(run python tools/vanilla_assets.py)")
+    for sheet in SHEETS:
+        source = outline_source(material, sheet)
+        if source is None:
+            raise SystemExit(f"no outline named {material!r}: no vanilla sheet for it under "
+                             f"{ASSETS} and no skin of that name. Run python tools/vanilla_assets.py "
+                             f"(or Use my game... in the editor), or start from {STUDIO_OUTLINE!r}.")
         with Image.open(source) as image:
             vanilla = image.convert("RGBA")
         out = Image.new("RGBA", vanilla.size, (0, 0, 0, 0))
@@ -305,7 +338,10 @@ def main() -> None:
     parser.add_argument("--seed", metavar="SKIN",
                         help="start a skin as a vanilla silhouette at one flat grey")
     parser.add_argument("--from", dest="material", default="iron",
-                        help="with --seed: the material whose silhouette to take (default iron)")
+                        help="with --seed: the material whose silhouette to take (default iron), "
+                             "or the mod's own 'plate' when the game is not here")
+    parser.add_argument("--outlines", action="store_true",
+                        help="print what --seed can start from here, as JSON")
     parser.add_argument("--level", type=int, default=8, help="with --seed: the flat grey, 0-15")
     parser.add_argument("--skin", metavar="NAME", help="print an authored skin's pair")
     parser.add_argument("--new", metavar="NAME", help="create a blank master pair for a new skin")
@@ -327,6 +363,9 @@ def main() -> None:
             print(show(image.convert("RGBA"), sheet, str(path)))
         return
 
+    if args.outlines:
+        print(json.dumps(outlines()))
+        return
     if args.seed:
         for path in seed(args.seed, args.material, args.level):
             print(path)

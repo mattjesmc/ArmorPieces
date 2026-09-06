@@ -48,6 +48,7 @@ from PIL import Image
 
 import skin_sheets
 from skin_sheets import ASSETS, SHEETS, load_pair
+import vanilla_assets
 from vanilla_assets import ARMOR_MATERIALS
 
 # The materials a skin is baked for: every armor material, minus the leather overlay, which is not a
@@ -152,7 +153,15 @@ def table(material: str, faithful: bool = False) -> list[tuple[int, int, int]]:
 
     The eight shades are placed at the centres of their eight bands and interpolated between, so
     the ends of the master's range reach the material's own darkest and lightest texel rather than
-    stopping an eighth short of them."""
+    stopping an eighth short of them.
+
+    Without the material's sheets - a clone or a browser that has no game - the table comes from
+    the copy `vanilla_assets.py --bake` wrote of exactly this answer, so the preview is the same
+    colours either way. Only the deepened default is baked; --faithful needs the sheets."""
+    if not faithful and not any((ASSETS / _FOLDER[s] / f"{material}.png").is_file() for s in SHEETS):
+        baked = (vanilla_assets.cached("skin_ramps") or {}).get(material)
+        if baked is not None:
+            return [tuple(rgb) for rgb in baked]
     shades = ramp(material, faithful)
     stops = [((i + 0.5) * 256.0 / SHADES, shades[i]) for i in range(SHADES)]
     out = []
@@ -518,10 +527,20 @@ def main() -> None:
         return
     if args.ramps:
         materials = [args.material] if args.material else MATERIALS
-        out = {m: table(m, args.faithful) for m in materials}
+        out = {}
+        for m in materials:
+            try:
+                out[m] = table(m, args.faithful)
+            except SystemExit:
+                # A material that is neither extracted nor baked is left out rather than fatal:
+                # all-materials is a report, and a report over what is here is still a report.
+                if args.material:
+                    raise
         # The lighting rides along with the ramps: the plugin composites its preview the same
         # way this bakes a file, so a skin looks in Blockbench exactly like it will in game.
-        out["lightmaps"] = {m: lightmap(m, args.light) for m in materials} if args.light else {}
+        # A material whose sheets are not here has no lighting to report, and is left out
+        # rather than listed as an empty map: the plugin reads absence as "no light".
+        out["lightmaps"] = {m: lm for m in materials if args.light and (lm := lightmap(m, args.light))}
         print(json.dumps(out))
         return
     if not args.skin:

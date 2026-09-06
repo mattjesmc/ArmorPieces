@@ -133,7 +133,9 @@ checks are built from them: *authoring* a skin needs the clone, shipping one doe
 the vanilla body and all four armor layers at their real inflate, animated with the game's own walk
 and sprint cycles, with an empty group sitting exactly where the layer will draw.
 `python tools/bb_rig.py --all` regenerates them; the skin, armor and palette textures they
-reference are extracted from the game jar by `tools/vanilla_assets.py` on first use and are never
+reference are extracted from the game jar by `tools/vanilla_assets.py` on first use (or from
+your own copy of the game: *Use my game…* in the menu, or `--jar`, `--minecraft`, `--from-dir`
+on the command line) and are never
 committed. `bb_geo.py` converts `.bbmodel` to the mod's geometry and back.
 
 **Checking one.** `python tools/check_part.py` is the check every shipped part passes: clearance

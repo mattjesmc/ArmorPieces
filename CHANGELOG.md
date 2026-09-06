@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+**The editor without the game.** The Blockbench toolchain no longer needs Mojang's textures on
+the machine: `vanilla_assets.py --bake` writes the numbers the tools derive from them - the sixteen
+trim ramps, the eight shades per armor material, the item, registry and loot lists - into
+`tools/.webcache`, which is committed, and every tool falls back to that cache when the textures
+are absent, printing the same answers to the byte. What the figure wears is the one thing that
+cannot be derived, so a rig built without the game wears the **studio set**: a mannequin skin drawn
+by us and the mod's own plate skin baked in iron (`tools/studio`, from `studio_figure.py`), on the
+game's exact boxes, and the rig says so. A new skin can start from the plate outline; the cloth
+preview asks for the game. **Use my game...** in the plugin's menu, and `--jar`, `--minecraft` and
+`--from-dir` on the command line, extract the real textures from the launcher's jar or any resource
+pack, onto that machine and nowhere else. This is what lets the web build ship without
+redistributing a single game file.
+
 ## 0.3.0
 
 **Armor skins.** A third template family beside the socket templates and the fitting templates. A

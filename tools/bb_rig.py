@@ -53,6 +53,9 @@ GEO_DIR = ROOT / "src" / "main" / "resources" / "assets" / "armorpieces" / "armo
 # The body, the armor and the walk cycle all come from mc_humanoid, which transcribes them from the
 # decompiled 26.2 sources. Nothing about the vanilla figure is described twice.
 ASSETS = ROOT / "tools" / ".mcassets"
+# The studio figure: our own player skin and the mod's plate skin baked in iron, worn when the
+# game's textures are not here. Same boxes, our pixels. Written by tools/studio_figure.py.
+STUDIO = ROOT / "tools" / "studio"
 
 # Outliner colours, so the locked reference reads apart from the part at a glance.
 COLOR_BODY, COLOR_ARMOR = 7, 3
@@ -211,15 +214,27 @@ def texture_entry(name, path, uid, uv_size, out_dir):
     }
 
 
+def figure(material, slim):
+    """What the reference figure wears: the game's own skin and armor when they have been extracted,
+    else the studio set. Returns (skin, armor, leggings, description); the leggings path may not
+    exist, which the caller already handles for materials that have no leggings layer."""
+    skin = ASSETS / "skin" / ("slim_steve.png" if slim else "wide_steve.png")
+    armor = ASSETS / "armor" / f"{material}.png"
+    if skin.is_file() and armor.is_file():
+        return (skin, armor, ASSETS / "armor_leggings" / f"{material}.png",
+                {"figure": "vanilla", "material": material, "label": f"vanilla {material}"})
+    return (STUDIO / ("skin_slim.png" if slim else "skin.png"), STUDIO / "armor.png",
+            STUDIO / "armor_leggings.png",
+            {"figure": "studio", "material": "iron", "label": "studio figure, plate in iron"})
+
+
 def build_textures(anchor_name, material, slim, out_dir, master=None):
     """The rig's textures, and the index each geometry layer samples.
 
-    Three vanilla ones - the skin, the armor layer and the leggings layer, which really is a second
-    file rather than a second region of the first - plus the part's own greyscale master when there
-    is one, so the piece shows up painted rather than as a blank shell."""
-    skin = ASSETS / "skin" / ("slim_steve.png" if slim else "wide_steve.png")
-    armor = ASSETS / "armor" / f"{material}.png"
-    leggings = ASSETS / "armor_leggings" / f"{material}.png"
+    Three for the figure - the skin, the armor layer and the leggings layer, which really is a
+    second file rather than a second region of the first - plus the part's own greyscale master
+    when there is one, so the piece shows up painted rather than as a blank shell."""
+    skin, armor, leggings, _ = figure(material, slim)
 
     specs = [("skin", skin, (64, 64)), ("armor", armor, (64, 32))]
     # Not every material has a leggings layer - turtle scute is a helmet and nothing else - so the
@@ -271,7 +286,7 @@ def build_skin_textures(skin_dir, slim, out_dir):
     them; `skin` stays the player's own."""
     skin_dir = Path(skin_dir)
     specs = [
-        ("skin", ASSETS / "skin" / ("slim_steve.png" if slim else "wide_steve.png"), (64, 64), "skin"),
+        ("skin", figure("iron", slim)[0], (64, 64), "skin"),
         ("humanoid", skin_dir / "humanoid.png", (64, 32), "armor"),
         ("humanoid_leggings", skin_dir / "humanoid_leggings.png", (64, 32), "armor_leggings"),
     ]
@@ -313,6 +328,8 @@ def build_skin_rig(skin_dir, out_dir=RIG_DIR, slim=False, animate=True):
     model["groups"] = [g for g in model["groups"] if g["uuid"] != part_uuid]
     model["outliner"] = [n for n in model["outliner"]
                          if not (isinstance(n, dict) and n.get("uuid") == part_uuid)]
+    # The skin's own sheets are the armor here, so only the player's skin says which figure it is.
+    model["armorpieces_figure"] = dict(figure("iron", slim)[3], armor="the skin being drawn")
     return model
 
 
@@ -409,6 +426,9 @@ def build_rig(anchor_name, anchors, part_geo=None, resolution=None, out_dir=RIG_
         part_uuid = det_uuid(f"rig_{anchor_name}/{PART_GROUP}")
         assert any(g["uuid"] == part_uuid for g in model["groups"]), "part group missing"
 
+    # Which set the figure is wearing, for the editor to say. Blockbench ignores keys it does not
+    # know, so this rides in the project file rather than in a second one beside it.
+    model["armorpieces_figure"] = figure(material, slim)[3]
     return model, anchor_geo, attachment
 
 
@@ -448,8 +468,19 @@ def main():
         return
 
     if not (ASSETS / "skin").is_dir():
-        print("no vanilla asset cache; extracting it first")
-        vanilla_assets.extract(vanilla_assets.find_jar(vanilla_assets.minecraft_version()))
+        # The game's textures are extracted when a jar is here to extract them from; without one
+        # the figure wears the studio set, which needs nothing. Either way the rig is built.
+        jar = vanilla_assets.find_jar(vanilla_assets.minecraft_version())
+        if jar is not None:
+            print("no vanilla asset cache; extracting it first", file=sys.stderr)
+            source = vanilla_assets.Source(jar)
+            vanilla_assets.extract(source)
+            vanilla_assets.bake(source)
+            source.close()
+        elif not (STUDIO / "skin.png").is_file():
+            sys.exit(f"error: neither the game's textures ({ASSETS}) nor the studio figure "
+                     f"({STUDIO}) is here. Run python tools/studio_figure.py, or "
+                     f"python tools/vanilla_assets.py with a jar.")
 
     if args.skin:
         args.out_dir.mkdir(parents=True, exist_ok=True)

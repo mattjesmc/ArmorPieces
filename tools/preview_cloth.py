@@ -215,11 +215,27 @@ DESIGNS = [
 MATERIALS = ["iron", "gold", "diamond", "netherite", "leather"]
 
 
+def require_game() -> None:
+    """The cloth preview composites the game's own banner pattern sprites over the game's own
+    armor sheets. Both are game art with no derived stand-in, so without them there is nothing
+    honest to draw - say so, rather than a sheet of blank plates."""
+    missing = [s for s in ("banner", "shield") if not (ASSETS / s).is_dir()]
+    if not (ASSETS / "armor").is_dir():
+        missing.append("armor")
+    if missing:
+        raise SystemExit(
+            "The cloth preview needs the game's banner pattern sprites and armor sheets, which are "
+            f"not extracted here ({', '.join(missing)} missing under {ASSETS}). They are game art "
+            "and nothing stands in for them: run python tools/vanilla_assets.py, or point it at "
+            "your game with --jar or --minecraft (Use my game... in the editor).")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--light", type=float, default=LIGHT, help="armor-light mix (0 = none)")
     parser.add_argument("--cloth", default=None, help="one cloth rather than every shipped one")
     args = parser.parse_args()
+    require_game()
 
     cloths = [args.cloth] if args.cloth else sorted(
         d.name for d in MASKS.iterdir() if (d / "humanoid.png").exists())
