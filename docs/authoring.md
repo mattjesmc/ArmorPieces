@@ -824,3 +824,33 @@ geometry are resources: F3+T reloads them, and the change is on the stand a mome
 A change to the part's data file — its anchors, its fittings, its loot, a new part — is a change
 to a dynamic registry, which the game reads once as a world opens, so it needs the world left and
 re-entered; `/reload` is not enough. Recipes and loot tables do reload with `/reload`.
+
+## Before a release: the gate
+
+`python tools/gate.py` runs everything in this repository that can fail and exits nonzero if any of
+it did. It exists because nothing in the Gradle build runs `tools/`, and a check that is not run is
+not a check: three painters were stale for a whole release before anyone looked.
+
+Checks are grouped by what they need, so a machine without a game still runs most of them:
+
+    tier 0   the tree      the authoring round trip, the skin masters, the language lines, the
+                           effect schema, the painters and their traces, the plugin's syntax, and
+                           the unit tests under tools/tests
+    tier 1   the JVM       gradlew build - the mod compiles and the JUnit tests pass
+    tier 2   the server    the game's own behaviour on a dedicated server, through the mcp-toolkit
+                           bridge (designed in docs/plans/testing.md, not built yet)
+    tier 3   the client    rendering, the smithing screen and tooltips, likewise not built yet
+
+`--tier 0` stops after the tree, `--only <name>` runs one check, `--list` says what would run and
+`--json <path>` writes the same result as a file. A failure prints the tail of the check's own output
+and the command that reproduces it alone, because the checks are all meant to be run on their own
+while fixing what they found.
+
+Two of the checks are new and worth naming, since nothing else covers them. `check_lang.py` derives
+every language key the mod needs — the literals in the Java, every part, skin, cloth and fitting in
+the datapack, every socket in the anchor enum, every registered item and block — and fails on a
+missing line, which is the one defect that ships silently and is found by a player reading
+`item.armorpieces.brow_template` in a tooltip. `check_effect_schema.py` asserts that the schema
+`effect_schema.py` parses out of the Java still names every registered effect type and classified
+every field, because when that parser stops recognising a record it does not crash: the dialog
+simply stops offering the effect.

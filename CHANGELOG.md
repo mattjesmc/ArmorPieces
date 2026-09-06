@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+**One command before a release.** `python tools/gate.py` runs everything in the repository that can
+fail - the authoring round trip, the skin masters, the painters and their traces, the language
+lines, the effect schema, the plugin's syntax, the unit tests and the Gradle build - prints a line
+per check and exits nonzero if any of them failed. It exists because nothing in the build ran
+`tools/`, so the authoring tools rotted in silence: on its first run it found three painters stale.
+Checks are grouped by what they need, so a machine with no game still runs most of them, and the two
+tiers that drive the game itself are designed in `docs/plans/testing.md`. Two checks are new:
+`check_lang.py` derives every language key the mod needs and fails on a missing line, and
+`check_effect_schema.py` asserts the Blockbench dialog's schema still names every registered effect
+type with every field classified.
+
 **A part can ask about the person wearing it.** `armorpieces:if_wearer` gates any effect on
 **vanilla's own entity predicate** - the object an advancement or a loot table takes - so what a part
 can ask about grows with the game rather than with this mod: what is in the hands, what else is worn,
