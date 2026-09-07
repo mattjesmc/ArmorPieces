@@ -41,7 +41,7 @@ import sys
 from pathlib import Path
 
 import pack_manifest
-from pack_manifest import CREDITS_FILE, KINDS, LICENSES, find, read_json
+from pack_manifest import CREDITS_FILE, KINDS, LICENSES, find, fitting_files, read_json
 
 ROOT = Path(__file__).resolve().parent.parent
 GRADLE_PROPERTIES = ROOT / "gradle.properties"
@@ -236,30 +236,6 @@ def add_tag_member(target: Path, piece_id: str) -> None:
 def lang_lines(dirs: list[Path], namespace: str, keys: list[str]) -> dict:
     lang = pack_manifest.lang_of(dirs, namespace)
     return {k: lang[k] for k in keys if k in lang}
-
-
-def fitting_files(dirs: list[Path], fitting_id: str) -> list[str]:
-    """A fitting definition a source pack carries, with its template recipe and any tags it
-    names. Only when the source defines it: a piece using the mod's own `armorpieces:gemstone`
-    needs nothing copied, since the game has it."""
-    namespace, name = pack_manifest.split_id(fitting_id)
-    definition = f"data/{namespace}/armorpieces/fitting/{name}.json"
-    if find(dirs, definition) is None:
-        return []
-    files = [definition]
-    recipe = f"data/{namespace}/recipe/fitting_template_{name}.json"
-    if find(dirs, recipe) is not None:
-        files.append(recipe)
-    try:
-        materials = read_json(find(dirs, definition)).get("materials")
-    except ValueError:
-        materials = None
-    if isinstance(materials, str) and materials.startswith("#"):
-        tag_ns, tag_name = pack_manifest.split_id(materials[1:])
-        tag = f"data/{tag_ns}/tags/trim_material/{tag_name}.json"
-        if find(dirs, tag) is not None:
-            files.append(tag)
-    return files
 
 
 def loot_groups_using(dirs: list[Path], tag_relative: str) -> list[str]:

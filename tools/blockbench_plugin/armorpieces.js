@@ -1904,8 +1904,58 @@
 	 * Nothing about it is a workspace: there is no piece being authored, no anchor, no sheets to
 	 * paint. It opens as an ordinary `free` project with everything locked, which is what
 	 * bb_rig --wear writes.
+	 *
+	 * An outfit may name pieces from any pack, so `options.packs` says where to look for the ones
+	 * the mod does not ship. An entry is either a folder (the desktop, where the author's own packs
+	 * are already on disk) or a URL to a pack zip - the site hands one URL holding every foreign
+	 * piece the outfit borrows, and it is installed the way the library installs anything, with
+	 * import_pack.py. Because fetching cannot be synchronous, a URL in the list makes this return a
+	 * PROMISE of the result rather than the result; with folders only, or none, it answers at once
+	 * as it always has.
 	 */
+	function isUrl(value) {
+		return /^https?:\/\//i.test(String(value));
+	}
+
+	/*
+	 * The wardrobe pack: every zip an outfit borrows from, unpacked into one folder. Rebuilt from
+	 * scratch on each wear, so a piece taken out of the outfit stops being found.
+	 */
+	function installWardrobePacks(urls) {
+		const dest = path.join(tempDir(), 'wardrobe-pack');
+		try { fs.rmSync(dest, { recursive: true, force: true }); } catch (err) { /* scratch */ }
+		fs.mkdirSync(dest, { recursive: true });
+		return urls.reduce(function (queue, url) {
+			return queue.then(function () {
+				return new Promise(function (resolve, reject) {
+					fetchBytes(url, function (bytes) {
+						try {
+							const scratch = path.join(tempDir(), 'wardrobe.zip');
+							fs.writeFileSync(scratch, bytes);
+							tool('import_pack.py', [scratch, dest, '--force']);
+						} catch (err) {
+							return reject(err);
+						}
+						resolve();
+					}, reject, url.indexOf(siteOrigin()) === 0 ? siteOptions() : {});
+				});
+			});
+		}, Promise.resolve()).then(function () { return dest; });
+	}
+
 	function wear(set, options) {
+		options = options || {};
+		const urls = (options.packs || []).filter(isUrl);
+		if (urls.length) {
+			return installWardrobePacks(urls).then(function (dir) {
+				const dirs = (options.packs || []).filter(function (p) { return !isUrl(p); });
+				return wearNow(set, Object.assign({}, options, { packs: [dir].concat(dirs) }));
+			});
+		}
+		return wearNow(set, options);
+	}
+
+	function wearNow(set, options) {
 		options = options || {};
 		const out = tempDir();
 		const spec = path.join(out, 'set.json');
@@ -6895,7 +6945,9 @@
 				openFor: openFor,
 				close: closeFor,
 				// The wardrobe: a whole set on the figure, and the chrome-less canvas it is
-				// looked at in. What the site's /wardrobe/ drives through an iframe.
+				// looked at in. What the site's /wardrobe/ drives through an iframe. `packs` names
+				// where borrowed pieces come from - folders, or absolute URLs to pack zips, and a
+				// URL in the list makes this answer with a promise.
 				wear: wear,
 				viewMode: viewMode,
 				// The material preview on the open piece, for the thumbnail renderers.

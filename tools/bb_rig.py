@@ -24,13 +24,15 @@ A rig can also hold a whole OUTFIT rather than one socket's part: `--wear <set.j
 figure wearing every piece in a set, each at its anchor and each painted for its own trim material,
 with the armor underneath wearing the set's base materials, its skin and its cloth. That rig is
 locked from end to end, because it is for looking at rather than for working in - it is what the
-site's wardrobe shows.
+site's wardrobe shows. An outfit may name pieces from any pack, so `--pack <dir>` names the folders
+to look in; they are searched before the mod's own resources, never instead of them.
 
 Usage:
     python tools/bb_rig.py --all
     python tools/bb_rig.py crest
     python tools/bb_rig.py crest --part src/main/resources/.../feathering.json
     python tools/bb_rig.py --wear docs/examples/set.json
+    python tools/bb_rig.py --wear the_reef.json --pack packs/coral/datapack --pack packs/coral/resourcepack
 """
 
 from __future__ import annotations
@@ -420,9 +422,11 @@ SET_SLOTS = ("helmet", "chestplate", "leggings", "boots")
 
 
 def pack_dirs(packs=None) -> list[Path]:
-    """Where a worn piece's files are looked for. The mod's own resources by default, so a set of
-    shipped pieces needs no arguments; a pack folder can be named for anything else."""
-    return [Path(p) for p in (packs or [ROOT / "src" / "main" / "resources"])]
+    """Where a worn piece's files are looked for: the given pack folders first, the mod's own
+    resources last. A set of shipped pieces needs no arguments; an outfit that borrows from two
+    packs names them both and still finds the mod's pieces underneath, which is what an outfit
+    mixing the two looks like."""
+    return [Path(p) for p in (packs or [])] + [ROOT / "src" / "main" / "resources"]
 
 
 def _find(dirs: list[Path], relative: str) -> Path | None:
@@ -749,8 +753,8 @@ def main():
                          "in each socket with its material and its fittings, a base material per "
                          "armor slot, a skin and a cloth. Everything locked; it is for looking at")
     ap.add_argument("--pack", type=Path, action="append", metavar="DIR",
-                    help="a pack folder a worn piece may come from; repeat for more "
-                         "(default: the mod's own src/main/resources)")
+                    help="a pack folder a worn piece may come from, searched before the mod's own "
+                         "src/main/resources; repeat for more")
     args = ap.parse_args()
 
     if args.list_anchors:

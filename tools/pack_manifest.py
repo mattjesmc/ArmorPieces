@@ -3,8 +3,10 @@ What is in a pack, as JSON: every piece, skin and cloth with its socket, fitting
 author, and the files each one is made of.
 
 The gallery is built from this, the composer picks by it, and pick_pieces.py copies the file
-sets it lists - so the one place that knows which files make up a piece is here. A pack is one
-folder holding data/ and assets/, or two folders holding one half each; name them all.
+sets it lists - so the one place that knows which files make up a piece is here: `files` are the
+files that are the piece's own, `fitting_files` the definitions its fittings need where the pack
+defines them. A pack is one folder holding data/ and assets/, or two folders holding one half
+each; name them all.
 
 The license comes from `armorpieces-credits.json` at a pack's root, a file the game ignores:
 
@@ -19,8 +21,8 @@ The license comes from `armorpieces-credits.json` at a pack's root, a file the g
 A per-piece entry overrides the pack's default; a pack without the file is all rights reserved
 (`ARR`) by its author, which is what copyright law says anyway. The license is one of LICENSES.
 
-A pack may also say what its pieces are FOR, in `armorpieces-sets.json` beside the credits - the
-other file at a pack's root that the game ignores and this reads:
+A pack may also DECLARE OUTFITS, in `armorpieces-sets.json` beside the credits - the other file
+at a pack's root that the game ignores and this reads:
 
     { "sets": [ { "id": "menagerie", "title": "The Menagerie", "description": "...",
                   "set": { "name": "The Menagerie",
@@ -28,10 +30,14 @@ other file at a pack's root that the game ignores and this reads:
                            "pieces": { "horns": { "id": "somebody:fox_ears", "material": "copper" } } } } ] }
 
 The inner `set` is the shape everything else already speaks: what `docs/examples/set.json` holds,
-what `bb_rig.py --wear` renders and what the website's wardrobe validates. It exists because a
-pack's pieces are an OUTFIT and nothing in a datapack can say so - the mod's own six sets are Java,
-which is fine for the mod and impossible for anyone else. A set may name pieces from other packs;
-that is how a themed set borrows the twelve sockets it cannot fill alone.
+what `bb_rig.py --wear` renders and what the website's wardrobe validates. It exists because
+nothing in a datapack can say what a dressed figure looks like - the mod's own six sets are Java,
+which is fine for the mod and impossible for anyone else.
+
+This file is ONE WAY A PACK SUBMITS OUTFITS, and nothing more. An outfit is its own thing: it has
+an author, it names pieces from any number of packs (that is how a themed set borrows the twelve
+sockets it cannot fill alone), and it outlives the pack that shipped it. A pack's pieces are not
+"an outfit" by virtue of being in one pack; a pack that declares none is not missing anything.
 
 Usage:
     python tools/pack_manifest.py <pack dir> [<pack dir> ...]        # JSON on stdout
@@ -127,12 +133,14 @@ def sets_of(dirs: list[Path], namespaces: list[str], known: set[str]) -> list[di
     """The outfits this pack declares, from `armorpieces-sets.json` in whichever half carries it.
 
     Everything here is checked rather than trusted, because the file is hand-written and the thing
-    that reads it next is a web page: a set that is wrong is left out with a warning, never allowed
-    to become a broken row. The one check worth explaining is the piece one - a set may name a piece
-    from ANY pack, and a foreign id is passed through untouched (that is borrowing, and it is the
-    point), but a piece in this pack's OWN namespace that this pack does not contain is an authoring
-    slip and is dropped: it would render as a hole in the outfit and nothing downstream could tell
-    why."""
+    that reads it next renders a figure: a set that is wrong is left out with a warning, never
+    allowed to become a hole. The one check worth explaining is the piece one - a set may name a
+    piece from ANY pack, and a foreign id is passed through untouched (that is borrowing, and it is
+    the point), but a piece in this pack's OWN namespace that this pack does not contain is an
+    authoring slip and is dropped with a warning: it would render as a hole in the outfit and
+    nothing downstream could tell why. That is this tool's reading, for the command line and the
+    editor, which have only the folders in front of them; the website reads the same file against
+    everything it holds, so a piece the pack does not carry is a reference there, not a slip."""
     out: list[dict] = []
     seen: set[str] = set()
     for d in dirs:
@@ -255,6 +263,36 @@ def files_of(dirs: list[Path], kind: str, namespace: str, name: str) -> list[str
     return out
 
 
+def fitting_files(dirs: list[Path], fitting_id: str) -> list[str]:
+    """A fitting definition a source pack carries, with its template recipe and any tags it
+    names. Only when the source defines it: a piece using the mod's own `armorpieces:gemstone`
+    needs nothing copied, since the game has it.
+
+    A piece's fittings are part of what the piece IS - a mask sheet is meaningless without the
+    definition that names it - so this lives here, beside `files_of`, and everything that moves a
+    piece (pick_pieces.py, the website's ingest) asks the same function rather than re-deriving
+    the three-path rule."""
+    namespace, name = split_id(fitting_id)
+    definition = f"data/{namespace}/armorpieces/fitting/{name}.json"
+    found = find(dirs, definition)
+    if found is None:
+        return []
+    files = [definition]
+    recipe = f"data/{namespace}/recipe/fitting_template_{name}.json"
+    if find(dirs, recipe) is not None:
+        files.append(recipe)
+    try:
+        materials = read_json(found).get("materials")
+    except ValueError:
+        materials = None
+    if isinstance(materials, str) and materials.startswith("#"):
+        tag_ns, tag_name = split_id(materials[1:])
+        tag = f"data/{tag_ns}/tags/trim_material/{tag_name}.json"
+        if find(dirs, tag) is not None:
+            files.append(tag)
+    return files
+
+
 def tag_memberships(dirs: list[Path], kind: str, piece_id: str) -> list[str]:
     """The armor_decoration tag files (relative paths) that list this id, which is how a piece
     belongs to a loot group."""
@@ -342,6 +380,11 @@ def entries(dirs: list[Path], kind: str) -> list[dict]:
                 entry["anchors"] = [a for a in anchors if isinstance(a, str)]
                 entry["anchor"] = entry["anchors"][0] if entry["anchors"] else None
                 entry["fittings"] = [f for f in (body.get("fittings") or []) if isinstance(f, str)]
+                entry["fitting_files"] = []
+                for fitting in entry["fittings"]:
+                    for relative in fitting_files(dirs, fitting):
+                        if relative not in entry["fitting_files"]:
+                            entry["fitting_files"].append(relative)
                 entry["effects"] = len(body.get("effects") or [])
             if kind == "cloth":
                 entry["sheet"] = body.get("sheet")
