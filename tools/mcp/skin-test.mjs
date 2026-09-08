@@ -7,7 +7,12 @@ const SERVER = "C:/Users/Matthijs/ArmorPieces/tools/mcp/server.mjs";
 const MASTER = "C:/Users/Matthijs/ArmorPieces/tools/skin_masters/plate/humanoid.png";
 
 const client = new Client({ name: "skin-test", version: "0.1.0" });
-await client.connect(new StdioClientTransport({ command: process.execPath, args: [SERVER] }));
+// The skin tools live in `kit_skin`. This used to work without saying so, because the default
+// profile was `authoring` and served everything; the default is `kit` now (part tools only).
+await client.connect(new StdioClientTransport({
+  command: process.execPath, args: [SERVER],
+  env: { ...process.env, ARMORPIECES_BB_PROFILE: "kit_skin" },
+}));
 const say = (label, result) => {
   const text = (result.content ?? []).map((c) => c.text).join("\n");
   console.log(`\n=== ${label}${result.isError ? " (ERROR)" : ""} ===\n${text.split("\n").slice(0, 6).join("\n")}`);

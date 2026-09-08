@@ -108,12 +108,22 @@ expect("no game-bridge or memory tool is served", !shimNames.some((n) => n.start
 // An agent's `tools:` line is its allowlist in a headless run, so a name that is no longer served
 // is a call the session spends a turn discovering it cannot make.
 const { readFileSync } = await import("node:fs");
-for (const agent of ["part-author-kit", "kit-smoke"]) {
+// `skin-author` runs under `kit_skin`, where this proxy serves the eight skin tools instead of the
+// nine part ones, so its own names are checked against that profile rather than against `kit`.
+// It is in this loop because the loop works: it is what caught `part-author-kit` still asking for
+// four tools the keep-list had just dropped (2026-09-08).
+const skinNames = (await (await open("node", ["tools/mcp/server.mjs"], {
+  ARMORPIECES_BB_PROFILE: "kit_skin", MCPTK_SESSION: `${SESSION}-skin`, MCPTK_CLIENT: "kit-probe",
+})).listTools()).tools.map((t) => t.name);
+expect("the eight skin tools are the kit_skin surface", skinNames.length === 8, skinNames.join(" "));
+
+for (const [agent, own] of [["part-author-kit", proxyNames], ["kit-smoke", proxyNames],
+                            ["skin-author", skinNames]]) {
   const line = /^tools:\s*(.+)$/m.exec(readFileSync(`${ROOT}/.claude/agents/${agent}.md`, "utf8"))?.[1] ?? "";
   const asked = line.split(",").map((s) => s.trim()).filter((s) => s.startsWith("mcp__"));
   const missing = asked.filter((n) => {
     const bare = n.replace(/^mcp__(mcptoolkit|blockbench)__/, "");
-    return n.startsWith("mcp__mcptoolkit__") ? !shimNames.includes(bare) : !proxyNames.includes(bare);
+    return n.startsWith("mcp__mcptoolkit__") ? !shimNames.includes(bare) : !own.includes(bare);
   });
   expect(`${agent} asks only for tools that are served`, missing.length === 0, missing.join(" "));
 }

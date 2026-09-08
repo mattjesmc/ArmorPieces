@@ -27,7 +27,9 @@ const client = new Client({ name: "shoot-skins", version: "0.1.0" });
 await client.connect(new StdioClientTransport({
   command: "node",
   args: [new URL("./server.mjs", import.meta.url).pathname.slice(1)],
-  env: { ...process.env, MCP_PROFILE: "authoring", ...(full ? { ARMORPIECES_SHOT_MAX: "0" } : {}) },
+  // `full`, and by its real name: this asked for "authoring" through MCP_PROFILE, which nothing
+  // reads, and got the upstream tools from the old default instead. A script wants everything.
+  env: { ...process.env, ARMORPIECES_BB_PROFILE: "full", ...(full ? { ARMORPIECES_SHOT_MAX: "0" } : {}) },
 }));
 
 const imageOf = (r) => {

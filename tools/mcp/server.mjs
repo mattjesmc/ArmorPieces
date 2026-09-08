@@ -40,7 +40,7 @@
 //
 // Configuration, all optional:
 //   ARMORPIECES_BB_URL      the bridge's base URL      (http://127.0.0.1:25801)
-//   ARMORPIECES_BB_PROFILE  authoring | kit | kit_skin | full   (authoring)
+//   ARMORPIECES_BB_PROFILE  kit | kit_skin | full             (kit)
 //                           `kit` serves ONLY the nine part tools: Blockbench comes from the
 //                           mcp-toolkit shim's project profile instead (.mcptoolkit/loop.json).
 //   ARMORPIECES_PYTHON      the interpreter for tools/ (python)
@@ -59,7 +59,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { INSTRUCTIONS, KIT_INSTRUCTIONS, NOTES, OWN_PROFILES, PROFILES, READ_ONLY } from "./profile.mjs";
+import { KIT_INSTRUCTIONS, KIT_SKIN_INSTRUCTIONS, NOTES, OWN_PROFILES, PROFILES, READ_ONLY } from "./profile.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, "..", "..");
@@ -83,7 +83,7 @@ const PYTHON = process.env.ARMORPIECES_PYTHON || "python";
 // and a session that dies at startup over a config nicety is a worse failure than a default.
 const RAW_PROFILE = (process.env.ARMORPIECES_BB_PROFILE || "").trim();
 const PROFILE = /^\$\{/.test(RAW_PROFILE) || !RAW_PROFILE
-  ? (RAW_PROFILE.match(/:-([\w]+)\}$/)?.[1] ?? "authoring")
+  ? (RAW_PROFILE.match(/:-([\w]+)\}$/)?.[1] ?? "kit")
   : RAW_PROFILE;
 const TEMP = join(tmpdir(), "armorpieces-bb");
 const STATUS = join(TEMP, "status");
@@ -1328,12 +1328,20 @@ const observes = (name) => {
   return stamp ? stamp === "observe" : READ_ONLY.has(name);
 };
 log(`profile ${PROFILE}: ${served.length} tools (${upstreamList.filter(visible).length} of ${upstreamList.length} from ${source}, ${ownNames.length} of ${Object.keys(OWN).length} own)`);
+// THIS session's OWN id, said once by the process that computes it. The A/B's identity column is
+// its falsifier, and until 2026-09-08 it had no evidence: `measure_sessions.py` read ids out of
+// reply TEXT, where the only id that ever appears is the one a `held_by` refusal names - which is
+// by definition somebody else's (mcp-toolkit CHANGELOG 0.140.0). A line on this server's own
+// stderr cannot be another session's, because nothing but this process writes it.
+log(`session ${SESSION.id} (client ${SESSION.client}, ppid ${process.ppid})`);
 
 // --- the server ------------------------------------------------------------------------------------
 
 const server = new Server(
   { name: "armorpieces-blockbench", version: "0.1.0" },
-  { capabilities: { tools: {} }, instructions: PROFILE === "kit" ? KIT_INSTRUCTIONS : INSTRUCTIONS },
+  // `full` is a script profile and a script does not read instructions; the part paragraph is the
+  // honest default for it.
+  { capabilities: { tools: {} }, instructions: PROFILE === "kit_skin" ? KIT_SKIN_INSTRUCTIONS : KIT_INSTRUCTIONS },
 );
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: served }));
@@ -1343,7 +1351,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   try {
     if (OWN[name]) {
       if (!ownVisible(name)) {
-        return reply(`${name} is not in the ${PROFILE} profile of the Armor Pieces bridge (ARMORPIECES_BB_PROFILE=authoring serves the piece and skin tools together).`, true);
+        return reply(`${name} is not in the ${PROFILE} profile of the Armor Pieces bridge (ARMORPIECES_BB_PROFILE=full serves the piece and skin tools together).`, true);
       }
       return await OWN[name].execute(args);
     }

@@ -1,12 +1,11 @@
 ---
 name: skin-author
 description: Draws ONE Armor Pieces armor skin end to end in Blockbench through the bridge - the greyscale master pair on vanilla's armor grid, judged on the figure and on three materials, checked and saved. Use one fresh skin-author per skin, run sequentially; two of them race on Blockbench's active tab.
-tools: Read, Grep, Glob, Bash, Edit, Write, mcp__blockbench__armorpieces_skins, mcp__blockbench__armorpieces_open_skin, mcp__blockbench__armorpieces_skin_sheet, mcp__blockbench__armorpieces_skin_paint, mcp__blockbench__armorpieces_skin_material, mcp__blockbench__armorpieces_skin_check, mcp__blockbench__armorpieces_save_skin, mcp__blockbench__armorpieces_close_skin, mcp__blockbench__capture_screenshot, mcp__blockbench__set_camera_angle, mcp__blockbench__get_project_info, mcp__blockbench__list_textures
+tools: Read, Grep, Glob, Bash, Edit, Write, mcp__blockbench__armorpieces_skins, mcp__blockbench__armorpieces_open_skin, mcp__blockbench__armorpieces_skin_sheet, mcp__blockbench__armorpieces_skin_paint, mcp__blockbench__armorpieces_skin_material, mcp__blockbench__armorpieces_skin_check, mcp__blockbench__armorpieces_save_skin, mcp__blockbench__armorpieces_close_skin, mcp__mcptoolkit__capture_screenshot, mcp__mcptoolkit__get_project_info, mcp__mcptoolkit__list_textures
 ---
 
 You draw one armor skin for the Armor Pieces mod, in Blockbench, through the bridge. The brief you
-were given names the skin and what it is; `docs/authoring.md`'s Skins section is the reference for
-every file one consists of.
+were given names the skin and what it is; `docs/plans/armor-skins.md` is the design it comes from.
 
 A skin is the armor's OWN texture. Not a part hung on a socket, not a trim painted over the armor -
 the plate itself. Nothing is modelled: the geometry is vanilla's four armor shells, on the vanilla
@@ -86,7 +85,11 @@ The figure faces **negative Z**. Cameras worth having:
     three-quarter   position [-26, 30, -30] target [0, 18, 0]
     legs            position [0, 10, -26]   target [0, 6, 0]
 
-`set_camera_angle` returns a screenshot of its own, so it is both the move and the look.
+`capture_screenshot` takes those as `position` / `target` / `projection` and returns the picture,
+so it is both the move and the look - there is no separate camera call. Better still for a first
+pass: `capture_screenshot {views: ["north", "south", "east", "isometric_right"]}` renders each
+preset into ONE contact sheet, which is one turn and one picture instead of four. Pictures are
+re-sent on every later turn, so take one only where it can still change what you draw.
 
 **Judge the dark end on netherite and the mid-tones on iron, never on the greyscale master.** The
 master overstates its darks badly - a `2` is 34 there and 137 on iron - so a hem that looks like a

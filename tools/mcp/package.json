@@ -1,7 +1,7 @@
 {
   "name": "armorpieces-blockbench-bridge",
   "version": "0.1.0",
-  "description": "MCP proxy in front of the Blockbench MCP Server plugin: an authoring profile of its tools, the Armor Pieces plugin's checks after every edit, and the piece-level tools an agent needs.",
+  "description": "MCP proxy beside the mcp-toolkit shim: the nine Armor Pieces part tools (`kit`) or the eight skin tools (`kit_skin`), each with the plugin's check appended after every edit. Blockbench itself comes from the shim.",
   "type": "module",
   "private": true,
   "bin": {

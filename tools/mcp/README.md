@@ -43,9 +43,30 @@ Python; the bridge is wiring, and `check_part.py --status` prints the same repor
 
 ## Setup
 
-Blockbench 5.1+ with two plugins loaded from file: mcp-toolkit's `blockbench/mcptoolkit_bridge.js`
-(then Tools > MCP Toolkit Bridge > Start, and allow `process` once - it binds 127.0.0.1:25801) and
-the Armor Pieces plugin. Node 18+ and the repository's Python. Then:
+Blockbench 5.1+ with two plugins, and **INSTALL them, do not just load them from file**. Blockbench
+will happily run a plugin it has not recorded, and a plugin missing from `installed_plugins` lives in
+the window that loaded it and in NO OTHER: a second window - which is how two sessions work in
+parallel (`docs/measurements/CONCURRENCY_AB.md` round 2) - boots from that stored list and comes up
+without a bridge, serving nothing, silently. Measured 2026-09-08: five windows opened in a row, all
+blank, with no error anywhere.
+
+- mcp-toolkit's `blockbench/mcptoolkit_bridge.js` - then Tools > MCP Toolkit Bridge > Start, and
+  allow `process` once (it reaches Node's `http` through it and binds the first free port at or
+  above 25801; the port it wins is that window's name).
+- the Armor Pieces plugin, `tools/blockbench_plugin/armorpieces.js`.
+
+Check both are recorded before trusting anything about a second window:
+
+```js
+JSON.parse(localStorage.getItem("installed_plugins")).map(p => p.id)   // what a NEW window will load
+Plugins.all.filter(p => p.installed).map(p => p.id)                    // what THIS window happens to have
+```
+
+Tools > MCP Toolkit Bridge > **Reserve this window** keeps one window for the person at the keyboard:
+a reserved window is never claimed by a session and never taken as a fallback. The reservation is
+stored by port, so the window that wins that port again comes back reserved.
+
+Node 18+ and the repository's Python. Then:
 
 ```
 cd tools/mcp && npm install
@@ -59,17 +80,19 @@ absolute paths):
   "type": "stdio",
   "command": "node",
   "args": ["<repo>/tools/mcp/server.mjs"],
-  "env": {
-    "ARMORPIECES_BB_PROFILE": "${ARMORPIECES_BB_PROFILE:-kit}",
-    "MCPTK_SESSION": "${CLAUDE_CODE_SESSION_ID:-armorpieces}"
-  }
+  "env": { "ARMORPIECES_BB_PROFILE": "${ARMORPIECES_BB_PROFILE:-kit}" }
 }
 ```
 
-`MCPTK_SESSION` must be **the same string the mcptoolkit server gets**. That is what makes the two
-processes one session to the plugin: the piece this server opens is bound, and the shim's
-`place_cube` goes to it by name rather than to whichever tab is active. Two different ids would make
-them refuse each other.
+**Set no session id.** Both this server and the mcp-toolkit shim compute the same one from their
+PARENT process - `mcptk-${process.ppid}`, the session's own `claude.exe` - which is what makes the
+two processes one session to the plugin: the piece this server opens is bound, and the shim's
+`place_cube` goes to it by name rather than to whichever tab is active. `MCPTK_SESSION` still wins if
+it is set, and setting it is how this went wrong twice. Deriving it from `CLAUDE_CODE_SESSION_ID`
+gave every headless child its parent's id, so four concurrent sessions were ONE session to the plugin
+and shared one binding; hard-coding it gave every session on the machine the same id, which disables
+the guards the other way. Both cost real money and are written up in
+`docs/measurements/blockbench-plugins.md`.
 
 Keeping the server name `blockbench` keeps every tool name a session has ever learned. Three
 environment variables, all optional: `ARMORPIECES_BB_URL` (the plugin's endpoint),
@@ -92,14 +115,21 @@ went on annotating `paint_with_brush` for weeks after the plugin that had it was
 |---|---|---|---|
 | `kit` (default) | none - the shim serves them | the nine part tools | part authoring, with `.mcptoolkit/loop.json` |
 | `kit_skin` | none | the eight skin tools | skin authoring, same split |
-| `authoring` | 29 | all 17 | the pre-kit loop, one server; still works |
-| `full` | 94 | all 17 | debugging the bridge itself |
+| `full` | all 26 | all 17 | a SCRIPT driving the bridge (`shoot_skins.mjs`), not a session |
+
+`authoring` - the pre-kit slice, one server carrying twenty of Blockbench's tools as well as its own
+- was removed on 2026-09-08. Both agents run under the split, and the only caller left was
+`shoot_skins.mjs`, which asked for it through an environment variable nothing reads and got it from
+the old default instead. Keeping a second hand-kept slice of the plugin's surface is the thing this
+file warns about two paragraphs up.
 
 What it is worth, as `node tools/mcp/check_kit.mjs` prints it at the top of a run: `kit` plus the
 shim's project profile is **28 tools and ~6.4k tokens** of manifest on **every turn** of a 40-turn
-session (9 tools ~1.7k here, 19 ~4.7k there). It was 39 tools and ~8.6k against the old plugin, and
-46 and ~10.4k under `authoring` before the split - the drop is the plugin's own doing, since its 26
-tools replace the 94 by folding families behind an `op`.
+session. Re-measured 2026-09-08 after the keep-list was re-cut on evidence (eleven of nineteen shim
+tools were never called across four runs): **24 tools and ~6.8k tokens**, 9 ~2.1k here and 15 ~4.8k
+there. It was 39 tools and ~8.6k against the old plugin, and 46 and ~10.4k before the split - most
+of the drop is the plugin's own doing, since its 26 tools replace the 94 by folding families behind
+an `op`.
 
 One thing the split has to get right, and it is why `runCheck` here shells out to
 `tools/check_active.py` rather than to `check_part.py`: the sheet-layout block and the `! repaint:
@@ -114,7 +144,7 @@ the regrow line and the picture budget, and closes without saving.
 ## What the model is told
 
 The server's `instructions` (in `profile.mjs`) are the one paragraph every session should read
-before its first call, and `.claude/agents/part-author.md` is the profile for a session that
+before its first call, and `.claude/agents/part-author-kit.md` is the profile for a session that
 authors one part: the same tools, the brief, and what a finished part consists of.
 
 > Blockbench is running with the Armor Pieces plugin, which opens a part as a tab on the vanilla
@@ -159,9 +189,12 @@ space for "leave this texel alone" - and a paint call is addressed by net and fa
 landing somewhere wrong. `armorpieces_skin_material iron` shows the bake in the viewport, live.
 
 Same shape as a part session: one fresh session per skin, sequentially, a brief under
-`docs/plans/briefs/skins/<skin>.md`, and
+`docs/plans/briefs/skins/<skin>.md`, and - **setting the profile**, because a skin session's
+eight tools live in `kit_skin` and the default is `kit` (the nine part tools); `.mcp.json` reads
+`ARMORPIECES_BB_PROFILE` and a child inherits it:
 
 ```
+$env:ARMORPIECES_BB_PROFILE = "kit_skin"
 claude -p --agent skin-author --model <model> --dangerously-skip-permissions \
   "Draw the Armor Pieces armor skin described in docs/plans/briefs/skins/<skin>.md. Read the brief,
    then draw it through the Blockbench bridge tools. Blockbench is running with the plugins loaded.

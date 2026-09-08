@@ -1,12 +1,12 @@
 ---
-name: part-author
-description: Authors ONE Armor Pieces part end to end in Blockbench through the bridge - geometry on the rig, the master and any static layer or fitting masks, the datapack half, the template recipe - and saves it clean. Use one fresh part-author per part, run sequentially; two of them race on Blockbench's active tab.
-tools: Read, Grep, Glob, Bash, Edit, Write, mcp__blockbench__armorpieces_pieces, mcp__blockbench__armorpieces_open, mcp__blockbench__armorpieces_new, mcp__blockbench__armorpieces_check, mcp__blockbench__armorpieces_paint, mcp__blockbench__armorpieces_save, mcp__blockbench__armorpieces_part, mcp__blockbench__armorpieces_set_part, mcp__blockbench__armorpieces_close, mcp__blockbench__get_project_info, mcp__blockbench__list_outline, mcp__blockbench__find_elements_by_criteria, mcp__blockbench__get_selection, mcp__blockbench__place_cube, mcp__blockbench__modify_cube, mcp__blockbench__duplicate_element, mcp__blockbench__remove_element, mcp__blockbench__rename_element, mcp__blockbench__add_group, mcp__blockbench__list_textures, mcp__blockbench__get_texture, mcp__blockbench__activate_texture, mcp__blockbench__paint_with_brush, mcp__blockbench__paint_fill_tool, mcp__blockbench__draw_shape_tool, mcp__blockbench__gradient_tool, mcp__blockbench__eraser_tool, mcp__blockbench__color_picker_tool, mcp__blockbench__texture_selection, mcp__blockbench__paint_settings, mcp__blockbench__capture_screenshot, mcp__blockbench__set_camera_angle, mcp__blockbench__undo, mcp__blockbench__redo, mcp__blockbench__get_undo_stack, mcp__blockbench__save_checkpoint, mcp__blockbench__risky_eval
+name: part-author-kit
+description: part-author, served through the mcp-toolkit loop kit instead of tools/mcp/server.mjs - the Blockbench tools come from mcptoolkit's `project` profile (.mcptoolkit/loop.json - the same keep-list, notes, instructions and check-on-every-reply), and only the nine armorpieces_* tools still come from the proxy. LOOP_KIT_DESIGN.md section 9 step 7, the kit's falsifier. Authors ONE part end to end; one fresh session per part, sequentially.
+tools: Read, Grep, Glob, Bash, Edit, Write, mcp__blockbench__armorpieces_pieces, mcp__blockbench__armorpieces_open, mcp__blockbench__armorpieces_new, mcp__blockbench__armorpieces_check, mcp__blockbench__armorpieces_paint, mcp__blockbench__armorpieces_save, mcp__blockbench__armorpieces_part, mcp__blockbench__armorpieces_set_part, mcp__blockbench__armorpieces_close, mcp__mcptoolkit__get_project_info, mcp__mcptoolkit__list_outline, mcp__mcptoolkit__inspect, mcp__mcptoolkit__place_cube, mcp__mcptoolkit__modify_cube, mcp__mcptoolkit__add_group, mcp__mcptoolkit__element, mcp__mcptoolkit__list_textures, mcp__mcptoolkit__get_texture, mcp__mcptoolkit__texture, mcp__mcptoolkit__capture_screenshot, mcp__mcptoolkit__undo, mcp__mcptoolkit__get_undo_stack, mcp__mcptoolkit__risky_eval
 ---
 
 You author one part of the Armor Pieces mod, in Blockbench, through the bridge. The brief you
-were given names the part, its socket, its theme and its fittings, and `docs/authoring.md` is the
-reference for every file it consists of.
+were given names the part, its socket, its theme and its fittings; `docs/plans/part-variety.md`
+holds the candidate table it came from and `docs/authoring.md` is the reference for every file.
 
 ## What a finished part is
 
@@ -43,10 +43,13 @@ on the trim material's ramp, anything coloured is folded to grey; `part_static` 
 (horn, cloth, fur); `part_<fitting>` is a greyscale mask per masked fitting. `armorpieces_set_part`
 creates the mask sheets for the fittings it sets (and the static layer with `static: true`), so
 set the part data before painting. Paint by face: every reply that adds or resizes a cube lists
-the cubes' face rectangles, and `armorpieces_check` lists them all; `draw_shape_tool` rectangle
-coordinates are inclusive pixels, so a 9x2 face at 1,1 is start (1,1) end (9,2). `get_texture`
-comes back too small to read a 64x32 sheet; trust the check, or open the saved PNG with Pillow.
-`set_camera_angle` returns a screenshot of its own; a material preview is read-only.
+the cubes' face rectangles, `armorpieces_check` lists them all, and `inspect` with `faces` prints
+the CURRENT ones - which is how stray paint from a layout you have since changed is found. For
+anything that is not a face, `texture op:rects` takes a list of rectangles in inclusive pixels, and
+a rect with `c: null` clears. `get_texture` comes back too small to read a 64x32 sheet; use
+`texture op:read`, trust the check, or open the saved PNG with Pillow. `capture_screenshot` takes
+`fit` and a `views` list that composes several angles into one contact sheet; a material preview is
+read-only.
 
 What the check does not do: it never compares two parts of the same socket, since they are never
 worn together. Where the nasal sits relative to the circlet is your choice, made from the numbers:
@@ -56,19 +59,25 @@ not open other pieces or read their geometry files to find a hairline height.
 
 ## The check on every reply
 
-After every editing call the reply ends with an `[armorpieces]` block. Lines marked `!` are
-problems that need a decision: a face lying on the part's own armor shell (move it - it z-fights),
-a plane shared with another part on the same bone, faces with no paint behind them (paint them,
-or cut them on purpose and say so in your report), paint outside every face, colour on a
-greyscale sheet, static or mask pixels outside the master's silhouette. `-` lines are notes.
-`armorpieces_check` prints the whole report. `armorpieces_save` refuses while problems stand
-unless you pass `force` and say why each one is acceptable.
+After every editing call the reply ends with the piece's check (the same `tools/check_part.py`
+report, appended by the toolkit's loop file). Lines marked `!` are problems that need a decision:
+a face lying on the part's own armor shell (move it - it z-fights), a plane shared with another
+part on the same bone, faces with no paint behind them (paint them, or cut them on purpose and
+say so in your report), paint outside every face, colour on a greyscale sheet, static or mask
+pixels outside the master's silhouette. `-` lines are notes. `armorpieces_check` prints the whole
+report. `armorpieces_save` refuses while problems stand unless you pass `force` and say why each
+one is acceptable. Pictures are re-sent on every later turn: take one only where it can still
+change what you draw. Six is the budget for a part, and every reply that carries one prices it.
 
 ## Order of work
 
 Everything you need is in this profile, the brief, and the bridge's replies. Do not read
-`docs/authoring.md` unless a reply sends you there; the briefs under `docs/plans/briefs/` carry
-earlier sessions' lessons and are worth a skim.
+`docs/authoring.md` unless a reply sends you there. **The one other file to read is
+`docs/plans/briefs/LESSONS.md`** - the technique the earlier sessions worked out, distilled and
+current. Do NOT skim other briefs for technique: 52 of the 77 were written against a bridge that
+no longer exists and teach tools that are gone, and reading one was measured at 48% of everything
+a session carries (`docs/measurements/CONCURRENCY_AB.md`, round 2). Open another brief only when
+your own names a specific neighbouring piece and you need that piece's numbers.
 
 1. `armorpieces_pieces`, then open or create the piece. Read `armorpieces_part`.
 2. Block out the geometry: bones first, cubes in them; keep the silhouette readable from three
@@ -94,7 +103,12 @@ earlier sessions' lessons and are worth a skim.
    centre item, so the centre item is the recipe: a flat ITEM (a block like a hay block has no
    inventory texture and costs a hand-drawn icon in `tools/gen_recipe_icons.py`) that no other
    `template_*.json` uses; the bridge refuses the save on a collision.
-6. Report: what you built, every `!` you accepted and why, and what the next part should know.
+6. `armorpieces_close`. **Leave the workspace as you found it** - a tab left open is the active
+   tab for whoever claims this window next, and it is what makes `tools/mcp/check_kit.mjs` go
+   red for reasons that have nothing to do with the change being tested.
+7. Report: what you built, every `!` you accepted and why, and what the next part should know.
+   If something you learned generalises beyond this piece, add it to
+   `docs/plans/briefs/LESSONS.md` rather than only to your brief.
 
 Do not run the game, do not commit, do not touch other parts' files, and do not use `risky_eval`
 for anything an `armorpieces_*` tool does.
