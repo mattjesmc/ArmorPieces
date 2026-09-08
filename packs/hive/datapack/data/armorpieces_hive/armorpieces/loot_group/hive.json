@@ -1,0 +1,15 @@
+{
+  "chance": 0.1,
+  "tables": [
+    {
+      "table": "minecraft:chests/end_city_treasure",
+      "chance": 0.15
+    },
+    "minecraft:chests/jungle_temple",
+    {
+      "table": "minecraft:chests/abandoned_mineshaft",
+      "chance": 0.05
+    }
+  ],
+  "parts": "#armorpieces_hive:hive"
+}

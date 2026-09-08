@@ -7,19 +7,19 @@
         "description": "the pieces, over every socket",
         "id": "pieces",
         "name": "pieces",
-        "text": "91",
-        "title": "91",
-        "value": 91,
-        "word": "91"
+        "text": "66",
+        "title": "66",
+        "value": 66,
+        "word": "66"
       },
       {
         "description": "the armor skins",
         "id": "skins",
         "name": "skins",
-        "text": "14",
-        "title": "fourteen",
-        "value": 14,
-        "word": "fourteen"
+        "text": "9",
+        "title": "nine",
+        "value": 9,
+        "word": "nine"
       },
       {
         "description": "the cloths",
@@ -52,10 +52,10 @@
         "description": "the loot groups",
         "id": "loot_groups",
         "name": "loot_groups",
-        "text": "6",
-        "title": "six",
-        "value": 6,
-        "word": "six"
+        "text": "3",
+        "title": "three",
+        "value": 3,
+        "word": "three"
       },
       {
         "description": "the effect types a piece may carry",
@@ -70,98 +70,98 @@
         "description": "the pieces with a template recipe; the rest are found",
         "id": "craftable",
         "name": "craftable",
-        "text": "31",
-        "title": "31",
-        "value": 31,
-        "word": "31"
+        "text": "29",
+        "title": "29",
+        "value": 29,
+        "word": "29"
       },
       {
         "description": "the fewest pieces any socket has to choose from",
         "id": "least_per_socket",
         "name": "least_per_socket",
-        "text": "6",
-        "title": "six",
-        "value": 6,
-        "word": "six"
+        "text": "2",
+        "title": "two",
+        "value": 2,
+        "word": "two"
       }
     ],
     "sockets": [
       {
         "bone": "head",
-        "count": 7,
+        "count": 4,
         "description": "Top of the skull, pointing up",
         "id": "crest",
         "name": "crest",
         "pair": false,
         "slot": "helmet",
         "title": "Crest",
-        "value": "7 pieces"
+        "value": "4 pieces"
       },
       {
         "bone": "head",
-        "count": 14,
+        "count": 12,
         "description": "Across the forehead, on the front face of the head",
         "id": "brow",
         "name": "brow",
         "pair": false,
         "slot": "helmet",
         "title": "Brow",
-        "value": "14 pieces"
+        "value": "12 pieces"
       },
       {
         "bone": "head",
-        "count": 8,
+        "count": 2,
         "description": "Both temples, mirrored",
         "id": "horns",
         "name": "horns",
         "pair": true,
         "slot": "helmet",
         "title": "Temples",
-        "value": "8 pieces"
+        "value": "2 pieces"
       },
       {
         "bone": "left_arm",
-        "count": 7,
+        "count": 4,
         "description": "Both shoulders, mirrored, riding on the arms so they swing with them",
         "id": "pauldrons",
         "name": "pauldrons",
         "pair": true,
         "slot": "chestplate",
         "title": "Shoulders",
-        "value": "7 pieces"
+        "value": "4 pieces"
       },
       {
         "bone": "body",
-        "count": 8,
+        "count": 6,
         "description": "Upper back",
         "id": "back",
         "name": "back",
         "pair": false,
         "slot": "chestplate",
         "title": "Back",
-        "value": "8 pieces"
+        "value": "6 pieces"
       },
       {
         "bone": "body",
-        "count": 8,
+        "count": 7,
         "description": "Base of the throat, on the front of the chest",
         "id": "collar",
         "name": "collar",
         "pair": false,
         "slot": "chestplate",
         "title": "Collar",
-        "value": "8 pieces"
+        "value": "7 pieces"
       },
       {
         "bone": "left_arm",
-        "count": 7,
+        "count": 6,
         "description": "Both forearms, mirrored, riding on the arms",
         "id": "vambraces",
         "name": "vambraces",
         "pair": true,
         "slot": "chestplate",
         "title": "Forearms",
-        "value": "7 pieces"
+        "value": "6 pieces"
       },
       {
         "bone": "body",
@@ -176,47 +176,47 @@
       },
       {
         "bone": "left_leg",
-        "count": 6,
+        "count": 4,
         "description": "Both hips, mirrored, riding on the legs",
         "id": "tassets",
         "name": "tassets",
         "pair": true,
         "slot": "leggings",
         "title": "Hips",
-        "value": "6 pieces"
+        "value": "4 pieces"
       },
       {
         "bone": "left_leg",
-        "count": 6,
+        "count": 5,
         "description": "Both knees, mirrored, on the front of the legs",
         "id": "knees",
         "name": "knees",
         "pair": true,
         "slot": "leggings",
         "title": "Knees",
-        "value": "6 pieces"
+        "value": "5 pieces"
       },
       {
         "bone": "left_leg",
-        "count": 7,
+        "count": 6,
         "description": "Both heels, mirrored, at the back of the ankle",
         "id": "spurs",
         "name": "spurs",
         "pair": true,
         "slot": "boots",
         "title": "Heels",
-        "value": "7 pieces"
+        "value": "6 pieces"
       },
       {
         "bone": "left_leg",
-        "count": 6,
+        "count": 3,
         "description": "Both shins, mirrored, on the front of the lower leg",
         "id": "greaves",
         "name": "greaves",
         "pair": true,
         "slot": "boots",
         "title": "Shins",
-        "value": "6 pieces"
+        "value": "3 pieces"
       }
     ]
   },
@@ -263,80 +263,80 @@
         "elements": [
           {
             "bone": "head",
-            "count": 7,
+            "count": 4,
             "description": "Top of the skull, pointing up",
             "id": "crest",
             "name": "crest",
             "pair": false,
             "slot": "helmet",
             "title": "Crest",
-            "value": "7 pieces"
+            "value": "4 pieces"
           },
           {
             "bone": "head",
-            "count": 14,
+            "count": 12,
             "description": "Across the forehead, on the front face of the head",
             "id": "brow",
             "name": "brow",
             "pair": false,
             "slot": "helmet",
             "title": "Brow",
-            "value": "14 pieces"
+            "value": "12 pieces"
           },
           {
             "bone": "head",
-            "count": 8,
+            "count": 2,
             "description": "Both temples, mirrored",
             "id": "horns",
             "name": "horns",
             "pair": true,
             "slot": "helmet",
             "title": "Temples",
-            "value": "8 pieces"
+            "value": "2 pieces"
           },
           {
             "bone": "left_arm",
-            "count": 7,
+            "count": 4,
             "description": "Both shoulders, mirrored, riding on the arms so they swing with them",
             "id": "pauldrons",
             "name": "pauldrons",
             "pair": true,
             "slot": "chestplate",
             "title": "Shoulders",
-            "value": "7 pieces"
+            "value": "4 pieces"
           },
           {
             "bone": "body",
-            "count": 8,
+            "count": 6,
             "description": "Upper back",
             "id": "back",
             "name": "back",
             "pair": false,
             "slot": "chestplate",
             "title": "Back",
-            "value": "8 pieces"
+            "value": "6 pieces"
           },
           {
             "bone": "body",
-            "count": 8,
+            "count": 7,
             "description": "Base of the throat, on the front of the chest",
             "id": "collar",
             "name": "collar",
             "pair": false,
             "slot": "chestplate",
             "title": "Collar",
-            "value": "8 pieces"
+            "value": "7 pieces"
           },
           {
             "bone": "left_arm",
-            "count": 7,
+            "count": 6,
             "description": "Both forearms, mirrored, riding on the arms",
             "id": "vambraces",
             "name": "vambraces",
             "pair": true,
             "slot": "chestplate",
             "title": "Forearms",
-            "value": "7 pieces"
+            "value": "6 pieces"
           },
           {
             "bone": "body",
@@ -351,47 +351,47 @@
           },
           {
             "bone": "left_leg",
-            "count": 6,
+            "count": 4,
             "description": "Both hips, mirrored, riding on the legs",
             "id": "tassets",
             "name": "tassets",
             "pair": true,
             "slot": "leggings",
             "title": "Hips",
-            "value": "6 pieces"
+            "value": "4 pieces"
           },
           {
             "bone": "left_leg",
-            "count": 6,
+            "count": 5,
             "description": "Both knees, mirrored, on the front of the legs",
             "id": "knees",
             "name": "knees",
             "pair": true,
             "slot": "leggings",
             "title": "Knees",
-            "value": "6 pieces"
+            "value": "5 pieces"
           },
           {
             "bone": "left_leg",
-            "count": 7,
+            "count": 6,
             "description": "Both heels, mirrored, at the back of the ankle",
             "id": "spurs",
             "name": "spurs",
             "pair": true,
             "slot": "boots",
             "title": "Heels",
-            "value": "7 pieces"
+            "value": "6 pieces"
           },
           {
             "bone": "left_leg",
-            "count": 6,
+            "count": 3,
             "description": "Both shins, mirrored, on the front of the lower leg",
             "id": "greaves",
             "name": "greaves",
             "pair": true,
             "slot": "boots",
             "title": "Shins",
-            "value": "6 pieces"
+            "value": "3 pieces"
           }
         ],
         "id": "sockets",
@@ -439,19 +439,19 @@
             "description": "the pieces, over every socket",
             "id": "pieces",
             "name": "pieces",
-            "text": "91",
-            "title": "91",
-            "value": 91,
-            "word": "91"
+            "text": "66",
+            "title": "66",
+            "value": 66,
+            "word": "66"
           },
           {
             "description": "the armor skins",
             "id": "skins",
             "name": "skins",
-            "text": "14",
-            "title": "fourteen",
-            "value": 14,
-            "word": "fourteen"
+            "text": "9",
+            "title": "nine",
+            "value": 9,
+            "word": "nine"
           },
           {
             "description": "the cloths",
@@ -484,10 +484,10 @@
             "description": "the loot groups",
             "id": "loot_groups",
             "name": "loot_groups",
-            "text": "6",
-            "title": "six",
-            "value": 6,
-            "word": "six"
+            "text": "3",
+            "title": "three",
+            "value": 3,
+            "word": "three"
           },
           {
             "description": "the effect types a piece may carry",
@@ -502,19 +502,19 @@
             "description": "the pieces with a template recipe; the rest are found",
             "id": "craftable",
             "name": "craftable",
-            "text": "31",
-            "title": "31",
-            "value": 31,
-            "word": "31"
+            "text": "29",
+            "title": "29",
+            "value": 29,
+            "word": "29"
           },
           {
             "description": "the fewest pieces any socket has to choose from",
             "id": "least_per_socket",
             "name": "least_per_socket",
-            "text": "6",
-            "title": "six",
-            "value": 6,
-            "word": "six"
+            "text": "2",
+            "title": "two",
+            "value": 2,
+            "word": "two"
           }
         ],
         "id": "what-is-here",
@@ -584,80 +584,80 @@
         "elements": [
           {
             "bone": "head",
-            "count": 7,
+            "count": 4,
             "description": "Top of the skull, pointing up",
             "id": "crest",
             "name": "crest",
             "pair": false,
             "slot": "helmet",
             "title": "Crest",
-            "value": "7 pieces"
+            "value": "4 pieces"
           },
           {
             "bone": "head",
-            "count": 14,
+            "count": 12,
             "description": "Across the forehead, on the front face of the head",
             "id": "brow",
             "name": "brow",
             "pair": false,
             "slot": "helmet",
             "title": "Brow",
-            "value": "14 pieces"
+            "value": "12 pieces"
           },
           {
             "bone": "head",
-            "count": 8,
+            "count": 2,
             "description": "Both temples, mirrored",
             "id": "horns",
             "name": "horns",
             "pair": true,
             "slot": "helmet",
             "title": "Temples",
-            "value": "8 pieces"
+            "value": "2 pieces"
           },
           {
             "bone": "left_arm",
-            "count": 7,
+            "count": 4,
             "description": "Both shoulders, mirrored, riding on the arms so they swing with them",
             "id": "pauldrons",
             "name": "pauldrons",
             "pair": true,
             "slot": "chestplate",
             "title": "Shoulders",
-            "value": "7 pieces"
+            "value": "4 pieces"
           },
           {
             "bone": "body",
-            "count": 8,
+            "count": 6,
             "description": "Upper back",
             "id": "back",
             "name": "back",
             "pair": false,
             "slot": "chestplate",
             "title": "Back",
-            "value": "8 pieces"
+            "value": "6 pieces"
           },
           {
             "bone": "body",
-            "count": 8,
+            "count": 7,
             "description": "Base of the throat, on the front of the chest",
             "id": "collar",
             "name": "collar",
             "pair": false,
             "slot": "chestplate",
             "title": "Collar",
-            "value": "8 pieces"
+            "value": "7 pieces"
           },
           {
             "bone": "left_arm",
-            "count": 7,
+            "count": 6,
             "description": "Both forearms, mirrored, riding on the arms",
             "id": "vambraces",
             "name": "vambraces",
             "pair": true,
             "slot": "chestplate",
             "title": "Forearms",
-            "value": "7 pieces"
+            "value": "6 pieces"
           },
           {
             "bone": "body",
@@ -672,47 +672,47 @@
           },
           {
             "bone": "left_leg",
-            "count": 6,
+            "count": 4,
             "description": "Both hips, mirrored, riding on the legs",
             "id": "tassets",
             "name": "tassets",
             "pair": true,
             "slot": "leggings",
             "title": "Hips",
-            "value": "6 pieces"
+            "value": "4 pieces"
           },
           {
             "bone": "left_leg",
-            "count": 6,
+            "count": 5,
             "description": "Both knees, mirrored, on the front of the legs",
             "id": "knees",
             "name": "knees",
             "pair": true,
             "slot": "leggings",
             "title": "Knees",
-            "value": "6 pieces"
+            "value": "5 pieces"
           },
           {
             "bone": "left_leg",
-            "count": 7,
+            "count": 6,
             "description": "Both heels, mirrored, at the back of the ankle",
             "id": "spurs",
             "name": "spurs",
             "pair": true,
             "slot": "boots",
             "title": "Heels",
-            "value": "7 pieces"
+            "value": "6 pieces"
           },
           {
             "bone": "left_leg",
-            "count": 6,
+            "count": 3,
             "description": "Both shins, mirrored, on the front of the lower leg",
             "id": "greaves",
             "name": "greaves",
             "pair": true,
             "slot": "boots",
             "title": "Shins",
-            "value": "6 pieces"
+            "value": "3 pieces"
           }
         ]
       },
@@ -805,19 +805,19 @@
             "description": "the pieces, over every socket",
             "id": "pieces",
             "name": "pieces",
-            "text": "91",
-            "title": "91",
-            "value": 91,
-            "word": "91"
+            "text": "66",
+            "title": "66",
+            "value": 66,
+            "word": "66"
           },
           {
             "description": "the armor skins",
             "id": "skins",
             "name": "skins",
-            "text": "14",
-            "title": "fourteen",
-            "value": 14,
-            "word": "fourteen"
+            "text": "9",
+            "title": "nine",
+            "value": 9,
+            "word": "nine"
           },
           {
             "description": "the cloths",
@@ -850,10 +850,10 @@
             "description": "the loot groups",
             "id": "loot_groups",
             "name": "loot_groups",
-            "text": "6",
-            "title": "six",
-            "value": 6,
-            "word": "six"
+            "text": "3",
+            "title": "three",
+            "value": 3,
+            "word": "three"
           },
           {
             "description": "the effect types a piece may carry",
@@ -868,19 +868,19 @@
             "description": "the pieces with a template recipe; the rest are found",
             "id": "craftable",
             "name": "craftable",
-            "text": "31",
-            "title": "31",
-            "value": 31,
-            "word": "31"
+            "text": "29",
+            "title": "29",
+            "value": 29,
+            "word": "29"
           },
           {
             "description": "the fewest pieces any socket has to choose from",
             "id": "least_per_socket",
             "name": "least_per_socket",
-            "text": "6",
-            "title": "six",
-            "value": 6,
-            "word": "six"
+            "text": "2",
+            "title": "two",
+            "value": 2,
+            "word": "two"
           }
         ]
       },

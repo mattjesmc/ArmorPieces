@@ -12,6 +12,7 @@ import com.mattjesmc.armorpieces.item.FittingTemplateItem;
 import com.mattjesmc.armorpieces.item.SkinTemplateItem;
 import com.mattjesmc.armorpieces.skin.ArmorSkin;
 import com.mattjesmc.armorpieces.skin.ArmorSkinValue;
+import com.mattjesmc.armorpieces.identity.Tolerant;
 import java.util.EnumMap;
 import java.util.Map;
 import net.minecraft.core.Holder;
@@ -92,7 +93,7 @@ public final class ModItems {
      */
     public static ItemStack fittingTemplateFor(final Holder<Fitting> fitting) {
         final ItemStack stack = new ItemStack(fittingTemplate);
-        stack.set(ModDataComponents.FITTING, fitting);
+        stack.set(ModDataComponents.FITTING, Tolerant.of(fitting));
         return stack;
     }
 
@@ -107,7 +108,7 @@ public final class ModItems {
      */
     public static ItemStack skinTemplateFor(final Holder<ArmorSkin> skin) {
         final ItemStack stack = new ItemStack(skinTemplate);
-        stack.set(ModDataComponents.SKIN, new ArmorSkinValue(skin));
+        stack.set(ModDataComponents.SKIN, Tolerant.of(new ArmorSkinValue(skin)));
         return stack;
     }
 
@@ -123,7 +124,7 @@ public final class ModItems {
      */
     public static ItemStack clothTemplateFor(final Holder<Cloth> cloth) {
         final ItemStack stack = new ItemStack(clothTemplate);
-        stack.set(ModDataComponents.CLOTH, ClothValue.of(cloth));
+        stack.set(ModDataComponents.CLOTH, Tolerant.of(ClothValue.of(cloth)));
         return stack;
     }
 
@@ -138,7 +139,7 @@ public final class ModItems {
      */
     public static ItemStack templateFor(final DecorationAnchor anchor, final Holder<ArmorDecoration> decoration) {
         final ItemStack stack = new ItemStack(template(anchor));
-        stack.set(ModDataComponents.DECORATION, decoration);
+        stack.set(ModDataComponents.DECORATION, Tolerant.of(decoration));
         return stack;
     }
 }

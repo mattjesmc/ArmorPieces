@@ -2,10 +2,15 @@ package com.mattjesmc.armorpieces.decoration;
 
 import com.mattjesmc.armorpieces.decoration.effect.DecorationEffect;
 import com.mattjesmc.armorpieces.decoration.fitting.Fitting;
+import com.mattjesmc.armorpieces.identity.Identified;
+import com.mattjesmc.armorpieces.identity.Rebind;
+import com.mattjesmc.armorpieces.identity.Tolerant;
+import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import net.minecraft.core.Holder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -68,8 +73,10 @@ public record ArmorDecoration(
     Set<DecorationAnchor> anchors,
     List<Holder<Fitting>> fittings,
     List<DecorationEffect> effects,
-    List<DecorationLoot> loot
-) {
+    List<DecorationLoot> loot,
+    List<Identifier> formerIds,
+    Optional<String> uid
+) implements Identified {
     public static final Codec<ArmorDecoration> DIRECT_CODEC = RecordCodecBuilder.create(
         i -> i.group(
                 Identifier.CODEC.fieldOf("asset_id").forGetter(ArmorDecoration::assetId),
@@ -79,7 +86,10 @@ public record ArmorDecoration(
                     .fieldOf("anchors").forGetter(ArmorDecoration::anchors),
                 Fitting.CODEC.listOf().optionalFieldOf("fittings", List.of()).forGetter(ArmorDecoration::fittings),
                 DecorationEffect.LIST_CODEC.optionalFieldOf("effects", List.of()).forGetter(ArmorDecoration::effects),
-                DecorationLoot.LIST_CODEC.optionalFieldOf("loot", List.of()).forGetter(ArmorDecoration::loot)
+                DecorationLoot.LIST_CODEC.optionalFieldOf("loot", List.of()).forGetter(ArmorDecoration::loot),
+                Identifier.CODEC.listOf()
+                    .optionalFieldOf("former_ids", List.of()).forGetter(ArmorDecoration::formerIds),
+                Codec.STRING.optionalFieldOf("uid").forGetter(ArmorDecoration::uid)
             )
             .apply(i, ArmorDecoration::new)
     );
@@ -116,11 +126,53 @@ public record ArmorDecoration(
     public static final StreamCodec<RegistryFriendlyByteBuf, Holder<ArmorDecoration>> STREAM_CODEC =
         ByteBufCodecs.holder(ArmorPiecesRegistries.ARMOR_DECORATION, DIRECT_STREAM_CODEC);
 
+    /**
+     * The form the {@code armorpieces:decoration} component uses - a part that may have moved, or may
+     * not be installed at all.
+     *
+     * <p>A template naming a part nothing defines would otherwise take its own item down with it: a
+     * chest of Tusks templates would be a chest of nothing after the pack moved. Kept and rebound
+     * instead, so the template still knows what it is the day the pack comes back.
+     */
+    public static final Codec<Tolerant<Holder<ArmorDecoration>>> TOLERANT_CODEC =
+        Tolerant.codec(CODEC, ArmorDecoration::rebind);
+    public static final StreamCodec<RegistryFriendlyByteBuf, Tolerant<Holder<ArmorDecoration>>>
+        TOLERANT_STREAM_CODEC = Tolerant.stream(STREAM_CODEC);
+
+    /** The part this id has moved to, if any; otherwise it is counted as missing and kept raw. */
+    private static Optional<Holder<ArmorDecoration>> rebind(final Dynamic<?> raw) {
+        final Identifier id = raw.asString().result().map(Identifier::tryParse).orElse(null);
+        final Optional<Holder<ArmorDecoration>> found =
+            Rebind.find(ArmorPiecesRegistries.ARMOR_DECORATION, id, null);
+        if (found.isEmpty()) {
+            Rebind.miss(ArmorPiecesRegistries.ARMOR_DECORATION,
+                id == null ? "an unreadable part" : id.toString());
+        }
+        return found;
+    }
+
     public ArmorDecoration {
         anchors = Set.copyOf(anchors);
         fittings = List.copyOf(fittings);
         effects = List.copyOf(effects);
         loot = List.copyOf(loot);
+        formerIds = List.copyOf(formerIds);
+    }
+
+    /**
+     * A part that has never moved and has no lineage of its own - the shape every part had before
+     * identity existed, and the one the wire still uses, since neither field is synced: rebinding
+     * happens where saves are read, which is the server.
+     */
+    public ArmorDecoration(
+        final Identifier assetId,
+        final Component description,
+        final Set<DecorationAnchor> anchors,
+        final List<Holder<Fitting>> fittings,
+        final List<DecorationEffect> effects,
+        final List<DecorationLoot> loot
+    ) {
+        this(assetId, description, anchors, fittings, effects, loot, List.of(), Optional.empty());
     }
 
     /** Whether this part has anywhere for a second material to go. */

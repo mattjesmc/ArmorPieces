@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_hunt:shin_spikes",
+  "description": {
+    "translate": "decoration.armorpieces_hunt.shin_spikes"
+  },
+  "anchors": [
+    "greaves"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "former_ids": [
+    "armorpieces:shin_spikes"
+  ],
+  "uid": "ap1hbimpil263kv3ddecyuq"
+}

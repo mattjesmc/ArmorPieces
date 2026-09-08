@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_hive:aerials",
+  "description": {
+    "translate": "decoration.armorpieces_hive.aerials"
+  },
+  "anchors": [
+    "horns"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "former_ids": [
+    "armorpieces:aerials"
+  ],
+  "uid": "ap14snoziloni7lkwt27roq"
+}

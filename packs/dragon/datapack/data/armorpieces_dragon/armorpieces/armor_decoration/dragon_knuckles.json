@@ -1,0 +1,10 @@
+{
+  "asset_id": "armorpieces_dragon:dragon_knuckles",
+  "description": {
+    "translate": "decoration.armorpieces_dragon.dragon_knuckles"
+  },
+  "anchors": [
+    "knees"
+  ],
+  "uid": "ap13jwbq6m66jtfz7gnzi2q"
+}

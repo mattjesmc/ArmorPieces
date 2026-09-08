@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_coral:coral_crown",
+  "description": {
+    "translate": "decoration.armorpieces_coral.coral_crown"
+  },
+  "anchors": [
+    "crest"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1i5fum6srwbf572ju67qq"
+}

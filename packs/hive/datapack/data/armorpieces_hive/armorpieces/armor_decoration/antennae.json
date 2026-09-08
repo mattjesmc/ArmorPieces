@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_hive:antennae",
+  "description": {
+    "translate": "decoration.armorpieces_hive.antennae"
+  },
+  "anchors": [
+    "crest"
+  ],
+  "fittings": [
+    "armorpieces:gemstone"
+  ],
+  "former_ids": [
+    "armorpieces:antennae"
+  ],
+  "uid": "ap1wpqvgzawndlngeucerha"
+}

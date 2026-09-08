@@ -1,45 +1,90 @@
 #!/usr/bin/env node
-// The Armor Pieces bridge: an MCP server that stands in front of the Blockbench MCP Server plugin.
+// The Armor Pieces bridge: an MCP server that stands in front of Blockbench's plugin bridge.
 //
-// The plugin (jasonjgardner/blockbench-mcp-plugin) runs inside Blockbench and speaks MCP over HTTP.
-// It has no way for another plugin to add tools, so everything Armor Pieces wants an agent to have
-// is added here, one hop out, by a stdio server that is the agent's only view of Blockbench:
+// The bridge is `mcptoolkit_bridge.js` (mcp-toolkit 0.133.0+, plain HTTP on 127.0.0.1:25801), which
+// replaced the third-party Blockbench MCP plugin this server was first written against. Neither can
+// be extended by another plugin, so everything Armor Pieces wants an agent to have is added here,
+// one hop out, by a stdio server:
 //
-//   - a PROFILE: the tools a part author uses, out of the ninety-odd the plugin registers
-//     (profile.mjs). Tool names are unchanged, so `mcp__blockbench__place_cube` is still that.
+//   - the armorpieces_* tools: open, new, check, save, part, set_part, pieces, close. Each is a
+//     risky_eval into the plugin's `armorpieces_api` with the bridge's traps handled here. Under
+//     the default `kit` profile these nine are the WHOLE of what this server serves.
 //   - a CHECK after every editing call: the Armor Pieces plugin publishes the open piece after
 //     each edit (tools/blockbench_plugin, "status for the bridge"), and this runs
 //     tools/check_part.py over it and appends the compact report to the reply - so a face that
 //     landed on the helmet shell is reported by the call that put it there.
-//   - the armorpieces_* tools: open, new, check, save, part, set_part, pieces, close. Each is a
-//     risky_eval into the plugin's `armorpieces_api` with the bridge's traps handled here.
+//   - a PROFILE over Blockbench's own manifest (profile.mjs), for the pre-kit profiles. Names are
+//     unchanged, so `mcp__blockbench__place_cube` is still that.
+//
+// TRANSPORT (2026-09-07). The bridge speaks the game bridge's shape - GET /hello, GET /tools with
+// `mechanism` on every entry, POST /cmd {tool, args, session} -> {ok, result, mechanism} - so there
+// is no MCP handshake, no session id in a response header and no SSE to parse. Two things that
+// shape the code here: a picture comes back as `_image` on the result rather than as MCP image
+// content, and `mechanism` on the manifest replaces the hand-kept read-only list.
+//
+// ONE SESSION PER PIECE, AND THAT IS HARDER THAN IT LOOKS. The plugin binds a project to the session
+// that made or opened it and refuses an EDIT to a project another live session holds. This server
+// and the mcp-toolkit shim are two processes inside one Claude session editing one piece, so they
+// must present ONE identity, or the shim's place_cube and this server's armorpieces_save would
+// refuse each other. They agree without being told: both fall back to the PARENT process id, which
+// is the `claude.exe` they are both direct children of.
+//
+// The trap is the other direction, and `.mcp.json` has now been wrong twice in it. It derived the
+// id from CLAUDE_CODE_SESSION_ID, which a headless `claude -p` child INHERITS - so every child a
+// session launched presented the SAME id, was one session to the plugin, and shared ONE binding
+// (measured 2026-09-07: a dozen of kelp_mantle's calls answered about coral_crown). The fix was
+// ${ARMORPIECES_SESSION:-armorpieces}, which nothing ever set, so every session fell back to the
+// same literal and the bug survived its own fix. `.mcp.json` now sets no id at all. An explicit
+// MCPTK_SESSION still wins, for deliberate sharing - and, independently, `evalIn` names its
+// project on every call so a shared binding cannot misdirect these tools again.
 //
 // Configuration, all optional:
-//   ARMORPIECES_BB_URL      the plugin's endpoint      (http://localhost:3000/bb-mcp)
-//   ARMORPIECES_BB_PROFILE  authoring | full           (authoring)
+//   ARMORPIECES_BB_URL      the bridge's base URL      (http://127.0.0.1:25801)
+//   ARMORPIECES_BB_PROFILE  authoring | kit | kit_skin | full   (authoring)
+//                           `kit` serves ONLY the nine part tools: Blockbench comes from the
+//                           mcp-toolkit shim's project profile instead (.mcptoolkit/loop.json).
 //   ARMORPIECES_PYTHON      the interpreter for tools/ (python)
+//   MCPTK_SESSION           the identity both this server and the shim bind projects under
+//                           (unset: `mcptk-<parent pid>`, which the pair derives identically)
 //
 // Blockbench need not be running when this starts: the tool list then comes from the last live
-// manifest (cached in the temp dir) or the snapshot beside this file, and the connection is made on
-// the first call. A session the plugin timed out is reconnected once, transparently.
+// manifest (cached in the temp dir) or the snapshot beside this file, and the first call reaches
+// for the app again.
 
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { execFile } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { INSTRUCTIONS, NOTES, PROFILES, READ_ONLY } from "./profile.mjs";
+import { INSTRUCTIONS, KIT_INSTRUCTIONS, NOTES, OWN_PROFILES, PROFILES, READ_ONLY } from "./profile.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, "..", "..");
-const UPSTREAM = process.env.ARMORPIECES_BB_URL || "http://localhost:3000/bb-mcp";
+// Where the bridge is; `/cmd` and `/tools` hang off it. A stale `.../bb-mcp` from the old plugin
+// would otherwise fail as a 404 with nothing saying why, so it is trimmed and reported.
+//
+// NOT ONE PORT ANY MORE (mcp-toolkit 0.139.0 / plugin 0.5.0). Each Blockbench WINDOW's plugin takes
+// the first free port at or above 25801, so the port names the window, and a session works in a
+// window of its own. A bare URL still PINS one window, which is what writing one down means; the
+// default, and `host:from-to`, is a range to discover over.
+const RAW_URL = (process.env.ARMORPIECES_BB_URL || "").trim()
+  .replace(/\/(bb-mcp|cmd|tools|hello)\/?$/, "").replace(/\/$/, "");
+const RANGE = /^(?:https?:\/\/)?([^/:\s]+):(\d+)-(\d+)$/i.exec(RAW_URL);
+const PINNED = RAW_URL && !RANGE ? RAW_URL : null;
+const SCAN = RANGE
+  ? { host: RANGE[1], from: Number(RANGE[2]), to: Math.max(Number(RANGE[2]), Number(RANGE[3])) }
+  : { host: "127.0.0.1", from: 25801, to: 25816 };
 const PYTHON = process.env.ARMORPIECES_PYTHON || "python";
-const PROFILE = (process.env.ARMORPIECES_BB_PROFILE || "authoring").trim();
+// `.mcp.json` sets this as `${ARMORPIECES_BB_PROFILE:-kit}` so one run can pick another profile
+// without editing the file. A client that does not expand that syntax would hand us the literal,
+// and a session that dies at startup over a config nicety is a worse failure than a default.
+const RAW_PROFILE = (process.env.ARMORPIECES_BB_PROFILE || "").trim();
+const PROFILE = /^\$\{/.test(RAW_PROFILE) || !RAW_PROFILE
+  ? (RAW_PROFILE.match(/:-([\w]+)\}$/)?.[1] ?? "authoring")
+  : RAW_PROFILE;
 const TEMP = join(tmpdir(), "armorpieces-bb");
 const STATUS = join(TEMP, "status");
 const CACHE = join(TEMP, "blockbench-tools.json");
@@ -53,24 +98,167 @@ const log = (msg) => process.stderr.write(`[armorpieces-bridge] ${msg}\n`);
 
 // --- upstream ------------------------------------------------------------------------------------
 
-let client = null;
+/**
+ * Who this server is to the plugin. MCPTK_SESSION is the id the mcp-toolkit shim binds projects
+ * under; sharing it is what makes the shim's place_cube and this server's armorpieces_save one
+ * session holding one piece rather than two sessions refusing each other.
+ *
+ * Nothing has to set it. The fallback is the PARENT process id - this session's `claude.exe`,
+ * which both this server and the shim are direct children of - so the pair agrees, two concurrent
+ * sessions never do, and no environment variable can leak it. The string must be IDENTICAL on both
+ * sides, which is why the prefix is the shim's `mcptk-` and not this server's own name; `client`
+ * is what says which of the two is calling. (mcp-toolkit
+ * `docs/models/BLOCKBENCH_ISOLATION_DESIGN.md` section 6.1.)
+ */
+const SESSION = {
+  id: (process.env.MCPTK_SESSION ?? "").trim() || `mcptk-${process.ppid}`,
+  client: (process.env.MCPTK_CLIENT ?? "").trim() || "armorpieces-bridge",
+  profile: PROFILE,
+};
 
-async function upstream() {
-  if (client) return client;
-  const c = new Client({ name: "armorpieces-bridge", version: "0.1.0" });
-  const transport = new StreamableHTTPClientTransport(new URL(UPSTREAM));
+// A contact sheet or a piece being written back is a long call; a plugin sitting in a dialog for a
+// human's own reasons is the case the message has to survive.
+const CALL_TIMEOUT_MS = 120_000;
+// A window either answers on localhost at once or is not there; the scan is the whole range at once.
+const HELLO_TIMEOUT_MS = 1_000;
+
+// --- which window --------------------------------------------------------------------------------
+// THE HALF OF STEP 2 THAT LIVES HERE. A session is two processes - the mcp-toolkit shim and this
+// server - and pinning this one to 25801 while the shim scanned would have undone the whole thing:
+// the shim would take a window of its own, this server would keep calling into whatever window won
+// the base port, and every unqualified call of the SECOND session on a machine would land in the
+// FIRST session's window and be refused there. That is precisely the failure the A/B measured
+// (mcp-toolkit `BLOCKBENCH_ISOLATION_DESIGN.md` section 9), so getting the toolkit's half right and
+// leaving this one pinned would have measured the pin, not the fix.
+//
+// It needs no channel to the shim and no locking. Both processes compute the SAME session id from
+// the parent pid, both walk the range in port order, and the plugin answers a claim from an id that
+// already holds a window with a REJOIN - so whichever of the pair arrives second is handed the
+// window the first one took, whether or not it saw the claim. Ladder: rejoin ours, claim a free one,
+// share an unreserved one (the pre-0.139.0 behaviour, with `held_by` still guarding every edit).
+// `POST /window` is deliberately NOT here: asking for a new window is for a session with none, and
+// this server's session already has whatever the shim took.
+//
+// No presence socket either, and that is not an oversight - the shim holds one under the same id in
+// the same window, so the session is connected there, and this server's claim lives exactly as long
+// as its session does. What it must not do is hold a window the shim is not in.
+let windowBase = null;
+let resolvingWindow = null;
+
+async function helloAt(base) {
+  const res = await fetch(`${base}/hello`, { signal: AbortSignal.timeout(HELLO_TIMEOUT_MS) });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const h = await res.json();
+  // Sixteen ports on localhost are sixteen chances to find some other service that answers JSON.
+  if (!h || h.ok === false || h.app !== "blockbench") throw new Error("not Blockbench");
+  return h;
+}
+async function claimAt(base) {
   try {
-    await c.connect(transport);
-  } catch (e) {
-    throw new Error(
-      `Blockbench is not answering at ${UPSTREAM} (${e.message}). Start Blockbench with the MCP ` +
-      `Server plugin and the Armor Pieces plugin loaded, then call again.`,
-    );
+    const res = await fetch(`${base}/claim`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-MCPTK-Session": SESSION.id },
+      body: JSON.stringify({ session: SESSION }),
+      signal: AbortSignal.timeout(HELLO_TIMEOUT_MS),
+    });
+    // 404 is a plugin from before step 2: nothing to claim here, which is a window to use.
+    if (res.status === 404) return null;
+    return await res.json();
+  } catch { return null; }
+}
+async function discoverWindow() {
+  const found = [];
+  const ports = [];
+  for (let p = SCAN.from; p <= SCAN.to; p++) ports.push(p);
+  await Promise.all(ports.map(async (port) => {
+    const base = `http://${SCAN.host}:${port}`;
+    try { found.push({ base, port, hello: await helloAt(base) }); } catch { /* nothing there */ }
+  }));
+  found.sort((a, b) => a.port - b.port);
+  if (!found.length) throw new Error(`no Blockbench window answered on ${SCAN.host}:${SCAN.from}-${SCAN.to}`);
+  const mine = found.find((w) => w.hello.claimed_by?.session === SESSION.id);
+  if (mine) { log(`window ${mine.port} (${mine.hello.window}) — rejoined, this session already had it`); return mine.base; }
+  for (const w of found) {
+    if (!w.hello.window || w.hello.reserved || w.hello.claimed_by) continue;
+    const env = await claimAt(w.base);
+    if (env?.ok) { log(`window ${w.port} (${w.hello.window}) — claimed`); return w.base; }
   }
-  c.onclose = () => { if (client === c) client = null; };
-  c.onerror = (e) => log(`upstream: ${e?.message ?? e}`);
-  client = c;
-  return c;
+  const shareable = found.filter((w) => !w.hello.reserved);
+  if (!shareable.length) {
+    throw new Error(`every Blockbench window on ${SCAN.host}:${SCAN.from}-${SCAN.to} is reserved for the `
+      + "person at the keyboard (Tools > MCP Toolkit Bridge > Reserve this window)");
+  }
+  const w = shareable[0];
+  log(`window ${w.port} — SHARED with ${w.hello.claimed_by ? `session ${w.hello.claimed_by.session}` : "whoever is there"}; `
+    + "name the project on every call");
+  return w.base;
+}
+/**
+ * The window this server works in, found once and remembered. One discovery at a time: two calls
+ * arriving together must not both scan, or both could claim - and a window taken twice by one
+ * session is a window denied to a session that has none.
+ */
+function upstream() {
+  if (windowBase) return Promise.resolve(windowBase);
+  if (PINNED) { windowBase = PINNED; claimAt(PINNED).catch(() => {}); return Promise.resolve(windowBase); }
+  if (resolvingWindow) return resolvingWindow;
+  resolvingWindow = discoverWindow().then((base) => { windowBase = base; return base; });
+  resolvingWindow.catch(() => {}).then(() => { resolvingWindow = null; });
+  return resolvingWindow;
+}
+/** Forget the window, so the next call discovers again: Blockbench may come back on another port. */
+function forgetWindow() { windowBase = null; }
+/** For a message: the window when there is one, the range that was searched when there is not. */
+const where = () => windowBase ?? PINNED ?? `${SCAN.host}:${SCAN.from}-${SCAN.to}`;
+
+function unreachable(e) {
+  return new Error(
+    `Blockbench is not answering at ${where()} (${e.message}). Open Blockbench with the Armor ` +
+    "Pieces plugin loaded and start the bridge (Tools > MCP Toolkit Bridge > Start), then call again.",
+  );
+}
+
+/** POST /cmd, and hand back the plugin's envelope. Throws with the plugin's own sentence on ok:false. */
+async function bridge(name, args) {
+  let base;
+  try {
+    base = await upstream();
+  } catch (e) {
+    // Discovery failing IS "Blockbench isn't open", and must say the same thing about it.
+    throw unreachable(e);
+  }
+  let res;
+  try {
+    res = await fetch(`${base}/cmd`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-MCPTK-Session": SESSION.id },
+      body: JSON.stringify({ tool: name, args: args ?? {}, session: SESSION }),
+      signal: AbortSignal.timeout(CALL_TIMEOUT_MS),
+    });
+  } catch (e) {
+    if (e.name === "TimeoutError" || e.name === "AbortError") {
+      throw new Error(
+        `Blockbench accepted "${name}" but gave no answer within ${CALL_TIMEOUT_MS / 1000}s. It may ` +
+        "be sitting in a dialog of its own; ask the person at the keyboard to look at the window " +
+        "before treating this as a dead bridge.");
+    }
+    // The window we were working in is gone. Forget it, so the next call discovers again: a
+    // Blockbench that restarts may come back as a different window on a different port. A TIMEOUT is
+    // not this - that is a live window sitting in a dialog, and its port is still the right one.
+    forgetWindow();
+    throw unreachable(e);
+  }
+  let env;
+  try {
+    env = await res.json();
+  } catch {
+    throw new Error(`Blockbench answered "${name}" with HTTP ${res.status} and no JSON`);
+  }
+  if (!env || env.ok !== true) {
+    const msg = env?.error ?? `HTTP ${res.status}`;
+    throw new Error(env?.hint ? `${msg}. ${env.hint}` : msg);
+  }
+  return env;
 }
 
 /**
@@ -105,57 +293,151 @@ async function shrinkImages(result) {
   return { ...result, content };
 }
 
+/**
+ * A Blockbench tool as MCP content. The plugin puts a picture under `_image` on the result rather
+ * than in an image part, so that is unwrapped here (and the rest of the result kept beside it).
+ */
 async function callUpstream(name, args) {
-  const attempt = async () => (await upstream()).callTool({ name, arguments: args ?? {} });
+  const result = (await bridge(name, args)).result ?? {};
+  if (result && typeof result === "object" && result._image) {
+    const { _image, ...rest } = result;
+    const content = [{ type: "image", data: _image.base64, mimeType: _image.mimeType ?? "image/png" }];
+    if (Object.keys(rest).length) content.push({ type: "text", text: JSON.stringify(rest) });
+    return await shrinkImages({ content });
+  }
+  return { content: [{ type: "text", text: typeof result === "string" ? result : JSON.stringify(result) }] };
+}
+
+/**
+ * Run JavaScript inside Blockbench through the plugin's risky_eval, and hand back the value.
+ *
+ * The bridge's eval is an ordinary one: the completion value comes back as `result.value` already
+ * parsed, a returned Promise is awaited, and a throw is an `ok:false` envelope that `bridge` has
+ * already turned into an Error - so there is no "Error executing code:" prefix to strip and no
+ * comment filter to write around. What survives from the old plugin is the no-project case: the
+ * Armor Pieces api needs a tab, and a scratch project is how one is had.
+ */
+async function evalIn(code, { retryWithProject = true } = {}) {
   try {
-    return await shrinkImages(await attempt());
+    // NAME THE PROJECT. `armorpieces_api` reads Blockbench's global `Project`, so an eval that does
+    // not say which project it means runs against whatever the plugin selected last - and the
+    // plugin selects by SESSION binding, not by caller. Two headless sessions that present one
+    // session id (a `claude -p` child inherits CLAUDE_CODE_SESSION_ID from its parent, so every
+    // child of one session did) therefore share one binding, and the second one's part data,
+    // paint, check and save all resolve to the FIRST one's piece. Measured 2026-09-07 on
+    // kelp_mantle: a dozen bare calls answered about coral_crown, and one set_part executed
+    // against it. Passing the uuid makes each of these tools address its own piece whatever the
+    // binding says, which is the property the tools always claimed to have.
+    // Since plugin 0.2.0 the eval's scope carries PROJECT - the project the bridge actually
+    // resolved. `armorpieces_api` still reads Blockbench's GLOBAL `Project`, so the two must agree
+    // or the API would act on the wrong tab; asserting it INSIDE the eval turns that into a throw
+    // before anything is written, instead of a reply we notice afterwards. Guarded on `typeof` so
+    // an older plugin still runs.
+    const guarded = bound
+      ? `(function () { if (typeof PROJECT !== 'undefined' && PROJECT) {`
+        + ` if (PROJECT.uuid !== ${JSON.stringify(bound.uuid)}) throw new Error('the bridge is bound to `
+        + `${bound.name} but this eval resolved to ' + PROJECT.name);`
+        + ` if (PROJECT !== Project) throw new Error('armorpieces_api reads the global Project, which is '`
+        + ` + (Project ? Project.name : 'nothing') + ', not ' + PROJECT.name); }`
+        + ` return (${code}); })()`
+      : code;
+    const args = bound ? { code: guarded, project: bound.uuid } : { code };
+    const { result } = await bridge("risky_eval", args);
+    const ran = result && typeof result === "object" ? result.project : null;
+    if (bound && ran && ran.name && ran.name !== bound.name) {
+      throw new Error(
+        `Refusing the result: this bridge is bound to "${bound.name}" but Blockbench ran that ` +
+        `against "${ran.name}". Re-open your piece with armorpieces_open and try again.`);
+    }
+    return result && typeof result === "object" && "value" in result ? result.value : result;
   } catch (e) {
-    // The plugin drops a session after its inactivity timeout; a fresh connection is the fix.
-    if (/session|not found|closed|ECONN|fetch failed|404|400/i.test(String(e?.message))) {
-      log(`reconnecting after: ${e.message}`);
-      client = null;
-      return await shrinkImages(await attempt());
+    if (retryWithProject && /no project|finishEdit|Project is (null|undefined)/i.test(String(e?.message))) {
+      await bridge("project", { op: "new", name: SCRATCH, format: "free" });
+      return evalIn(code, { retryWithProject: false });
     }
     throw e;
   }
 }
 
-function textOf(result) {
-  return (result?.content ?? []).filter((c) => c.type === "text").map((c) => c.text).join("\n");
+/**
+ * Bind this session to the tab a piece was just opened into.
+ *
+ * The plugin binds a session to a project it made or opened, and a session with no binding acts on
+ * "whatever tab is active" - which is the hazard the Animals pack was built under and lost a piece
+ * to (a bee's bone in the fox, set-packs.md "the active-tab hazard"). A piece is opened through the
+ * Armor Pieces api rather than through `project op:open`, so the binding has to be claimed here,
+ * afterwards; from then on every call this server and the shim make - they share MCPTK_SESSION -
+ * goes to this piece by name, and another live session's edit to it is refused with `held_by`.
+ *
+ * Best effort: an unbound session still works, it is just the old, sharper knife.
+ */
+let bound = null;
+
+async function bindActive(expectKey) {
+  bound = null;
+  // FIND THE PIECE'S OWN PROJECT, never the active tab. Reading the global `Project` here was the
+  // bug behind the 2026-09-08 A/B: `armorpieces_new` opens a piece out of a scratch project, and
+  // `evalIn`'s no-project retry creates that scratch with `project op:new` - which BINDS the
+  // session to it. So while the scratch is up the session is not unbound, it is bound to the WRONG
+  // project; every later call resolves there BY BINDING rather than by active-tab fallback, which
+  // is why it survived the piece tab becoming active and why the piece answered "no piece is open"
+  // 30 times in one solo session. Second order and worse: this function left the local `bound`
+  // null, and `evalIn` applies its PROJECT arbiter only `if (bound)` - so the guard added in
+  // 0.135.0 to catch a wrong-project eval was switched off in exactly the state that trips it.
+  //
+  // The plugin keeps a project's piece on the project object (`Project[ID + '_piece']`, read by
+  // `currentPiece()`), so every open tab's key is readable WITHOUT selecting it. Scan for the key
+  // we were asked for and select that uuid. Failing to find it stays unbound, which is safe.
+  const look = async () => evalIn(
+    "(function () { var want = " + JSON.stringify(expectKey ?? null) + "; var out = null;"
+    + " ModelProject.all.forEach(function (p) {"
+    + "   var piece = p['armorpieces_piece'];"
+    + "   if (!piece || !piece.key) return;"
+    + "   if (want) { if (piece.key === want) out = { uuid: p.uuid, name: p.name, key: piece.key }; }"
+    + "   else if (!out) out = { uuid: p.uuid, name: p.name, key: piece.key };"
+    + " });"
+    + " return out; })()",
+    { retryWithProject: false },
+  );
+  try {
+    let info = await look();
+    if (!info) {
+      await new Promise((r) => setTimeout(r, 250));   // the tab may still be coming up
+      info = await look();
+    }
+    if (!info || !info.uuid) {
+      log(`bind: no open project carries piece ${expectKey ?? "(any)"}; staying unbound`);
+      return null;
+    }
+    const { result } = await bridge("project", { op: "select", project: info.uuid });
+    bound = info;
+    return result;
+  } catch (e) {
+    log(`bind: ${e.message}`);
+    return null;
+  }
 }
 
 /**
- * Run JavaScript inside Blockbench through the plugin's risky_eval, and hand back the value. The
- * plugin returns `JSON.stringify(result)` as text, "Error executing code: ..." on a throw, and
- * refuses to run at all with no project open ("reading 'finishEdit'"): that last case is met by
- * opening a scratch project and trying again.
+ * Close the scratch project a piece was opened from. Runs AFTER bindActive, so this session is
+ * already pointing at the piece and the scratch is a project nothing is bound to.
+ *
+ * Through `project op:close`, not a raw `s.close(true)` eval. The plugin's own op nulls every
+ * session bound to that uuid; closing the project object behind the plugin's back does not, and
+ * leaves any such session bound to a dead uuid it only discovers on its next call. The old
+ * `s !== Project` condition is gone with it: it was load-bearing only because the binding was
+ * wrong, and it was also the reason the scratch was never closed in the one case that mattered -
+ * when the scratch WAS the active project. With the piece selected by key first, neither is true.
  */
-async function evalIn(code, { retryWithProject = true } = {}) {
-  const result = await callUpstream("risky_eval", { code });
-  const text = textOf(result);
-  if (result?.isError || /^Error executing code:/.test(text)) {
-    if (retryWithProject && /finishEdit/.test(text)) {
-      await callUpstream("create_project", { name: SCRATCH, format: "free" });
-      return evalIn(code, { retryWithProject: false });
-    }
-    throw new Error(text.replace(/^Error executing code:\s*/, ""));
-  }
-  if (/^\(Code executed successfully/.test(text)) return undefined;
-  try {
-    return JSON.parse(text);
-  } catch {
-    return text;
-  }
-}
-
-/** Close the scratch project a piece was opened from, once the piece tab is up. Best effort. */
 async function dropScratch() {
   try {
-    await evalIn(
+    const uuid = await evalIn(
       `(function () { var s = ModelProject.all.find(function (p) { return p.name === '${SCRATCH}'; });` +
-      ` if (s && s !== Project) setTimeout(function () { s.close(true); }, 100); return !!s; })()`,
+      ` return s ? s.uuid : null; })()`,
       { retryWithProject: false },
     );
+    if (!uuid) return;
+    await bridge("project", { op: "close", project: uuid, force: true });
   } catch (e) {
     log(`scratch: ${e.message}`);
   }
@@ -192,9 +474,23 @@ function run(args, { timeout = 90_000 } = {}) {
  * The plugin says which in meta.kind, so one code path serves both and every editing call gets the
  * check that applies to it. The report comes back as data, or as a string when it could not run.
  */
-async function runCheck(meta) {
-  const script = meta.kind === "skin" ? "check_skin.py" : "check_part.py";
-  const args = [join(ROOT, "tools", script), "--status", meta.dir, "--json", "--brief"];
+/**
+ * The check of whatever piece is active, through tools/check_active.py.
+ *
+ * Not check_part.py directly, though this used to call it directly and could: the sheet layout of
+ * the cubes that moved and the "! repaint: a face that was complete and GREW" line are diffs
+ * against the LAST CHECK, and in a kit session two servers edit one piece - Blockbench through the
+ * mcp-toolkit shim (which runs check_active.py from .mcptoolkit/loop.json) and these nine tools
+ * here. Two histories over one piece is a paint through this server and a resize through the other
+ * comparing against a state where the face was never painted, so the regrow goes unsaid. One
+ * checker, one history file beside the piece's status directory, both servers reading it.
+ *
+ * `layout` false is for the callers that print the whole report anyway (open, new, check, save):
+ * the block is for the reply to an EDIT.
+ */
+async function runCheck(meta, layout = true) {
+  const args = [join(ROOT, "tools", "check_active.py"), "--json", "--brief"];
+  if (!layout) args.push("--no-layout");
   const { stdout, stderr } = await run(args);
   const line = stdout.trim().split("\n").pop() ?? "";
   try {
@@ -236,7 +532,7 @@ async function settled(meta, ms = 2000) {
 }
 
 async function checkText(meta, full = false, withReferences = false) {
-  const report = await runCheck(meta);
+  const report = await runCheck(meta, false);
   if (typeof report === "string") return report;
   const text = full ? report.full : report.text;
   // On open and new, the envelopes of the parts this one is placed against ride along once, so
@@ -265,51 +561,15 @@ function referenceText(report) {
   return lines.join("\n");
 }
 
-/**
- * The sheet layout as one line per cube, for the cubes whose net moved or appeared since the
- * last check the bridge ran - so a reply that added or resized a cube also says where its faces
- * now are, and a reply that painted says nothing about layout.
- */
-let lastLayout = new Map();
-let lastCoverage = new Map();
-
-function layoutLines(report) {
-  const seen = new Map();
-  const coverage = new Map();
-  const changed = [];
-  const lost = [];
-  for (const item of report.layout ?? []) {
-    const key = `${item.uv.join(",")}|${item.size.join("x")}`;
-    seen.set(item.cube, key);
-    if (lastLayout.get(item.cube) !== key) changed.push(item);
-    for (const [face, [got, area]] of Object.entries(item.coverage ?? {})) {
-      const name = `${item.cube}.${face}`;
-      coverage.set(name, got === area);
-      // A face that was complete and no longer is: the resize grew it, and paint only moves.
-      if (lastCoverage.get(name) === true && got < area) lost.push(`${name} ${got}/${area}`);
-    }
-  }
-  lastLayout = seen;
-  lastCoverage = coverage;
-  const lines = [];
-  if (changed.length) {
-    lines.push("  sheet layout (face x,y w x h): " + (changed.length === seen.size ? "every cube" : "the cubes that moved"));
-    for (const item of changed) {
-      const faces = Object.entries(item.faces).map(([f, [x, y, w, h]]) => `${f} ${x},${y} ${w}x${h}`).join("  ");
-      lines.push(`    ${item.cube} uv ${item.uv.join(",")} ${item.size.join("x")}: ${faces}`);
-    }
-  }
-  if (lost.length) lines.push(`  ! repaint: faces that were complete and grew: ${lost.join(", ")}`);
-  return lines;
-}
-
-/** Append the check to an editing call's reply when the call changed the piece. */
+/** Append the check to an editing call's reply when the call changed the piece. The sheet layout of
+ * the cubes that moved and the regrow diff are inside `text`, computed by check_active.py against
+ * the piece's own history - see runCheck. */
 async function withCheck(name, seqBefore, result) {
   if (name === "undo" || name === "redo") await new Promise((r) => setTimeout(r, 350));
   const meta = readMeta();
   if (!meta || meta.seq === seqBefore) return result;
   const report = await runCheck(meta);
-  const text = typeof report === "string" ? report : [report.text, ...layoutLines(report)].join("\n");
+  const text = typeof report === "string" ? report : report.text;
   return { ...result, content: [...(result.content ?? []), { type: "text", text }] };
 }
 
@@ -434,10 +694,14 @@ const OWN = {
       additionalProperties: false,
     },
     async execute({ piece, anchor, discard, reload }) {
+      bound = null;
       const opts = JSON.stringify({ discard: !!discard, reload: !!reload });
       const out = await evalIn(
         `window.armorpieces_api.openFor(${JSON.stringify(piece)}, ${JSON.stringify(anchor ?? null)}, ${opts})`,
       );
+      // Bind FIRST, then drop the scratch: closing it while the session still points at it is what
+      // leaves a session bound to nothing (or, before this order, bound to the scratch itself).
+      await bindActive(typeof out?.piece === "string" ? out.piece : undefined);
       await dropScratch();
       let meta = readMeta();
       if (meta) meta = await settled(meta);
@@ -466,17 +730,39 @@ const OWN = {
       additionalProperties: false,
     },
     async execute({ name, anchor, namespace, datapack, resourcepack }) {
+      bound = null;
+      // A pack folder that exists on disk is INVISIBLE to the plugin until it is in the
+      // `armorpieces_packs` setting: `api.create` happily writes the piece's files into it and then
+      // every later armorpieces_* call fails, because the plugin never scanned that root. That cost
+      // a whole session on the Dragonslayer pack's first piece (2026-09-08). Register whatever the
+      // caller explicitly named, before creating anything. `userPacks()` re-reads the setting on
+      // every call, so this takes effect immediately - no restart, no rescan.
+      const registered = await evalIn(
+        `(function () { var want = ${JSON.stringify([datapack, resourcepack].filter((d) => typeof d === "string" && d))};`
+        + ` var list = []; try { list = JSON.parse(Settings.get('armorpieces_packs') || '[]') || []; } catch (e) { list = []; }`
+        + ` if (!Array.isArray(list)) list = [];`
+        + ` var added = [];`
+        + ` want.forEach(function (d) { if (list.indexOf(d) === -1) { list.push(d); added.push(d); } });`
+        + ` if (added.length) { settings['armorpieces_packs'].set(JSON.stringify(list)); Settings.save(); }`
+        + ` return added; })()`,
+      );
       const out = await evalIn(
         `(function () { var api = window.armorpieces_api; var packs = api.packs(); var dp = ${JSON.stringify(datapack ?? null)} || packs[0];` +
         ` var rp = ${JSON.stringify(resourcepack ?? null)} || dp; if (!dp) throw new Error('no pack folder to put the piece in');` +
         ` var root = Settings.get('armorpieces_root'); var ns = ${JSON.stringify(namespace ?? null)} || ((root && dp.indexOf(root) === 0) ? 'armorpieces' : 'mypack');` +
         ` return api.create(dp, rp, ns, ${JSON.stringify(name)}, ${JSON.stringify(anchor)}); })()`,
       );
+      // Bind FIRST, then drop the scratch: closing it while the session still points at it is what
+      // leaves a session bound to nothing (or, before this order, bound to the scratch itself).
+      await bindActive(typeof out?.piece === "string" ? out.piece : undefined);
       await dropScratch();
       let meta = readMeta();
       if (meta) meta = await settled(meta);
       const check = meta ? await checkText(meta, false, true) : "";
-      return reply(`${JSON.stringify(out, null, 1)}\n${check}`);
+      const note = Array.isArray(registered) && registered.length
+        ? `registered pack root(s) with the plugin: ${registered.join(", ")}\n`
+        : "";
+      return reply(`${JSON.stringify(out, null, 1)}\n${note}${check}`);
     },
   },
 
@@ -656,6 +942,7 @@ const OWN = {
     },
     async execute({ discard }) {
       const out = await evalIn(`window.armorpieces_api.close(${!!discard})`);
+      bound = null;
       return reply(JSON.stringify(out));
     },
   },
@@ -706,6 +993,9 @@ const OWN = {
       const out = await evalIn(
         `window.armorpieces_api.openSkin(${JSON.stringify(skin)}, ${opts})`,
       );
+      // Bind FIRST, then drop the scratch: closing it while the session still points at it is what
+      // leaves a session bound to nothing (or, before this order, bound to the scratch itself).
+      await bindActive(typeof out?.piece === "string" ? out.piece : undefined);
       await dropScratch();
       let meta = readMeta();
       if (meta) meta = await settled(meta);
@@ -985,9 +1275,16 @@ const OWN = {
 
 // --- the tool list ---------------------------------------------------------------------------------
 
+/**
+ * Blockbench's own manifest, from GET /tools. Every entry carries `mechanism`, which is what the
+ * check-after-an-edit selects on - so the hand-kept READ_ONLY list is now only the fallback for a
+ * name the cached manifest does not carry.
+ */
 async function upstreamTools() {
   try {
-    const { tools } = await (await upstream()).listTools();
+    const res = await fetch(`${await upstream()}/tools`, { signal: AbortSignal.timeout(5000) });
+    const tools = await res.json();
+    if (!Array.isArray(tools)) throw new Error(`HTTP ${res.status}`);
     mkdirSync(TEMP, { recursive: true });
     writeFileSync(CACHE, JSON.stringify({ tools }), "utf8");
     return { tools, source: "Blockbench" };
@@ -1005,6 +1302,12 @@ function visible(tool) {
   return allowed ? allowed.has(tool.name) : true;
 }
 
+/** Our own tools are all served unless the profile names a subset (`kit`, `kit_skin`). */
+function ownVisible(name) {
+  const allowed = OWN_PROFILES[PROFILE];
+  return allowed ? allowed.has(name) : true;
+}
+
 function annotate(tool) {
   const note = NOTES[tool.name];
   if (!note) return tool;
@@ -1012,18 +1315,25 @@ function annotate(tool) {
 }
 
 const { tools: upstreamList, source } = await upstreamTools();
+const ownNames = Object.keys(OWN).filter(ownVisible);
 const served = [
   ...upstreamList.filter(visible).map(annotate),
-  ...Object.entries(OWN).map(([name, t]) => ({ name, description: t.description, inputSchema: t.inputSchema })),
+  ...ownNames.map((name) => ({ name, description: OWN[name].description, inputSchema: OWN[name].inputSchema })),
 ];
 const upstreamNames = new Set(upstreamList.map((t) => t.name));
-log(`profile ${PROFILE}: ${served.length} tools (${upstreamList.filter(visible).length} of ${upstreamList.length} from ${source}, ${Object.keys(OWN).length} own)`);
+// The manifest's own stamp first, the hand-kept list only for a name it does not carry (an old
+// cached manifest, or the snapshot beside this file).
+const observes = (name) => {
+  const stamp = upstreamList.find((t) => t.name === name)?.mechanism;
+  return stamp ? stamp === "observe" : READ_ONLY.has(name);
+};
+log(`profile ${PROFILE}: ${served.length} tools (${upstreamList.filter(visible).length} of ${upstreamList.length} from ${source}, ${ownNames.length} of ${Object.keys(OWN).length} own)`);
 
 // --- the server ------------------------------------------------------------------------------------
 
 const server = new Server(
   { name: "armorpieces-blockbench", version: "0.1.0" },
-  { capabilities: { tools: {} }, instructions: INSTRUCTIONS },
+  { capabilities: { tools: {} }, instructions: PROFILE === "kit" ? KIT_INSTRUCTIONS : INSTRUCTIONS },
 );
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: served }));
@@ -1031,7 +1341,12 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: served })
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args = {} } = request.params;
   try {
-    if (OWN[name]) return await OWN[name].execute(args);
+    if (OWN[name]) {
+      if (!ownVisible(name)) {
+        return reply(`${name} is not in the ${PROFILE} profile of the Armor Pieces bridge (ARMORPIECES_BB_PROFILE=authoring serves the piece and skin tools together).`, true);
+      }
+      return await OWN[name].execute(args);
+    }
     if (!upstreamNames.has(name) && upstreamList.length) {
       return reply(`Unknown tool ${name}.`, true);
     }
@@ -1040,7 +1355,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     }
     const seqBefore = readMeta()?.seq;
     const result = await callUpstream(name, args);
-    if (READ_ONLY.has(name)) return result;
+    if (observes(name)) return result;
     return await withCheck(name, seqBefore, result);
   } catch (e) {
     return reply(e?.message ?? String(e), true);

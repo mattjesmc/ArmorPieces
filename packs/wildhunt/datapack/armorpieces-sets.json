@@ -1,0 +1,119 @@
+{
+  "sets": [
+    {
+      "id": "wild-hunt",
+      "title": "The Wild Hunt",
+      "description": "Copper hide and quartz bone, alternating socket by socket - antlers at the temples, a bone mask over the face, a beast's head on the shoulder and claws down both arms. Ten of its twelve sockets are this pack's own; the belt and the back are the two it has no piece for yet, and the mod's cord and pinions carry them until it does.",
+      "set": {
+        "name": "The Wild Hunt",
+        "slots": {
+          "helmet": {
+            "material": "copper"
+          },
+          "chestplate": {
+            "material": "copper"
+          },
+          "leggings": {
+            "material": "copper"
+          },
+          "boots": {
+            "material": "copper"
+          }
+        },
+        "pieces": {
+          "crest": {
+            "id": "armorpieces_hunt:horsetail",
+            "pack": "armorpieces-hunt",
+            "material": "copper",
+            "fittings": {
+              "armorpieces:inlay": "brown"
+            }
+          },
+          "brow": {
+            "id": "armorpieces_hunt:bone_mask",
+            "pack": "armorpieces-hunt",
+            "material": "quartz",
+            "fittings": {
+              "armorpieces:gemstone": "minecraft:redstone"
+            }
+          },
+          "horns": {
+            "id": "armorpieces_hunt:antlers",
+            "pack": "armorpieces-hunt",
+            "material": "copper"
+          },
+          "pauldrons": {
+            "id": "armorpieces_hunt:beast_head",
+            "pack": "armorpieces-hunt",
+            "material": "copper",
+            "fittings": {
+              "armorpieces:gemstone": "minecraft:redstone"
+            }
+          },
+          "back": {
+            "id": "armorpieces:pinions",
+            "pack": "armorpieces",
+            "material": "copper"
+          },
+          "collar": {
+            "id": "armorpieces_hunt:fang_necklace",
+            "pack": "armorpieces-hunt",
+            "material": "quartz",
+            "fittings": {
+              "armorpieces:gemstone": "minecraft:redstone"
+            }
+          },
+          "vambraces": {
+            "id": "armorpieces_hunt:claws",
+            "pack": "armorpieces-hunt",
+            "material": "quartz",
+            "fittings": {
+              "armorpieces:guard": "minecraft:copper"
+            }
+          },
+          "belt": {
+            "id": "armorpieces:cord",
+            "pack": "armorpieces",
+            "material": "copper",
+            "fittings": {
+              "armorpieces:inlay": "brown"
+            }
+          },
+          "tassets": {
+            "id": "armorpieces_hunt:pelt",
+            "pack": "armorpieces-hunt",
+            "material": "copper",
+            "fittings": {
+              "armorpieces:inlay": "brown"
+            }
+          },
+          "knees": {
+            "id": "armorpieces_hunt:fanged_cop",
+            "pack": "armorpieces-hunt",
+            "material": "copper",
+            "fittings": {
+              "armorpieces:gemstone": "minecraft:redstone"
+            }
+          },
+          "spurs": {
+            "id": "armorpieces_hunt:talons",
+            "pack": "armorpieces-hunt",
+            "material": "quartz",
+            "fittings": {
+              "armorpieces:guard": "minecraft:copper"
+            }
+          },
+          "greaves": {
+            "id": "armorpieces_hunt:shin_spikes",
+            "pack": "armorpieces-hunt",
+            "material": "quartz",
+            "fittings": {
+              "armorpieces:guard": "minecraft:copper"
+            }
+          }
+        },
+        "skin": "armorpieces:brigandine"
+      }
+    }
+  ]
+}

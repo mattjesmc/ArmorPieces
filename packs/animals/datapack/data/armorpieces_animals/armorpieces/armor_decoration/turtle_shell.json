@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_animals:turtle_shell",
+  "description": {
+    "translate": "decoration.armorpieces_animals.turtle_shell"
+  },
+  "anchors": [
+    "back"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1g7kolrza4tugkqmkan6q"
+}

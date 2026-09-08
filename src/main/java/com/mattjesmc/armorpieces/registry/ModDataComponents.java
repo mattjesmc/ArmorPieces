@@ -5,6 +5,7 @@ import com.mattjesmc.armorpieces.cloth.ClothValue;
 import com.mattjesmc.armorpieces.decoration.ArmorDecoration;
 import com.mattjesmc.armorpieces.decoration.ArmorDecorations;
 import com.mattjesmc.armorpieces.decoration.fitting.Fitting;
+import com.mattjesmc.armorpieces.identity.Tolerant;
 import com.mattjesmc.armorpieces.skin.ArmorSkinValue;
 import net.fabricmc.fabric.api.item.v1.ItemComponentTooltipProviderRegistry;
 import net.minecraft.core.Holder;
@@ -37,7 +38,7 @@ public final class ModDataComponents {
      * tab - with no item registered and no code run. It is the same trade vanilla makes for potions:
      * one item, open contents.
      */
-    public static DataComponentType<Holder<ArmorDecoration>> DECORATION;
+    public static DataComponentType<Tolerant<Holder<ArmorDecoration>>> DECORATION;
 
     /**
      * The fitting a fitting template is for, carried on the TEMPLATE stack - the same trade as
@@ -45,7 +46,7 @@ public final class ModDataComponents {
      * one item and one component, and a pack's new fitting gets its template from a recipe that sets
      * this. Absent on the bare template, which offers the item to every fitting as it always has.
      */
-    public static DataComponentType<Holder<Fitting>> FITTING;
+    public static DataComponentType<Tolerant<Holder<Fitting>>> FITTING;
 
     /**
      * The skin - the armor's own texture - carried by BOTH the skin template that applies it and the
@@ -60,7 +61,7 @@ public final class ModDataComponents {
      * substitution is made at render time and nowhere else - see
      * {@code com.mattjesmc.armorpieces.client.mixin.EquipmentLayerRendererMixin}.
      */
-    public static DataComponentType<ArmorSkinValue> SKIN;
+    public static DataComponentType<Tolerant<ArmorSkinValue>> SKIN;
 
     /**
      * The cloth - a garment worn over the armor's texture - carried by BOTH the cloth template
@@ -77,7 +78,7 @@ public final class ModDataComponents {
      * at render time and nowhere else, and a clothed piece with this mod stripped out is plain
      * armor again.
      */
-    public static DataComponentType<ClothValue> CLOTH;
+    public static DataComponentType<Tolerant<ClothValue>> CLOTH;
 
     private ModDataComponents() {}
 
@@ -93,35 +94,35 @@ public final class ModDataComponents {
         DECORATION = Registry.register(
             BuiltInRegistries.DATA_COMPONENT_TYPE,
             Identifier.fromNamespaceAndPath(ArmorPieces.MOD_ID, "decoration"),
-            DataComponentType.<Holder<ArmorDecoration>>builder()
-                .persistent(ArmorDecoration.CODEC)
-                .networkSynchronized(ArmorDecoration.STREAM_CODEC)
+            DataComponentType.<Tolerant<Holder<ArmorDecoration>>>builder()
+                .persistent(ArmorDecoration.TOLERANT_CODEC)
+                .networkSynchronized(ArmorDecoration.TOLERANT_STREAM_CODEC)
                 .build()
         );
         FITTING = Registry.register(
             BuiltInRegistries.DATA_COMPONENT_TYPE,
             Identifier.fromNamespaceAndPath(ArmorPieces.MOD_ID, "fitting"),
-            DataComponentType.<Holder<Fitting>>builder()
-                .persistent(Fitting.CODEC)
-                .networkSynchronized(Fitting.STREAM_CODEC)
+            DataComponentType.<Tolerant<Holder<Fitting>>>builder()
+                .persistent(Fitting.TOLERANT_CODEC)
+                .networkSynchronized(Fitting.TOLERANT_STREAM_CODEC)
                 .build()
         );
 
         SKIN = Registry.register(
             BuiltInRegistries.DATA_COMPONENT_TYPE,
             Identifier.fromNamespaceAndPath(ArmorPieces.MOD_ID, "skin"),
-            DataComponentType.<ArmorSkinValue>builder()
-                .persistent(ArmorSkinValue.CODEC)
-                .networkSynchronized(ArmorSkinValue.STREAM_CODEC)
+            DataComponentType.<Tolerant<ArmorSkinValue>>builder()
+                .persistent(ArmorSkinValue.TOLERANT_CODEC)
+                .networkSynchronized(ArmorSkinValue.TOLERANT_STREAM_CODEC)
                 .build()
         );
 
         CLOTH = Registry.register(
             BuiltInRegistries.DATA_COMPONENT_TYPE,
             Identifier.fromNamespaceAndPath(ArmorPieces.MOD_ID, "cloth"),
-            DataComponentType.<ClothValue>builder()
-                .persistent(ClothValue.CODEC)
-                .networkSynchronized(ClothValue.STREAM_CODEC)
+            DataComponentType.<Tolerant<ClothValue>>builder()
+                .persistent(ClothValue.TOLERANT_CODEC)
+                .networkSynchronized(ClothValue.TOLERANT_STREAM_CODEC)
                 .build()
         );
 

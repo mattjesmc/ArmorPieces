@@ -17,6 +17,7 @@ import com.mattjesmc.armorpieces.recipe.SmithingSkinRecipe;
 import com.mattjesmc.armorpieces.registry.ModDataComponents;
 import com.mattjesmc.armorpieces.skin.ArmorSkin;
 import com.mattjesmc.armorpieces.skin.ArmorSkinValue;
+import com.mattjesmc.armorpieces.identity.Tolerant;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.LongArgumentType;
@@ -212,7 +213,13 @@ public final class StageCommand {
             // stand and taken apart again without a table being placed - and so behind the same
             // permission level, not a survival shortcut.
             .then(Commands.literal("table")
-                .executes(ctx -> openTable(ctx.getSource()))));
+                .executes(ctx -> openTable(ctx.getSource())))
+            // What this world names and this installation does not have, and the two things an
+            // operator can do about it. See CompatibilityCommand - none of it is needed for the save
+            // to be safe, which is the point of it being a report rather than a repair.
+            .then(CompatibilityCommand.missingNode())
+            .then(CompatibilityCommand.pruneNode())
+            .then(CompatibilityCommand.upgradeNode()));
     }
 
     private static int openTable(final CommandSourceStack source) throws CommandSyntaxException {
@@ -394,7 +401,7 @@ public final class StageCommand {
                     }
                     // The recipe's own rule, not a second one: a piece it refuses is worn plain.
                     if (SmithingSkinRecipe.isSkinnable(piece)) {
-                        piece.set(ModDataComponents.SKIN, new ArmorSkinValue(skin));
+                        piece.set(ModDataComponents.SKIN, Tolerant.of(new ArmorSkinValue(skin)));
                     }
                     worn.put(type, piece);
                 }
@@ -594,10 +601,10 @@ public final class StageCommand {
                     continue;
                 }
                 if (skin != null && SmithingSkinRecipe.isSkinnable(piece)) {
-                    piece.set(ModDataComponents.SKIN, new ArmorSkinValue(skin));
+                    piece.set(ModDataComponents.SKIN, Tolerant.of(new ArmorSkinValue(skin)));
                 }
                 if (cloth != null && SmithingClothRecipe.isClothable(piece)) {
-                    piece.set(ModDataComponents.CLOTH, cloth);
+                    piece.set(ModDataComponents.CLOTH, Tolerant.of(cloth));
                 }
                 worn.put(type, piece);
             }
@@ -637,7 +644,7 @@ public final class StageCommand {
     // ---- the thematic sets ----------------------------------------------------------------------
 
     /**
-     * A set written out rather than queried: the armor to wear it on, the skin over that, an
+     * A set written out rather than queried: the armor to wear it on, an optional skin over that, an
      * optional cloth, and a part with its material and its fittings in every socket.
      *
      * <p>Deliberately in Java and not in a datapack, which is the opposite of every other list in
@@ -650,7 +657,7 @@ public final class StageCommand {
     private record GallerySet(
         String name,
         ResourceKey<EquipmentAsset> base,
-        ResourceKey<ArmorSkin> skin,
+        @Nullable ResourceKey<ArmorSkin> skin,
         @Nullable SetCloth cloth,
         List<SetSocket> sockets
     ) {
@@ -674,7 +681,8 @@ public final class StageCommand {
                 missing(source, this.base.identifier());
                 return Map.of();
             }
-            final Holder<ArmorSkin> worn = find(source, ArmorPiecesRegistries.ARMOR_SKIN, this.skin);
+            final Holder<ArmorSkin> worn =
+                this.skin == null ? null : find(source, ArmorPiecesRegistries.ARMOR_SKIN, this.skin);
             final ClothValue cloth = this.cloth == null ? null : this.cloth.resolve(source);
 
             final Map<ArmorType, ItemStack> suit = new EnumMap<>(ArmorType.class);
@@ -684,10 +692,10 @@ public final class StageCommand {
                     continue;
                 }
                 if (worn != null && SmithingSkinRecipe.isSkinnable(piece)) {
-                    piece.set(ModDataComponents.SKIN, new ArmorSkinValue(worn));
+                    piece.set(ModDataComponents.SKIN, Tolerant.of(new ArmorSkinValue(worn)));
                 }
                 if (cloth != null && SmithingClothRecipe.isClothable(piece)) {
-                    piece.set(ModDataComponents.CLOTH, cloth);
+                    piece.set(ModDataComponents.CLOTH, Tolerant.of(cloth));
                 }
                 suit.put(type, piece);
             }
@@ -807,8 +815,16 @@ public final class StageCommand {
         return ResourceKey.create(ArmorPiecesRegistries.ARMOR_SKIN, id(name));
     }
 
+    /**
+     * A bare name is one of the mod's own; a name with a namespace is somebody else's, which is how
+     * a set can reach into a content pack the mod does not ship. Nothing here requires that pack to
+     * be loaded: {@link #find} reports what is missing and the rest of the set is staged anyway.
+     */
     private static Identifier id(final String name) {
-        return Identifier.fromNamespaceAndPath(ArmorPieces.MOD_ID, name);
+        final int colon = name.indexOf(':');
+        return colon < 0
+            ? Identifier.fromNamespaceAndPath(ArmorPieces.MOD_ID, name)
+            : Identifier.fromNamespaceAndPath(name.substring(0, colon), name.substring(colon + 1));
     }
 
     private static SetCloth cloth(final String name, final DyeColor colour) {
@@ -846,6 +862,13 @@ public final class StageCommand {
      * a bare waist is not a picture of anything. Where a theme has nothing for a socket the nearest
      * neutral part stands in, which is what a player with that theme's chest loot would end up
      * wearing anyway.
+     *
+     * <p>Then two more, for the content packs: the Menagerie and the Reef. Those two name parts this
+     * mod does not ship, and are the one place here that mentions anything outside it. Nothing breaks
+     * without their pack - {@link #find} says which part is not loaded and stages the rest - and
+     * nothing about the pack changes: the pack's own {@code armorpieces-sets.json} stays the file the
+     * site and the wardrobe read, and this is a transcription of it so the set can be LOOKED at from
+     * inside the game while it is being built.
      */
     private static final List<GallerySet> SETS = List.of(
         // Knightly: iron on iron, so every plate part takes the darker variant and reads as one
@@ -867,7 +890,9 @@ public final class StageCommand {
 
         // Court: gold and amethyst throughout, purple everywhere a dye is taken. Greaves has no
         // court part, so the wayfarer's boot cuffs stand in - the only socket the theme cannot fill.
-        new GallerySet("high_court", EquipmentAssets.GOLD, skin("runic"),
+        // The skin was runic until that one went to Armor Pieces: Legends; lamellar is the most
+        // worked of the nine the mod kept, and takes gold the same way.
+        new GallerySet("high_court", EquipmentAssets.GOLD, skin("lamellar"),
             cloth("tabard", DyeColor.PURPLE), List.of(
                 on(DecorationAnchor.CREST, "feathering", TrimMaterials.QUARTZ),
                 on(DecorationAnchor.BROW, "coronet", TrimMaterials.GOLD, metal(TrimMaterials.AMETHYST)),
@@ -882,30 +907,33 @@ public final class StageCommand {
                 on(DecorationAnchor.SPURS, "anklets", TrimMaterials.GOLD, metal(TrimMaterials.AMETHYST)),
                 on(DecorationAnchor.GREAVES, "boot_cuffs", TrimMaterials.GOLD, dyed(DyeColor.PURPLE)))),
 
-        // Beast: copper hide and quartz bone, the two of them alternating socket by socket, over the
-        // varangian skin. Belt and back have no beast part; a cord and a pair of pinions carry them.
-        new GallerySet("wild_hunt", EquipmentAssets.COPPER, skin("varangian"), null, List.of(
-            on(DecorationAnchor.CREST, "horsetail", TrimMaterials.COPPER, dyed(DyeColor.BROWN)),
-            on(DecorationAnchor.BROW, "bone_mask", TrimMaterials.QUARTZ, metal(TrimMaterials.REDSTONE)),
-            on(DecorationAnchor.HORNS, "antlers", TrimMaterials.COPPER),
-            on(DecorationAnchor.PAULDRONS, "beast_head", TrimMaterials.COPPER, metal(TrimMaterials.REDSTONE)),
+        // The Wild Hunt, from Armor Pieces: The Wild Hunt - copper hide and quartz bone alternating
+        // socket by socket. Ten of the twelve are the pack's; belt and back are the two sockets it
+        // has no piece for, and the mod's cord and pinions carry them until it does. Transcribed
+        // from that pack's own `armorpieces-sets.json`, which stays the file the site reads.
+        new GallerySet("wild_hunt", EquipmentAssets.COPPER, skin("brigandine"), null, List.of(
+            on(DecorationAnchor.CREST, "armorpieces_hunt:horsetail", TrimMaterials.COPPER, dyed(DyeColor.BROWN)),
+            on(DecorationAnchor.BROW, "armorpieces_hunt:bone_mask", TrimMaterials.QUARTZ, metal(TrimMaterials.REDSTONE)),
+            on(DecorationAnchor.HORNS, "armorpieces_hunt:antlers", TrimMaterials.COPPER),
+            on(DecorationAnchor.PAULDRONS, "armorpieces_hunt:beast_head", TrimMaterials.COPPER, metal(TrimMaterials.REDSTONE)),
             on(DecorationAnchor.BACK, "pinions", TrimMaterials.COPPER),
-            on(DecorationAnchor.COLLAR, "fang_necklace", TrimMaterials.QUARTZ, metal(TrimMaterials.REDSTONE)),
-            on(DecorationAnchor.VAMBRACES, "claws", TrimMaterials.QUARTZ, metal(TrimMaterials.COPPER)),
+            on(DecorationAnchor.COLLAR, "armorpieces_hunt:fang_necklace", TrimMaterials.QUARTZ, metal(TrimMaterials.REDSTONE)),
+            on(DecorationAnchor.VAMBRACES, "armorpieces_hunt:claws", TrimMaterials.QUARTZ, metal(TrimMaterials.COPPER)),
             on(DecorationAnchor.BELT, "cord", TrimMaterials.COPPER, dyed(DyeColor.BROWN)),
-            on(DecorationAnchor.TASSETS, "pelt", TrimMaterials.COPPER, dyed(DyeColor.BROWN)),
-            on(DecorationAnchor.KNEES, "fanged_cop", TrimMaterials.COPPER, metal(TrimMaterials.REDSTONE)),
-            on(DecorationAnchor.SPURS, "talons", TrimMaterials.QUARTZ, metal(TrimMaterials.COPPER)),
-            on(DecorationAnchor.GREAVES, "shin_spikes", TrimMaterials.QUARTZ, metal(TrimMaterials.COPPER)))),
+            on(DecorationAnchor.TASSETS, "armorpieces_hunt:pelt", TrimMaterials.COPPER, dyed(DyeColor.BROWN)),
+            on(DecorationAnchor.KNEES, "armorpieces_hunt:fanged_cop", TrimMaterials.COPPER, metal(TrimMaterials.REDSTONE)),
+            on(DecorationAnchor.SPURS, "armorpieces_hunt:talons", TrimMaterials.QUARTZ, metal(TrimMaterials.COPPER)),
+            on(DecorationAnchor.GREAVES, "armorpieces_hunt:shin_spikes", TrimMaterials.QUARTZ, metal(TrimMaterials.COPPER)))),
 
         // Wayfarer: leather under a gambeson, everything copper and brown, iron only where a buckle
-        // or a spur has to be metal. The crest and the temples have no wayfarer part.
+        // or a spur has to be metal. The crest, the temples and the shoulders have no wayfarer part -
+        // the mantle that used to fill the third went to the Wild Hunt with the rest of the beasts.
         new GallerySet("far_road", EquipmentAssets.LEATHER, skin("gambeson"),
             cloth("tunic", DyeColor.BROWN), List.of(
                 on(DecorationAnchor.CREST, "feathering", TrimMaterials.COPPER),
                 on(DecorationAnchor.BROW, "browband", TrimMaterials.COPPER, dyed(DyeColor.BROWN)),
                 on(DecorationAnchor.HORNS, "cheek_guards", TrimMaterials.COPPER, metal(TrimMaterials.IRON)),
-                on(DecorationAnchor.PAULDRONS, "mantle", TrimMaterials.COPPER, dyed(DyeColor.BROWN)),
+                on(DecorationAnchor.PAULDRONS, "epaulettes", TrimMaterials.COPPER, dyed(DyeColor.BROWN)),
                 on(DecorationAnchor.BACK, "bedroll", TrimMaterials.COPPER, dyed(DyeColor.BROWN)),
                 on(DecorationAnchor.COLLAR, "bandolier", TrimMaterials.COPPER, metal(TrimMaterials.IRON), dyed(DyeColor.BROWN)),
                 on(DecorationAnchor.VAMBRACES, "wraps", TrimMaterials.QUARTZ, dyed(DyeColor.BROWN)),
@@ -915,37 +943,85 @@ public final class StageCommand {
                 on(DecorationAnchor.SPURS, "spurs", TrimMaterials.IRON),
                 on(DecorationAnchor.GREAVES, "puttees", TrimMaterials.QUARTZ, dyed(DyeColor.BROWN)))),
 
-        // Tidal: diamond and lapis on the scale skin, light blue in every dye. Six sockets have no
-        // tidal part at all, which is why this one leans hardest on neutral plate.
+        // Deep Tide, from Armor Pieces: Coral - diamond and lapis on the scale skin, light blue in
+        // every dye. The five tidal pieces are the pack's; the other seven are the mod's neutral
+        // plate, which is what this set always leaned on. Transcribed from the pack's own file.
         new GallerySet("deep_tide", EquipmentAssets.DIAMOND, skin("scale"), null, List.of(
-            on(DecorationAnchor.CREST, "dorsal_fin", TrimMaterials.DIAMOND, dyed(DyeColor.LIGHT_BLUE)),
+            on(DecorationAnchor.CREST, "armorpieces_coral:dorsal_fin", TrimMaterials.DIAMOND, dyed(DyeColor.LIGHT_BLUE)),
             on(DecorationAnchor.BROW, "visor", TrimMaterials.DIAMOND),
-            on(DecorationAnchor.HORNS, "head_fins", TrimMaterials.DIAMOND, dyed(DyeColor.LIGHT_BLUE)),
+            on(DecorationAnchor.HORNS, "armorpieces_coral:head_fins", TrimMaterials.DIAMOND, dyed(DyeColor.LIGHT_BLUE)),
             on(DecorationAnchor.PAULDRONS, "lames", TrimMaterials.DIAMOND, metal(TrimMaterials.COPPER)),
-            on(DecorationAnchor.BACK, "spine_ridge", TrimMaterials.DIAMOND, metal(TrimMaterials.COPPER)),
+            on(DecorationAnchor.BACK, "armorpieces_coral:spine_ridge", TrimMaterials.DIAMOND, metal(TrimMaterials.COPPER)),
             on(DecorationAnchor.COLLAR, "gorget", TrimMaterials.DIAMOND),
             on(DecorationAnchor.VAMBRACES, "bangles", TrimMaterials.DIAMOND, metal(TrimMaterials.LAPIS)),
             on(DecorationAnchor.BELT, "sash", TrimMaterials.LAPIS, dyed(DyeColor.LIGHT_BLUE), metal(TrimMaterials.COPPER)),
-            on(DecorationAnchor.TASSETS, "scale_skirt", TrimMaterials.DIAMOND, metal(TrimMaterials.COPPER)),
+            on(DecorationAnchor.TASSETS, "armorpieces_coral:scale_skirt", TrimMaterials.DIAMOND, metal(TrimMaterials.COPPER)),
             on(DecorationAnchor.KNEES, "garters", TrimMaterials.DIAMOND, dyed(DyeColor.LIGHT_BLUE)),
             on(DecorationAnchor.SPURS, "streamers", TrimMaterials.DIAMOND, dyed(DyeColor.LIGHT_BLUE)),
-            on(DecorationAnchor.GREAVES, "swim_fins", TrimMaterials.DIAMOND, dyed(DyeColor.LIGHT_BLUE)))),
+            on(DecorationAnchor.GREAVES, "armorpieces_coral:swim_fins", TrimMaterials.DIAMOND, dyed(DyeColor.LIGHT_BLUE)))),
 
-        // Carapace: netherite and lime over lamellar - the theme has five parts and they are all
-        // here, with the beast's claws and talons and a few dark plates filling the other seven.
+        // Chitin, from Armor Pieces: The Hive - netherite and lime over lamellar. All four of the
+        // pack's pieces are here; five more come from the Wild Hunt and three from the mod, which is
+        // the widest borrowing of any set and the measure of how much the Hive still needs.
         new GallerySet("chitin", EquipmentAssets.NETHERITE, skin("lamellar"), null, List.of(
-            on(DecorationAnchor.CREST, "antennae", TrimMaterials.NETHERITE, metal(TrimMaterials.EMERALD)),
-            on(DecorationAnchor.BROW, "bone_mask", TrimMaterials.NETHERITE, metal(TrimMaterials.EMERALD)),
-            on(DecorationAnchor.HORNS, "aerials", TrimMaterials.NETHERITE, dyed(DyeColor.LIME)),
-            on(DecorationAnchor.PAULDRONS, "wing_cases", TrimMaterials.NETHERITE, dyed(DyeColor.LIME)),
-            on(DecorationAnchor.BACK, "carapace", TrimMaterials.NETHERITE, dyed(DyeColor.LIME)),
+            on(DecorationAnchor.CREST, "armorpieces_hive:antennae", TrimMaterials.NETHERITE, metal(TrimMaterials.EMERALD)),
+            on(DecorationAnchor.BROW, "armorpieces_hunt:bone_mask", TrimMaterials.NETHERITE, metal(TrimMaterials.EMERALD)),
+            on(DecorationAnchor.HORNS, "armorpieces_hive:aerials", TrimMaterials.NETHERITE, dyed(DyeColor.LIME)),
+            on(DecorationAnchor.PAULDRONS, "armorpieces_hive:wing_cases", TrimMaterials.NETHERITE, dyed(DyeColor.LIME)),
+            on(DecorationAnchor.BACK, "armorpieces_hive:carapace", TrimMaterials.NETHERITE, dyed(DyeColor.LIME)),
             on(DecorationAnchor.COLLAR, "ruff", TrimMaterials.NETHERITE, dyed(DyeColor.LIME)),
-            on(DecorationAnchor.VAMBRACES, "claws", TrimMaterials.NETHERITE, metal(TrimMaterials.NETHERITE)),
+            on(DecorationAnchor.VAMBRACES, "armorpieces_hunt:claws", TrimMaterials.NETHERITE, metal(TrimMaterials.NETHERITE)),
             on(DecorationAnchor.BELT, "chain_belt", TrimMaterials.NETHERITE, metal(TrimMaterials.NETHERITE)),
             on(DecorationAnchor.TASSETS, "mail_fringe", TrimMaterials.NETHERITE, metal(TrimMaterials.NETHERITE)),
-            on(DecorationAnchor.KNEES, "fanged_cop", TrimMaterials.NETHERITE, metal(TrimMaterials.EMERALD)),
-            on(DecorationAnchor.SPURS, "talons", TrimMaterials.NETHERITE, metal(TrimMaterials.NETHERITE)),
-            on(DecorationAnchor.GREAVES, "shin_spikes", TrimMaterials.NETHERITE, metal(TrimMaterials.NETHERITE)))));
+            on(DecorationAnchor.KNEES, "armorpieces_hunt:fanged_cop", TrimMaterials.NETHERITE, metal(TrimMaterials.EMERALD)),
+            on(DecorationAnchor.SPURS, "armorpieces_hunt:talons", TrimMaterials.NETHERITE, metal(TrimMaterials.NETHERITE)),
+            on(DecorationAnchor.GREAVES, "armorpieces_hunt:shin_spikes", TrimMaterials.NETHERITE, metal(TrimMaterials.NETHERITE)))),
+
+        // The Menagerie, from Armor Pieces: Animals - eight of this pack's pieces and four of the
+        // mod's, copper on leather. Transcribed from that pack's own `armorpieces-sets.json`, which
+        // is where the set is declared; this is a second copy of it for the sake of one command, and
+        // the pack's file stays the one the site and the wardrobe read.
+        new GallerySet("menagerie", EquipmentAssets.LEATHER, null, null, List.of(
+            on(DecorationAnchor.CREST, "comb", TrimMaterials.COPPER, metal(TrimMaterials.COPPER)),
+            on(DecorationAnchor.BROW, "armorpieces_animals:frog_mask", TrimMaterials.COPPER,
+                metal(TrimMaterials.EMERALD)),
+            on(DecorationAnchor.HORNS, "armorpieces_animals:fox_ears", TrimMaterials.COPPER),
+            on(DecorationAnchor.PAULDRONS, "armorpieces_animals:bee_wings", TrimMaterials.COPPER,
+                metal(TrimMaterials.COPPER)),
+            on(DecorationAnchor.BACK, "armorpieces_animals:turtle_shell", TrimMaterials.COPPER,
+                metal(TrimMaterials.COPPER)),
+            on(DecorationAnchor.COLLAR, "armorpieces_animals:flower_brooch", TrimMaterials.COPPER,
+                metal(TrimMaterials.EMERALD)),
+            on(DecorationAnchor.VAMBRACES, "mittens", TrimMaterials.COPPER),
+            on(DecorationAnchor.BELT, "armorpieces_animals:donkey_tail", TrimMaterials.COPPER,
+                metal(TrimMaterials.COPPER)),
+            on(DecorationAnchor.TASSETS, "armorpieces_hunt:pelt", TrimMaterials.COPPER, dyed(DyeColor.BROWN)),
+            on(DecorationAnchor.KNEES, "armorpieces_animals:armadillo_shell", TrimMaterials.COPPER,
+                metal(TrimMaterials.COPPER)),
+            on(DecorationAnchor.SPURS, "armorpieces_animals:rabbit_feet", TrimMaterials.COPPER,
+                metal(TrimMaterials.EMERALD)),
+            on(DecorationAnchor.GREAVES, "puttees", TrimMaterials.COPPER, dyed(DyeColor.GREEN)))),
+
+        // The Reef, from Armor Pieces: Coral - the other way round, four of the pack's pieces and
+        // eight of the mod's. Its own file dresses the figure in turtle scute, which is a helmet and
+        // nothing else, so a stand wearing it would lose nine sockets: leather here, and the scute
+        // stays where the four slots are really four items.
+        new GallerySet("reef", EquipmentAssets.LEATHER, null, null, List.of(
+            on(DecorationAnchor.CREST, "armorpieces_coral:coral_crown", TrimMaterials.COPPER,
+                metal(TrimMaterials.COPPER)),
+            on(DecorationAnchor.BROW, "spectacle_visor", TrimMaterials.COPPER),
+            on(DecorationAnchor.HORNS, "armorpieces_coral:axolotl_frills", TrimMaterials.COPPER),
+            on(DecorationAnchor.PAULDRONS, "armorpieces_coral:kelp_mantle", TrimMaterials.COPPER,
+                metal(TrimMaterials.COPPER)),
+            on(DecorationAnchor.BACK, "armorpieces_coral:spine_ridge", TrimMaterials.COPPER),
+            on(DecorationAnchor.COLLAR, "armorpieces_coral:nautilus_gorget", TrimMaterials.COPPER,
+                metal(TrimMaterials.COPPER)),
+            on(DecorationAnchor.VAMBRACES, "wraps", TrimMaterials.COPPER),
+            on(DecorationAnchor.BELT, "cord", TrimMaterials.COPPER),
+            on(DecorationAnchor.TASSETS, "armorpieces_coral:scale_skirt", TrimMaterials.COPPER),
+            on(DecorationAnchor.KNEES, "poleyns", TrimMaterials.COPPER),
+            on(DecorationAnchor.SPURS, "streamers", TrimMaterials.COPPER),
+            on(DecorationAnchor.GREAVES, "armorpieces_coral:swim_fins", TrimMaterials.COPPER))));
 
     // ---- layout ---------------------------------------------------------------------------------
 

@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_hunt:mantle",
+  "description": {
+    "translate": "decoration.armorpieces_hunt.mantle"
+  },
+  "anchors": [
+    "pauldrons"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "former_ids": [
+    "armorpieces:mantle"
+  ],
+  "uid": "ap1mnwocwedsymgpu5ayyyq"
+}

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:brain_coral_block"
+  },
+  "result": {
+    "id": "armorpieces:crest_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces_coral:coral_crown"
+    }
+  },
+  "category": "equipment"
+}

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:chorus_fruit"
+  },
+  "result": {
+    "id": "armorpieces:tassets_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces_dragon:wing_tatters"
+    }
+  },
+  "category": "equipment"
+}

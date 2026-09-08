@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_animals:bee_wings",
+  "description": {
+    "translate": "decoration.armorpieces_animals.bee_wings"
+  },
+  "anchors": [
+    "pauldrons"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1e5p6xucmpavf76sw7iaa"
+}

@@ -4,6 +4,7 @@ import com.google.common.base.Suppliers;
 import com.mattjesmc.armorpieces.ArmorPieces;
 import com.mattjesmc.armorpieces.registry.ModDataComponents;
 import com.mattjesmc.armorpieces.skin.ArmorSkinValue;
+import com.mattjesmc.armorpieces.identity.Tolerant;
 import com.mojang.serialization.MapCodec;
 import java.util.HashMap;
 import java.util.Map;
@@ -114,7 +115,7 @@ public class SkinTemplateItemModel implements ItemModel {
     }
 
     private Icon iconFor(final ItemStack item) {
-        final ArmorSkinValue skin = item.get(ModDataComponents.SKIN);
+        final ArmorSkinValue skin = Tolerant.get(item, ModDataComponents.SKIN);
         if (skin == null) {
             return this.fallback;
         }

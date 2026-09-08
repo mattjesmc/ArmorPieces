@@ -1,0 +1,118 @@
+{
+  "sets": [
+    {
+      "id": "menagerie",
+      "title": "The Menagerie",
+      "description": "Every creature lent something to it: a fox's ears, a frog's face, a bee's wings, a turtle's shell, a donkey's tail, an armadillo's bands and a rabbit's foot for luck, with a poppy at the throat. Eight of its twelve sockets are this pack's; the other four are the mod's own, which is how a themed set fills what it cannot fill alone.",
+      "set": {
+        "name": "The Menagerie",
+        "slots": {
+          "helmet": {
+            "material": "leather"
+          },
+          "chestplate": {
+            "material": "leather"
+          },
+          "leggings": {
+            "material": "leather"
+          },
+          "boots": {
+            "material": "leather"
+          }
+        },
+        "pieces": {
+          "crest": {
+            "id": "armorpieces:comb",
+            "pack": "armorpieces",
+            "material": "copper",
+            "fittings": {
+              "armorpieces:guard": "minecraft:copper"
+            }
+          },
+          "brow": {
+            "id": "armorpieces_animals:frog_mask",
+            "pack": "armorpieces-animals",
+            "material": "copper",
+            "fittings": {
+              "armorpieces:gemstone": "minecraft:emerald"
+            }
+          },
+          "horns": {
+            "id": "armorpieces_animals:fox_ears",
+            "pack": "armorpieces-animals",
+            "material": "copper"
+          },
+          "pauldrons": {
+            "id": "armorpieces_animals:bee_wings",
+            "pack": "armorpieces-animals",
+            "material": "copper",
+            "fittings": {
+              "armorpieces:guard": "minecraft:copper"
+            }
+          },
+          "back": {
+            "id": "armorpieces_animals:turtle_shell",
+            "pack": "armorpieces-animals",
+            "material": "copper",
+            "fittings": {
+              "armorpieces:guard": "minecraft:copper"
+            }
+          },
+          "collar": {
+            "id": "armorpieces_animals:flower_brooch",
+            "pack": "armorpieces-animals",
+            "material": "copper",
+            "fittings": {
+              "armorpieces:gemstone": "minecraft:emerald"
+            }
+          },
+          "vambraces": {
+            "id": "armorpieces:mittens",
+            "pack": "armorpieces",
+            "material": "copper"
+          },
+          "belt": {
+            "id": "armorpieces_animals:donkey_tail",
+            "pack": "armorpieces-animals",
+            "material": "copper",
+            "fittings": {
+              "armorpieces:guard": "minecraft:copper"
+            }
+          },
+          "tassets": {
+            "id": "armorpieces_hunt:pelt",
+            "pack": "armorpieces-hunt",
+            "material": "copper",
+            "fittings": {
+              "armorpieces:inlay": "brown"
+            }
+          },
+          "knees": {
+            "id": "armorpieces_animals:armadillo_shell",
+            "pack": "armorpieces-animals",
+            "material": "copper",
+            "fittings": {
+              "armorpieces:guard": "minecraft:copper"
+            }
+          },
+          "spurs": {
+            "id": "armorpieces_animals:rabbit_feet",
+            "pack": "armorpieces-animals",
+            "material": "copper",
+            "fittings": {
+              "armorpieces:gemstone": "minecraft:emerald"
+            }
+          },
+          "greaves": {
+            "id": "armorpieces:puttees",
+            "pack": "armorpieces",
+            "material": "copper",
+            "fittings": {
+              "armorpieces:inlay": "green"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

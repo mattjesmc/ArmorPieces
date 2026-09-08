@@ -110,6 +110,20 @@ Two rules the scenarios inherit from what has already gone wrong:
 
 ### What the toolkit must add first
 
+> **All six landed (2026-09-07).** mcp-toolkit shipped them as the "consumer's gate", `RELEASE_1.md`
+> section K, across 0.129.0-0.132.0, and this repository is now pinned to **0.134.0**
+> (`build.gradle`). `create_world` with datapacks at creation and `get_tooltip` are registered in
+> `McpToolkitClient` (`WorldCreation`, `TooltipTools`); the studio grew `{entity, equipment,
+> freeze}`, which is asks 2 and 4; `ping` gained `build {started_at, mods_hash, mods}`, which is
+> ask 6 and the answer to [[minecraft-bridge-port-collision]]; the manifest's `context` column is
+> the documented server-only surface, ask 2's other half. Also new and useful here: `click {hover}`,
+> which is the only way a tooltip is ever in frame.
+>
+> **So tiers 2 and 3 are unblocked and neither is built.** They still read `pending` in
+> `tools/gate.py`, which is honest but is no longer waiting on anyone. Nothing below this line has
+> been re-read against what actually shipped — do that before building, since the asks were written
+> against a guess at the shape.
+
 Six asks, in the order they unblock work. Everything else — image diffing, goldens, the scenario
 format — is ours.
 

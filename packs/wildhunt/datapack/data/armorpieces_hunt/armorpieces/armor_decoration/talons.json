@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_hunt:talons",
+  "description": {
+    "translate": "decoration.armorpieces_hunt.talons"
+  },
+  "anchors": [
+    "spurs"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "former_ids": [
+    "armorpieces:talons"
+  ],
+  "uid": "ap1fhzzc2cjqt2za4eysr5a"
+}

@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_coral:scale_skirt",
+  "description": {
+    "translate": "decoration.armorpieces_coral.scale_skirt"
+  },
+  "anchors": [
+    "tassets"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "former_ids": [
+    "armorpieces:scale_skirt"
+  ],
+  "uid": "ap1whhqtcm52nzgfdxqxd5a"
+}

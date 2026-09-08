@@ -1,0 +1,213 @@
+{
+  "sets": [
+    {
+      "id": "reef",
+      "title": "The Reef",
+      "description": "Coral on the crown, kelp over the shoulders, a nautilus at the throat and an axolotl's frills at the temples. Only four of its twelve sockets are this pack's - the other eight are the mod's own tidal pieces, which is why a set pack gets cheaper the more of them there are.",
+      "set": {
+        "name": "The Reef",
+        "slots": {
+          "helmet": {
+            "material": "turtle_scute"
+          },
+          "chestplate": {
+            "material": "turtle_scute"
+          },
+          "leggings": {
+            "material": "turtle_scute"
+          },
+          "boots": {
+            "material": "turtle_scute"
+          }
+        },
+        "pieces": {
+          "crest": {
+            "id": "armorpieces_coral:coral_crown",
+            "pack": "armorpieces-coral",
+            "material": "copper",
+            "fittings": {
+              "armorpieces:guard": "minecraft:copper"
+            }
+          },
+          "brow": {
+            "id": "armorpieces:spectacle_visor",
+            "pack": "armorpieces",
+            "material": "copper"
+          },
+          "horns": {
+            "id": "armorpieces_coral:axolotl_frills",
+            "pack": "armorpieces-coral",
+            "material": "turtle_scute"
+          },
+          "pauldrons": {
+            "id": "armorpieces_coral:kelp_mantle",
+            "pack": "armorpieces-coral",
+            "material": "copper",
+            "fittings": {
+              "armorpieces:guard": "minecraft:copper"
+            }
+          },
+          "back": {
+            "id": "armorpieces_coral:spine_ridge",
+            "pack": "armorpieces-coral",
+            "material": "turtle_scute"
+          },
+          "collar": {
+            "id": "armorpieces_coral:nautilus_gorget",
+            "pack": "armorpieces-coral",
+            "material": "copper",
+            "fittings": {
+              "armorpieces:guard": "minecraft:copper"
+            }
+          },
+          "vambraces": {
+            "id": "armorpieces:wraps",
+            "pack": "armorpieces",
+            "material": "leather"
+          },
+          "belt": {
+            "id": "armorpieces:cord",
+            "pack": "armorpieces",
+            "material": "leather"
+          },
+          "tassets": {
+            "id": "armorpieces_coral:scale_skirt",
+            "pack": "armorpieces-coral",
+            "material": "turtle_scute"
+          },
+          "knees": {
+            "id": "armorpieces:poleyns",
+            "pack": "armorpieces",
+            "material": "turtle_scute"
+          },
+          "spurs": {
+            "id": "armorpieces:streamers",
+            "pack": "armorpieces",
+            "material": "copper"
+          },
+          "greaves": {
+            "id": "armorpieces_coral:swim_fins",
+            "pack": "armorpieces-coral",
+            "material": "turtle_scute"
+          }
+        }
+      }
+    },
+    {
+      "id": "deep-tide",
+      "title": "Deep Tide",
+      "description": "Diamond and lapis over the scale skin, light blue in every dye - a dorsal fin down the crest, fins at the temples, a ridged spine and a pair of swim fins. Five sockets are this pack's tidal pieces; the other seven are the mod's neutral plate, which is what this set always leaned on.",
+      "set": {
+        "name": "Deep Tide",
+        "slots": {
+          "helmet": {
+            "material": "diamond"
+          },
+          "chestplate": {
+            "material": "diamond"
+          },
+          "leggings": {
+            "material": "diamond"
+          },
+          "boots": {
+            "material": "diamond"
+          }
+        },
+        "pieces": {
+          "crest": {
+            "id": "armorpieces_coral:dorsal_fin",
+            "pack": "armorpieces-coral",
+            "material": "diamond",
+            "fittings": {
+              "armorpieces:inlay": "light_blue"
+            }
+          },
+          "brow": {
+            "id": "armorpieces:visor",
+            "pack": "armorpieces",
+            "material": "diamond"
+          },
+          "horns": {
+            "id": "armorpieces_coral:head_fins",
+            "pack": "armorpieces-coral",
+            "material": "diamond",
+            "fittings": {
+              "armorpieces:inlay": "light_blue"
+            }
+          },
+          "pauldrons": {
+            "id": "armorpieces:lames",
+            "pack": "armorpieces",
+            "material": "diamond",
+            "fittings": {
+              "armorpieces:guard": "minecraft:copper"
+            }
+          },
+          "back": {
+            "id": "armorpieces_coral:spine_ridge",
+            "pack": "armorpieces-coral",
+            "material": "diamond",
+            "fittings": {
+              "armorpieces:guard": "minecraft:copper"
+            }
+          },
+          "collar": {
+            "id": "armorpieces:gorget",
+            "pack": "armorpieces",
+            "material": "diamond"
+          },
+          "vambraces": {
+            "id": "armorpieces:bangles",
+            "pack": "armorpieces",
+            "material": "diamond",
+            "fittings": {
+              "armorpieces:gemstone": "minecraft:lapis"
+            }
+          },
+          "belt": {
+            "id": "armorpieces:sash",
+            "pack": "armorpieces",
+            "material": "lapis",
+            "fittings": {
+              "armorpieces:inlay": "light_blue",
+              "armorpieces:guard": "minecraft:copper"
+            }
+          },
+          "tassets": {
+            "id": "armorpieces_coral:scale_skirt",
+            "pack": "armorpieces-coral",
+            "material": "diamond",
+            "fittings": {
+              "armorpieces:guard": "minecraft:copper"
+            }
+          },
+          "knees": {
+            "id": "armorpieces:garters",
+            "pack": "armorpieces",
+            "material": "diamond",
+            "fittings": {
+              "armorpieces:inlay": "light_blue"
+            }
+          },
+          "spurs": {
+            "id": "armorpieces:streamers",
+            "pack": "armorpieces",
+            "material": "diamond",
+            "fittings": {
+              "armorpieces:inlay": "light_blue"
+            }
+          },
+          "greaves": {
+            "id": "armorpieces_coral:swim_fins",
+            "pack": "armorpieces-coral",
+            "material": "diamond",
+            "fittings": {
+              "armorpieces:inlay": "light_blue"
+            }
+          }
+        },
+        "skin": "armorpieces:scale"
+      }
+    }
+  ]
+}

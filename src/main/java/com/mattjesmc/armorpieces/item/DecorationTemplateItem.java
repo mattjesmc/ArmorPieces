@@ -3,6 +3,7 @@ package com.mattjesmc.armorpieces.item;
 import com.mattjesmc.armorpieces.decoration.ArmorDecoration;
 import com.mattjesmc.armorpieces.decoration.DecorationAnchor;
 import com.mattjesmc.armorpieces.registry.ModDataComponents;
+import com.mattjesmc.armorpieces.identity.Tolerant;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
@@ -55,7 +56,7 @@ public class DecorationTemplateItem extends Item {
      */
     @Override
     public Component getName(final ItemStack stack) {
-        final Holder<ArmorDecoration> decoration = stack.get(ModDataComponents.DECORATION);
+        final Holder<ArmorDecoration> decoration = Tolerant.get(stack, ModDataComponents.DECORATION);
         if (decoration == null) {
             return super.getName(stack);
         }

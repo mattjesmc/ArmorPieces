@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:wolf_armor"
+  },
+  "result": {
+    "id": "armorpieces:knees_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces_animals:armadillo_shell"
+    }
+  },
+  "category": "equipment"
+}

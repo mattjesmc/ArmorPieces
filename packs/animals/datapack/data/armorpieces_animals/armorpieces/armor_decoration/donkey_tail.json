@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_animals:donkey_tail",
+  "description": {
+    "translate": "decoration.armorpieces_animals.donkey_tail"
+  },
+  "anchors": [
+    "belt"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1snzkrrgdtsjc22g7a7aa"
+}

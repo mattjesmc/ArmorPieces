@@ -141,8 +141,9 @@ on the command line) and are never
 committed. `bb_geo.py` converts `.bbmodel` to the mod's geometry and back.
 
 **From an agent.** The same editor drives from an MCP client through `tools/mcp`, a small server
-in front of Blockbench's own MCP plugin: it serves the tools a part author uses (an *authoring*
-profile of the plugin's ninety-odd), adds `armorpieces_open`, `_new`, `_check`, `_save`, `_part`,
+in front of Blockbench's own bridge plugin (mcp-toolkit's `mcptoolkit_bridge.js`, HTTP on
+127.0.0.1:25801): it serves the tools a part author uses (an *authoring* profile of the plugin's
+twenty-six), adds `armorpieces_open`, `_new`, `_check`, `_save`, `_part`,
 `_set_part`, `_pieces` and `_close` — with the skin workspace's own set beside them,
 `armorpieces_skins`, `_open_skin`, `_skin_sheet`, `_skin_paint`, `_skin_material`, `_skin_check`,
 `_save_skin` and `_close_skin` — and after every editing call appends the check every shipped
@@ -382,6 +383,59 @@ and `recipe/clear_fitting.json`), or how a socket is closed to smithing altogeth
 (`recipe/apply_horns.json`) — any recipe the mod has, and any other mod's just the same. Every
 other field in the file is ignored, which is why the Blockbench plugin's *Craftable* switch can
 leave the pattern and items in place under the swapped type.
+
+## Moving or renaming a piece
+
+A player's armor names its parts, its skin and its garment **by id**. Change one and every save that
+used it points at nothing.
+
+That no longer costs anybody an item. A piece an installation cannot name is **kept** — the armor
+holds it, does not draw it, says "not installed" in its tooltip, and gets it back the moment the pack
+that defines it is installed. Nothing is ever deleted automatically, and there is no deadline.
+
+But "kept" is a floor, not a plan. Two optional fields turn a move into a non-event, and they belong
+on `armor_decoration`, `armor_skin` and `cloth` files alike:
+
+```json
+{
+  "asset_id": "armorpieces_hunt:tusks",
+  "description": { "translate": "decoration.armorpieces_hunt.tusks" },
+  "anchors": ["horns"],
+  "former_ids": ["armorpieces:tusks"],
+  "uid": "ap1n36fr45nqudsaphu7ksa"
+}
+```
+
+**`former_ids`** is what you write when you move or rename something. The piece that ARRIVES declares
+what it replaces, so a save written years before the move finds it with no migration and no action
+from the player. It is the only one of the two that works on an item saved before either field
+existed, which is why the mod's own 0.3.0 → 0.4.0 split is carried by thirty of these rather than by
+anything cleverer. An id may be claimed by one piece only.
+
+**`uid`** is a lineage identifier. You do not write it: `python tools/mint_uids.py` mints one for
+anything that has none and records it in `uids.lock`, and the content library mints them for pieces
+published through the site. It is consulted only after the id and every `former_ids` have missed, and
+it makes a move you FORGOT to declare survivable too.
+
+> **A uid is minted once and never changes.** A changed uid is worse than no uid, because a stale one
+> sitting in somebody's save rebinds to the wrong piece. `uids.lock` is append-only — a line stays
+> even for a piece that was deleted, because that piece's uid may still be in a world somewhere — and
+> `python tools/mint_uids.py --check` (which the gate runs) fails if one has moved.
+
+Note that it is the **id that wins**. If the id in a save still resolves, that is the piece used, even
+when a uid says otherwise: a pack that deliberately redefines an id — which is exactly what a restore
+pack does — has to be allowed to.
+
+**When something IS missing**, three commands help and none of them is needed:
+
+| | |
+|---|---|
+| `/armorpieces missing` | every id this world has read and could not resolve, with counts — the shopping list |
+| `/armorpieces prune <targets>` | what would be dropped from what they wear and carry; `... confirm` actually drops it, and it cannot be undone |
+| `/armorpieces upgrade` | writes loaded chunks back in the new form now, rather than whenever they are next saved |
+
+`prune` is the only thing in the mod that destroys a saved piece. Worn and carried armor needs nothing
+from `upgrade`: player data is written on logout whatever happens.
 
 ## Giving a part behaviour
 

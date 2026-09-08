@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:lily_pad"
+  },
+  "result": {
+    "id": "armorpieces:brow_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces_animals:frog_mask"
+    }
+  },
+  "category": "equipment"
+}

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:end_rod"
+  },
+  "result": {
+    "id": "armorpieces:knees_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces_dragon:dragon_knuckles"
+    }
+  },
+  "category": "equipment"
+}

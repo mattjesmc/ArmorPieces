@@ -178,8 +178,44 @@ tasks.named('assemble') {
 // Gradle has no "resolve only if present", so an optional dependency must be PROBED for before it
 // is declared; otherwise an absent artifact fails resolution instead of degrading. Set
 // `mcmod.toolkit=false` in gradle.properties to skip the probe entirely.
+//
+// The version below is ALSO the version `run/mcptoolkit/mcp-server` must be extracted from: the
+// in-game bridge and the MCP shim that talks to it ship in one jar, and .mcp.json runs the shim out
+// of that extract. Bump the two together, and `run/mcptoolkit/mcp-server/.extracted-version` says
+// which one is on disk. 0.124.0 is the loop kit (mcp-toolkit LOOP_KIT_DESIGN.md): the image budget,
+// `.mcptoolkit/loop.json` (a check on every reply, the project profile) and the batch painters,
+// which is what this repo's own tools/mcp proxy no longer has to be. 0.124.0 in particular carries
+// the five toolkit-side fixes this repo's falsifier run found (that document's section 11), so the
+// extract below has to be the 0.124.0 one for any of them to be true here. 0.132.0 (2026-09-06) is
+// the consumer's gate on top of it (mcp-toolkit RELEASE_1.md section K): `ping.build` (which jar is
+// this game running, and is it stale), `get_tooltip`, `create_world` with datapacks at creation,
+// `studio {entity, equipment, freeze}` and the tooltip-capable `click {hover}`; the extract is
+// refreshed to it the same way.
+//
+// 0.133.0 replaced the THIRD-PARTY Blockbench MCP plugin with the toolkit's own
+// (`mcp-toolkit/blockbench/mcptoolkit_bridge.js`, plain HTTP on 127.0.0.1:25801, session-bound
+// projects, 26 argument-checked tools), which is why `tools/mcp/server.mjs` now speaks that
+// transport and `.mcptoolkit/loop.json`'s keep-list names the new surface; 0.134.0 (2026-09-07)
+// then deleted `render`'s refusal on a minimized window. 0.135.0 / shim 0.65.0 / plugin 0.2.0 is
+// this repository's own measurement answered (docs/measurements/blockbench-plugins.md): a binding
+// now lives exactly as long as its CONNECTION rather than a timer (`GET /presence`, which is why
+// the extract has to move with the plugin - an old shim never opens presence and the plugin falls
+// back to the timer), `PROJECT` is bound in `risky_eval`'s scope so a plugin API reached through an
+// eval can address the right project instead of reading Blockbench's global, and a session id
+// arriving from two connections is said on every reply. Both matter to a part session, so the
+// extract is the 0.135.0 one.
+//
+// 0.136.0 / shim 0.66.0 (2026-09-07) is the identity everything above rests on, and the reason the
+// extract has to move again (mcp-toolkit `docs/models/BLOCKBENCH_ISOLATION_DESIGN.md` section 6.1).
+// The shim's session id used to fall back to its OWN process id, so this repo's two MCP servers -
+// the toolkit shim and tools/mcp/server.mjs - presented two identities for one session, and every
+// guard the plugin has is keyed on that id. `MCPTK_SESSION=armorpieces` in .mcp.json was hiding it
+// by giving every session on the machine the SAME id, which disables those guards the other way.
+// Both sides now compute `mcptk-${process.ppid}` - this session's own claude.exe, shared by its
+// servers and by nothing else - and .mcp.json sets no session id at all. An extract older than
+// 0.136.0 therefore re-splits the pair the moment that variable is gone, which it now is.
 // ---------------------------------------------------------------------------
-def toolkitVersion = project.findProperty('mcptoolkit_version') ?: '0.85.0'
+def toolkitVersion = project.findProperty('mcptoolkit_version') ?: '0.136.0'
 def m2Root = file(System.getProperty('maven.repo.local')
     ?: "${System.getProperty('user.home')}/.m2/repository")
 def toolkitJar = new File(m2Root,

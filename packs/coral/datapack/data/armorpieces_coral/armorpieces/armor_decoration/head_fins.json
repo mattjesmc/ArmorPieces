@@ -1,0 +1,30 @@
+{
+  "asset_id": "armorpieces_coral:head_fins",
+  "description": {
+    "translate": "decoration.armorpieces_coral.head_fins"
+  },
+  "anchors": [
+    "horns"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "effects": [
+    {
+      "type": "armorpieces:if_wearer",
+      "if": {
+        "flags": {
+          "is_in_water": true
+        }
+      },
+      "then": {
+        "type": "armorpieces:mob_effect",
+        "effect": "minecraft:dolphins_grace"
+      }
+    }
+  ],
+  "former_ids": [
+    "armorpieces:head_fins"
+  ],
+  "uid": "ap1cq2fmiyffsprhmcsqrwq"
+}

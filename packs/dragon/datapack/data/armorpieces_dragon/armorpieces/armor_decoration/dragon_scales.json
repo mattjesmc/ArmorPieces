@@ -1,0 +1,10 @@
+{
+  "asset_id": "armorpieces_dragon:dragon_scales",
+  "description": {
+    "translate": "decoration.armorpieces_dragon.dragon_scales"
+  },
+  "anchors": [
+    "greaves"
+  ],
+  "uid": "ap1kvzk5q56iubbpn57tvkq"
+}

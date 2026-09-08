@@ -17,8 +17,8 @@ wearing the same helmet, the same chestplate, the same Sentry trim in the same n
 can build 1,568,239,201 armor sets, which sounds like plenty right up until it happens to you
 twice in a week.
 
-Armor Pieces takes that number to **3 × 10⁸⁴** — more than thirty thousand unique diamond sets
-for every atom in the observable universe. Diamond is one of seven armor materials.
+Armor Pieces takes that number to **1.3 × 10⁶³** — about a million times the number of atoms in
+the Sun, and that is diamond alone, one of seven armor materials.
 
 It gives one piece of armor **four layers of decoration, each an independent choice**:
 a **part** hung on a socket, a **skin** that changes what the plate itself is made of, a **cloth**
@@ -106,15 +106,15 @@ The release that turned a set of parts into a wardrobe.
 
 | How many | What |
 | --- | --- |
-| 91 | the pieces, over every socket |
-| 14 | the armor skins |
+| 66 | the pieces, over every socket |
+| 9 | the armor skins |
 | 2 | the cloths |
 | 4 | the fittings |
 | 12 | the sockets a piece can hang on |
-| 6 | the loot groups |
+| 3 | the loot groups |
 | 6 | the effect types a piece may carry |
-| 31 | the pieces with a template recipe; the rest are found |
-| 6 | the fewest pieces any socket has to choose from |
+| 29 | the pieces with a template recipe; the rest are found |
+| 2 | the fewest pieces any socket has to choose from |
 
 ---
 
@@ -122,18 +122,18 @@ The release that turned a set of parts into a wardrobe.
 
 | Socket | Worn on | Pieces | What hangs there |
 | --- | --- | --- | --- |
-| crest | helmet | 7 | Top of the skull, pointing up |
-| brow | helmet | 14 | Across the forehead, on the front face of the head |
-| horns | helmet | 8 | Both temples, mirrored |
-| pauldrons | chestplate | 7 | Both shoulders, mirrored, riding on the arms so they swing with them |
-| back | chestplate | 8 | Upper back |
-| collar | chestplate | 8 | Base of the throat, on the front of the chest |
-| vambraces | chestplate | 7 | Both forearms, mirrored, riding on the arms |
+| crest | helmet | 4 | Top of the skull, pointing up |
+| brow | helmet | 12 | Across the forehead, on the front face of the head |
+| horns | helmet | 2 | Both temples, mirrored |
+| pauldrons | chestplate | 4 | Both shoulders, mirrored, riding on the arms so they swing with them |
+| back | chestplate | 6 | Upper back |
+| collar | chestplate | 7 | Base of the throat, on the front of the chest |
+| vambraces | chestplate | 6 | Both forearms, mirrored, riding on the arms |
 | belt | leggings | 7 | Waistline, at the bottom of the torso |
-| tassets | leggings | 6 | Both hips, mirrored, riding on the legs |
-| knees | leggings | 6 | Both knees, mirrored, on the front of the legs |
-| spurs | boots | 7 | Both heels, mirrored, at the back of the ankle |
-| greaves | boots | 6 | Both shins, mirrored, on the front of the lower leg |
+| tassets | leggings | 4 | Both hips, mirrored, riding on the legs |
+| knees | leggings | 5 | Both knees, mirrored, on the front of the legs |
+| spurs | boots | 6 | Both heels, mirrored, at the back of the ankle |
+| greaves | boots | 3 | Both shins, mirrored, on the front of the lower leg |
 
 ---
 
@@ -145,7 +145,7 @@ The release that turned a set of parts into a wardrobe.
 - **Armor skins** — The one thing here that changes the armor itself rather than adding to it — plate, gothic, milanese, mail, chainmail, lorica, runic, hoplite, samurai, gambeson, brigandine, varangian, scale, lamellar. One greyscale master pair on vanilla's own armor grid, recoloured at load through eight shades taken from *that armor material's* vanilla texture, with vanilla's own panel edges and shadows mixed back over it. A skinned iron helmet still reads as iron, gold still reads as gold, and a modded armor material is skinned for free from the texture it already ships. Applied at the advanced smithing table with the piece's own reforging material — re-skinning is re-forging, and it costs the metal the piece is made of.
 - **Cloth over the chest** — A **Tunic** or a **Tabard**, applied with a cloth template and a banner, and the design is the banner's — sixteen dyes crossed with every pattern layer, made at a loom, so the heraldry is a player's choice rather than a list the mod keeps. It is painted into the armor's own texture rather than hung off it, so it moves with the armor, clips nothing, and the plate's rivets and edges read *through* it. It sits over the skin, under every part and under the trim. One greyscale cut mask ships the whole feature; there is no per-material art and no per-banner art.
 - **Fittings** — A part can declare places for a second material — `gemstone`, `guard`, `inlay`, `banner` — and a fitting template sets one: gems and metals by trim material, inlays by dye, banners from a banner made at a loom. There is a template per fitting, each with its own look and recipe, and the template with the third slot empty takes its fitting out again. Fittings are data too — a pack's new fitting gets its template from a recipe — and an effect can be gated on one.
-- **Found in the world** — Most parts are found rather than crafted, each theme in the structures that suit it — knightly gear in strongholds and trial chambers, beast trophies in bastions, court jewellery in mansions and ancient cities, tidal parts in shipwrecks and ocean ruins. A **loot group** is one file naming a category of tables and the tag of parts found in them, so a pack adds a whole look to the world at once, or drops one part into one chest from its own data file — the one thing a datapack cannot do for itself, since it can only replace a vanilla table whole. Armor **skins** are found the same way, divided over the same groups, and a **fitting template** turns up in every one of them. The odds belong to the table, so a chest's chance of holding something stays put however many parts are added. A loot function puts a part on a piece of armor a table drops, gem and all.
+- **Found in the world** — Most parts are found rather than crafted, each theme in the structures that suit it — knightly gear in strongholds and trial chambers, court jewellery in mansions and ancient cities, a wayfarer's kit on the roads and in the villages. A **loot group** is one file naming a category of tables and the tag of parts found in them, so a pack adds a whole look to the world at once, or drops one part into one chest from its own data file — the one thing a datapack cannot do for itself, since it can only replace a vanilla table whole. Armor **skins** are found the same way, divided over the same groups, and a **fitting template** turns up in every one of them. The odds belong to the table, so a chest's chance of holding something stays put however many parts are added. A loot function puts a part on a piece of armor a table drops, gem and all.
 - **Taking parts off** — The advanced smithing table, crafted from a smithing table, an armor stand and two iron ingots, holds a whole set worn by a stand at once and lists each piece's sockets and their fittings as rows of icons, with the piece's own row under them — its trim, its skin and, on a chestplate, its cloth. Pick one and Remove empties it — the one way a part, a fitting, a trim, a skin or a cloth ever comes off. An empty place shows a hint of the template that would fill it. Its own template and material slots run the smithing table's recipes, with the result on the stand before it is paid for, and a fitting goes into the socket that is picked rather than into every part that takes one.
 - **One smithing recipe per socket, forever** — The part rides on the template item as a component, so a pack hands out a template and needs no recipe of its own. And any recipe the mod ships can be switched off by overriding its file with `{"type": "armorpieces:disabled"}` — a part that is found rather than made, a server without fittings.
 - **Optional behaviour** — A part may carry effects — attributes, mob effects, a projectile dodge, gliding — configured in the same JSON file. `pinions` is a cut-down elytra that actually flies.
@@ -155,9 +155,9 @@ The release that turned a set of parts into a wardrobe.
 
 ## Gallery
 
-![The six themed sets, every socket filled — knightly, court, beast, wayfarer, tidal, carapace](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/gallery/sets.png)
+![Themed sets, every socket filled — the mod's knightly, court and wayfarer, and the pack sets beside them](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/gallery/sets.png)
 
-*The six themed sets, every socket filled — knightly, court, beast, wayfarer, tidal, carapace*
+*Themed sets, every socket filled — the mod's knightly, court and wayfarer, and the pack sets beside them*
 
 ![Every armor skin on one diamond suit — the plate itself changed, not something hung on it](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/gallery/skins.png)
 
@@ -184,39 +184,40 @@ plus untrimmed, is **199** states per piece — and **1,568,239,201** for a set 
 
 Now count that same diamond set with this mod installed. Each piece keeps all 199 of its trims
 and gains a skin
-(fourteen, or bare), a part in each of its sockets, each part in one of eleven materials, each
+(nine, or bare), a part in each of its sockets, each part in one of eleven materials, each
 part's fittings filled or left empty — a gem from seven, a metal from four, an inlay from
 sixteen dyes — and the chestplate a tunic or a tabard on top.
 
 | | Vanilla diamond | With Armor Pieces |
 | --- | ---: | ---: |
-| Helmet | 199 | 1,833,029,934,300 |
-| Chestplate | 199 | 5,113,599,898,358,700 |
-| Leggings | 199 | 1,839,405,834,600 |
-| Boots | 199 | 1,187,185,245 |
-| **Full set** | **1,568,239,201** | **20,468,798,559,625,822,847,874,604,407,037,697,665,836,570,000,000** |
+| Helmet | 199 | 26,802,796,580 |
+| Chestplate | 199 | 735,580,184,364,000 |
+| Leggings | 199 | 584,066,114,400 |
+| Boots | 199 | 456,299,040 |
+| **Full set** | **1,568,239,201** | **5,254,382,653,471,233,625,936,048,378,064,626,821,120,000,000** |
 
-That is **2 × 10⁴⁹** — about 10⁴⁰ times the whole of vanilla, and roughly a sixth of the atoms
-in the Earth. Some smaller ways to hold it:
+That is **5.3 × 10⁴⁵** — about 3 × 10³⁶ times the whole of vanilla. Some smaller ways to hold
+it:
 
-- **The boots alone** come to 1,187,185,245 arrangements: three quarters of every trimmed
+- **The boots alone** come to 456,299,040 arrangements: more than a quarter of every trimmed
   diamond set vanilla can build, on your feet.
-- **The helmet alone** is 1,169 times vanilla's entire four-piece space.
-- **Shape alone**, before a single colour is chosen — which part sits in which socket, and
-  nothing else — is 368,709,304,320 distinct silhouettes. 235 times vanilla's fully trimmed
-  space, in pure geometry.
+- **The helmet alone** is 17 times vanilla's entire four-piece space.
+- **Shape alone**, before a single colour is chosen — which part sits in which socket, empty
+  included, and nothing else — is 2,568,384,000 distinct silhouettes. Still more than vanilla's
+  fully trimmed space, in pure geometry.
 - Pick a set a second and you exhaust vanilla in fifty years. You exhaust this one in
-  4.7 × 10³¹ times the age of the universe.
+  1.2 × 10²⁸ times the age of the universe.
 
 And all of that **counts a banner as a single design**, which it is not. A banner is sixteen
 base colours and up to six layers of forty-two patterns in sixteen dyes:
 **1,475,646,641,940,097,552** banners, any of which can go on the back banner, the cloak, the
-tunic or the tabard. Count them properly and the chestplate alone reaches 7.7 × 10⁵⁰, and a
+tunic or the tabard. Count them properly and the chestplate alone reaches 1.8 × 10³², and a
 full set:
 
-**3.07 × 10⁸⁴** — over thirty thousand distinct diamond sets for every atom in the observable
-universe. (There are about 7.3 × 10⁷⁹ of those, if you take Planck's numbers and the baryons
-they imply.)
+**1.3 × 10⁶³** — about a million times the number of atoms in the Sun.
+
+These are the numbers for the **mod alone**. Every content pack adds pieces to sockets that
+are already multiplying, so the count does not creep upward — it jumps.
 
 And every number on this page is **diamond alone**, because that is what vanilla is being
 compared against. Diamond is one of seven armor materials, six of which take a skin — which
@@ -247,24 +248,20 @@ Nobody at spawn is wearing yours.
 | Fitting Template Banner | Fitting Template Gemstone | Fitting Template Guard |
 | ![Crafting recipe for Fitting Template Inlay](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__fitting_template_inlay.gif) | ![Crafting recipe for Skin Template Brigandine](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_brigandine.png) | ![Crafting recipe for Skin Template Chainmail](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_chainmail.png) |
 | Fitting Template Inlay | Skin Template Brigandine | Skin Template Chainmail |
-| ![Crafting recipe for Skin Template Gambeson](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_gambeson.png) | ![Crafting recipe for Skin Template Gothic](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_gothic.png) | ![Crafting recipe for Skin Template Hoplite](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_hoplite.png) |
-| Skin Template Gambeson | Skin Template Gothic | Skin Template Hoplite |
-| ![Crafting recipe for Skin Template Lamellar](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_lamellar.png) | ![Crafting recipe for Skin Template Lorica](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_lorica.png) | ![Crafting recipe for Skin Template Mail](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_mail.png) |
-| Skin Template Lamellar | Skin Template Lorica | Skin Template Mail |
-| ![Crafting recipe for Skin Template Milanese](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_milanese.png) | ![Crafting recipe for Skin Template Plate](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_plate.png) | ![Crafting recipe for Skin Template Runic](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_runic.png) |
-| Skin Template Milanese | Skin Template Plate | Skin Template Runic |
-| ![Crafting recipe for Skin Template Samurai](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_samurai.png) | ![Crafting recipe for Skin Template Scale](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_scale.png) | ![Crafting recipe for Skin Template Varangian](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_varangian.png) |
-| Skin Template Samurai | Skin Template Scale | Skin Template Varangian |
-| ![Crafting recipe for Template Bandolier](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_bandolier.png) | ![Crafting recipe for Template Banner](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_banner.png) | ![Crafting recipe for Template Bellows Visor](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_bellows_visor.png) |
-| Template Bandolier | Template Banner | Template Bellows Visor |
-| ![Crafting recipe for Template Bells](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_bells.png) | ![Crafting recipe for Template Brush Crest](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_brush_crest.png) | ![Crafting recipe for Template Chain Of Office](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_chain_of_office.png) |
-| Template Bells | Template Brush Crest | Template Chain Of Office |
-| ![Crafting recipe for Template Circlet](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_circlet.png) | ![Crafting recipe for Template Coronet](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_coronet.png) | ![Crafting recipe for Template Feathering](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_feathering.png) |
-| Template Circlet | Template Coronet | Template Feathering |
-| ![Crafting recipe for Template Garters](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_garters.png) | ![Crafting recipe for Template Gorget](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_gorget.png) | ![Crafting recipe for Template Great Helm](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_great_helm.png) |
-| Template Garters | Template Gorget | Template Great Helm |
-| ![Crafting recipe for Template Greaves](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_greaves.png) | ![Crafting recipe for Template Horns](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_horns.png) | ![Crafting recipe for Template Laurel](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_laurel.png) |
-| Template Greaves | Template Horns | Template Laurel |
+| ![Crafting recipe for Skin Template Gambeson](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_gambeson.png) | ![Crafting recipe for Skin Template Gothic](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_gothic.png) | ![Crafting recipe for Skin Template Lamellar](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_lamellar.png) |
+| Skin Template Gambeson | Skin Template Gothic | Skin Template Lamellar |
+| ![Crafting recipe for Skin Template Mail](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_mail.png) | ![Crafting recipe for Skin Template Milanese](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_milanese.png) | ![Crafting recipe for Skin Template Plate](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_plate.png) |
+| Skin Template Mail | Skin Template Milanese | Skin Template Plate |
+| ![Crafting recipe for Skin Template Scale](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_scale.png) | ![Crafting recipe for Template Bandolier](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_bandolier.png) | ![Crafting recipe for Template Banner](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_banner.png) |
+| Skin Template Scale | Template Bandolier | Template Banner |
+| ![Crafting recipe for Template Bellows Visor](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_bellows_visor.png) | ![Crafting recipe for Template Bells](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_bells.png) | ![Crafting recipe for Template Brush Crest](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_brush_crest.png) |
+| Template Bellows Visor | Template Bells | Template Brush Crest |
+| ![Crafting recipe for Template Chain Of Office](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_chain_of_office.png) | ![Crafting recipe for Template Circlet](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_circlet.png) | ![Crafting recipe for Template Coronet](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_coronet.png) |
+| Template Chain Of Office | Template Circlet | Template Coronet |
+| ![Crafting recipe for Template Feathering](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_feathering.png) | ![Crafting recipe for Template Garters](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_garters.png) | ![Crafting recipe for Template Gorget](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_gorget.png) |
+| Template Feathering | Template Garters | Template Gorget |
+| ![Crafting recipe for Template Great Helm](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_great_helm.png) | ![Crafting recipe for Template Greaves](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_greaves.png) | ![Crafting recipe for Template Laurel](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_laurel.png) |
+| Template Great Helm | Template Greaves | Template Laurel |
 | ![Crafting recipe for Template Mittens](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_mittens.png) | ![Crafting recipe for Template Nasal](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_nasal.png) | ![Crafting recipe for Template Pendant](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_pendant.png) |
 | Template Mittens | Template Nasal | Template Pendant |
 | ![Crafting recipe for Template Pinions](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_pinions.png) | ![Crafting recipe for Template Poleyns](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_poleyns.png) | ![Crafting recipe for Template Quiver](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_quiver.png) |
@@ -273,10 +270,8 @@ Nobody at spawn is wearing yours.
 | Template Sash | Template Spaulders | Template Spectacle Visor |
 | ![Crafting recipe for Template Spire](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_spire.png) | ![Crafting recipe for Template Spurs](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_spurs.png) | ![Crafting recipe for Template Tassets](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_tassets.png) |
 | Template Spire | Template Spurs | Template Tassets |
-| ![Crafting recipe for Template Thigh Sheath](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_thigh_sheath.png) | ![Crafting recipe for Template Visor](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_visor.png) | ![Crafting recipe for Template Wing Cases](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_wing_cases.png) |
-| Template Thigh Sheath | Template Visor | Template Wing Cases |
-| ![Crafting recipe for Template Wing Roots](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_wing_roots.png) |
-| Template Wing Roots |
+| ![Crafting recipe for Template Thigh Sheath](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_thigh_sheath.png) | ![Crafting recipe for Template Visor](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_visor.png) | ![Crafting recipe for Template Wing Roots](https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_wing_roots.png) |
+| Template Thigh Sheath | Template Visor | Template Wing Roots |
 
 ---
 

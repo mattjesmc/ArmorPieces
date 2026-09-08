@@ -5,6 +5,12 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
+import com.mattjesmc.armorpieces.decoration.ArmorPiecesRegistries;
+import com.mattjesmc.armorpieces.identity.Rebind;
+import com.mattjesmc.armorpieces.identity.Tolerant;
+import com.mojang.serialization.Dynamic;
+import java.util.Optional;
+import net.minecraft.resources.Identifier;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponents;
@@ -62,6 +68,39 @@ public record ClothValue(Holder<Cloth> cloth, DyeColor base, BannerPatternLayers
         ClothValue::patterns,
         ClothValue::new
     );
+
+    /**
+     * The form the {@code armorpieces:cloth} component uses on both the template and the armor.
+     *
+     * <p>Note what is NOT here: a {@code uid} field. The cloth template's item model selects on this
+     * component's exact serialised form ({@code items/cloth_template.json} matches
+     * {@code {"cloth": "armorpieces:tabard"}}), so a field written beside the id would silently stop
+     * every template rendering. Garments are carried by {@code former_ids} alone; only the socket map,
+     * which nothing selects on, stamps uids. See {@code docs/plans/compatibility.md} §4.3.
+     */
+    public static final Codec<Tolerant<ClothValue>> TOLERANT_CODEC =
+        Tolerant.codec(CODEC, ClothValue::rebind);
+    public static final StreamCodec<RegistryFriendlyByteBuf, Tolerant<ClothValue>>
+        TOLERANT_STREAM_CODEC = Tolerant.stream(STREAM_CODEC);
+
+    /**
+     * The garment this id has moved to, if any - rewrite-and-retry, so the dye and the banner layers
+     * a player put on it come back with it rather than being reset.
+     */
+    private static <U> Optional<ClothValue> rebind(final Dynamic<U> raw) {
+        final Identifier id = raw.get("cloth").asString().result()
+            .map(Identifier::tryParse).orElse(null);
+        final Optional<Holder<Cloth>> found = Rebind.find(ArmorPiecesRegistries.CLOTH, id, null);
+        if (found.isEmpty()) {
+            Rebind.miss(ArmorPiecesRegistries.CLOTH,
+                id == null ? "an unreadable garment" : id.toString());
+            return Optional.empty();
+        }
+        return found.flatMap(Holder::unwrapKey)
+            .flatMap(key -> CODEC
+                .parse(raw.set("cloth", raw.createString(key.identifier().toString())))
+                .result());
+    }
 
     private static final Component CLOTH_TITLE =
         Component.translatable("item.armorpieces.clothed").withStyle(ChatFormatting.GRAY);

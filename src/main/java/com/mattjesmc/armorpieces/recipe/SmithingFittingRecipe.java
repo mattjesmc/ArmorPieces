@@ -6,6 +6,7 @@ import com.mattjesmc.armorpieces.decoration.DecorationEntry;
 import com.mattjesmc.armorpieces.decoration.fitting.Fitting;
 import com.mattjesmc.armorpieces.decoration.fitting.FittingValue;
 import com.mattjesmc.armorpieces.registry.ModDataComponents;
+import com.mattjesmc.armorpieces.identity.Tolerant;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
@@ -115,7 +116,7 @@ public class SmithingFittingRecipe extends SimpleSmithingRecipe {
 
     @Override
     public ItemStack assemble(final SmithingRecipeInput input) {
-        return applyFitting(input.base(), input.addition(), input.template().get(ModDataComponents.FITTING));
+        return applyFitting(input.base(), input.addition(), Tolerant.get(input.template(), ModDataComponents.FITTING));
     }
 
     /**

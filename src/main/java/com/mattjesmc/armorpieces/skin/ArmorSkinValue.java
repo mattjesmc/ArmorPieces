@@ -3,6 +3,12 @@ package com.mattjesmc.armorpieces.skin;
 import com.mojang.serialization.Codec;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
+import com.mattjesmc.armorpieces.decoration.ArmorPiecesRegistries;
+import com.mattjesmc.armorpieces.identity.Rebind;
+import com.mattjesmc.armorpieces.identity.Tolerant;
+import com.mojang.serialization.Dynamic;
+import java.util.Optional;
+import net.minecraft.resources.Identifier;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponents;
@@ -33,6 +39,30 @@ public record ArmorSkinValue(Holder<ArmorSkin> skin) implements TooltipProvider 
         ArmorSkin.CODEC.xmap(ArmorSkinValue::new, ArmorSkinValue::skin);
     public static final StreamCodec<RegistryFriendlyByteBuf, ArmorSkinValue> STREAM_CODEC =
         ArmorSkin.STREAM_CODEC.map(ArmorSkinValue::new, ArmorSkinValue::skin);
+
+    /**
+     * The form the {@code armorpieces:skin} component uses on both the template and the armor.
+     *
+     * <p>The armor is the half that matters. Five skins left the mod for the Legends pack in the
+     * 0.3.0 split, and without this a player wearing a Varangian chestplate on 0.4.0 without that
+     * pack would not lose the skin - they would lose the chestplate.
+     */
+    public static final Codec<Tolerant<ArmorSkinValue>> TOLERANT_CODEC =
+        Tolerant.codec(CODEC, ArmorSkinValue::rebind);
+    public static final StreamCodec<RegistryFriendlyByteBuf, Tolerant<ArmorSkinValue>>
+        TOLERANT_STREAM_CODEC = Tolerant.stream(STREAM_CODEC);
+
+    /** The skin this id has moved to, if any; otherwise it is counted as missing and kept raw. */
+    private static Optional<ArmorSkinValue> rebind(final Dynamic<?> raw) {
+        final Identifier id = raw.asString().result().map(Identifier::tryParse).orElse(null);
+        final Optional<Holder<ArmorSkin>> found =
+            Rebind.find(ArmorPiecesRegistries.ARMOR_SKIN, id, null);
+        if (found.isEmpty()) {
+            Rebind.miss(ArmorPiecesRegistries.ARMOR_SKIN,
+                id == null ? "an unreadable skin" : id.toString());
+        }
+        return found.map(ArmorSkinValue::new);
+    }
 
     private static final Component SKINNED_TITLE =
         Component.translatable("item.armorpieces.skinned").withStyle(ChatFormatting.GRAY);

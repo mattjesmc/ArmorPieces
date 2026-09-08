@@ -7,6 +7,7 @@ import com.mattjesmc.armorpieces.client.texture.ClothTextureManager;
 import com.mattjesmc.armorpieces.cloth.ClothValue;
 import com.mattjesmc.armorpieces.registry.ModDataComponents;
 import com.mattjesmc.armorpieces.skin.ArmorSkinValue;
+import com.mattjesmc.armorpieces.identity.Tolerant;
 import java.util.List;
 import net.minecraft.client.renderer.entity.layers.EquipmentLayerRenderer;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
@@ -104,7 +105,7 @@ public class EquipmentLayerRendererMixin {
         if (!(original instanceof Identifier texture)) {
             return original;
         }
-        final ArmorSkinValue skin = itemStack.get(ModDataComponents.SKIN);
+        final ArmorSkinValue skin = Tolerant.get(itemStack, ModDataComponents.SKIN);
         final ClothValue cloth = cloth(layerType, itemStack, renderState);
         if (skin == null && cloth == null) {
             return original;
@@ -148,10 +149,10 @@ public class EquipmentLayerRendererMixin {
         final Object renderState
     ) {
         if (layerType != EquipmentClientInfo.LayerType.HUMANOID_LEGGINGS) {
-            return itemStack.get(ModDataComponents.CLOTH);
+            return Tolerant.get(itemStack, ModDataComponents.CLOTH);
         }
         return renderState instanceof HumanoidRenderState humanoid
-            ? humanoid.chestEquipment.get(ModDataComponents.CLOTH)
+            ? Tolerant.get(humanoid.chestEquipment, ModDataComponents.CLOTH)
             : null;
     }
 

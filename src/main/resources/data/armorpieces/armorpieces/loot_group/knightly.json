@@ -24,8 +24,7 @@
     "armorpieces:gothic",
     "armorpieces:milanese",
     "armorpieces:mail",
-    "armorpieces:chainmail",
-    "armorpieces:lorica"
+    "armorpieces:chainmail"
   ],
   "fittings": "#armorpieces:common"
 }

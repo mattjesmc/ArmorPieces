@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_hunt:beast_head",
+  "description": {
+    "translate": "decoration.armorpieces_hunt.beast_head"
+  },
+  "anchors": [
+    "pauldrons"
+  ],
+  "fittings": [
+    "armorpieces:gemstone"
+  ],
+  "former_ids": [
+    "armorpieces:beast_head"
+  ],
+  "uid": "ap1j3mt5q3q34yuijoshu5a"
+}

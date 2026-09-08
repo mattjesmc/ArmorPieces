@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_hunt:horsetail",
+  "description": {
+    "translate": "decoration.armorpieces_hunt.horsetail"
+  },
+  "anchors": [
+    "crest"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "former_ids": [
+    "armorpieces:horsetail"
+  ],
+  "uid": "ap16wgkp34ezsaripeqqzba"
+}

@@ -2,9 +2,11 @@ package com.mattjesmc.armorpieces.skin;
 
 import com.mattjesmc.armorpieces.decoration.ArmorPiecesRegistries;
 import com.mattjesmc.armorpieces.decoration.DecorationLoot;
+import com.mattjesmc.armorpieces.identity.Identified;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
+import java.util.Optional;
 import net.minecraft.core.Holder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -49,12 +51,21 @@ import net.minecraft.resources.RegistryFileCodec;
  * to say what reforges it - and is settled by
  * {@link com.mattjesmc.armorpieces.recipe.SmithingSkinRecipe}, not here.
  */
-public record ArmorSkin(Identifier assetId, Component description, List<DecorationLoot> loot) {
+public record ArmorSkin(
+    Identifier assetId,
+    Component description,
+    List<DecorationLoot> loot,
+    List<Identifier> formerIds,
+    Optional<String> uid
+) implements Identified {
     public static final Codec<ArmorSkin> DIRECT_CODEC = RecordCodecBuilder.create(
         i -> i.group(
                 Identifier.CODEC.fieldOf("asset_id").forGetter(ArmorSkin::assetId),
                 ComponentSerialization.CODEC.fieldOf("description").forGetter(ArmorSkin::description),
-                DecorationLoot.LIST_CODEC.optionalFieldOf("loot", List.of()).forGetter(ArmorSkin::loot)
+                DecorationLoot.LIST_CODEC.optionalFieldOf("loot", List.of()).forGetter(ArmorSkin::loot),
+                Identifier.CODEC.listOf()
+                    .optionalFieldOf("former_ids", List.of()).forGetter(ArmorSkin::formerIds),
+                Codec.STRING.optionalFieldOf("uid").forGetter(ArmorSkin::uid)
             )
             .apply(i, ArmorSkin::new)
     );
@@ -81,6 +92,16 @@ public record ArmorSkin(Identifier assetId, Component description, List<Decorati
 
     public ArmorSkin {
         loot = List.copyOf(loot);
+        formerIds = List.copyOf(formerIds);
+    }
+
+    /** A skin that has never moved and has no lineage of its own - and the shape the wire uses. */
+    public ArmorSkin(
+        final Identifier assetId,
+        final Component description,
+        final List<DecorationLoot> loot
+    ) {
+        this(assetId, description, loot, List.of(), Optional.empty());
     }
 
     /** {@code <ns>:textures/entity/skin/<skin>/<sheet><suffix>.png} - the master, or an override. */

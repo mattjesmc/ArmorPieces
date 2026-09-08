@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_hunt:bone_mask",
+  "description": {
+    "translate": "decoration.armorpieces_hunt.bone_mask"
+  },
+  "anchors": [
+    "brow"
+  ],
+  "fittings": [
+    "armorpieces:gemstone"
+  ],
+  "former_ids": [
+    "armorpieces:bone_mask"
+  ],
+  "uid": "ap1jscm3dysfk7hgoplqi6a"
+}

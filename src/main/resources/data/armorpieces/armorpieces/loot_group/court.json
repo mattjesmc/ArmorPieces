@@ -19,9 +19,8 @@
   ],
   "parts": "#armorpieces:court",
   "skins": [
-    "armorpieces:runic",
-    "armorpieces:hoplite",
-    "armorpieces:samurai"
+    "armorpieces:lamellar",
+    "armorpieces:scale"
   ],
   "fittings": "#armorpieces:common"
 }

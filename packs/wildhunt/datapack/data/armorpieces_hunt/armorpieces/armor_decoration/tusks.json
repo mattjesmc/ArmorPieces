@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_hunt:tusks",
+  "description": {
+    "translate": "decoration.armorpieces_hunt.tusks"
+  },
+  "anchors": [
+    "horns"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "former_ids": [
+    "armorpieces:tusks"
+  ],
+  "uid": "ap1n36fr45nqudsaphu7ksa"
+}

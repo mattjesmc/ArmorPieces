@@ -52,19 +52,19 @@
         "description": "the pieces, over every socket",
         "id": "pieces",
         "name": "pieces",
-        "text": "91",
-        "title": "91",
-        "value": 91,
-        "word": "91"
+        "text": "66",
+        "title": "66",
+        "value": 66,
+        "word": "66"
       },
       {
         "description": "the armor skins",
         "id": "skins",
         "name": "skins",
-        "text": "14",
-        "title": "fourteen",
-        "value": 14,
-        "word": "fourteen"
+        "text": "9",
+        "title": "nine",
+        "value": 9,
+        "word": "nine"
       },
       {
         "description": "the cloths",
@@ -97,10 +97,10 @@
         "description": "the loot groups",
         "id": "loot_groups",
         "name": "loot_groups",
-        "text": "6",
-        "title": "six",
-        "value": 6,
-        "word": "six"
+        "text": "3",
+        "title": "three",
+        "value": 3,
+        "word": "three"
       },
       {
         "description": "the effect types a piece may carry",
@@ -115,19 +115,19 @@
         "description": "the pieces with a template recipe; the rest are found",
         "id": "craftable",
         "name": "craftable",
-        "text": "31",
-        "title": "31",
-        "value": 31,
-        "word": "31"
+        "text": "29",
+        "title": "29",
+        "value": 29,
+        "word": "29"
       },
       {
         "description": "the fewest pieces any socket has to choose from",
         "id": "least_per_socket",
         "name": "least_per_socket",
-        "text": "6",
-        "title": "six",
-        "value": 6,
-        "word": "six"
+        "text": "2",
+        "title": "two",
+        "value": 2,
+        "word": "two"
       }
     ],
     "effect_types": [
@@ -184,7 +184,7 @@
         "type": null
       },
       {
-        "count": 14,
+        "count": 8,
         "description": "Gems",
         "id": "armorpieces:gemstone",
         "ingredients": "Gems",
@@ -192,25 +192,19 @@
         "name": "gemstone",
         "pieces": [
           "armorpieces:anklets",
-          "armorpieces:antennae",
           "armorpieces:bangles",
-          "armorpieces:beast_head",
-          "armorpieces:bone_mask",
           "armorpieces:chain_of_office",
           "armorpieces:circlet",
           "armorpieces:coronet",
-          "armorpieces:fang_necklace",
-          "armorpieces:fanged_cop",
           "armorpieces:girdle",
           "armorpieces:pendant",
-          "armorpieces:savoyard",
           "armorpieces:spire"
         ],
         "title": "Gemstone",
         "type": null
       },
       {
-        "count": 32,
+        "count": 25,
         "description": "Metals",
         "id": "armorpieces:guard",
         "ingredients": "Metals",
@@ -224,7 +218,6 @@
           "armorpieces:chain_belt",
           "armorpieces:chain_of_office",
           "armorpieces:cheek_guards",
-          "armorpieces:claws",
           "armorpieces:cloak",
           "armorpieces:comb",
           "armorpieces:fauld",
@@ -239,59 +232,42 @@
           "armorpieces:rowel_spurs",
           "armorpieces:sallet_slit",
           "armorpieces:sash",
-          "armorpieces:scale_shins",
-          "armorpieces:scale_skirt",
-          "armorpieces:shin_spikes",
           "armorpieces:spectacle_visor",
           "armorpieces:spiked_pauldrons",
-          "armorpieces:spine_ridge",
-          "armorpieces:talons",
           "armorpieces:thigh_sheath",
-          "armorpieces:tusks",
           "armorpieces:winged_cops"
         ],
         "title": "Guard",
         "type": null
       },
       {
-        "count": 32,
+        "count": 21,
         "description": "",
         "id": "armorpieces:inlay",
         "ingredients": "",
         "kind": "dye",
         "name": "inlay",
         "pieces": [
-          "armorpieces:aerials",
           "armorpieces:bandolier",
           "armorpieces:barbute",
           "armorpieces:bedroll",
           "armorpieces:bellows_visor",
           "armorpieces:boot_cuffs",
           "armorpieces:browband",
-          "armorpieces:carapace",
-          "armorpieces:claws",
           "armorpieces:cord",
           "armorpieces:cuffs",
-          "armorpieces:dorsal_fin",
-          "armorpieces:ears",
           "armorpieces:epaulettes",
           "armorpieces:garters",
           "armorpieces:greaves",
-          "armorpieces:head_fins",
-          "armorpieces:horsetail",
           "armorpieces:laurel",
           "armorpieces:loin_panels",
-          "armorpieces:mantle",
           "armorpieces:padding",
-          "armorpieces:pelt",
           "armorpieces:pouch_belt",
           "armorpieces:puttees",
           "armorpieces:ruff",
           "armorpieces:sash",
           "armorpieces:scarf",
           "armorpieces:streamers",
-          "armorpieces:swim_fins",
-          "armorpieces:wing_cases",
           "armorpieces:wraps"
         ],
         "title": "Inlay",
@@ -301,72 +277,13 @@
     "loot_groups": [
       {
         "chance": 0.1,
-        "count": 15,
-        "description": "bastion_other, bastion_hoglin_stable, {'table': 'bastion_treasure', 'chance': 0.2}, nether_bridge, jungle_temple, {'table': 'abandoned_mineshaft', 'chance': 0.06}",
-        "id": "armorpieces:beast",
-        "name": "beast",
-        "pieces": [
-          "armorpieces:antlers",
-          "armorpieces:beast_head",
-          "armorpieces:bone_mask",
-          "armorpieces:claws",
-          "armorpieces:ears",
-          "armorpieces:fang_necklace",
-          "armorpieces:fanged_cop",
-          "armorpieces:horns",
-          "armorpieces:horsetail",
-          "armorpieces:mantle",
-          "armorpieces:pelt",
-          "armorpieces:savoyard",
-          "armorpieces:shin_spikes",
-          "armorpieces:talons",
-          "armorpieces:tusks"
-        ],
-        "skins": [
-          "armorpieces:varangian"
-        ],
-        "tables": [
-          "minecraft:chests/bastion_other",
-          "minecraft:chests/bastion_hoglin_stable",
-          "{'table': 'minecraft:chests/bastion_treasure', 'chance': 0.2}",
-          "minecraft:chests/nether_bridge",
-          "minecraft:chests/jungle_temple",
-          "{'table': 'minecraft:chests/abandoned_mineshaft', 'chance': 0.06}"
-        ],
-        "title": "Beast"
-      },
-      {
-        "chance": 0.1,
-        "count": 4,
-        "description": "{'table': 'end_city_treasure', 'chance': 0.15}, jungle_temple, {'table': 'abandoned_mineshaft', 'chance': 0.05}",
-        "id": "armorpieces:carapace",
-        "name": "carapace",
-        "pieces": [
-          "armorpieces:aerials",
-          "armorpieces:antennae",
-          "armorpieces:carapace",
-          "armorpieces:wing_cases"
-        ],
-        "skins": [
-          "armorpieces:lamellar"
-        ],
-        "tables": [
-          "{'table': 'minecraft:chests/end_city_treasure', 'chance': 0.15}",
-          "minecraft:chests/jungle_temple",
-          "{'table': 'minecraft:chests/abandoned_mineshaft', 'chance': 0.05}"
-        ],
-        "title": "Carapace"
-      },
-      {
-        "chance": 0.1,
-        "count": 24,
+        "count": 23,
         "description": "{'table': 'woodland_mansion', 'chance': 0.18}, {'table': 'ancient_city', 'chance': 0.15}, {'table': 'end_city_treasure', 'chance': 0.15}, desert_pyramid, village/village_temple, village/village_cartographer",
         "id": "armorpieces:court",
         "name": "court",
         "pieces": [
           "armorpieces:anklets",
           "armorpieces:bangles",
-          "armorpieces:banner",
           "armorpieces:bells",
           "armorpieces:brooch",
           "armorpieces:chain_belt",
@@ -390,9 +307,8 @@
           "armorpieces:wing_roots"
         ],
         "skins": [
-          "armorpieces:runic",
-          "armorpieces:hoplite",
-          "armorpieces:samurai"
+          "armorpieces:lamellar",
+          "armorpieces:scale"
         ],
         "tables": [
           "{'table': 'minecraft:chests/woodland_mansion', 'chance': 0.18}",
@@ -406,11 +322,12 @@
       },
       {
         "chance": 0.1,
-        "count": 29,
+        "count": 30,
         "description": "stronghold_corridor, stronghold_crossing, simple_dungeon, pillager_outpost, {'table': 'trial_chambers/reward', 'chance': 0.18}, {'table': 'trial_chambers/reward_rare', 'chance': 0.25}, {'table': 'woodland_mansion', 'chance': 0.15}",
         "id": "armorpieces:knightly",
         "name": "knightly",
         "pieces": [
+          "armorpieces:banner",
           "armorpieces:barbute",
           "armorpieces:bellows_visor",
           "armorpieces:brush_crest",
@@ -446,8 +363,7 @@
           "armorpieces:gothic",
           "armorpieces:milanese",
           "armorpieces:mail",
-          "armorpieces:chainmail",
-          "armorpieces:lorica"
+          "armorpieces:chainmail"
         ],
         "tables": [
           "minecraft:chests/stronghold_corridor",
@@ -459,31 +375,6 @@
           "{'table': 'minecraft:chests/woodland_mansion', 'chance': 0.15}"
         ],
         "title": "Knightly"
-      },
-      {
-        "chance": 0.12,
-        "count": 6,
-        "description": "underwater_ruin_big, {'table': 'underwater_ruin_small', 'chance': 0.07}, {'table': 'shipwreck_treasure', 'chance': 0.18}, {'table': 'buried_treasure', 'chance': 0.15}",
-        "id": "armorpieces:tidal",
-        "name": "tidal",
-        "pieces": [
-          "armorpieces:dorsal_fin",
-          "armorpieces:head_fins",
-          "armorpieces:scale_shins",
-          "armorpieces:scale_skirt",
-          "armorpieces:spine_ridge",
-          "armorpieces:swim_fins"
-        ],
-        "skins": [
-          "armorpieces:scale"
-        ],
-        "tables": [
-          "minecraft:chests/underwater_ruin_big",
-          "{'table': 'minecraft:chests/underwater_ruin_small', 'chance': 0.07}",
-          "{'table': 'minecraft:chests/shipwreck_treasure', 'chance': 0.18}",
-          "{'table': 'minecraft:chests/buried_treasure', 'chance': 0.15}"
-        ],
-        "title": "Tidal"
       },
       {
         "chance": 0.08,
@@ -525,24 +416,6 @@
     ],
     "pieces": [
       {
-        "anchor": "horns",
-        "anchors": [
-          "horns"
-        ],
-        "craftable": false,
-        "description": "horns",
-        "effects": 0,
-        "fittings": [
-          "armorpieces:inlay"
-        ],
-        "id": "armorpieces:aerials",
-        "key": "decoration.armorpieces.aerials",
-        "kind": "piece",
-        "loot": false,
-        "name": "aerials",
-        "title": "Aerials"
-      },
-      {
         "anchor": "spurs",
         "anchors": [
           "spurs"
@@ -559,40 +432,6 @@
         "loot": false,
         "name": "anklets",
         "title": "Anklets"
-      },
-      {
-        "anchor": "crest",
-        "anchors": [
-          "crest"
-        ],
-        "craftable": false,
-        "description": "crest",
-        "effects": 0,
-        "fittings": [
-          "armorpieces:gemstone"
-        ],
-        "id": "armorpieces:antennae",
-        "key": "decoration.armorpieces.antennae",
-        "kind": "piece",
-        "loot": false,
-        "name": "antennae",
-        "title": "Antennae"
-      },
-      {
-        "anchor": "horns",
-        "anchors": [
-          "horns"
-        ],
-        "craftable": false,
-        "description": "horns",
-        "effects": 0,
-        "fittings": [],
-        "id": "armorpieces:antlers",
-        "key": "decoration.armorpieces.antlers",
-        "kind": "piece",
-        "loot": false,
-        "name": "antlers",
-        "title": "Antlers"
       },
       {
         "anchor": "collar",
@@ -668,24 +507,6 @@
         "title": "Barbute"
       },
       {
-        "anchor": "pauldrons",
-        "anchors": [
-          "pauldrons"
-        ],
-        "craftable": false,
-        "description": "pauldrons",
-        "effects": 0,
-        "fittings": [
-          "armorpieces:gemstone"
-        ],
-        "id": "armorpieces:beast_head",
-        "key": "decoration.armorpieces.beast_head",
-        "kind": "piece",
-        "loot": false,
-        "name": "beast_head",
-        "title": "Beast Head"
-      },
-      {
         "anchor": "back",
         "anchors": [
           "back"
@@ -738,24 +559,6 @@
         "loot": false,
         "name": "bells",
         "title": "Bells"
-      },
-      {
-        "anchor": "brow",
-        "anchors": [
-          "brow"
-        ],
-        "craftable": false,
-        "description": "brow",
-        "effects": 0,
-        "fittings": [
-          "armorpieces:gemstone"
-        ],
-        "id": "armorpieces:bone_mask",
-        "key": "decoration.armorpieces.bone_mask",
-        "kind": "piece",
-        "loot": false,
-        "name": "bone_mask",
-        "title": "Bone Mask"
       },
       {
         "anchor": "greaves",
@@ -862,24 +665,6 @@
         "title": "Buckler"
       },
       {
-        "anchor": "back",
-        "anchors": [
-          "back"
-        ],
-        "craftable": false,
-        "description": "back",
-        "effects": 0,
-        "fittings": [
-          "armorpieces:inlay"
-        ],
-        "id": "armorpieces:carapace",
-        "key": "decoration.armorpieces.carapace",
-        "kind": "piece",
-        "loot": false,
-        "name": "carapace",
-        "title": "Carapace"
-      },
-      {
         "anchor": "belt",
         "anchors": [
           "belt"
@@ -951,25 +736,6 @@
         "loot": true,
         "name": "circlet",
         "title": "Circlet"
-      },
-      {
-        "anchor": "vambraces",
-        "anchors": [
-          "vambraces"
-        ],
-        "craftable": false,
-        "description": "vambraces",
-        "effects": 1,
-        "fittings": [
-          "armorpieces:guard",
-          "armorpieces:inlay"
-        ],
-        "id": "armorpieces:claws",
-        "key": "decoration.armorpieces.claws",
-        "kind": "piece",
-        "loot": false,
-        "name": "claws",
-        "title": "Claws"
       },
       {
         "anchor": "back",
@@ -1063,42 +829,6 @@
         "title": "Cuffs"
       },
       {
-        "anchor": "crest",
-        "anchors": [
-          "crest"
-        ],
-        "craftable": false,
-        "description": "crest",
-        "effects": 0,
-        "fittings": [
-          "armorpieces:inlay"
-        ],
-        "id": "armorpieces:dorsal_fin",
-        "key": "decoration.armorpieces.dorsal_fin",
-        "kind": "piece",
-        "loot": false,
-        "name": "dorsal_fin",
-        "title": "Dorsal Fin"
-      },
-      {
-        "anchor": "horns",
-        "anchors": [
-          "horns"
-        ],
-        "craftable": false,
-        "description": "horns",
-        "effects": 0,
-        "fittings": [
-          "armorpieces:inlay"
-        ],
-        "id": "armorpieces:ears",
-        "key": "decoration.armorpieces.ears",
-        "kind": "piece",
-        "loot": false,
-        "name": "ears",
-        "title": "Ears"
-      },
-      {
         "anchor": "pauldrons",
         "anchors": [
           "pauldrons"
@@ -1115,42 +845,6 @@
         "loot": false,
         "name": "epaulettes",
         "title": "Epaulettes"
-      },
-      {
-        "anchor": "collar",
-        "anchors": [
-          "collar"
-        ],
-        "craftable": false,
-        "description": "collar",
-        "effects": 0,
-        "fittings": [
-          "armorpieces:gemstone"
-        ],
-        "id": "armorpieces:fang_necklace",
-        "key": "decoration.armorpieces.fang_necklace",
-        "kind": "piece",
-        "loot": false,
-        "name": "fang_necklace",
-        "title": "Fang Necklace"
-      },
-      {
-        "anchor": "knees",
-        "anchors": [
-          "knees"
-        ],
-        "craftable": false,
-        "description": "knees",
-        "effects": 0,
-        "fittings": [
-          "armorpieces:gemstone"
-        ],
-        "id": "armorpieces:fanged_cop",
-        "key": "decoration.armorpieces.fanged_cop",
-        "kind": "piece",
-        "loot": false,
-        "name": "fanged_cop",
-        "title": "Fanged Cop"
       },
       {
         "anchor": "belt",
@@ -1294,24 +988,6 @@
         "title": "Greaves"
       },
       {
-        "anchor": "horns",
-        "anchors": [
-          "horns"
-        ],
-        "craftable": false,
-        "description": "horns",
-        "effects": 1,
-        "fittings": [
-          "armorpieces:inlay"
-        ],
-        "id": "armorpieces:head_fins",
-        "key": "decoration.armorpieces.head_fins",
-        "kind": "piece",
-        "loot": false,
-        "name": "head_fins",
-        "title": "Head Fins"
-      },
-      {
         "anchor": "spurs",
         "anchors": [
           "spurs"
@@ -1342,40 +1018,6 @@
         "loot": true,
         "name": "helm_wings",
         "title": "Helm Wings"
-      },
-      {
-        "anchor": "horns",
-        "anchors": [
-          "horns"
-        ],
-        "craftable": true,
-        "description": "horns",
-        "effects": 0,
-        "fittings": [],
-        "id": "armorpieces:horns",
-        "key": "decoration.armorpieces.horns",
-        "kind": "piece",
-        "loot": true,
-        "name": "horns",
-        "title": "Horns"
-      },
-      {
-        "anchor": "crest",
-        "anchors": [
-          "crest"
-        ],
-        "craftable": false,
-        "description": "crest",
-        "effects": 0,
-        "fittings": [
-          "armorpieces:inlay"
-        ],
-        "id": "armorpieces:horsetail",
-        "key": "decoration.armorpieces.horsetail",
-        "kind": "piece",
-        "loot": false,
-        "name": "horsetail",
-        "title": "Horsetail"
       },
       {
         "anchor": "knees",
@@ -1468,24 +1110,6 @@
         "title": "Mail Fringe"
       },
       {
-        "anchor": "pauldrons",
-        "anchors": [
-          "pauldrons"
-        ],
-        "craftable": false,
-        "description": "pauldrons",
-        "effects": 0,
-        "fittings": [
-          "armorpieces:inlay"
-        ],
-        "id": "armorpieces:mantle",
-        "key": "decoration.armorpieces.mantle",
-        "kind": "piece",
-        "loot": false,
-        "name": "mantle",
-        "title": "Mantle"
-      },
-      {
         "anchor": "vambraces",
         "anchors": [
           "vambraces"
@@ -1536,24 +1160,6 @@
         "loot": false,
         "name": "padding",
         "title": "Padding"
-      },
-      {
-        "anchor": "tassets",
-        "anchors": [
-          "tassets"
-        ],
-        "craftable": false,
-        "description": "tassets",
-        "effects": 0,
-        "fittings": [
-          "armorpieces:inlay"
-        ],
-        "id": "armorpieces:pelt",
-        "key": "decoration.armorpieces.pelt",
-        "kind": "piece",
-        "loot": false,
-        "name": "pelt",
-        "title": "Pelt"
       },
       {
         "anchor": "collar",
@@ -1733,60 +1339,6 @@
         "title": "Sash"
       },
       {
-        "anchor": "brow",
-        "anchors": [
-          "brow"
-        ],
-        "craftable": false,
-        "description": "brow",
-        "effects": 0,
-        "fittings": [
-          "armorpieces:gemstone"
-        ],
-        "id": "armorpieces:savoyard",
-        "key": "decoration.armorpieces.savoyard",
-        "kind": "piece",
-        "loot": false,
-        "name": "savoyard",
-        "title": "Savoyard"
-      },
-      {
-        "anchor": "greaves",
-        "anchors": [
-          "greaves"
-        ],
-        "craftable": false,
-        "description": "greaves",
-        "effects": 0,
-        "fittings": [
-          "armorpieces:guard"
-        ],
-        "id": "armorpieces:scale_shins",
-        "key": "decoration.armorpieces.scale_shins",
-        "kind": "piece",
-        "loot": false,
-        "name": "scale_shins",
-        "title": "Scale Shins"
-      },
-      {
-        "anchor": "tassets",
-        "anchors": [
-          "tassets"
-        ],
-        "craftable": false,
-        "description": "tassets",
-        "effects": 0,
-        "fittings": [
-          "armorpieces:guard"
-        ],
-        "id": "armorpieces:scale_skirt",
-        "key": "decoration.armorpieces.scale_skirt",
-        "kind": "piece",
-        "loot": false,
-        "name": "scale_skirt",
-        "title": "Scale Skirt"
-      },
-      {
         "anchor": "collar",
         "anchors": [
           "collar"
@@ -1803,24 +1355,6 @@
         "loot": false,
         "name": "scarf",
         "title": "Scarf"
-      },
-      {
-        "anchor": "greaves",
-        "anchors": [
-          "greaves"
-        ],
-        "craftable": false,
-        "description": "greaves",
-        "effects": 0,
-        "fittings": [
-          "armorpieces:guard"
-        ],
-        "id": "armorpieces:shin_spikes",
-        "key": "decoration.armorpieces.shin_spikes",
-        "kind": "piece",
-        "loot": false,
-        "name": "shin_spikes",
-        "title": "Shin Spikes"
       },
       {
         "anchor": "pauldrons",
@@ -1875,24 +1409,6 @@
         "title": "Spiked Pauldrons"
       },
       {
-        "anchor": "back",
-        "anchors": [
-          "back"
-        ],
-        "craftable": false,
-        "description": "back",
-        "effects": 0,
-        "fittings": [
-          "armorpieces:guard"
-        ],
-        "id": "armorpieces:spine_ridge",
-        "key": "decoration.armorpieces.spine_ridge",
-        "kind": "piece",
-        "loot": false,
-        "name": "spine_ridge",
-        "title": "Spine Ridge"
-      },
-      {
         "anchor": "crest",
         "anchors": [
           "crest"
@@ -1945,42 +1461,6 @@
         "title": "Streamers"
       },
       {
-        "anchor": "greaves",
-        "anchors": [
-          "greaves"
-        ],
-        "craftable": false,
-        "description": "greaves",
-        "effects": 0,
-        "fittings": [
-          "armorpieces:inlay"
-        ],
-        "id": "armorpieces:swim_fins",
-        "key": "decoration.armorpieces.swim_fins",
-        "kind": "piece",
-        "loot": false,
-        "name": "swim_fins",
-        "title": "Swim Fins"
-      },
-      {
-        "anchor": "spurs",
-        "anchors": [
-          "spurs"
-        ],
-        "craftable": false,
-        "description": "spurs",
-        "effects": 0,
-        "fittings": [
-          "armorpieces:guard"
-        ],
-        "id": "armorpieces:talons",
-        "key": "decoration.armorpieces.talons",
-        "kind": "piece",
-        "loot": false,
-        "name": "talons",
-        "title": "Talons"
-      },
-      {
         "anchor": "tassets",
         "anchors": [
           "tassets"
@@ -2015,24 +1495,6 @@
         "title": "Thigh Sheath"
       },
       {
-        "anchor": "horns",
-        "anchors": [
-          "horns"
-        ],
-        "craftable": false,
-        "description": "horns",
-        "effects": 0,
-        "fittings": [
-          "armorpieces:guard"
-        ],
-        "id": "armorpieces:tusks",
-        "key": "decoration.armorpieces.tusks",
-        "kind": "piece",
-        "loot": false,
-        "name": "tusks",
-        "title": "Tusks"
-      },
-      {
         "anchor": "vambraces",
         "anchors": [
           "vambraces"
@@ -2063,24 +1525,6 @@
         "loot": true,
         "name": "visor",
         "title": "Visor"
-      },
-      {
-        "anchor": "pauldrons",
-        "anchors": [
-          "pauldrons"
-        ],
-        "craftable": true,
-        "description": "pauldrons",
-        "effects": 0,
-        "fittings": [
-          "armorpieces:inlay"
-        ],
-        "id": "armorpieces:wing_cases",
-        "key": "decoration.armorpieces.wing_cases",
-        "kind": "piece",
-        "loot": false,
-        "name": "wing_cases",
-        "title": "Wing Cases"
       },
       {
         "anchor": "back",
@@ -2256,7 +1700,7 @@
         "armor": "golden",
         "command": "/armorpieces stage set high_court",
         "count": 12,
-        "description": "Court: gold and amethyst throughout, purple everywhere a dye is taken. Greaves has no court part, so the wayfarer's boot cuffs stand in - the only socket the theme cannot fill.",
+        "description": "Court: gold and amethyst throughout, purple everywhere a dye is taken. Greaves has no court part, so the wayfarer's boot cuffs stand in - the only socket the theme cannot fill. The skin was runic until that one went to Armor Pieces: Legends; lamellar is the most worked of the nine the mod kept, and takes gold the same way.",
         "id": "armorpieces:high_court",
         "name": "high_court",
         "set": {
@@ -2364,7 +1808,7 @@
               "pack": "armorpieces"
             }
           },
-          "skin": "armorpieces:runic",
+          "skin": "armorpieces:lamellar",
           "slots": {
             "boots": {
               "material": "golden"
@@ -2383,129 +1827,10 @@
         "title": "High Court"
       },
       {
-        "armor": "copper",
-        "command": "/armorpieces stage set wild_hunt",
-        "count": 12,
-        "description": "Beast: copper hide and quartz bone, the two of them alternating socket by socket, over the varangian skin. Belt and back have no beast part; a cord and a pair of pinions carry them.",
-        "id": "armorpieces:wild_hunt",
-        "name": "wild_hunt",
-        "set": {
-          "name": "Wild Hunt",
-          "pieces": {
-            "back": {
-              "id": "armorpieces:pinions",
-              "material": "copper",
-              "pack": "armorpieces"
-            },
-            "belt": {
-              "fittings": {
-                "armorpieces:inlay": "brown"
-              },
-              "id": "armorpieces:cord",
-              "material": "copper",
-              "pack": "armorpieces"
-            },
-            "brow": {
-              "fittings": {
-                "armorpieces:gemstone": "minecraft:redstone"
-              },
-              "id": "armorpieces:bone_mask",
-              "material": "quartz",
-              "pack": "armorpieces"
-            },
-            "collar": {
-              "fittings": {
-                "armorpieces:gemstone": "minecraft:redstone"
-              },
-              "id": "armorpieces:fang_necklace",
-              "material": "quartz",
-              "pack": "armorpieces"
-            },
-            "crest": {
-              "fittings": {
-                "armorpieces:inlay": "brown"
-              },
-              "id": "armorpieces:horsetail",
-              "material": "copper",
-              "pack": "armorpieces"
-            },
-            "greaves": {
-              "fittings": {
-                "armorpieces:guard": "minecraft:copper"
-              },
-              "id": "armorpieces:shin_spikes",
-              "material": "quartz",
-              "pack": "armorpieces"
-            },
-            "horns": {
-              "id": "armorpieces:antlers",
-              "material": "copper",
-              "pack": "armorpieces"
-            },
-            "knees": {
-              "fittings": {
-                "armorpieces:gemstone": "minecraft:redstone"
-              },
-              "id": "armorpieces:fanged_cop",
-              "material": "copper",
-              "pack": "armorpieces"
-            },
-            "pauldrons": {
-              "fittings": {
-                "armorpieces:gemstone": "minecraft:redstone"
-              },
-              "id": "armorpieces:beast_head",
-              "material": "copper",
-              "pack": "armorpieces"
-            },
-            "spurs": {
-              "fittings": {
-                "armorpieces:guard": "minecraft:copper"
-              },
-              "id": "armorpieces:talons",
-              "material": "quartz",
-              "pack": "armorpieces"
-            },
-            "tassets": {
-              "fittings": {
-                "armorpieces:inlay": "brown"
-              },
-              "id": "armorpieces:pelt",
-              "material": "copper",
-              "pack": "armorpieces"
-            },
-            "vambraces": {
-              "fittings": {
-                "armorpieces:guard": "minecraft:copper"
-              },
-              "id": "armorpieces:claws",
-              "material": "quartz",
-              "pack": "armorpieces"
-            }
-          },
-          "skin": "armorpieces:varangian",
-          "slots": {
-            "boots": {
-              "material": "copper"
-            },
-            "chestplate": {
-              "material": "copper"
-            },
-            "helmet": {
-              "material": "copper"
-            },
-            "leggings": {
-              "material": "copper"
-            }
-          }
-        },
-        "title": "Wild Hunt"
-      },
-      {
         "armor": "leather",
         "command": "/armorpieces stage set far_road",
         "count": 12,
-        "description": "Wayfarer: leather under a gambeson, everything copper and brown, iron only where a buckle or a spur has to be metal. The crest and the temples have no wayfarer part.",
+        "description": "Wayfarer: leather under a gambeson, everything copper and brown, iron only where a buckle or a spur has to be metal. The crest, the temples and the shoulders have no wayfarer part - the mantle that used to fill the third went to the Wild Hunt with the rest of the beasts.",
         "id": "armorpieces:far_road",
         "name": "far_road",
         "set": {
@@ -2582,7 +1907,7 @@
               "fittings": {
                 "armorpieces:inlay": "brown"
               },
-              "id": "armorpieces:mantle",
+              "id": "armorpieces:epaulettes",
               "material": "copper",
               "pack": "armorpieces"
             },
@@ -2625,251 +1950,6 @@
           }
         },
         "title": "Far Road"
-      },
-      {
-        "armor": "diamond",
-        "command": "/armorpieces stage set deep_tide",
-        "count": 12,
-        "description": "Tidal: diamond and lapis on the scale skin, light blue in every dye. Six sockets have no tidal part at all, which is why this one leans hardest on neutral plate.",
-        "id": "armorpieces:deep_tide",
-        "name": "deep_tide",
-        "set": {
-          "name": "Deep Tide",
-          "pieces": {
-            "back": {
-              "fittings": {
-                "armorpieces:guard": "minecraft:copper"
-              },
-              "id": "armorpieces:spine_ridge",
-              "material": "diamond",
-              "pack": "armorpieces"
-            },
-            "belt": {
-              "fittings": {
-                "armorpieces:guard": "minecraft:copper",
-                "armorpieces:inlay": "light_blue"
-              },
-              "id": "armorpieces:sash",
-              "material": "lapis",
-              "pack": "armorpieces"
-            },
-            "brow": {
-              "id": "armorpieces:visor",
-              "material": "diamond",
-              "pack": "armorpieces"
-            },
-            "collar": {
-              "id": "armorpieces:gorget",
-              "material": "diamond",
-              "pack": "armorpieces"
-            },
-            "crest": {
-              "fittings": {
-                "armorpieces:inlay": "light_blue"
-              },
-              "id": "armorpieces:dorsal_fin",
-              "material": "diamond",
-              "pack": "armorpieces"
-            },
-            "greaves": {
-              "fittings": {
-                "armorpieces:inlay": "light_blue"
-              },
-              "id": "armorpieces:swim_fins",
-              "material": "diamond",
-              "pack": "armorpieces"
-            },
-            "horns": {
-              "fittings": {
-                "armorpieces:inlay": "light_blue"
-              },
-              "id": "armorpieces:head_fins",
-              "material": "diamond",
-              "pack": "armorpieces"
-            },
-            "knees": {
-              "fittings": {
-                "armorpieces:inlay": "light_blue"
-              },
-              "id": "armorpieces:garters",
-              "material": "diamond",
-              "pack": "armorpieces"
-            },
-            "pauldrons": {
-              "fittings": {
-                "armorpieces:guard": "minecraft:copper"
-              },
-              "id": "armorpieces:lames",
-              "material": "diamond",
-              "pack": "armorpieces"
-            },
-            "spurs": {
-              "fittings": {
-                "armorpieces:inlay": "light_blue"
-              },
-              "id": "armorpieces:streamers",
-              "material": "diamond",
-              "pack": "armorpieces"
-            },
-            "tassets": {
-              "fittings": {
-                "armorpieces:guard": "minecraft:copper"
-              },
-              "id": "armorpieces:scale_skirt",
-              "material": "diamond",
-              "pack": "armorpieces"
-            },
-            "vambraces": {
-              "fittings": {
-                "armorpieces:gemstone": "minecraft:lapis"
-              },
-              "id": "armorpieces:bangles",
-              "material": "diamond",
-              "pack": "armorpieces"
-            }
-          },
-          "skin": "armorpieces:scale",
-          "slots": {
-            "boots": {
-              "material": "diamond"
-            },
-            "chestplate": {
-              "material": "diamond"
-            },
-            "helmet": {
-              "material": "diamond"
-            },
-            "leggings": {
-              "material": "diamond"
-            }
-          }
-        },
-        "title": "Deep Tide"
-      },
-      {
-        "armor": "netherite",
-        "command": "/armorpieces stage set chitin",
-        "count": 12,
-        "description": "Carapace: netherite and lime over lamellar - the theme has five parts and they are all here, with the beast's claws and talons and a few dark plates filling the other seven.",
-        "id": "armorpieces:chitin",
-        "name": "chitin",
-        "set": {
-          "name": "Chitin",
-          "pieces": {
-            "back": {
-              "fittings": {
-                "armorpieces:inlay": "lime"
-              },
-              "id": "armorpieces:carapace",
-              "material": "netherite",
-              "pack": "armorpieces"
-            },
-            "belt": {
-              "fittings": {
-                "armorpieces:guard": "minecraft:netherite"
-              },
-              "id": "armorpieces:chain_belt",
-              "material": "netherite",
-              "pack": "armorpieces"
-            },
-            "brow": {
-              "fittings": {
-                "armorpieces:gemstone": "minecraft:emerald"
-              },
-              "id": "armorpieces:bone_mask",
-              "material": "netherite",
-              "pack": "armorpieces"
-            },
-            "collar": {
-              "fittings": {
-                "armorpieces:inlay": "lime"
-              },
-              "id": "armorpieces:ruff",
-              "material": "netherite",
-              "pack": "armorpieces"
-            },
-            "crest": {
-              "fittings": {
-                "armorpieces:gemstone": "minecraft:emerald"
-              },
-              "id": "armorpieces:antennae",
-              "material": "netherite",
-              "pack": "armorpieces"
-            },
-            "greaves": {
-              "fittings": {
-                "armorpieces:guard": "minecraft:netherite"
-              },
-              "id": "armorpieces:shin_spikes",
-              "material": "netherite",
-              "pack": "armorpieces"
-            },
-            "horns": {
-              "fittings": {
-                "armorpieces:inlay": "lime"
-              },
-              "id": "armorpieces:aerials",
-              "material": "netherite",
-              "pack": "armorpieces"
-            },
-            "knees": {
-              "fittings": {
-                "armorpieces:gemstone": "minecraft:emerald"
-              },
-              "id": "armorpieces:fanged_cop",
-              "material": "netherite",
-              "pack": "armorpieces"
-            },
-            "pauldrons": {
-              "fittings": {
-                "armorpieces:inlay": "lime"
-              },
-              "id": "armorpieces:wing_cases",
-              "material": "netherite",
-              "pack": "armorpieces"
-            },
-            "spurs": {
-              "fittings": {
-                "armorpieces:guard": "minecraft:netherite"
-              },
-              "id": "armorpieces:talons",
-              "material": "netherite",
-              "pack": "armorpieces"
-            },
-            "tassets": {
-              "fittings": {
-                "armorpieces:guard": "minecraft:netherite"
-              },
-              "id": "armorpieces:mail_fringe",
-              "material": "netherite",
-              "pack": "armorpieces"
-            },
-            "vambraces": {
-              "fittings": {
-                "armorpieces:guard": "minecraft:netherite"
-              },
-              "id": "armorpieces:claws",
-              "material": "netherite",
-              "pack": "armorpieces"
-            }
-          },
-          "skin": "armorpieces:lamellar",
-          "slots": {
-            "boots": {
-              "material": "netherite"
-            },
-            "chestplate": {
-              "material": "netherite"
-            },
-            "helmet": {
-              "material": "netherite"
-            },
-            "leggings": {
-              "material": "netherite"
-            }
-          }
-        },
-        "title": "Chitin"
       }
     ],
     "skins": [
@@ -2916,32 +1996,12 @@
       {
         "craftable": true,
         "description": "",
-        "id": "armorpieces:hoplite",
-        "key": "skin.armorpieces.hoplite",
-        "kind": "skin",
-        "loot": true,
-        "name": "hoplite",
-        "title": "Hoplite"
-      },
-      {
-        "craftable": true,
-        "description": "",
         "id": "armorpieces:lamellar",
         "key": "skin.armorpieces.lamellar",
         "kind": "skin",
         "loot": true,
         "name": "lamellar",
         "title": "Lamellar"
-      },
-      {
-        "craftable": true,
-        "description": "",
-        "id": "armorpieces:lorica",
-        "key": "skin.armorpieces.lorica",
-        "kind": "skin",
-        "loot": true,
-        "name": "lorica",
-        "title": "Lorica"
       },
       {
         "craftable": true,
@@ -2976,121 +2036,91 @@
       {
         "craftable": true,
         "description": "",
-        "id": "armorpieces:runic",
-        "key": "skin.armorpieces.runic",
-        "kind": "skin",
-        "loot": true,
-        "name": "runic",
-        "title": "Runic"
-      },
-      {
-        "craftable": true,
-        "description": "",
-        "id": "armorpieces:samurai",
-        "key": "skin.armorpieces.samurai",
-        "kind": "skin",
-        "loot": true,
-        "name": "samurai",
-        "title": "Samurai"
-      },
-      {
-        "craftable": true,
-        "description": "",
         "id": "armorpieces:scale",
         "key": "skin.armorpieces.scale",
         "kind": "skin",
         "loot": true,
         "name": "scale",
         "title": "Scale"
-      },
-      {
-        "craftable": true,
-        "description": "",
-        "id": "armorpieces:varangian",
-        "key": "skin.armorpieces.varangian",
-        "kind": "skin",
-        "loot": true,
-        "name": "varangian",
-        "title": "Varangian"
       }
     ],
     "sockets": [
       {
         "bone": "head",
-        "count": 7,
+        "count": 4,
         "description": "Top of the skull, pointing up",
         "id": "crest",
         "name": "crest",
         "pair": false,
         "slot": "helmet",
         "title": "Crest",
-        "value": "7 pieces"
+        "value": "4 pieces"
       },
       {
         "bone": "head",
-        "count": 14,
+        "count": 12,
         "description": "Across the forehead, on the front face of the head",
         "id": "brow",
         "name": "brow",
         "pair": false,
         "slot": "helmet",
         "title": "Brow",
-        "value": "14 pieces"
+        "value": "12 pieces"
       },
       {
         "bone": "head",
-        "count": 8,
+        "count": 2,
         "description": "Both temples, mirrored",
         "id": "horns",
         "name": "horns",
         "pair": true,
         "slot": "helmet",
         "title": "Temples",
-        "value": "8 pieces"
+        "value": "2 pieces"
       },
       {
         "bone": "left_arm",
-        "count": 7,
+        "count": 4,
         "description": "Both shoulders, mirrored, riding on the arms so they swing with them",
         "id": "pauldrons",
         "name": "pauldrons",
         "pair": true,
         "slot": "chestplate",
         "title": "Shoulders",
-        "value": "7 pieces"
+        "value": "4 pieces"
       },
       {
         "bone": "body",
-        "count": 8,
+        "count": 6,
         "description": "Upper back",
         "id": "back",
         "name": "back",
         "pair": false,
         "slot": "chestplate",
         "title": "Back",
-        "value": "8 pieces"
+        "value": "6 pieces"
       },
       {
         "bone": "body",
-        "count": 8,
+        "count": 7,
         "description": "Base of the throat, on the front of the chest",
         "id": "collar",
         "name": "collar",
         "pair": false,
         "slot": "chestplate",
         "title": "Collar",
-        "value": "8 pieces"
+        "value": "7 pieces"
       },
       {
         "bone": "left_arm",
-        "count": 7,
+        "count": 6,
         "description": "Both forearms, mirrored, riding on the arms",
         "id": "vambraces",
         "name": "vambraces",
         "pair": true,
         "slot": "chestplate",
         "title": "Forearms",
-        "value": "7 pieces"
+        "value": "6 pieces"
       },
       {
         "bone": "body",
@@ -3105,47 +2135,47 @@
       },
       {
         "bone": "left_leg",
-        "count": 6,
+        "count": 4,
         "description": "Both hips, mirrored, riding on the legs",
         "id": "tassets",
         "name": "tassets",
         "pair": true,
         "slot": "leggings",
         "title": "Hips",
-        "value": "6 pieces"
+        "value": "4 pieces"
       },
       {
         "bone": "left_leg",
-        "count": 6,
+        "count": 5,
         "description": "Both knees, mirrored, on the front of the legs",
         "id": "knees",
         "name": "knees",
         "pair": true,
         "slot": "leggings",
         "title": "Knees",
-        "value": "6 pieces"
+        "value": "5 pieces"
       },
       {
         "bone": "left_leg",
-        "count": 7,
+        "count": 6,
         "description": "Both heels, mirrored, at the back of the ankle",
         "id": "spurs",
         "name": "spurs",
         "pair": true,
         "slot": "boots",
         "title": "Heels",
-        "value": "7 pieces"
+        "value": "6 pieces"
       },
       {
         "bone": "left_leg",
-        "count": 6,
+        "count": 3,
         "description": "Both shins, mirrored, on the front of the lower leg",
         "id": "greaves",
         "name": "greaves",
         "pair": true,
         "slot": "boots",
         "title": "Shins",
-        "value": "6 pieces"
+        "value": "3 pieces"
       }
     ]
   },
@@ -3210,19 +2240,19 @@
             "description": "the pieces, over every socket",
             "id": "pieces",
             "name": "pieces",
-            "text": "91",
-            "title": "91",
-            "value": 91,
-            "word": "91"
+            "text": "66",
+            "title": "66",
+            "value": 66,
+            "word": "66"
           },
           {
             "description": "the armor skins",
             "id": "skins",
             "name": "skins",
-            "text": "14",
-            "title": "fourteen",
-            "value": 14,
-            "word": "fourteen"
+            "text": "9",
+            "title": "nine",
+            "value": 9,
+            "word": "nine"
           },
           {
             "description": "the cloths",
@@ -3255,10 +2285,10 @@
             "description": "the loot groups",
             "id": "loot_groups",
             "name": "loot_groups",
-            "text": "6",
-            "title": "six",
-            "value": 6,
-            "word": "six"
+            "text": "3",
+            "title": "three",
+            "value": 3,
+            "word": "three"
           },
           {
             "description": "the effect types a piece may carry",
@@ -3273,19 +2303,19 @@
             "description": "the pieces with a template recipe; the rest are found",
             "id": "craftable",
             "name": "craftable",
-            "text": "31",
-            "title": "31",
-            "value": 31,
-            "word": "31"
+            "text": "29",
+            "title": "29",
+            "value": 29,
+            "word": "29"
           },
           {
             "description": "the fewest pieces any socket has to choose from",
             "id": "least_per_socket",
             "name": "least_per_socket",
-            "text": "6",
-            "title": "six",
-            "value": 6,
-            "word": "six"
+            "text": "2",
+            "title": "two",
+            "value": 2,
+            "word": "two"
           }
         ],
         "id": "contents",
@@ -3315,80 +2345,80 @@
         "elements": [
           {
             "bone": "head",
-            "count": 7,
+            "count": 4,
             "description": "Top of the skull, pointing up",
             "id": "crest",
             "name": "crest",
             "pair": false,
             "slot": "helmet",
             "title": "Crest",
-            "value": "7 pieces"
+            "value": "4 pieces"
           },
           {
             "bone": "head",
-            "count": 14,
+            "count": 12,
             "description": "Across the forehead, on the front face of the head",
             "id": "brow",
             "name": "brow",
             "pair": false,
             "slot": "helmet",
             "title": "Brow",
-            "value": "14 pieces"
+            "value": "12 pieces"
           },
           {
             "bone": "head",
-            "count": 8,
+            "count": 2,
             "description": "Both temples, mirrored",
             "id": "horns",
             "name": "horns",
             "pair": true,
             "slot": "helmet",
             "title": "Temples",
-            "value": "8 pieces"
+            "value": "2 pieces"
           },
           {
             "bone": "left_arm",
-            "count": 7,
+            "count": 4,
             "description": "Both shoulders, mirrored, riding on the arms so they swing with them",
             "id": "pauldrons",
             "name": "pauldrons",
             "pair": true,
             "slot": "chestplate",
             "title": "Shoulders",
-            "value": "7 pieces"
+            "value": "4 pieces"
           },
           {
             "bone": "body",
-            "count": 8,
+            "count": 6,
             "description": "Upper back",
             "id": "back",
             "name": "back",
             "pair": false,
             "slot": "chestplate",
             "title": "Back",
-            "value": "8 pieces"
+            "value": "6 pieces"
           },
           {
             "bone": "body",
-            "count": 8,
+            "count": 7,
             "description": "Base of the throat, on the front of the chest",
             "id": "collar",
             "name": "collar",
             "pair": false,
             "slot": "chestplate",
             "title": "Collar",
-            "value": "8 pieces"
+            "value": "7 pieces"
           },
           {
             "bone": "left_arm",
-            "count": 7,
+            "count": 6,
             "description": "Both forearms, mirrored, riding on the arms",
             "id": "vambraces",
             "name": "vambraces",
             "pair": true,
             "slot": "chestplate",
             "title": "Forearms",
-            "value": "7 pieces"
+            "value": "6 pieces"
           },
           {
             "bone": "body",
@@ -3403,47 +2433,47 @@
           },
           {
             "bone": "left_leg",
-            "count": 6,
+            "count": 4,
             "description": "Both hips, mirrored, riding on the legs",
             "id": "tassets",
             "name": "tassets",
             "pair": true,
             "slot": "leggings",
             "title": "Hips",
-            "value": "6 pieces"
+            "value": "4 pieces"
           },
           {
             "bone": "left_leg",
-            "count": 6,
+            "count": 5,
             "description": "Both knees, mirrored, on the front of the legs",
             "id": "knees",
             "name": "knees",
             "pair": true,
             "slot": "leggings",
             "title": "Knees",
-            "value": "6 pieces"
+            "value": "5 pieces"
           },
           {
             "bone": "left_leg",
-            "count": 7,
+            "count": 6,
             "description": "Both heels, mirrored, at the back of the ankle",
             "id": "spurs",
             "name": "spurs",
             "pair": true,
             "slot": "boots",
             "title": "Heels",
-            "value": "7 pieces"
+            "value": "6 pieces"
           },
           {
             "bone": "left_leg",
-            "count": 6,
+            "count": 3,
             "description": "Both shins, mirrored, on the front of the lower leg",
             "id": "greaves",
             "name": "greaves",
             "pair": true,
             "slot": "boots",
             "title": "Shins",
-            "value": "6 pieces"
+            "value": "3 pieces"
           }
         ],
         "id": "sockets",
@@ -3458,7 +2488,7 @@
       },
       {
         "after": "gallery",
-        "body": "A diamond set in vanilla is one look plus a trim. Eighteen patterns times eleven materials,\nplus untrimmed, is **199** states per piece — and **1,568,239,201** for a set of four.\n\nNow count that same diamond set with this mod installed. Each piece keeps all 199 of its trims\nand gains a skin\n(fourteen, or bare), a part in each of its sockets, each part in one of eleven materials, each\npart's fittings filled or left empty — a gem from seven, a metal from four, an inlay from\nsixteen dyes — and the chestplate a tunic or a tabard on top.\n\n| | Vanilla diamond | With Armor Pieces |\n| --- | ---: | ---: |\n| Helmet | 199 | 1,833,029,934,300 |\n| Chestplate | 199 | 5,113,599,898,358,700 |\n| Leggings | 199 | 1,839,405,834,600 |\n| Boots | 199 | 1,187,185,245 |\n| **Full set** | **1,568,239,201** | **20,468,798,559,625,822,847,874,604,407,037,697,665,836,570,000,000** |\n\nThat is **2 × 10⁴⁹** — about 10⁴⁰ times the whole of vanilla, and roughly a sixth of the atoms\nin the Earth. Some smaller ways to hold it:\n\n- **The boots alone** come to 1,187,185,245 arrangements: three quarters of every trimmed\n  diamond set vanilla can build, on your feet.\n- **The helmet alone** is 1,169 times vanilla's entire four-piece space.\n- **Shape alone**, before a single colour is chosen — which part sits in which socket, and\n  nothing else — is 368,709,304,320 distinct silhouettes. 235 times vanilla's fully trimmed\n  space, in pure geometry.\n- Pick a set a second and you exhaust vanilla in fifty years. You exhaust this one in\n  4.7 × 10³¹ times the age of the universe.\n\nAnd all of that **counts a banner as a single design**, which it is not. A banner is sixteen\nbase colours and up to six layers of forty-two patterns in sixteen dyes:\n**1,475,646,641,940,097,552** banners, any of which can go on the back banner, the cloak, the\ntunic or the tabard. Count them properly and the chestplate alone reaches 7.7 × 10⁵⁰, and a\nfull set:\n\n**3.07 × 10⁸⁴** — over thirty thousand distinct diamond sets for every atom in the observable\nuniverse. (There are about 7.3 × 10⁷⁹ of those, if you take Planck's numbers and the baryons\nthey imply.)\n\nAnd every number on this page is **diamond alone**, because that is what vanilla is being\ncompared against. Diamond is one of seven armor materials, six of which take a skin — which\nmultiplies the whole table by about thirteen hundred again, before leather has been dyed.\n\nNobody at spawn is wearing yours.\n",
+        "body": "A diamond set in vanilla is one look plus a trim. Eighteen patterns times eleven materials,\nplus untrimmed, is **199** states per piece — and **1,568,239,201** for a set of four.\n\nNow count that same diamond set with this mod installed. Each piece keeps all 199 of its trims\nand gains a skin\n(nine, or bare), a part in each of its sockets, each part in one of eleven materials, each\npart's fittings filled or left empty — a gem from seven, a metal from four, an inlay from\nsixteen dyes — and the chestplate a tunic or a tabard on top.\n\n| | Vanilla diamond | With Armor Pieces |\n| --- | ---: | ---: |\n| Helmet | 199 | 26,802,796,580 |\n| Chestplate | 199 | 735,580,184,364,000 |\n| Leggings | 199 | 584,066,114,400 |\n| Boots | 199 | 456,299,040 |\n| **Full set** | **1,568,239,201** | **5,254,382,653,471,233,625,936,048,378,064,626,821,120,000,000** |\n\nThat is **5.3 × 10⁴⁵** — about 3 × 10³⁶ times the whole of vanilla. Some smaller ways to hold\nit:\n\n- **The boots alone** come to 456,299,040 arrangements: more than a quarter of every trimmed\n  diamond set vanilla can build, on your feet.\n- **The helmet alone** is 17 times vanilla's entire four-piece space.\n- **Shape alone**, before a single colour is chosen — which part sits in which socket, empty\n  included, and nothing else — is 2,568,384,000 distinct silhouettes. Still more than vanilla's\n  fully trimmed space, in pure geometry.\n- Pick a set a second and you exhaust vanilla in fifty years. You exhaust this one in\n  1.2 × 10²⁸ times the age of the universe.\n\nAnd all of that **counts a banner as a single design**, which it is not. A banner is sixteen\nbase colours and up to six layers of forty-two patterns in sixteen dyes:\n**1,475,646,641,940,097,552** banners, any of which can go on the back banner, the cloak, the\ntunic or the tabard. Count them properly and the chestplate alone reaches 1.8 × 10³², and a\nfull set:\n\n**1.3 × 10⁶³** — about a million times the number of atoms in the Sun.\n\nThese are the numbers for the **mod alone**. Every content pack adds pieces to sockets that\nare already multiplying, so the count does not creep upward — it jumps.\n\nAnd every number on this page is **diamond alone**, because that is what vanilla is being\ncompared against. Diamond is one of seven armor materials, six of which take a skin — which\nmultiplies the whole table by about thirteen hundred again, before leather has been dyed.\n\nNobody at spawn is wearing yours.\n",
         "id": "how-many-sets",
         "targets": [
           "readme",
@@ -3568,7 +2598,7 @@
     },
     "name": "Armor Pieces",
     "sections": {
-      "about": "You know the one. You walk into spawn in your best diamond and the first person you see is\nwearing the same helmet, the same chestplate, the same Sentry trim in the same netherite. Vanilla\ncan build 1,568,239,201 armor sets, which sounds like plenty right up until it happens to you\ntwice in a week.\n\nArmor Pieces takes that number to **3 × 10⁸⁴** — more than thirty thousand unique diamond sets\nfor every atom in the observable universe. Diamond is one of seven armor materials.\n\nIt gives one piece of armor **four layers of decoration, each an independent choice**:\na **part** hung on a socket, a **skin** that changes what the plate itself is made of, a **cloth**\nworn over the chest, and vanilla's own **trim** underneath them all. Every one of them is applied\nat a smithing table, and none of them replaces another - a helmet can carry a skin, a trim, a\ncrest, a browband and a pair of horns at once.\n\n**Pieces, over twelve sockets.** A plume on the helmet, spaulders on the shoulders, a sash on\nthe belt, spurs on the heels - the table below is every socket and how many pieces it has to\nchoose from. Pieces are real geometry hung on the body, not paint on the texture. A socket holds\none piece, so the choice is the expressive act. Each is applied with a trim material and takes\nthat material's colour.\n\n**Armor skins.** A skin is the armor's *own* texture - what the plate is, rather than what is\nbolted to it: plate, gothic, milanese, mail, lorica, runic, hoplite, samurai, gambeson and the\nrest. Each is recoloured through the armor material's own palette, so a skinned iron helmet\nstill reads as iron and a modded armor material is skinned for free from the texture it already\nships. A skin is paid for in the metal the piece is made of: re-skinning is re-forging.\n\n**Cloth.** A tunic or a tabard over a chestplate, carrying the design of any banner you make\nat a loom - so the heraldry is yours rather than a list the mod maintains. It is baked into the\narmor's texture rather than hung off it, so it clips nothing and the plate's own rivets and edges\nread through it.\n\n**Fittings.** Some parts have a second colour, set separately: a gem in the circlet, a metal\nbuckle and a dyed strap on the sash, a dyed inlay on the greaves, a banner on the back banner.\nOne more smithing step, one template per fitting, and the item decides where it goes.\n\nMost of it is **found rather than made**. A minority of pieces have a crafting recipe - the ones\nwhere the item is plainly the piece or what it is made of; the rest turn up in the chests that\nsuit them, each theme in its own kind of structure, with the skins and the fitting templates\nalongside. An\n**advanced smithing table** shows a whole set worn by a stand and takes a part, a fitting, a\ntrim, a skin or a cloth off again, which the smithing table cannot.\n\nEvery part, skin and cloth is a datapack entry, a model and a texture, no code - and a pack adds\nits own the same way, from Blockbench, in folders of its own.\n",
+      "about": "You know the one. You walk into spawn in your best diamond and the first person you see is\nwearing the same helmet, the same chestplate, the same Sentry trim in the same netherite. Vanilla\ncan build 1,568,239,201 armor sets, which sounds like plenty right up until it happens to you\ntwice in a week.\n\nArmor Pieces takes that number to **1.3 × 10⁶³** — about a million times the number of atoms in\nthe Sun, and that is diamond alone, one of seven armor materials.\n\nIt gives one piece of armor **four layers of decoration, each an independent choice**:\na **part** hung on a socket, a **skin** that changes what the plate itself is made of, a **cloth**\nworn over the chest, and vanilla's own **trim** underneath them all. Every one of them is applied\nat a smithing table, and none of them replaces another - a helmet can carry a skin, a trim, a\ncrest, a browband and a pair of horns at once.\n\n**Pieces, over twelve sockets.** A plume on the helmet, spaulders on the shoulders, a sash on\nthe belt, spurs on the heels - the table below is every socket and how many pieces it has to\nchoose from. Pieces are real geometry hung on the body, not paint on the texture. A socket holds\none piece, so the choice is the expressive act. Each is applied with a trim material and takes\nthat material's colour.\n\n**Armor skins.** A skin is the armor's *own* texture - what the plate is, rather than what is\nbolted to it: plate, gothic, milanese, mail, lorica, runic, hoplite, samurai, gambeson and the\nrest. Each is recoloured through the armor material's own palette, so a skinned iron helmet\nstill reads as iron and a modded armor material is skinned for free from the texture it already\nships. A skin is paid for in the metal the piece is made of: re-skinning is re-forging.\n\n**Cloth.** A tunic or a tabard over a chestplate, carrying the design of any banner you make\nat a loom - so the heraldry is yours rather than a list the mod maintains. It is baked into the\narmor's texture rather than hung off it, so it clips nothing and the plate's own rivets and edges\nread through it.\n\n**Fittings.** Some parts have a second colour, set separately: a gem in the circlet, a metal\nbuckle and a dyed strap on the sash, a dyed inlay on the greaves, a banner on the back banner.\nOne more smithing step, one template per fitting, and the item decides where it goes.\n\nMost of it is **found rather than made**. A minority of pieces have a crafting recipe - the ones\nwhere the item is plainly the piece or what it is made of; the rest turn up in the chests that\nsuit them, each theme in its own kind of structure, with the skins and the fitting templates\nalongside. An\n**advanced smithing table** shows a whole set worn by a stand and takes a part, a fitting, a\ntrim, a skin or a cloth off again, which the smithing table cannot.\n\nEvery part, skin and cloth is a datapack entry, a model and a texture, no code - and a pack adds\nits own the same way, from Blockbench, in folders of its own.\n",
       "configuration": "One file, written for you on first launch: `config/armorpieces.json`. It is read on the client\nand by the client alone — every setting in it moves pixels and nothing else, so it never has to\nmatch the server's.\n\n| Key | Default | What it does |\n| --- | --- | --- |\n| `first_person_parts` | `true` | Draws the parts on your arms — pauldrons and vambraces — on the first-person hand as well as on your body. Vanilla shows a bare sleeve there and no armor at all. They sit close to the camera; `false` keeps the view clear. |\n\nA change takes effect on the next launch. A key you leave out takes its default and is written\nback, so a setting added by a later version turns up in the file you already have — and a file\nthat does not parse is left alone and the defaults used, so a typo costs a log line and nothing\nelse.\n",
       "dependencies": {
         "required": [
@@ -3634,7 +2664,7 @@
             "title": "Fittings"
           },
           {
-            "description": "Most parts are found rather than crafted, each theme in the structures that suit it — knightly gear in strongholds and trial chambers, beast trophies in bastions, court jewellery in mansions and ancient cities, tidal parts in shipwrecks and ocean ruins. A **loot group** is one file naming a category of tables and the tag of parts found in them, so a pack adds a whole look to the world at once, or drops one part into one chest from its own data file — the one thing a datapack cannot do for itself, since it can only replace a vanilla table whole. Armor **skins** are found the same way, divided over the same groups, and a **fitting template** turns up in every one of them. The odds belong to the table, so a chest's chance of holding something stays put however many parts are added. A loot function puts a part on a piece of armor a table drops, gem and all.",
+            "description": "Most parts are found rather than crafted, each theme in the structures that suit it — knightly gear in strongholds and trial chambers, court jewellery in mansions and ancient cities, a wayfarer's kit on the roads and in the villages. A **loot group** is one file naming a category of tables and the tag of parts found in them, so a pack adds a whole look to the world at once, or drops one part into one chest from its own data file — the one thing a datapack cannot do for itself, since it can only replace a vanilla table whole. Armor **skins** are found the same way, divided over the same groups, and a **fitting template** turns up in every one of them. The odds belong to the table, so a chest's chance of holding something stays put however many parts are added. A loot function puts a part on a piece of armor a table drops, gem and all.",
             "title": "Found in the world"
           },
           {
@@ -3658,7 +2688,7 @@
       "gallery": {
         "images": [
           {
-            "caption": "The six themed sets, every socket filled — knightly, court, beast, wayfarer, tidal, carapace",
+            "caption": "Themed sets, every socket filled — the mod's knightly, court and wayfarer, and the pack sets beside them",
             "src": "gallery/sets.png"
           },
           {
@@ -3737,7 +2767,7 @@
   "sections": [
     {
       "banner": null,
-      "body": "You know the one. You walk into spawn in your best diamond and the first person you see is\nwearing the same helmet, the same chestplate, the same Sentry trim in the same netherite. Vanilla\ncan build 1,568,239,201 armor sets, which sounds like plenty right up until it happens to you\ntwice in a week.\n\nArmor Pieces takes that number to **3 × 10⁸⁴** — more than thirty thousand unique diamond sets\nfor every atom in the observable universe. Diamond is one of seven armor materials.\n\nIt gives one piece of armor **four layers of decoration, each an independent choice**:\na **part** hung on a socket, a **skin** that changes what the plate itself is made of, a **cloth**\nworn over the chest, and vanilla's own **trim** underneath them all. Every one of them is applied\nat a smithing table, and none of them replaces another - a helmet can carry a skin, a trim, a\ncrest, a browband and a pair of horns at once.\n\n**Pieces, over twelve sockets.** A plume on the helmet, spaulders on the shoulders, a sash on\nthe belt, spurs on the heels - the table below is every socket and how many pieces it has to\nchoose from. Pieces are real geometry hung on the body, not paint on the texture. A socket holds\none piece, so the choice is the expressive act. Each is applied with a trim material and takes\nthat material's colour.\n\n**Armor skins.** A skin is the armor's *own* texture - what the plate is, rather than what is\nbolted to it: plate, gothic, milanese, mail, lorica, runic, hoplite, samurai, gambeson and the\nrest. Each is recoloured through the armor material's own palette, so a skinned iron helmet\nstill reads as iron and a modded armor material is skinned for free from the texture it already\nships. A skin is paid for in the metal the piece is made of: re-skinning is re-forging.\n\n**Cloth.** A tunic or a tabard over a chestplate, carrying the design of any banner you make\nat a loom - so the heraldry is yours rather than a list the mod maintains. It is baked into the\narmor's texture rather than hung off it, so it clips nothing and the plate's own rivets and edges\nread through it.\n\n**Fittings.** Some parts have a second colour, set separately: a gem in the circlet, a metal\nbuckle and a dyed strap on the sash, a dyed inlay on the greaves, a banner on the back banner.\nOne more smithing step, one template per fitting, and the item decides where it goes.\n\nMost of it is **found rather than made**. A minority of pieces have a crafting recipe - the ones\nwhere the item is plainly the piece or what it is made of; the rest turn up in the chests that\nsuit them, each theme in its own kind of structure, with the skins and the fitting templates\nalongside. An\n**advanced smithing table** shows a whole set worn by a stand and takes a part, a fitting, a\ntrim, a skin or a cloth off again, which the smithing table cannot.\n\nEvery part, skin and cloth is a datapack entry, a model and a texture, no code - and a pack adds\nits own the same way, from Blockbench, in folders of its own.",
+      "body": "You know the one. You walk into spawn in your best diamond and the first person you see is\nwearing the same helmet, the same chestplate, the same Sentry trim in the same netherite. Vanilla\ncan build 1,568,239,201 armor sets, which sounds like plenty right up until it happens to you\ntwice in a week.\n\nArmor Pieces takes that number to **1.3 × 10⁶³** — about a million times the number of atoms in\nthe Sun, and that is diamond alone, one of seven armor materials.\n\nIt gives one piece of armor **four layers of decoration, each an independent choice**:\na **part** hung on a socket, a **skin** that changes what the plate itself is made of, a **cloth**\nworn over the chest, and vanilla's own **trim** underneath them all. Every one of them is applied\nat a smithing table, and none of them replaces another - a helmet can carry a skin, a trim, a\ncrest, a browband and a pair of horns at once.\n\n**Pieces, over twelve sockets.** A plume on the helmet, spaulders on the shoulders, a sash on\nthe belt, spurs on the heels - the table below is every socket and how many pieces it has to\nchoose from. Pieces are real geometry hung on the body, not paint on the texture. A socket holds\none piece, so the choice is the expressive act. Each is applied with a trim material and takes\nthat material's colour.\n\n**Armor skins.** A skin is the armor's *own* texture - what the plate is, rather than what is\nbolted to it: plate, gothic, milanese, mail, lorica, runic, hoplite, samurai, gambeson and the\nrest. Each is recoloured through the armor material's own palette, so a skinned iron helmet\nstill reads as iron and a modded armor material is skinned for free from the texture it already\nships. A skin is paid for in the metal the piece is made of: re-skinning is re-forging.\n\n**Cloth.** A tunic or a tabard over a chestplate, carrying the design of any banner you make\nat a loom - so the heraldry is yours rather than a list the mod maintains. It is baked into the\narmor's texture rather than hung off it, so it clips nothing and the plate's own rivets and edges\nread through it.\n\n**Fittings.** Some parts have a second colour, set separately: a gem in the circlet, a metal\nbuckle and a dyed strap on the sash, a dyed inlay on the greaves, a banner on the back banner.\nOne more smithing step, one template per fitting, and the item decides where it goes.\n\nMost of it is **found rather than made**. A minority of pieces have a crafting recipe - the ones\nwhere the item is plainly the piece or what it is made of; the rest turn up in the chests that\nsuit them, each theme in its own kind of structure, with the skins and the fitting templates\nalongside. An\n**advanced smithing table** shows a whole set worn by a stand and takes a part, a fitting, a\ntrim, a skin or a cloth off again, which the smithing table cannot.\n\nEvery part, skin and cloth is a datapack entry, a model and a texture, no code - and a pack adds\nits own the same way, from Blockbench, in folders of its own.",
       "data": {},
       "empty_text": null,
       "id": "about",
@@ -3776,19 +2806,19 @@
             "description": "the pieces, over every socket",
             "id": "pieces",
             "name": "pieces",
-            "text": "91",
-            "title": "91",
-            "value": 91,
-            "word": "91"
+            "text": "66",
+            "title": "66",
+            "value": 66,
+            "word": "66"
           },
           {
             "description": "the armor skins",
             "id": "skins",
             "name": "skins",
-            "text": "14",
-            "title": "fourteen",
-            "value": 14,
-            "word": "fourteen"
+            "text": "9",
+            "title": "nine",
+            "value": 9,
+            "word": "nine"
           },
           {
             "description": "the cloths",
@@ -3821,10 +2851,10 @@
             "description": "the loot groups",
             "id": "loot_groups",
             "name": "loot_groups",
-            "text": "6",
-            "title": "six",
-            "value": 6,
-            "word": "six"
+            "text": "3",
+            "title": "three",
+            "value": 3,
+            "word": "three"
           },
           {
             "description": "the effect types a piece may carry",
@@ -3839,19 +2869,19 @@
             "description": "the pieces with a template recipe; the rest are found",
             "id": "craftable",
             "name": "craftable",
-            "text": "31",
-            "title": "31",
-            "value": 31,
-            "word": "31"
+            "text": "29",
+            "title": "29",
+            "value": 29,
+            "word": "29"
           },
           {
             "description": "the fewest pieces any socket has to choose from",
             "id": "least_per_socket",
             "name": "least_per_socket",
-            "text": "6",
-            "title": "six",
-            "value": 6,
-            "word": "six"
+            "text": "2",
+            "title": "two",
+            "value": 2,
+            "word": "two"
           }
         ]
       },
@@ -3898,80 +2928,80 @@
         "elements": [
           {
             "bone": "head",
-            "count": 7,
+            "count": 4,
             "description": "Top of the skull, pointing up",
             "id": "crest",
             "name": "crest",
             "pair": false,
             "slot": "helmet",
             "title": "Crest",
-            "value": "7 pieces"
+            "value": "4 pieces"
           },
           {
             "bone": "head",
-            "count": 14,
+            "count": 12,
             "description": "Across the forehead, on the front face of the head",
             "id": "brow",
             "name": "brow",
             "pair": false,
             "slot": "helmet",
             "title": "Brow",
-            "value": "14 pieces"
+            "value": "12 pieces"
           },
           {
             "bone": "head",
-            "count": 8,
+            "count": 2,
             "description": "Both temples, mirrored",
             "id": "horns",
             "name": "horns",
             "pair": true,
             "slot": "helmet",
             "title": "Temples",
-            "value": "8 pieces"
+            "value": "2 pieces"
           },
           {
             "bone": "left_arm",
-            "count": 7,
+            "count": 4,
             "description": "Both shoulders, mirrored, riding on the arms so they swing with them",
             "id": "pauldrons",
             "name": "pauldrons",
             "pair": true,
             "slot": "chestplate",
             "title": "Shoulders",
-            "value": "7 pieces"
+            "value": "4 pieces"
           },
           {
             "bone": "body",
-            "count": 8,
+            "count": 6,
             "description": "Upper back",
             "id": "back",
             "name": "back",
             "pair": false,
             "slot": "chestplate",
             "title": "Back",
-            "value": "8 pieces"
+            "value": "6 pieces"
           },
           {
             "bone": "body",
-            "count": 8,
+            "count": 7,
             "description": "Base of the throat, on the front of the chest",
             "id": "collar",
             "name": "collar",
             "pair": false,
             "slot": "chestplate",
             "title": "Collar",
-            "value": "8 pieces"
+            "value": "7 pieces"
           },
           {
             "bone": "left_arm",
-            "count": 7,
+            "count": 6,
             "description": "Both forearms, mirrored, riding on the arms",
             "id": "vambraces",
             "name": "vambraces",
             "pair": true,
             "slot": "chestplate",
             "title": "Forearms",
-            "value": "7 pieces"
+            "value": "6 pieces"
           },
           {
             "bone": "body",
@@ -3986,47 +3016,47 @@
           },
           {
             "bone": "left_leg",
-            "count": 6,
+            "count": 4,
             "description": "Both hips, mirrored, riding on the legs",
             "id": "tassets",
             "name": "tassets",
             "pair": true,
             "slot": "leggings",
             "title": "Hips",
-            "value": "6 pieces"
+            "value": "4 pieces"
           },
           {
             "bone": "left_leg",
-            "count": 6,
+            "count": 5,
             "description": "Both knees, mirrored, on the front of the legs",
             "id": "knees",
             "name": "knees",
             "pair": true,
             "slot": "leggings",
             "title": "Knees",
-            "value": "6 pieces"
+            "value": "5 pieces"
           },
           {
             "bone": "left_leg",
-            "count": 7,
+            "count": 6,
             "description": "Both heels, mirrored, at the back of the ankle",
             "id": "spurs",
             "name": "spurs",
             "pair": true,
             "slot": "boots",
             "title": "Heels",
-            "value": "7 pieces"
+            "value": "6 pieces"
           },
           {
             "bone": "left_leg",
-            "count": 6,
+            "count": 3,
             "description": "Both shins, mirrored, on the front of the lower leg",
             "id": "greaves",
             "name": "greaves",
             "pair": true,
             "slot": "boots",
             "title": "Shins",
-            "value": "6 pieces"
+            "value": "3 pieces"
           }
         ]
       },
@@ -4086,7 +3116,7 @@
             "title": "Fittings"
           },
           {
-            "description": "Most parts are found rather than crafted, each theme in the structures that suit it — knightly gear in strongholds and trial chambers, beast trophies in bastions, court jewellery in mansions and ancient cities, tidal parts in shipwrecks and ocean ruins. A **loot group** is one file naming a category of tables and the tag of parts found in them, so a pack adds a whole look to the world at once, or drops one part into one chest from its own data file — the one thing a datapack cannot do for itself, since it can only replace a vanilla table whole. Armor **skins** are found the same way, divided over the same groups, and a **fitting template** turns up in every one of them. The odds belong to the table, so a chest's chance of holding something stays put however many parts are added. A loot function puts a part on a piece of armor a table drops, gem and all.",
+            "description": "Most parts are found rather than crafted, each theme in the structures that suit it — knightly gear in strongholds and trial chambers, court jewellery in mansions and ancient cities, a wayfarer's kit on the roads and in the villages. A **loot group** is one file naming a category of tables and the tag of parts found in them, so a pack adds a whole look to the world at once, or drops one part into one chest from its own data file — the one thing a datapack cannot do for itself, since it can only replace a vanilla table whole. Armor **skins** are found the same way, divided over the same groups, and a **fitting template** turns up in every one of them. The odds belong to the table, so a chest's chance of holding something stays put however many parts are added. A loot function puts a part on a piece of armor a table drops, gem and all.",
             "title": "Found in the world"
           },
           {
@@ -4120,8 +3150,8 @@
       "data": {
         "images": [
           {
-            "alt": "The six themed sets, every socket filled — knightly, court, beast, wayfarer, tidal, carapace",
-            "caption": "The six themed sets, every socket filled — knightly, court, beast, wayfarer, tidal, carapace",
+            "alt": "Themed sets, every socket filled — the mod's knightly, court and wayfarer, and the pack sets beside them",
+            "caption": "Themed sets, every socket filled — the mod's knightly, court and wayfarer, and the pack sets beside them",
             "src": "gallery/sets.png"
           },
           {
@@ -6165,81 +5195,6 @@
           {
             "animated": false,
             "frames": 1,
-            "path": "C:\\Users\\Matthijs\\ArmorPieces\\docs\\assets\\recipes\\armorpieces__skin_template_hoplite.png",
-            "recipe": {
-              "grid": [
-                [
-                  null,
-                  {
-                    "candidates": [
-                      "minecraft:paper"
-                    ],
-                    "count": 1,
-                    "is_tag": false,
-                    "label": "Paper"
-                  },
-                  null
-                ],
-                [
-                  {
-                    "candidates": [
-                      "minecraft:paper"
-                    ],
-                    "count": 1,
-                    "is_tag": false,
-                    "label": "Paper"
-                  },
-                  {
-                    "candidates": [
-                      "minecraft:golden_helmet"
-                    ],
-                    "count": 1,
-                    "is_tag": false,
-                    "label": "Golden Helmet"
-                  },
-                  {
-                    "candidates": [
-                      "minecraft:paper"
-                    ],
-                    "count": 1,
-                    "is_tag": false,
-                    "label": "Paper"
-                  }
-                ],
-                [
-                  null,
-                  {
-                    "candidates": [
-                      "minecraft:paper"
-                    ],
-                    "count": 1,
-                    "is_tag": false,
-                    "label": "Paper"
-                  },
-                  null
-                ]
-              ],
-              "id": "armorpieces:skin_template_hoplite",
-              "inputs": [],
-              "label": "Skin Template Hoplite",
-              "result": {
-                "candidates": [
-                  "armorpieces:skin_template"
-                ],
-                "count": 1,
-                "is_tag": false,
-                "label": "Skin Template"
-              },
-              "result_count": 1,
-              "shapeless": false,
-              "source": "C:\\Users\\Matthijs\\ArmorPieces\\src\\main\\resources\\data\\armorpieces\\recipe\\skin_template_hoplite.json",
-              "type": "minecraft:crafting_shaped"
-            },
-            "relative": "recipes/armorpieces__skin_template_hoplite.png"
-          },
-          {
-            "animated": false,
-            "frames": 1,
             "path": "C:\\Users\\Matthijs\\ArmorPieces\\docs\\assets\\recipes\\armorpieces__skin_template_lamellar.png",
             "recipe": {
               "grid": [
@@ -6311,81 +5266,6 @@
               "type": "minecraft:crafting_shaped"
             },
             "relative": "recipes/armorpieces__skin_template_lamellar.png"
-          },
-          {
-            "animated": false,
-            "frames": 1,
-            "path": "C:\\Users\\Matthijs\\ArmorPieces\\docs\\assets\\recipes\\armorpieces__skin_template_lorica.png",
-            "recipe": {
-              "grid": [
-                [
-                  null,
-                  {
-                    "candidates": [
-                      "minecraft:paper"
-                    ],
-                    "count": 1,
-                    "is_tag": false,
-                    "label": "Paper"
-                  },
-                  null
-                ],
-                [
-                  {
-                    "candidates": [
-                      "minecraft:paper"
-                    ],
-                    "count": 1,
-                    "is_tag": false,
-                    "label": "Paper"
-                  },
-                  {
-                    "candidates": [
-                      "minecraft:iron_boots"
-                    ],
-                    "count": 1,
-                    "is_tag": false,
-                    "label": "Iron Boots"
-                  },
-                  {
-                    "candidates": [
-                      "minecraft:paper"
-                    ],
-                    "count": 1,
-                    "is_tag": false,
-                    "label": "Paper"
-                  }
-                ],
-                [
-                  null,
-                  {
-                    "candidates": [
-                      "minecraft:paper"
-                    ],
-                    "count": 1,
-                    "is_tag": false,
-                    "label": "Paper"
-                  },
-                  null
-                ]
-              ],
-              "id": "armorpieces:skin_template_lorica",
-              "inputs": [],
-              "label": "Skin Template Lorica",
-              "result": {
-                "candidates": [
-                  "armorpieces:skin_template"
-                ],
-                "count": 1,
-                "is_tag": false,
-                "label": "Skin Template"
-              },
-              "result_count": 1,
-              "shapeless": false,
-              "source": "C:\\Users\\Matthijs\\ArmorPieces\\src\\main\\resources\\data\\armorpieces\\recipe\\skin_template_lorica.json",
-              "type": "minecraft:crafting_shaped"
-            },
-            "relative": "recipes/armorpieces__skin_template_lorica.png"
           },
           {
             "animated": false,
@@ -6615,156 +5495,6 @@
           {
             "animated": false,
             "frames": 1,
-            "path": "C:\\Users\\Matthijs\\ArmorPieces\\docs\\assets\\recipes\\armorpieces__skin_template_runic.png",
-            "recipe": {
-              "grid": [
-                [
-                  null,
-                  {
-                    "candidates": [
-                      "minecraft:paper"
-                    ],
-                    "count": 1,
-                    "is_tag": false,
-                    "label": "Paper"
-                  },
-                  null
-                ],
-                [
-                  {
-                    "candidates": [
-                      "minecraft:paper"
-                    ],
-                    "count": 1,
-                    "is_tag": false,
-                    "label": "Paper"
-                  },
-                  {
-                    "candidates": [
-                      "minecraft:echo_shard"
-                    ],
-                    "count": 1,
-                    "is_tag": false,
-                    "label": "Echo Shard"
-                  },
-                  {
-                    "candidates": [
-                      "minecraft:paper"
-                    ],
-                    "count": 1,
-                    "is_tag": false,
-                    "label": "Paper"
-                  }
-                ],
-                [
-                  null,
-                  {
-                    "candidates": [
-                      "minecraft:paper"
-                    ],
-                    "count": 1,
-                    "is_tag": false,
-                    "label": "Paper"
-                  },
-                  null
-                ]
-              ],
-              "id": "armorpieces:skin_template_runic",
-              "inputs": [],
-              "label": "Skin Template Runic",
-              "result": {
-                "candidates": [
-                  "armorpieces:skin_template"
-                ],
-                "count": 1,
-                "is_tag": false,
-                "label": "Skin Template"
-              },
-              "result_count": 1,
-              "shapeless": false,
-              "source": "C:\\Users\\Matthijs\\ArmorPieces\\src\\main\\resources\\data\\armorpieces\\recipe\\skin_template_runic.json",
-              "type": "minecraft:crafting_shaped"
-            },
-            "relative": "recipes/armorpieces__skin_template_runic.png"
-          },
-          {
-            "animated": false,
-            "frames": 1,
-            "path": "C:\\Users\\Matthijs\\ArmorPieces\\docs\\assets\\recipes\\armorpieces__skin_template_samurai.png",
-            "recipe": {
-              "grid": [
-                [
-                  null,
-                  {
-                    "candidates": [
-                      "minecraft:paper"
-                    ],
-                    "count": 1,
-                    "is_tag": false,
-                    "label": "Paper"
-                  },
-                  null
-                ],
-                [
-                  {
-                    "candidates": [
-                      "minecraft:paper"
-                    ],
-                    "count": 1,
-                    "is_tag": false,
-                    "label": "Paper"
-                  },
-                  {
-                    "candidates": [
-                      "minecraft:pink_petals"
-                    ],
-                    "count": 1,
-                    "is_tag": false,
-                    "label": "Pink Petals"
-                  },
-                  {
-                    "candidates": [
-                      "minecraft:paper"
-                    ],
-                    "count": 1,
-                    "is_tag": false,
-                    "label": "Paper"
-                  }
-                ],
-                [
-                  null,
-                  {
-                    "candidates": [
-                      "minecraft:paper"
-                    ],
-                    "count": 1,
-                    "is_tag": false,
-                    "label": "Paper"
-                  },
-                  null
-                ]
-              ],
-              "id": "armorpieces:skin_template_samurai",
-              "inputs": [],
-              "label": "Skin Template Samurai",
-              "result": {
-                "candidates": [
-                  "armorpieces:skin_template"
-                ],
-                "count": 1,
-                "is_tag": false,
-                "label": "Skin Template"
-              },
-              "result_count": 1,
-              "shapeless": false,
-              "source": "C:\\Users\\Matthijs\\ArmorPieces\\src\\main\\resources\\data\\armorpieces\\recipe\\skin_template_samurai.json",
-              "type": "minecraft:crafting_shaped"
-            },
-            "relative": "recipes/armorpieces__skin_template_samurai.png"
-          },
-          {
-            "animated": false,
-            "frames": 1,
             "path": "C:\\Users\\Matthijs\\ArmorPieces\\docs\\assets\\recipes\\armorpieces__skin_template_scale.png",
             "recipe": {
               "grid": [
@@ -6836,81 +5566,6 @@
               "type": "minecraft:crafting_shaped"
             },
             "relative": "recipes/armorpieces__skin_template_scale.png"
-          },
-          {
-            "animated": false,
-            "frames": 1,
-            "path": "C:\\Users\\Matthijs\\ArmorPieces\\docs\\assets\\recipes\\armorpieces__skin_template_varangian.png",
-            "recipe": {
-              "grid": [
-                [
-                  null,
-                  {
-                    "candidates": [
-                      "minecraft:paper"
-                    ],
-                    "count": 1,
-                    "is_tag": false,
-                    "label": "Paper"
-                  },
-                  null
-                ],
-                [
-                  {
-                    "candidates": [
-                      "minecraft:paper"
-                    ],
-                    "count": 1,
-                    "is_tag": false,
-                    "label": "Paper"
-                  },
-                  {
-                    "candidates": [
-                      "minecraft:iron_axe"
-                    ],
-                    "count": 1,
-                    "is_tag": false,
-                    "label": "Iron Axe"
-                  },
-                  {
-                    "candidates": [
-                      "minecraft:paper"
-                    ],
-                    "count": 1,
-                    "is_tag": false,
-                    "label": "Paper"
-                  }
-                ],
-                [
-                  null,
-                  {
-                    "candidates": [
-                      "minecraft:paper"
-                    ],
-                    "count": 1,
-                    "is_tag": false,
-                    "label": "Paper"
-                  },
-                  null
-                ]
-              ],
-              "id": "armorpieces:skin_template_varangian",
-              "inputs": [],
-              "label": "Skin Template Varangian",
-              "result": {
-                "candidates": [
-                  "armorpieces:skin_template"
-                ],
-                "count": 1,
-                "is_tag": false,
-                "label": "Skin Template"
-              },
-              "result_count": 1,
-              "shapeless": false,
-              "source": "C:\\Users\\Matthijs\\ArmorPieces\\src\\main\\resources\\data\\armorpieces\\recipe\\skin_template_varangian.json",
-              "type": "minecraft:crafting_shaped"
-            },
-            "relative": "recipes/armorpieces__skin_template_varangian.png"
           },
           {
             "animated": false,
@@ -7886,81 +6541,6 @@
               "type": "minecraft:crafting_shaped"
             },
             "relative": "recipes/armorpieces__template_greaves.png"
-          },
-          {
-            "animated": false,
-            "frames": 1,
-            "path": "C:\\Users\\Matthijs\\ArmorPieces\\docs\\assets\\recipes\\armorpieces__template_horns.png",
-            "recipe": {
-              "grid": [
-                [
-                  null,
-                  {
-                    "candidates": [
-                      "minecraft:paper"
-                    ],
-                    "count": 1,
-                    "is_tag": false,
-                    "label": "Paper"
-                  },
-                  null
-                ],
-                [
-                  {
-                    "candidates": [
-                      "minecraft:paper"
-                    ],
-                    "count": 1,
-                    "is_tag": false,
-                    "label": "Paper"
-                  },
-                  {
-                    "candidates": [
-                      "minecraft:goat_horn"
-                    ],
-                    "count": 1,
-                    "is_tag": false,
-                    "label": "Goat Horn"
-                  },
-                  {
-                    "candidates": [
-                      "minecraft:paper"
-                    ],
-                    "count": 1,
-                    "is_tag": false,
-                    "label": "Paper"
-                  }
-                ],
-                [
-                  null,
-                  {
-                    "candidates": [
-                      "minecraft:paper"
-                    ],
-                    "count": 1,
-                    "is_tag": false,
-                    "label": "Paper"
-                  },
-                  null
-                ]
-              ],
-              "id": "armorpieces:template_horns",
-              "inputs": [],
-              "label": "Template Horns",
-              "result": {
-                "candidates": [
-                  "armorpieces:horns_template"
-                ],
-                "count": 1,
-                "is_tag": false,
-                "label": "Horns Template"
-              },
-              "result_count": 1,
-              "shapeless": false,
-              "source": "C:\\Users\\Matthijs\\ArmorPieces\\src\\main\\resources\\data\\armorpieces\\recipe\\template_horns.json",
-              "type": "minecraft:crafting_shaped"
-            },
-            "relative": "recipes/armorpieces__template_horns.png"
           },
           {
             "animated": false,
@@ -9086,81 +7666,6 @@
               "type": "minecraft:crafting_shaped"
             },
             "relative": "recipes/armorpieces__template_visor.png"
-          },
-          {
-            "animated": false,
-            "frames": 1,
-            "path": "C:\\Users\\Matthijs\\ArmorPieces\\docs\\assets\\recipes\\armorpieces__template_wing_cases.png",
-            "recipe": {
-              "grid": [
-                [
-                  null,
-                  {
-                    "candidates": [
-                      "minecraft:paper"
-                    ],
-                    "count": 1,
-                    "is_tag": false,
-                    "label": "Paper"
-                  },
-                  null
-                ],
-                [
-                  {
-                    "candidates": [
-                      "minecraft:paper"
-                    ],
-                    "count": 1,
-                    "is_tag": false,
-                    "label": "Paper"
-                  },
-                  {
-                    "candidates": [
-                      "minecraft:shulker_shell"
-                    ],
-                    "count": 1,
-                    "is_tag": false,
-                    "label": "Shulker Shell"
-                  },
-                  {
-                    "candidates": [
-                      "minecraft:paper"
-                    ],
-                    "count": 1,
-                    "is_tag": false,
-                    "label": "Paper"
-                  }
-                ],
-                [
-                  null,
-                  {
-                    "candidates": [
-                      "minecraft:paper"
-                    ],
-                    "count": 1,
-                    "is_tag": false,
-                    "label": "Paper"
-                  },
-                  null
-                ]
-              ],
-              "id": "armorpieces:template_wing_cases",
-              "inputs": [],
-              "label": "Template Wing Cases",
-              "result": {
-                "candidates": [
-                  "armorpieces:pauldrons_template"
-                ],
-                "count": 1,
-                "is_tag": false,
-                "label": "Pauldrons Template"
-              },
-              "result_count": 1,
-              "shapeless": false,
-              "source": "C:\\Users\\Matthijs\\ArmorPieces\\src\\main\\resources\\data\\armorpieces\\recipe\\template_wing_cases.json",
-              "type": "minecraft:crafting_shaped"
-            },
-            "relative": "recipes/armorpieces__template_wing_cases.png"
           },
           {
             "animated": false,

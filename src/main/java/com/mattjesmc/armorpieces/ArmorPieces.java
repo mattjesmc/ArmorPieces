@@ -5,6 +5,7 @@ import com.mattjesmc.armorpieces.config.ArmorPiecesServerConfig;
 import com.mattjesmc.armorpieces.decoration.ArmorPiecesRegistries;
 import com.mattjesmc.armorpieces.decoration.effect.DecorationEffectDispatcher;
 import com.mattjesmc.armorpieces.decoration.effect.DecorationEffects;
+import com.mattjesmc.armorpieces.identity.Compatibility;
 import com.mattjesmc.armorpieces.decoration.fitting.Fittings;
 import com.mattjesmc.armorpieces.loot.DecorationLootTables;
 import com.mattjesmc.armorpieces.registry.ModBlocks;
@@ -56,6 +57,9 @@ public class ArmorPieces implements ModInitializer {
     @Override
     public void onInitialize() {
         ArmorPiecesRegistries.register();
+        // The index that finds a piece whose id has moved, and the advisory when nothing can. Before
+        // the components, because their codecs read it the first time a saved item is decoded.
+        Compatibility.register();
         // Effect types must exist before any datapack is read, since a part names one by id.
         DecorationEffects.register();
         // Likewise fitting types: a fitting file names one, and fittings load with the datapack.

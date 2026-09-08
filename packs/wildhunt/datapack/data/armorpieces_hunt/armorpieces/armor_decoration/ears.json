@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_hunt:ears",
+  "description": {
+    "translate": "decoration.armorpieces_hunt.ears"
+  },
+  "anchors": [
+    "horns"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "former_ids": [
+    "armorpieces:ears"
+  ],
+  "uid": "ap1axtqvchxygwtn75bvhlq"
+}

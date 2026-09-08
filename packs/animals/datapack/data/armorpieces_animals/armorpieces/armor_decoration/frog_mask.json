@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_animals:frog_mask",
+  "description": {
+    "translate": "decoration.armorpieces_animals.frog_mask"
+  },
+  "anchors": [
+    "brow"
+  ],
+  "fittings": [
+    "armorpieces:gemstone"
+  ],
+  "uid": "ap15lcb7f5jkv3txmd3vvcq"
+}

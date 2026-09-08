@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_hunt:savoyard",
+  "description": {
+    "translate": "decoration.armorpieces_hunt.savoyard"
+  },
+  "anchors": [
+    "brow"
+  ],
+  "fittings": [
+    "armorpieces:gemstone"
+  ],
+  "former_ids": [
+    "armorpieces:savoyard"
+  ],
+  "uid": "ap12v7dsojod635v6lve3jq"
+}

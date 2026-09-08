@@ -3,9 +3,11 @@ package com.mattjesmc.armorpieces.cloth;
 import com.mattjesmc.armorpieces.decoration.ArmorPiecesRegistries;
 import com.mattjesmc.armorpieces.decoration.DecorationLoot;
 import com.mattjesmc.armorpieces.decoration.fitting.builtin.BannerFitting;
+import com.mattjesmc.armorpieces.identity.Identified;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
+import java.util.Optional;
 import net.minecraft.core.Holder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -55,15 +57,20 @@ public record Cloth(
     Identifier assetId,
     BannerFitting.Sheet sheet,
     Component description,
-    List<DecorationLoot> loot
-) {
+    List<DecorationLoot> loot,
+    List<Identifier> formerIds,
+    Optional<String> uid
+) implements Identified {
     public static final Codec<Cloth> DIRECT_CODEC = RecordCodecBuilder.create(
         i -> i.group(
                 Identifier.CODEC.fieldOf("asset_id").forGetter(Cloth::assetId),
                 BannerFitting.Sheet.CODEC
                     .optionalFieldOf("sheet", BannerFitting.Sheet.SHIELD).forGetter(Cloth::sheet),
                 ComponentSerialization.CODEC.fieldOf("description").forGetter(Cloth::description),
-                DecorationLoot.LIST_CODEC.optionalFieldOf("loot", List.of()).forGetter(Cloth::loot)
+                DecorationLoot.LIST_CODEC.optionalFieldOf("loot", List.of()).forGetter(Cloth::loot),
+                Identifier.CODEC.listOf()
+                    .optionalFieldOf("former_ids", List.of()).forGetter(Cloth::formerIds),
+                Codec.STRING.optionalFieldOf("uid").forGetter(Cloth::uid)
             )
             .apply(i, Cloth::new)
     );
@@ -88,6 +95,17 @@ public record Cloth(
 
     public Cloth {
         loot = List.copyOf(loot);
+        formerIds = List.copyOf(formerIds);
+    }
+
+    /** A garment that has never moved and has no lineage of its own - and the shape the wire uses. */
+    public Cloth(
+        final Identifier assetId,
+        final BannerFitting.Sheet sheet,
+        final Component description,
+        final List<DecorationLoot> loot
+    ) {
+        this(assetId, sheet, description, loot, List.of(), Optional.empty());
     }
 
     /** {@code <ns>:textures/entity/cloth/<cloth>/<sheet>.png} - the cut mask for one sheet. */

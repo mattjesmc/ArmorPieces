@@ -1,15 +1,19 @@
 package com.mattjesmc.armorpieces.decoration;
 
 import com.mattjesmc.armorpieces.decoration.fitting.Fitting;
+import com.mattjesmc.armorpieces.identity.Rebind;
 import com.mattjesmc.armorpieces.decoration.fitting.FittingValue;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import net.minecraft.core.Holder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.equipment.EquipmentAsset;
 import net.minecraft.world.item.equipment.trim.MaterialAssetGroup;
@@ -53,13 +57,34 @@ public record DecorationEntry(
     public static final Codec<Map<Holder<Fitting>, FittingValue>> FITTINGS_CODEC =
         Codec.dispatchedMap(Fitting.CODEC, fitting -> fitting.value().valueCodec());
 
+    /**
+     * The saved form of one socket.
+     *
+     * <p>Four fields on disk and three in memory. {@code uid} is WRITE-ONLY: it is not stored on the
+     * entry, it is read off the part at encode time and thrown away at decode time. Two consequences,
+     * both of them the point:
+     *
+     * <ul>
+     *   <li>the entry costs nothing in memory and nothing on the wire, and no call site changed;</li>
+     *   <li>and every item that is saved is <b>upgraded on the way out</b>. An item written by 0.3.0
+     *       carries no uid; the first time this version encodes it, the part's own uid goes in beside
+     *       the id. That is the whole of the port to the new save format - see
+     *       {@code docs/plans/compatibility.md} §4.</li>
+     * </ul>
+     *
+     * <p>On the way in it is ignored, because a successful decode has already found the part by id
+     * and the id is authoritative - a pack that redefines an id (the restore pack does exactly this)
+     * must be allowed to win. The uid is read only by {@link #rebind}, after the id has missed.
+     */
     public static final Codec<DecorationEntry> CODEC = RecordCodecBuilder.create(
         i -> i.group(
                 TrimMaterial.CODEC.fieldOf("material").forGetter(DecorationEntry::material),
                 ArmorDecoration.CODEC.fieldOf("decoration").forGetter(DecorationEntry::decoration),
-                FITTINGS_CODEC.optionalFieldOf("fittings", Map.of()).forGetter(DecorationEntry::fittings)
+                FITTINGS_CODEC.optionalFieldOf("fittings", Map.of()).forGetter(DecorationEntry::fittings),
+                Codec.STRING.optionalFieldOf("uid").forGetter(DecorationEntry::uid)
             )
-            .apply(i, DecorationEntry::new)
+            .apply(i, (material, decoration, fittings, uid) ->
+                new DecorationEntry(material, decoration, fittings))
     );
     public static final StreamCodec<RegistryFriendlyByteBuf, DecorationEntry> STREAM_CODEC = StreamCodec.composite(
         TrimMaterial.STREAM_CODEC, DecorationEntry::material,
@@ -71,6 +96,36 @@ public record DecorationEntry(
 
     public DecorationEntry {
         fittings = Map.copyOf(fittings);
+    }
+
+    /**
+     * The lineage identifier of the part in this socket, taken from the part itself.
+     *
+     * <p>Derived rather than stored, so it cannot go stale and cannot disagree with the part it
+     * describes. Empty for a part that has never been minted one, in which case the field is omitted
+     * and the entry is byte-for-byte what it always was.
+     */
+    public Optional<String> uid() {
+        return this.decoration.value().uid();
+    }
+
+    /**
+     * The entry this raw data meant, when the id it names no longer resolves but the part has merely
+     * moved. Empty when nothing installed can account for it.
+     *
+     * <p>Rewrite-and-retry rather than field surgery: the part's new id is written into the raw data
+     * and the whole entry is parsed again. So an entry whose material or fittings are ALSO unreadable
+     * still fails, and is kept raw, instead of coming back half-formed.
+     */
+    public static <U> Optional<DecorationEntry> rebind(final Dynamic<U> raw) {
+        final Identifier id = raw.get("decoration").asString().result()
+            .map(Identifier::tryParse).orElse(null);
+        final String uid = raw.get("uid").asString().result().orElse(null);
+        return Rebind.<ArmorDecoration>find(ArmorPiecesRegistries.ARMOR_DECORATION, id, uid)
+            .flatMap(Holder::unwrapKey)
+            .flatMap(key -> CODEC
+                .parse(raw.set("decoration", raw.createString(key.identifier().toString())))
+                .result());
     }
 
     /** A part with nothing in its fittings - the entry a socket that was empty gets. */

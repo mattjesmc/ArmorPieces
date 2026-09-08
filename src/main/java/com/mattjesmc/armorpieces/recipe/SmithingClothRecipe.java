@@ -3,6 +3,7 @@ package com.mattjesmc.armorpieces.recipe;
 import com.mattjesmc.armorpieces.ArmorPieces;
 import com.mattjesmc.armorpieces.cloth.ClothValue;
 import com.mattjesmc.armorpieces.registry.ModDataComponents;
+import com.mattjesmc.armorpieces.identity.Tolerant;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
@@ -125,7 +126,7 @@ public class SmithingClothRecipe extends SimpleSmithingRecipe {
 
     @Override
     public ItemStack assemble(final SmithingRecipeInput input) {
-        return applyCloth(input.base(), input.addition(), input.template().get(ModDataComponents.CLOTH));
+        return applyCloth(input.base(), input.addition(), Tolerant.get(input.template(), ModDataComponents.CLOTH));
     }
 
     /**
@@ -149,7 +150,7 @@ public class SmithingClothRecipe extends SimpleSmithingRecipe {
         final ItemStack banner,
         final @Nullable ClothValue cloth
     ) {
-        final ClothValue current = baseItem.get(ModDataComponents.CLOTH);
+        final ClothValue current = Tolerant.get(baseItem, ModDataComponents.CLOTH);
         if (banner.isEmpty()) {
             // Taking a garment off is not asked whether the piece may WEAR one: a piece that has one
             // is proof enough, and a pack that changes its mind about what may be clothed must not
@@ -172,7 +173,7 @@ public class SmithingClothRecipe extends SimpleSmithingRecipe {
             return ItemStack.EMPTY;
         }
         final ItemStack clothed = baseItem.copyWithCount(1);
-        clothed.set(ModDataComponents.CLOTH, worn);
+        clothed.set(ModDataComponents.CLOTH, Tolerant.of(worn));
         return clothed;
     }
 

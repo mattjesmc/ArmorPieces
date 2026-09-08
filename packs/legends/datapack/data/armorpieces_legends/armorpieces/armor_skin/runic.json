@@ -1,0 +1,17 @@
+{
+  "asset_id": "armorpieces_legends:runic",
+  "description": {
+    "translate": "skin.armorpieces_legends.runic"
+  },
+  "former_ids": [
+    "armorpieces:runic"
+  ],
+  "loot": [
+    {
+      "table": "minecraft:chests/ancient_city",
+      "weight": 1,
+      "chance": 0.05
+    }
+  ],
+  "uid": "ap1hg3mbtjib5nyqogmn4yq"
+}

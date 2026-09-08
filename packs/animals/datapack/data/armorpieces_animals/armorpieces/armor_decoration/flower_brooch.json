@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_animals:flower_brooch",
+  "description": {
+    "translate": "decoration.armorpieces_animals.flower_brooch"
+  },
+  "anchors": [
+    "collar"
+  ],
+  "fittings": [
+    "armorpieces:gemstone"
+  ],
+  "uid": "ap1fnlfgwqcaedsjsliipaa"
+}

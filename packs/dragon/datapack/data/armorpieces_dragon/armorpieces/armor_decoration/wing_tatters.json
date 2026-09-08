@@ -1,0 +1,10 @@
+{
+  "asset_id": "armorpieces_dragon:wing_tatters",
+  "description": {
+    "translate": "decoration.armorpieces_dragon.wing_tatters"
+  },
+  "anchors": [
+    "tassets"
+  ],
+  "uid": "ap1axb2eqrdpi2ndzxrrf5q"
+}

@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_coral:swim_fins",
+  "description": {
+    "translate": "decoration.armorpieces_coral.swim_fins"
+  },
+  "anchors": [
+    "greaves"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "former_ids": [
+    "armorpieces:swim_fins"
+  ],
+  "uid": "ap1d2mhkjq5fovxyonsflra"
+}

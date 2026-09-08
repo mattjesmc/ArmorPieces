@@ -1,0 +1,125 @@
+{
+  "sets": [
+    {
+      "id": "chitin",
+      "title": "Chitin",
+      "description": "Netherite and lime over lamellar - antennae, aerials, a beetle's wing cases and the carapace across the back. All four of this pack's pieces are here and eight are borrowed, five of them from the Wild Hunt. It is the widest borrowing of any set, and the measure of how much the Hive still needs.",
+      "set": {
+        "name": "Chitin",
+        "slots": {
+          "helmet": {
+            "material": "netherite"
+          },
+          "chestplate": {
+            "material": "netherite"
+          },
+          "leggings": {
+            "material": "netherite"
+          },
+          "boots": {
+            "material": "netherite"
+          }
+        },
+        "pieces": {
+          "crest": {
+            "id": "armorpieces_hive:antennae",
+            "pack": "armorpieces-hive",
+            "material": "netherite",
+            "fittings": {
+              "armorpieces:gemstone": "minecraft:emerald"
+            }
+          },
+          "brow": {
+            "id": "armorpieces_hunt:bone_mask",
+            "pack": "armorpieces-hunt",
+            "material": "netherite",
+            "fittings": {
+              "armorpieces:gemstone": "minecraft:emerald"
+            }
+          },
+          "horns": {
+            "id": "armorpieces_hive:aerials",
+            "pack": "armorpieces-hive",
+            "material": "netherite",
+            "fittings": {
+              "armorpieces:inlay": "lime"
+            }
+          },
+          "pauldrons": {
+            "id": "armorpieces_hive:wing_cases",
+            "pack": "armorpieces-hive",
+            "material": "netherite",
+            "fittings": {
+              "armorpieces:inlay": "lime"
+            }
+          },
+          "back": {
+            "id": "armorpieces_hive:carapace",
+            "pack": "armorpieces-hive",
+            "material": "netherite",
+            "fittings": {
+              "armorpieces:inlay": "lime"
+            }
+          },
+          "collar": {
+            "id": "armorpieces:ruff",
+            "pack": "armorpieces",
+            "material": "netherite",
+            "fittings": {
+              "armorpieces:inlay": "lime"
+            }
+          },
+          "vambraces": {
+            "id": "armorpieces_hunt:claws",
+            "pack": "armorpieces-hunt",
+            "material": "netherite",
+            "fittings": {
+              "armorpieces:guard": "minecraft:netherite"
+            }
+          },
+          "belt": {
+            "id": "armorpieces:chain_belt",
+            "pack": "armorpieces",
+            "material": "netherite",
+            "fittings": {
+              "armorpieces:guard": "minecraft:netherite"
+            }
+          },
+          "tassets": {
+            "id": "armorpieces:mail_fringe",
+            "pack": "armorpieces",
+            "material": "netherite",
+            "fittings": {
+              "armorpieces:guard": "minecraft:netherite"
+            }
+          },
+          "knees": {
+            "id": "armorpieces_hunt:fanged_cop",
+            "pack": "armorpieces-hunt",
+            "material": "netherite",
+            "fittings": {
+              "armorpieces:gemstone": "minecraft:emerald"
+            }
+          },
+          "spurs": {
+            "id": "armorpieces_hunt:talons",
+            "pack": "armorpieces-hunt",
+            "material": "netherite",
+            "fittings": {
+              "armorpieces:guard": "minecraft:netherite"
+            }
+          },
+          "greaves": {
+            "id": "armorpieces_hunt:shin_spikes",
+            "pack": "armorpieces-hunt",
+            "material": "netherite",
+            "fittings": {
+              "armorpieces:guard": "minecraft:netherite"
+            }
+          }
+        },
+        "skin": "armorpieces:lamellar"
+      }
+    }
+  ]
+}

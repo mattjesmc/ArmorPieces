@@ -2,6 +2,7 @@ package com.mattjesmc.armorpieces.item;
 
 import com.mattjesmc.armorpieces.registry.ModDataComponents;
 import com.mattjesmc.armorpieces.skin.ArmorSkinValue;
+import com.mattjesmc.armorpieces.identity.Tolerant;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.CommonComponents;
@@ -33,7 +34,7 @@ public class SkinTemplateItem extends Item {
     /** "Plate Skin Smithing Template", from the skin's own description; bare, just the item's name. */
     @Override
     public Component getName(final ItemStack stack) {
-        final ArmorSkinValue skin = stack.get(ModDataComponents.SKIN);
+        final ArmorSkinValue skin = Tolerant.get(stack, ModDataComponents.SKIN);
         if (skin == null) {
             return super.getName(stack);
         }

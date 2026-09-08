@@ -1,0 +1,10 @@
+{
+  "asset_id": "armorpieces_animals:fox_ears",
+  "description": {
+    "translate": "decoration.armorpieces_animals.fox_ears"
+  },
+  "anchors": [
+    "horns"
+  ],
+  "uid": "ap1c3lakfkrbpztxhnirxmq"
+}

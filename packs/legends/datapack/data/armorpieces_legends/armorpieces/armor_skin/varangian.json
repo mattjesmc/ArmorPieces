@@ -1,0 +1,17 @@
+{
+  "asset_id": "armorpieces_legends:varangian",
+  "description": {
+    "translate": "skin.armorpieces_legends.varangian"
+  },
+  "former_ids": [
+    "armorpieces:varangian"
+  ],
+  "loot": [
+    {
+      "table": "minecraft:chests/igloo_chest",
+      "weight": 1,
+      "chance": 0.06
+    }
+  ],
+  "uid": "ap1rie5syo6pyeftyhbydjq"
+}

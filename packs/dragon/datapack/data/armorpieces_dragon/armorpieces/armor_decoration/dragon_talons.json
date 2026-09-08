@@ -1,0 +1,10 @@
+{
+  "asset_id": "armorpieces_dragon:dragon_talons",
+  "description": {
+    "translate": "decoration.armorpieces_dragon.dragon_talons"
+  },
+  "anchors": [
+    "spurs"
+  ],
+  "uid": "ap1a2kvqujm6lrrodhagatq"
+}

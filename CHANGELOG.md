@@ -2,6 +2,91 @@
 
 ## Unreleased
 
+**Armor is never destroyed by content that is not installed, and a piece that moves finds its way
+home.** Every component this mod saves — parts, skins, garments and both template kinds — used to be
+read by a strict codec, and a strict component codec does not lose the component: it loses **the
+item**. A helmet whose crest named a part the installed packs no longer defined failed
+`ItemStack`'s own decode, and every caller that loads a saved stack turns that into a logged line and
+empty air. Enchantments, name and all. That was true of every version this mod has ever had; nothing
+had removed a part before.
+
+Now nothing this mod writes can fail to be read. A piece an installation cannot name is kept exactly
+as it was saved, renders nothing, does nothing, says *"not installed"* in the item's tooltip, and
+comes back the moment its pack is installed — no migration, no command, no deadline. Nothing is ever
+deleted automatically.
+
+On top of that floor, two optional fields make a move a non-event:
+
+- **`former_ids`** on a part, skin or cloth declares the ids it used to answer to. The piece that
+  arrives says what it replaces, so a save written before the move finds it. **The thirty pieces and
+  skins that left the mod below all carry one**, which is what turns the split from a break into a
+  gap that closes when a pack is installed.
+- **`uid`**, a lineage identifier minted once by `tools/mint_uids.py` (or by the content library) and
+  recorded in `uids.lock`, catches a move nobody declared. It is consulted only after the id and the
+  former ids have missed, so a pack that redefines an id on purpose still wins.
+
+A piece rebound this way is written back in its new form the next time the item is saved, so a world
+ports itself as it is played rather than in a conversion step that can half-finish. Three commands
+report on it and none is needed: `/armorpieces missing` lists what a world is waiting for,
+`/armorpieces prune` deliberately drops what a server owner does not want back, and
+`/armorpieces upgrade` writes loaded chunks out now instead of whenever they are next saved.
+
+**The mod is three themes, not six, and 66 pieces rather than 91.** Twenty-five pieces and five
+armor skins left the mod for content packs. Armor wearing one of them keeps it and stops showing
+it until the pack it went to is installed — see the entry above; it is a gap, not a loss, and it
+closes by itself. What moved, and where:
+
+| pack | namespace | from the mod |
+|---|---|---|
+| Armor Pieces: Coral | `armorpieces_coral` | the six **tidal** pieces |
+| Armor Pieces: The Wild Hunt | `armorpieces_hunt` | the fifteen **beast** pieces |
+| Armor Pieces: The Hive | `armorpieces_hive` | the four **carapace** pieces |
+| Armor Pieces: Legends | `armorpieces_legends` | `lorica`, `hoplite`, `samurai`, `varangian`, `runic` |
+
+What stays is what the mod could always dress on its own: **knightly** (30 pieces, and the banner
+joins it), **court** (23) and **wayfarer** (13), with the nine skins that say how armor is *made*
+rather than who wore it. The three loot groups that went with the themes went with them; the nine
+kept skins redistribute over the three that remain. The reason is the content site: a player picks
+the looks they want rather than installing ninety-one pieces to wear twelve, and the mod stops
+growing sideways.
+
+**The stage sets say who owns them.** `knight_errant`, `high_court` and `far_road` are dressed
+from the mod alone. `wild_hunt`, `deep_tide` and `chitin` are now their packs' sets and are declared
+in those packs' own `armorpieces-sets.json`, exactly as `menagerie` and `reef` already were;
+`/armorpieces stage set` still dresses all eight, from a transcription. Three sets needed a piece
+or a skin that had left: `far_road` wears `epaulettes` on the shoulders instead of the mantle,
+`high_court` wears the lamellar skin instead of runic, and `wild_hunt` wears brigandine instead of
+varangian. The Reef stopped borrowing the mod's `carapace` for its back and wears its own
+`spine_ridge`, which took it from eight borrowed sockets to five.
+
+**A stage set dressed without a skin was never parsed, and the set before it swallowed the rest.**
+The site generator matched only `new GallerySet(..., skin("x"), ...)`, so `menagerie` and `reef`
+ended no block and `chitin` — the last set with a skin — ran to the end of the file and took their
+sockets. It had been quietly wearing The Reef. The generator now matches a skinless set, reads a
+piece that names another namespace, and publishes only the sets the mod owns outright, since a
+pack's set is declared by the pack.
+
+**The store page's set count was recomputed, and two of its numbers had already gone stale.** The
+formula reproduces the published helmet, leggings and boots figures exactly from the old inventory;
+the chestplate and the shape-alone counts it did not, and are not consistent with the page's own
+prefix, so they had been wrong before this release. A diamond set now reaches
+**5.3 × 10⁴⁵**, or **1.3 × 10⁶³** counting banners properly.
+
+**A session is its own parent process.** `.mcp.json` no longer names a session id, and both MCP
+servers this repository runs - the mcp-toolkit shim and `tools/mcp/server.mjs` - fall back to
+`mcptk-<parent pid>`, which is the `claude.exe` they are both direct children of. They therefore
+agree without being told, and two concurrent sessions never do. The variable this replaces,
+`${ARMORPIECES_SESSION:-armorpieces}`, was itself the fix for an id inherited from
+`CLAUDE_CODE_SESSION_ID` - but nothing ever set `ARMORPIECES_SESSION`, so every session fell back to
+the same literal `armorpieces` and the bug survived its own fix. It is not a cosmetic one: the
+plugin's `holderOf` skips the calling session, so processes sharing an id are the same session
+object, `held_by` can never fire between them, and the last writer silently overwrites the binding.
+Measured while diagnosing: three concurrent sessions, one session `armorpieces`, two connections.
+An explicit `MCPTK_SESSION` still wins, for deliberate sharing. (mcp-toolkit 0.136.0 / shim 0.66.0;
+`docs/models/BLOCKBENCH_ISOLATION_DESIGN.md` there is the record. The toolkit dependency and the
+`run/mcptoolkit` extract both moved to 0.136.0, so this is a released shim and not a patch: a dev
+boot re-extracts from the jar every time, and the jar now carries it.)
+
 **The six stage sets are on the site.** A `sets` generator reads the sets `/armorpieces stage set`
 dresses out of `StageCommand.java` into `dist/site.json`, in the shape the website's wardrobe saves
 a set in - the items each set hands to a part are turned into fitting values the way the game does

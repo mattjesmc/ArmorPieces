@@ -2,6 +2,7 @@ package com.mattjesmc.armorpieces.item;
 
 import com.mattjesmc.armorpieces.decoration.fitting.Fitting;
 import com.mattjesmc.armorpieces.registry.ModDataComponents;
+import com.mattjesmc.armorpieces.identity.Tolerant;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
@@ -44,7 +45,7 @@ public class FittingTemplateItem extends Item {
     /** "Gemstone Fitting Smithing Template", from the fitting's own description; bare, just the item's name. */
     @Override
     public Component getName(final ItemStack stack) {
-        final Holder<Fitting> fitting = stack.get(ModDataComponents.FITTING);
+        final Holder<Fitting> fitting = Tolerant.get(stack, ModDataComponents.FITTING);
         if (fitting == null) {
             return super.getName(stack);
         }
@@ -64,7 +65,7 @@ public class FittingTemplateItem extends Item {
         final Consumer<Component> consumer,
         final TooltipFlag flag
     ) {
-        final Holder<Fitting> fitting = stack.get(ModDataComponents.FITTING);
+        final Holder<Fitting> fitting = Tolerant.get(stack, ModDataComponents.FITTING);
         final Component appliesTo = fitting == null
             ? Component.translatable("item.armorpieces.fitting_template.applies_to")
             : Component.translatable("item.armorpieces.fitting_template.applies_to.named", fitting.value().description());

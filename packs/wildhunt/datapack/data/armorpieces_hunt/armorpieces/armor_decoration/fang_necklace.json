@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_hunt:fang_necklace",
+  "description": {
+    "translate": "decoration.armorpieces_hunt.fang_necklace"
+  },
+  "anchors": [
+    "collar"
+  ],
+  "fittings": [
+    "armorpieces:gemstone"
+  ],
+  "former_ids": [
+    "armorpieces:fang_necklace"
+  ],
+  "uid": "ap146vify2rsmz3kyuhk75a"
+}

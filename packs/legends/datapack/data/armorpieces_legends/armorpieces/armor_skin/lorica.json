@@ -1,0 +1,17 @@
+{
+  "asset_id": "armorpieces_legends:lorica",
+  "description": {
+    "translate": "skin.armorpieces_legends.lorica"
+  },
+  "former_ids": [
+    "armorpieces:lorica"
+  ],
+  "loot": [
+    {
+      "table": "minecraft:chests/stronghold_corridor",
+      "weight": 1,
+      "chance": 0.06
+    }
+  ],
+  "uid": "ap1eacmtmg4if4ki7ib4hka"
+}

@@ -60,3 +60,6 @@ tools/.mcassets/
 
 # The Blockbench bridge (tools/mcp) is a Node package; its installed modules are not ours.
 tools/mcp/node_modules/
+
+# Session transcripts and their archive: evidence, not source (tools/measure_sessions.py).
+.mcptoolkit/runs/

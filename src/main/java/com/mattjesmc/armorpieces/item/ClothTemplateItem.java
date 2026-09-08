@@ -2,6 +2,7 @@ package com.mattjesmc.armorpieces.item;
 
 import com.mattjesmc.armorpieces.cloth.ClothValue;
 import com.mattjesmc.armorpieces.registry.ModDataComponents;
+import com.mattjesmc.armorpieces.identity.Tolerant;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.CommonComponents;
@@ -32,7 +33,7 @@ public class ClothTemplateItem extends Item {
     /** "Tunic Cloth Smithing Template", from the cloth's own description. */
     @Override
     public Component getName(final ItemStack stack) {
-        final ClothValue cloth = stack.get(ModDataComponents.CLOTH);
+        final ClothValue cloth = Tolerant.get(stack, ModDataComponents.CLOTH);
         if (cloth == null) {
             return super.getName(stack);
         }

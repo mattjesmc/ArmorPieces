@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_coral:scale_shins",
+  "description": {
+    "translate": "decoration.armorpieces_coral.scale_shins"
+  },
+  "anchors": [
+    "greaves"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "former_ids": [
+    "armorpieces:scale_shins"
+  ],
+  "uid": "ap1yn5qp7psattnixqviasq"
+}

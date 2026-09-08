@@ -11,6 +11,7 @@ import com.mattjesmc.armorpieces.registry.ModBlocks;
 import com.mattjesmc.armorpieces.registry.ModDataComponents;
 import com.mattjesmc.armorpieces.registry.ModMenus;
 import com.mattjesmc.armorpieces.skin.ArmorSkinValue;
+import com.mattjesmc.armorpieces.identity.Tolerant;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.core.Holder;
@@ -314,12 +315,12 @@ public class AdvancedSmithingMenu extends AbstractContainerMenu {
 
     /** The skin the selected piece wears, or {@code null}. */
     public @Nullable ArmorSkinValue selectedSkin() {
-        return this.selectedStack().get(ModDataComponents.SKIN);
+        return Tolerant.get(this.selectedStack(), ModDataComponents.SKIN);
     }
 
     /** The cloth the selected piece wears, or {@code null}. */
     public @Nullable ClothValue selectedCloth() {
-        return this.selectedStack().get(ModDataComponents.CLOTH);
+        return Tolerant.get(this.selectedStack(), ModDataComponents.CLOTH);
     }
 
     /** Whether {@code row} is the trim row - the last one, under the sockets. */
@@ -640,7 +641,7 @@ public class AdvancedSmithingMenu extends AbstractContainerMenu {
         }
         // The template's own choice wins over the selected slot: it is the more specific statement
         // of the two, and a template that names a fitting is asking for exactly that one.
-        Holder<Fitting> only = input.template().get(ModDataComponents.FITTING);
+        Holder<Fitting> only = Tolerant.get(input.template(), ModDataComponents.FITTING);
         if (only == null) {
             final int fitting = this.selectedFitting.get();
             final List<Holder<Fitting>> fittings = this.fittingsAt(this.selectedRow.get());

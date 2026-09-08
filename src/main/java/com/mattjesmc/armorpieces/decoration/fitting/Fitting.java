@@ -8,6 +8,8 @@ import java.util.Set;
 import java.util.function.Function;
 import net.minecraft.core.Holder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import com.mattjesmc.armorpieces.identity.Rebind;
+import com.mattjesmc.armorpieces.identity.Tolerant;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -62,6 +64,22 @@ public interface Fitting {
      */
     StreamCodec<RegistryFriendlyByteBuf, Holder<Fitting>> STREAM_CODEC =
         ByteBufCodecs.holder(ArmorPiecesRegistries.FITTING, ByteBufCodecs.fromCodecWithRegistries(DIRECT_CODEC));
+
+    /**
+     * The form the {@code armorpieces:fitting} component uses. Tolerated, but never rebound.
+     *
+     * <p>A fitting's TYPE is code rather than data, there are six of them, and none has ever moved -
+     * so the reverse index {@link Rebind} keeps for parts, skins and cloths would have nothing in it.
+     * What matters here is only the floor: a fitting template naming a fitting this installation does
+     * not have keeps its data and stays an item, instead of becoming air.
+     */
+    Codec<Tolerant<Holder<Fitting>>> TOLERANT_CODEC = Tolerant.codec(CODEC, raw -> {
+        Rebind.miss(ArmorPiecesRegistries.FITTING,
+            raw.asString().result().orElse("an unreadable fitting"));
+        return Optional.empty();
+    });
+    StreamCodec<RegistryFriendlyByteBuf, Tolerant<Holder<Fitting>>> TOLERANT_STREAM_CODEC =
+        Tolerant.stream(STREAM_CODEC);
 
     /** This fitting's type - its entry in {@code armorpieces:fitting_type}. Names it in JSON. */
     MapCodec<? extends Fitting> codec();

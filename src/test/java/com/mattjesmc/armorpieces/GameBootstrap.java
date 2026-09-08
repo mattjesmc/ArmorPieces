@@ -22,6 +22,24 @@ public final class GameBootstrap {
     private GameBootstrap() {
     }
 
+    private static boolean components;
+
+    /**
+     * The mod's item components, once per JVM.
+     *
+     * <p>Separate from {@link #once()} because it is a different layer: bootstrapping fills VANILLA's
+     * registries, and this registers into one of them. A second call would throw, so the flag is not
+     * an optimisation.
+     */
+    public static synchronized void components() {
+        if (components) {
+            return;
+        }
+        once();
+        com.mattjesmc.armorpieces.registry.ModDataComponents.register();
+        components = true;
+    }
+
     /** Idempotent: {@link Bootstrap#bootStrap()} is itself a no-op the second time, this is cheaper. */
     public static synchronized void once() {
         if (done) {

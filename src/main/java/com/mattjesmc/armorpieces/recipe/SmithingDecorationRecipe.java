@@ -5,6 +5,7 @@ import com.mattjesmc.armorpieces.decoration.ArmorDecorations;
 import com.mattjesmc.armorpieces.decoration.DecorationAnchor;
 import com.mattjesmc.armorpieces.decoration.DecorationEntry;
 import com.mattjesmc.armorpieces.registry.ModDataComponents;
+import com.mattjesmc.armorpieces.identity.Tolerant;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
@@ -107,7 +108,7 @@ public class SmithingDecorationRecipe extends SimpleSmithingRecipe {
         if (!super.matches(input, level)) {
             return false;
         }
-        final Holder<ArmorDecoration> decoration = input.template().get(ModDataComponents.DECORATION);
+        final Holder<ArmorDecoration> decoration = Tolerant.get(input.template(), ModDataComponents.DECORATION);
         return decoration != null
             && decoration.value().fits(this.anchor)
             && fitsSlot(input.base(), this.anchor);
@@ -115,7 +116,7 @@ public class SmithingDecorationRecipe extends SimpleSmithingRecipe {
 
     @Override
     public ItemStack assemble(final SmithingRecipeInput input) {
-        final Holder<ArmorDecoration> decoration = input.template().get(ModDataComponents.DECORATION);
+        final Holder<ArmorDecoration> decoration = Tolerant.get(input.template(), ModDataComponents.DECORATION);
         if (decoration == null) {
             return ItemStack.EMPTY;
         }

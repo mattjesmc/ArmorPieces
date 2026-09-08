@@ -1,0 +1,20 @@
+{
+  "asset_id": "armorpieces_animals:rabbit_feet",
+  "description": {
+    "translate": "decoration.armorpieces_animals.rabbit_feet"
+  },
+  "anchors": [
+    "spurs"
+  ],
+  "fittings": [
+    "armorpieces:gemstone"
+  ],
+  "loot": [
+    {
+      "table": "minecraft:entities/rabbit",
+      "weight": 1,
+      "chance": 0.05
+    }
+  ],
+  "uid": "ap1qp5vtxkwj5bretq2hsfq"
+}

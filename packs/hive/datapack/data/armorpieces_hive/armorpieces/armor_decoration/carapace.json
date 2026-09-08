@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_hive:carapace",
+  "description": {
+    "translate": "decoration.armorpieces_hive.carapace"
+  },
+  "anchors": [
+    "back"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "former_ids": [
+    "armorpieces:carapace"
+  ],
+  "uid": "ap1thiexlxznlkrkidwwwyq"
+}

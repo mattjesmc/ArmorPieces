@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_animals:armadillo_shell",
+  "description": {
+    "translate": "decoration.armorpieces_animals.armadillo_shell"
+  },
+  "anchors": [
+    "knees"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1ghol3b6c5zi3tecttz4q"
+}

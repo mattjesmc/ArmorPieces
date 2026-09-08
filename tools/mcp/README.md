@@ -1,16 +1,24 @@
 # The Blockbench bridge
 
-An MCP server that stands between an agent and Blockbench. Blockbench already speaks MCP through the
-[MCP Server plugin](https://github.com/jasonjgardner/blockbench-mcp-plugin), and the Armor Pieces
+An MCP server that stands between an agent and Blockbench. Blockbench speaks HTTP through
+mcp-toolkit's own bridge plugin (`mcptoolkit_bridge.js`, 127.0.0.1:25801), and the Armor Pieces
 plugin already turns Blockbench into an editor for parts; what neither does is tell an agent, as it
 works, what the plugin tells a human through the panel and what the repository's checks tell a
-release. That plugin cannot be extended by another plugin, so this server sits one hop in front of
-it and adds three things:
+release. Neither can be extended by another plugin, so this server sits one hop in front and adds
+three things:
 
-- **A profile.** The plugin registers ninety-odd tools; a part is cubes in bone groups on a rig,
-  painted on three kinds of sheet, and armatures, meshes, PBR materials and animation have no
-  part in it. `authoring` serves the twenty-nine that do. Names are unchanged, so a tool is still
-  `mcp__blockbench__place_cube`, only its description now says what the workspace does with it.
+> **The upstream changed on 2026-09-07.** It was jasonjgardner's "Blockbench MCP" 1.6.1, MCP over
+> HTTP on `/bb-mcp` with 94 tools, until mcp-toolkit 0.133.0 replaced it with the toolkit's own
+> plugin: plain HTTP (`GET /hello`, `GET /tools`, `POST /cmd`), 26 argument-checked tools, a queue,
+> and a **session bound to a project** so an edit to a piece another session holds is refused with
+> `held_by` rather than landing in it. This server speaks that transport, and both it and the
+> mcp-toolkit shim present the same `MCPTK_SESSION`, so the two are one session holding one piece.
+
+- **A profile.** A part is cubes in bone groups on a rig, painted on three kinds of sheet; export,
+  animation and the app's menus have no part in it. `authoring` serves twenty of the plugin's
+  twenty-six, read from `.mcptoolkit/loop.json` so the kit and the pre-kit profile cannot drift.
+  Names are unchanged, so a tool is still `mcp__blockbench__place_cube`, only its description now
+  says what the workspace does with it.
 - **A check after every edit.** The Armor Pieces plugin publishes the open piece after each edit
   (its model, its sheets, a `meta.json` with a sequence number, under the temp dir); after any
   editing call the bridge runs `tools/check_part.py` over that and appends the compact report to
@@ -35,8 +43,9 @@ Python; the bridge is wiring, and `check_part.py --status` prints the same repor
 
 ## Setup
 
-Blockbench 5.1+ with the MCP Server plugin (port 3000, endpoint `/bb-mcp` - its defaults) and the
-Armor Pieces plugin loaded. Node 18+ and the repository's Python. Then:
+Blockbench 5.1+ with two plugins loaded from file: mcp-toolkit's `blockbench/mcptoolkit_bridge.js`
+(then Tools > MCP Toolkit Bridge > Start, and allow `process` once - it binds 127.0.0.1:25801) and
+the Armor Pieces plugin. Node 18+ and the repository's Python. Then:
 
 ```
 cd tools/mcp && npm install
@@ -50,16 +59,57 @@ absolute paths):
   "type": "stdio",
   "command": "node",
   "args": ["<repo>/tools/mcp/server.mjs"],
-  "env": { "ARMORPIECES_BB_PROFILE": "authoring" }
+  "env": {
+    "ARMORPIECES_BB_PROFILE": "${ARMORPIECES_BB_PROFILE:-kit}",
+    "MCPTK_SESSION": "${CLAUDE_CODE_SESSION_ID:-armorpieces}"
+  }
 }
 ```
 
+`MCPTK_SESSION` must be **the same string the mcptoolkit server gets**. That is what makes the two
+processes one session to the plugin: the piece this server opens is bound, and the shim's
+`place_cube` goes to it by name rather than to whichever tab is active. Two different ids would make
+them refuse each other.
+
 Keeping the server name `blockbench` keeps every tool name a session has ever learned. Three
 environment variables, all optional: `ARMORPIECES_BB_URL` (the plugin's endpoint),
-`ARMORPIECES_BB_PROFILE` (`authoring` or `full`), `ARMORPIECES_PYTHON` (the interpreter for
-`tools/`). Blockbench need not be running when the client starts: the tool list then comes from the
-last live manifest, or from `blockbench-tools.json` beside the server, and the connection is made on
-the first call.
+`ARMORPIECES_BB_PROFILE` (below), `ARMORPIECES_PYTHON` (the interpreter for `tools/`). Blockbench
+need not be running when the client starts: the tool list then comes from the last live manifest, or
+from `blockbench-tools.json` beside the server, and the connection is made on the first call.
+
+## The kit split
+
+Since mcp-toolkit 0.123.0 the toolkit's own shim does everything the first two bullets above
+describe - a project keep-list over Blockbench's manifest, notes appended to descriptions, an
+instructions paragraph, a checker run after every editing call - out of `.mcptoolkit/loop.json`
+(the toolkit's `docs-release/LOOPS.md`). This repository takes it, so the default profile is now
+`kit`: this server serves ONLY its nine piece tools, and `mcp__blockbench__place_cube` comes from
+`mcp__mcptoolkit__place_cube` instead. That loop file is also where the keep-list and the
+description notes are WRITTEN - `profile.mjs` reads them, rather than keeping a second copy that
+went on annotating `paint_with_brush` for weeks after the plugin that had it was replaced.
+
+| Profile | Blockbench | This server's own | For |
+|---|---|---|---|
+| `kit` (default) | none - the shim serves them | the nine part tools | part authoring, with `.mcptoolkit/loop.json` |
+| `kit_skin` | none | the eight skin tools | skin authoring, same split |
+| `authoring` | 29 | all 17 | the pre-kit loop, one server; still works |
+| `full` | 94 | all 17 | debugging the bridge itself |
+
+What it is worth, as `node tools/mcp/check_kit.mjs` prints it at the top of a run: `kit` plus the
+shim's project profile is **28 tools and ~6.4k tokens** of manifest on **every turn** of a 40-turn
+session (9 tools ~1.7k here, 19 ~4.7k there). It was 39 tools and ~8.6k against the old plugin, and
+46 and ~10.4k under `authoring` before the split - the drop is the plugin's own doing, since its 26
+tools replace the 94 by folding families behind an `op`.
+
+One thing the split has to get right, and it is why `runCheck` here shells out to
+`tools/check_active.py` rather than to `check_part.py`: the sheet-layout block and the `! repaint:
+faces that were complete and grew` line are DIFFS against the last check, and in a kit session two
+servers edit one piece. Two histories means a face painted through this server and grown through
+the shim compares against a state where it was never painted, and the regrow - the whole reason
+the diff exists - goes unsaid. `check_active.py` owns one history file beside the piece's status
+directory; both servers read it. `node tools/mcp/check_kit.mjs` is the live arbiter for all of
+this: it opens a shipped piece, edits it through both servers, asserts the check, the layout block,
+the regrow line and the picture budget, and closes without saving.
 
 ## What the model is told
 

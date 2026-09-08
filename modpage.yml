@@ -56,8 +56,8 @@ sections:
     can build 1,568,239,201 armor sets, which sounds like plenty right up until it happens to you
     twice in a week.
 
-    Armor Pieces takes that number to **3 × 10⁸⁴** — more than thirty thousand unique diamond sets
-    for every atom in the observable universe. Diamond is one of seven armor materials.
+    Armor Pieces takes that number to **1.3 × 10⁶³** — about a million times the number of atoms in
+    the Sun, and that is diamond alone, one of seven armor materials.
 
     It gives one piece of armor **four layers of decoration, each an independent choice**:
     a **part** hung on a socket, a **skin** that changes what the plate itself is made of, a **cloth**
@@ -147,8 +147,8 @@ sections:
       - title: Found in the world
         description: >-
           Most parts are found rather than crafted, each theme in the structures that suit it —
-          knightly gear in strongholds and trial chambers, beast trophies in bastions, court
-          jewellery in mansions and ancient cities, tidal parts in shipwrecks and ocean ruins. A
+          knightly gear in strongholds and trial chambers, court jewellery in mansions and ancient
+          cities, a wayfarer's kit on the roads and in the villages. A
           **loot group** is one file naming a category of tables and the tag of parts found in
           them, so a pack adds a whole look to the world at once, or drops one part into one chest
           from its own data file — the one thing a datapack cannot do for itself, since it can only
@@ -189,7 +189,7 @@ sections:
       # In this order on purpose: the site lays the introduction's paragraphs over these images
       # one by one, and the paragraphs go pieces, skins, cloth, fittings, found.
       - src: gallery/sets.png
-        caption: The six themed sets, every socket filled — knightly, court, beast, wayfarer, tidal, carapace
+        caption: Themed sets, every socket filled — the mod's knightly, court and wayfarer, and the pack sets beside them
       - src: gallery/skins.png
         caption: Every armor skin on one diamond suit — the plate itself changed, not something hung on it
       - src: gallery/wardrobe.png
@@ -416,39 +416,40 @@ custom_sections:
 
       Now count that same diamond set with this mod installed. Each piece keeps all 199 of its trims
       and gains a skin
-      (fourteen, or bare), a part in each of its sockets, each part in one of eleven materials, each
+      (nine, or bare), a part in each of its sockets, each part in one of eleven materials, each
       part's fittings filled or left empty — a gem from seven, a metal from four, an inlay from
       sixteen dyes — and the chestplate a tunic or a tabard on top.
 
       | | Vanilla diamond | With Armor Pieces |
       | --- | ---: | ---: |
-      | Helmet | 199 | 1,833,029,934,300 |
-      | Chestplate | 199 | 5,113,599,898,358,700 |
-      | Leggings | 199 | 1,839,405,834,600 |
-      | Boots | 199 | 1,187,185,245 |
-      | **Full set** | **1,568,239,201** | **20,468,798,559,625,822,847,874,604,407,037,697,665,836,570,000,000** |
+      | Helmet | 199 | 26,802,796,580 |
+      | Chestplate | 199 | 735,580,184,364,000 |
+      | Leggings | 199 | 584,066,114,400 |
+      | Boots | 199 | 456,299,040 |
+      | **Full set** | **1,568,239,201** | **5,254,382,653,471,233,625,936,048,378,064,626,821,120,000,000** |
 
-      That is **2 × 10⁴⁹** — about 10⁴⁰ times the whole of vanilla, and roughly a sixth of the atoms
-      in the Earth. Some smaller ways to hold it:
+      That is **5.3 × 10⁴⁵** — about 3 × 10³⁶ times the whole of vanilla. Some smaller ways to hold
+      it:
 
-      - **The boots alone** come to 1,187,185,245 arrangements: three quarters of every trimmed
+      - **The boots alone** come to 456,299,040 arrangements: more than a quarter of every trimmed
         diamond set vanilla can build, on your feet.
-      - **The helmet alone** is 1,169 times vanilla's entire four-piece space.
-      - **Shape alone**, before a single colour is chosen — which part sits in which socket, and
-        nothing else — is 368,709,304,320 distinct silhouettes. 235 times vanilla's fully trimmed
-        space, in pure geometry.
+      - **The helmet alone** is 17 times vanilla's entire four-piece space.
+      - **Shape alone**, before a single colour is chosen — which part sits in which socket, empty
+        included, and nothing else — is 2,568,384,000 distinct silhouettes. Still more than vanilla's
+        fully trimmed space, in pure geometry.
       - Pick a set a second and you exhaust vanilla in fifty years. You exhaust this one in
-        4.7 × 10³¹ times the age of the universe.
+        1.2 × 10²⁸ times the age of the universe.
 
       And all of that **counts a banner as a single design**, which it is not. A banner is sixteen
       base colours and up to six layers of forty-two patterns in sixteen dyes:
       **1,475,646,641,940,097,552** banners, any of which can go on the back banner, the cloak, the
-      tunic or the tabard. Count them properly and the chestplate alone reaches 7.7 × 10⁵⁰, and a
+      tunic or the tabard. Count them properly and the chestplate alone reaches 1.8 × 10³², and a
       full set:
 
-      **3.07 × 10⁸⁴** — over thirty thousand distinct diamond sets for every atom in the observable
-      universe. (There are about 7.3 × 10⁷⁹ of those, if you take Planck's numbers and the baryons
-      they imply.)
+      **1.3 × 10⁶³** — about a million times the number of atoms in the Sun.
+
+      These are the numbers for the **mod alone**. Every content pack adds pieces to sockets that
+      are already multiplying, so the count does not creep upward — it jumps.
 
       And every number on this page is **diamond alone**, because that is what vanilla is being
       compared against. Diamond is one of seven armor materials, six of which take a skin — which

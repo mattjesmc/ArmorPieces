@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_coral:nautilus_gorget",
+  "description": {
+    "translate": "decoration.armorpieces_coral.nautilus_gorget"
+  },
+  "anchors": [
+    "collar"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1xazwckd2kqu7477tthta"
+}

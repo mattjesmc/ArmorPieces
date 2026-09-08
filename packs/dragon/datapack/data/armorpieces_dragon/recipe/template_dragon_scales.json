@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:purpur_block"
+  },
+  "result": {
+    "id": "armorpieces:greaves_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces_dragon:dragon_scales"
+    }
+  },
+  "category": "equipment"
+}

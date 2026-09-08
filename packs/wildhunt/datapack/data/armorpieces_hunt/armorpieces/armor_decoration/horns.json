@@ -1,0 +1,25 @@
+{
+  "asset_id": "armorpieces_hunt:horns",
+  "description": {
+    "translate": "decoration.armorpieces_hunt.horns"
+  },
+  "anchors": [
+    "horns"
+  ],
+  "former_ids": [
+    "armorpieces:horns"
+  ],
+  "loot": [
+    {
+      "table": "minecraft:chests/bastion_treasure",
+      "weight": 1,
+      "chance": 0.25
+    },
+    {
+      "table": "minecraft:chests/bastion_hoglin_stable",
+      "weight": 1,
+      "chance": 0.1
+    }
+  ],
+  "uid": "ap1o2epgxo26tacuypge6la"
+}

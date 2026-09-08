@@ -1,0 +1,13 @@
+{
+  "chance": 0.05,
+  "tables": [
+    "minecraft:chests/village/village_shepherd",
+    "minecraft:chests/village/village_armorer",
+    "minecraft:chests/village/village_tannery",
+    "minecraft:chests/village/village_taiga_house",
+    "minecraft:chests/village/village_snowy_house",
+    "minecraft:chests/village/village_temple",
+    "minecraft:chests/village/village_cartographer"
+  ],
+  "parts": "#armorpieces_animals:menagerie"
+}

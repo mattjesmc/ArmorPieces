@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:honeycomb"
+  },
+  "result": {
+    "id": "armorpieces:pauldrons_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces_animals:bee_wings"
+    }
+  },
+  "category": "equipment"
+}

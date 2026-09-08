@@ -46,32 +46,12 @@
       {
         "craftable": true,
         "description": "",
-        "id": "armorpieces:hoplite",
-        "key": "skin.armorpieces.hoplite",
-        "kind": "skin",
-        "loot": true,
-        "name": "hoplite",
-        "title": "Hoplite"
-      },
-      {
-        "craftable": true,
-        "description": "",
         "id": "armorpieces:lamellar",
         "key": "skin.armorpieces.lamellar",
         "kind": "skin",
         "loot": true,
         "name": "lamellar",
         "title": "Lamellar"
-      },
-      {
-        "craftable": true,
-        "description": "",
-        "id": "armorpieces:lorica",
-        "key": "skin.armorpieces.lorica",
-        "kind": "skin",
-        "loot": true,
-        "name": "lorica",
-        "title": "Lorica"
       },
       {
         "craftable": true,
@@ -106,42 +86,12 @@
       {
         "craftable": true,
         "description": "",
-        "id": "armorpieces:runic",
-        "key": "skin.armorpieces.runic",
-        "kind": "skin",
-        "loot": true,
-        "name": "runic",
-        "title": "Runic"
-      },
-      {
-        "craftable": true,
-        "description": "",
-        "id": "armorpieces:samurai",
-        "key": "skin.armorpieces.samurai",
-        "kind": "skin",
-        "loot": true,
-        "name": "samurai",
-        "title": "Samurai"
-      },
-      {
-        "craftable": true,
-        "description": "",
         "id": "armorpieces:scale",
         "key": "skin.armorpieces.scale",
         "kind": "skin",
         "loot": true,
         "name": "scale",
         "title": "Scale"
-      },
-      {
-        "craftable": true,
-        "description": "",
-        "id": "armorpieces:varangian",
-        "key": "skin.armorpieces.varangian",
-        "kind": "skin",
-        "loot": true,
-        "name": "varangian",
-        "title": "Varangian"
       }
     ]
   },
@@ -229,32 +179,12 @@
           {
             "craftable": true,
             "description": "",
-            "id": "armorpieces:hoplite",
-            "key": "skin.armorpieces.hoplite",
-            "kind": "skin",
-            "loot": true,
-            "name": "hoplite",
-            "title": "Hoplite"
-          },
-          {
-            "craftable": true,
-            "description": "",
             "id": "armorpieces:lamellar",
             "key": "skin.armorpieces.lamellar",
             "kind": "skin",
             "loot": true,
             "name": "lamellar",
             "title": "Lamellar"
-          },
-          {
-            "craftable": true,
-            "description": "",
-            "id": "armorpieces:lorica",
-            "key": "skin.armorpieces.lorica",
-            "kind": "skin",
-            "loot": true,
-            "name": "lorica",
-            "title": "Lorica"
           },
           {
             "craftable": true,
@@ -289,42 +219,12 @@
           {
             "craftable": true,
             "description": "",
-            "id": "armorpieces:runic",
-            "key": "skin.armorpieces.runic",
-            "kind": "skin",
-            "loot": true,
-            "name": "runic",
-            "title": "Runic"
-          },
-          {
-            "craftable": true,
-            "description": "",
-            "id": "armorpieces:samurai",
-            "key": "skin.armorpieces.samurai",
-            "kind": "skin",
-            "loot": true,
-            "name": "samurai",
-            "title": "Samurai"
-          },
-          {
-            "craftable": true,
-            "description": "",
             "id": "armorpieces:scale",
             "key": "skin.armorpieces.scale",
             "kind": "skin",
             "loot": true,
             "name": "scale",
             "title": "Scale"
-          },
-          {
-            "craftable": true,
-            "description": "",
-            "id": "armorpieces:varangian",
-            "key": "skin.armorpieces.varangian",
-            "kind": "skin",
-            "loot": true,
-            "name": "varangian",
-            "title": "Varangian"
           }
         ],
         "id": "shipped",
@@ -456,32 +356,12 @@
           {
             "craftable": true,
             "description": "",
-            "id": "armorpieces:hoplite",
-            "key": "skin.armorpieces.hoplite",
-            "kind": "skin",
-            "loot": true,
-            "name": "hoplite",
-            "title": "Hoplite"
-          },
-          {
-            "craftable": true,
-            "description": "",
             "id": "armorpieces:lamellar",
             "key": "skin.armorpieces.lamellar",
             "kind": "skin",
             "loot": true,
             "name": "lamellar",
             "title": "Lamellar"
-          },
-          {
-            "craftable": true,
-            "description": "",
-            "id": "armorpieces:lorica",
-            "key": "skin.armorpieces.lorica",
-            "kind": "skin",
-            "loot": true,
-            "name": "lorica",
-            "title": "Lorica"
           },
           {
             "craftable": true,
@@ -516,42 +396,12 @@
           {
             "craftable": true,
             "description": "",
-            "id": "armorpieces:runic",
-            "key": "skin.armorpieces.runic",
-            "kind": "skin",
-            "loot": true,
-            "name": "runic",
-            "title": "Runic"
-          },
-          {
-            "craftable": true,
-            "description": "",
-            "id": "armorpieces:samurai",
-            "key": "skin.armorpieces.samurai",
-            "kind": "skin",
-            "loot": true,
-            "name": "samurai",
-            "title": "Samurai"
-          },
-          {
-            "craftable": true,
-            "description": "",
             "id": "armorpieces:scale",
             "key": "skin.armorpieces.scale",
             "kind": "skin",
             "loot": true,
             "name": "scale",
             "title": "Scale"
-          },
-          {
-            "craftable": true,
-            "description": "",
-            "id": "armorpieces:varangian",
-            "key": "skin.armorpieces.varangian",
-            "kind": "skin",
-            "loot": true,
-            "name": "varangian",
-            "title": "Varangian"
           }
         ]
       },

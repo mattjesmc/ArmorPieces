@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:sweet_berries"
+  },
+  "result": {
+    "id": "armorpieces:horns_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces_animals:fox_ears"
+    }
+  },
+  "category": "equipment"
+}

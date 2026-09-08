@@ -13,6 +13,7 @@ import com.mattjesmc.armorpieces.registry.ModDataComponents;
 import com.mattjesmc.armorpieces.registry.ModItems;
 import com.mattjesmc.armorpieces.skin.ArmorSkin;
 import com.mattjesmc.armorpieces.skin.ArmorSkinValue;
+import com.mattjesmc.armorpieces.identity.Tolerant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -258,19 +259,19 @@ public final class DecorationLootTables {
     private static IntFunction<LootPoolEntryContainer.Builder<?>> partEntry(final Holder<ArmorDecoration> part) {
         return weight -> LootItem.lootTableItem(ModItems.template(part.value().primaryAnchor()))
             .setWeight(weight)
-            .apply(SetComponentsFunction.setComponent(ModDataComponents.DECORATION, part));
+            .apply(SetComponentsFunction.setComponent(ModDataComponents.DECORATION, Tolerant.of(part)));
     }
 
     private static IntFunction<LootPoolEntryContainer.Builder<?>> skinEntry(final Holder<ArmorSkin> skin) {
         return weight -> LootItem.lootTableItem(ModItems.skinTemplate())
             .setWeight(weight)
-            .apply(SetComponentsFunction.setComponent(ModDataComponents.SKIN, new ArmorSkinValue(skin)));
+            .apply(SetComponentsFunction.setComponent(ModDataComponents.SKIN, Tolerant.of(new ArmorSkinValue(skin))));
     }
 
     private static IntFunction<LootPoolEntryContainer.Builder<?>> clothEntry(final Holder<Cloth> cloth) {
         return weight -> LootItem.lootTableItem(ModItems.clothTemplate())
             .setWeight(weight)
-            .apply(SetComponentsFunction.setComponent(ModDataComponents.CLOTH, ClothValue.of(cloth)));
+            .apply(SetComponentsFunction.setComponent(ModDataComponents.CLOTH, Tolerant.of(ClothValue.of(cloth))));
     }
 
     /**
@@ -280,7 +281,7 @@ public final class DecorationLootTables {
     private static IntFunction<LootPoolEntryContainer.Builder<?>> fittingEntry(final Holder<Fitting> fitting) {
         return weight -> LootItem.lootTableItem(ModItems.fittingTemplate())
             .setWeight(weight)
-            .apply(SetComponentsFunction.setComponent(ModDataComponents.FITTING, fitting));
+            .apply(SetComponentsFunction.setComponent(ModDataComponents.FITTING, Tolerant.of(fitting)));
     }
 
     /** Every entry of one of the mod's registries, or none at all if it is somehow absent. */

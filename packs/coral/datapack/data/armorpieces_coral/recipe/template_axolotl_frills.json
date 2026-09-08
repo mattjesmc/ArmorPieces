@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:axolotl_bucket"
+  },
+  "result": {
+    "id": "armorpieces:horns_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces_coral:axolotl_frills"
+    }
+  },
+  "category": "equipment"
+}

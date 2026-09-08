@@ -3,6 +3,7 @@ package com.mattjesmc.armorpieces.recipe;
 import com.mattjesmc.armorpieces.ArmorPieces;
 import com.mattjesmc.armorpieces.registry.ModDataComponents;
 import com.mattjesmc.armorpieces.skin.ArmorSkinValue;
+import com.mattjesmc.armorpieces.identity.Tolerant;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
@@ -118,7 +119,7 @@ public class SmithingSkinRecipe extends SimpleSmithingRecipe {
 
     @Override
     public ItemStack assemble(final SmithingRecipeInput input) {
-        return applySkin(input.base(), input.addition(), input.template().get(ModDataComponents.SKIN));
+        return applySkin(input.base(), input.addition(), Tolerant.get(input.template(), ModDataComponents.SKIN));
     }
 
     /**
@@ -140,7 +141,7 @@ public class SmithingSkinRecipe extends SimpleSmithingRecipe {
         final ItemStack reforgingItem,
         final @Nullable ArmorSkinValue skin
     ) {
-        final ArmorSkinValue current = baseItem.get(ModDataComponents.SKIN);
+        final ArmorSkinValue current = Tolerant.get(baseItem, ModDataComponents.SKIN);
         if (reforgingItem.isEmpty()) {
             // Taking a skin off is not asked whether the piece may WEAR one: a piece that has one is
             // proof enough, and a pack that changes its mind about what may be skinned must not
@@ -157,7 +158,7 @@ public class SmithingSkinRecipe extends SimpleSmithingRecipe {
             return ItemStack.EMPTY;
         }
         final ItemStack skinned = baseItem.copyWithCount(1);
-        skinned.set(ModDataComponents.SKIN, skin);
+        skinned.set(ModDataComponents.SKIN, Tolerant.of(skin));
         return skinned;
     }
 
