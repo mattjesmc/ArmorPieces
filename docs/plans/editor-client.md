@@ -1,6 +1,20 @@
 # Plan: the editor as a client of the content model
 
-> **Status (2026-09-08): PROPOSED.** Nothing built. This supersedes decision 9 of
+> **Status (2026-09-08): STEPS 1-7 BUILT, 8 DEFERRED**, committed in all three repos and pushed
+> nowhere. The plugin half - checkout folders, the api calls, Save's automatic check-in with its
+> checkbox and action, and the new-piece destination - is this commit. The site half is
+> ArmorPiecesSite `11c4f34` on branch `editor-client`, which is branched off `lineage` because the
+> check-in needs the uid that branch adds: `oneObjectPack()`, `holdsObject()`, the checkout,
+> check-in and `pieces.json` routes, the pack page's Save button, and `test/checkout.test.mjs`
+> (11 pass). The new tab is ArmorPiecesBlockbench `7e4a83a`. Step 8 is the release after, as the
+> plan itself says. Nothing has been through the bundle chain yet, so nothing in the plugin or the
+> tab has run in a browser: that is the next thing.
+>
+> Three things the build corrected, written into the sections they belong to: a check-in must ADD
+> before it REMOVES or the pack's loot membership goes with the old hash; it must carry the
+> lineage or every save mints a fresh uid; and a piece must be opened by FOLDER, not by id, or a
+> checkout of an id a local pack also defines edits the pack's copy instead. This supersedes
+> decision 9 of
 > `docs/plans/content-model.md` — "A pack's contents are edited on the pack page, and the editor
 > edits one piece at a time. The editor does not change for this." — which was true when the
 > object store was being built and is not true now that it is deployed.
@@ -122,6 +136,16 @@ that the new tab currently presents as the primary thing you own.
 8. **`/api/me/library.json` stops being what the editor reads.** It is kept while the desktop
    plugin's old *From your library…* dialog still exists, and dropped when that follows. It is not
    extended, and the version-less-pack bug in it is not worth fixing on the way out.
+9. **Save checks in by itself, and you can turn it off and do it by hand.** Decided 2026-09-08,
+   closing the question this plan was left open on. Three parts, all of them small:
+   - **Automatic.** A Save of a checkout folder, signed in, checks in after it writes the working
+     tree — debounced, never blocking the local write, and reported on the status line.
+   - **A checkbox.** `new Setting(ID + '_checkin', { type: 'checkbox', … })` beside the other
+     `edit`-category settings (`armorpieces.js:6524–`), default on. Off is what offline and
+     throwaway work want, and it is the honest answer to the cost risk below.
+   - **A button.** A second `Action` beside `ID + '_save'` — *Check In to My Library* — always
+     enabled on a checkout whether or not the checkbox is on, so the manual path is not a setting
+     you have to find. With the checkbox off it is the only path, and that is the point.
 
 ## 1. The seam: two routes
 
@@ -167,12 +191,26 @@ pack, which is the thing being moved away from.
 - **What marks it.** `.armorpieces-checkout.json` in the folder: `{ site, hash, id, origin: { kind:
   'collection'|'pack', id, name } }`. `sanitize_pack.py` drops files that are not pack files, so it
   cannot reach an ingest even by accident; `export_pack.py` is told to leave it out anyway.
-- **New API.** `checkout(hash, done, fail)`, `checkin(dir, done, fail)`, `checkouts()` — and
-  `checkoutOf(dir)` so the panel can say what a folder is. These sit beside `openDraft`/`saveDraft`,
-  which stay for the whole-pack case (the pack page's embedded editor).
+- **New API.** `checkout(hash, origin, done, fail)` — `origin` is the bag the card came from,
+  which the zip does not carry and the site is not asked twice for — `checkin(dir, done, fail)`,
+  `checkouts()`, and `checkoutOf(dir)` so the panel can say what a folder is. These sit beside
+  `openDraft`/`saveDraft`, which stay for the whole-pack case (the pack page's embedded editor).
+- **And `openCheckout(dir)`, which the first draft of this section did not see it needed.**
+  `open(key)` resolves an id across every pack here and the first found wins, so checking out your
+  own `armorpieces:circlet` while a pack in this browser also defines one would open the pack's
+  copy, edit that, and save it where the library never hears of it. A checkout is addressed by its
+  FOLDER.
+- **Loot, in the end, needs nothing here** (decision 5 anticipated a control that does not
+  exist). The plugin's loot rows are `data.loot` in the piece's own data file — part of the
+  OBJECT, and they travel with it. What belongs to the pack is `tag_memberships`, which this
+  editor has never edited and still does not. The care it needs is server-side, in the order the
+  check-in writes its rows.
 - **Save.** `savePiece` writes the working tree as it does now — local, fast, always. When the
-  folder is a checkout and the editor is signed in, it then checks in, and the status line says so.
-  A setting turns that off for offline or throwaway work. *(See Open, below.)*
+  folder is a checkout, the editor is signed in and the check-in setting is on, it then checks in,
+  debounced, and the status line says so. The check-in never gates or delays the local write: a
+  failed or refused check-in leaves a saved working tree and a message, not lost work. The
+  *Check In to My Library* action does the same thing on demand, setting or no setting, and is how
+  you resolve a `changed elsewhere` refusal after looking at it. Decision 9.
 - **The desktop gets this too.** The account source is already platform-neutral: `siteJson` works
   there on a device token. Nothing in this section is web-only.
 
@@ -270,8 +308,7 @@ clone and not the working copy.
 
 ## Open
 
-- **Does Save check in automatically, or is there a separate button?** Proposed above: automatic
-  when signed in and the folder is a checkout, debounced, with a setting to turn it off — because
-  the round trip being something you have to remember is half of why the editor feels separate. It
-  is the one thing here that changes what an afternoon of editing costs the server, so it is worth
-  confirming before it is built.
+Nothing. The one question this plan carried — whether Save checks in by itself — was answered on
+2026-09-08 and is now decision 9: it does, with a checkbox to turn it off and a *Check In to My
+Library* action beside Save for doing it by hand. The plan is ready to build, starting at step 1
+of the order above.

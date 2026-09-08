@@ -464,8 +464,16 @@
 		}
 		// The web build has no game folder to look in. What it has instead is one root that
 		// persists between visits, and every folder under it is a pack - the same relationship
-		// resourcepacks/ has to the packs inside it.
-		if (!isApp) roots.push(...subdirs(packHome()));
+		// resourcepacks/ has to the packs inside it. Except the checkouts folder, which holds
+		// working trees rather than packs and is listed piece by piece below.
+		if (!isApp) {
+			roots.push(...subdirs(packHome()).filter(function (dir) {
+				return path.resolve(dir) !== path.resolve(checkoutHome());
+			}));
+		}
+		// Checkouts last: a piece that is also in a pack here is found in the pack first, and a
+		// checkout is a working tree, not somewhere a piece lives.
+		roots.push(...subdirs(checkoutHome()).filter(function (dir) { return !!checkoutOf(dir); }));
 		roots.push(...packsUnderGameDir(minecraftDir()));
 		const seen = new Set();
 		return roots.filter(function (dir) {
@@ -2183,6 +2191,180 @@
 		}).show();
 	}
 
+	// ---- checkouts ------------------------------------------------------------------------------
+
+	/*
+	 * A CHECKOUT is one piece of your library on this machine, being worked on. The site hands it
+	 * out as a pack of one (GET /api/me/objects/<hash>/checkout) and takes one back (POST
+	 * /api/me/objects/checkin); section 2 of docs/plans/editor-client.md.
+	 *
+	 * Deliberately NOT a pack source. A pack source installs a whole pack, which is the thing this
+	 * moves away from: the unit of exchange is one object, by hash, so repainting one 64x32 sheet
+	 * sends that sheet and not ten megabytes. Files still have to exist locally - Blockbench edits
+	 * in memory, and the mod's Python reads a pack FOLDER, which is the toolchain principle this
+	 * plugin was built on - but a working tree is not a library, and the marker file is what says
+	 * which of the two a folder is.
+	 */
+	const CHECKOUT_FILE = '.armorpieces-checkout.json';
+
+	/* Where checkouts live. Under the packs root on purpose: the browser persists what has been
+	 * written under it since the bundle was unpacked, so a checkout survives a reload the way a
+	 * pack does, and the desktop gets one predictable folder instead of a scratch directory the
+	 * system may empty. */
+	function checkoutHome() {
+		return path.join(packHome(), 'checkouts');
+	}
+
+	/* What a folder says it is: the checkout marker, or null for an ordinary pack folder. */
+	function checkoutOf(dir) {
+		if (!dir) return null;
+		try {
+			const mark = JSON.parse(fs.readFileSync(path.join(dir, CHECKOUT_FILE), 'utf8'));
+			return mark && typeof mark.hash === 'string' ? mark : null;
+		} catch (err) {
+			return null;
+		}
+	}
+
+	function writeCheckoutMark(dir, mark) {
+		fs.writeFileSync(path.join(dir, CHECKOUT_FILE), JSON.stringify(mark, null, 2) + '\n', 'utf8');
+	}
+
+	/* Every checkout here, whatever it holds. */
+	function checkouts() {
+		return subdirs(checkoutHome()).map(function (dir) {
+			const mark = checkoutOf(dir);
+			return mark ? Object.assign({ dir: dir }, mark) : null;
+		}).filter(function (one) { return !!one; });
+	}
+
+	/* The checkout the open piece sits in, if it sits in one. */
+	function currentCheckout() {
+		const piece = isWorkspace() ? currentPiece() : null;
+		return piece ? checkoutOf(piece.dataPack) : null;
+	}
+
+	/*
+	 * One piece out of your library and into a folder here. `origin` is the bag it came from -
+	 * { kind: 'pack'|'collection', id, name, piece } - which a check-in needs and the zip does not
+	 * carry: the card that was clicked knows it, the site is not asked twice.
+	 */
+	function checkoutPiece(hash, origin, done, fail) {
+		const key = String(hash || '');
+		if (!/^[a-f0-9]{64}$/.test(key)) return fail(new Error('A piece is named by its 64-character hash'));
+		if (!siteOrigin()) return fail(new Error('The library setting does not name a site'));
+		const pieceId = String((origin && origin.piece) || '');
+		const label = pieceId.split(':').pop().replace(/[^a-z0-9_.-]/gi, '');
+		const dir = path.join(checkoutHome(), key.slice(0, 8) + (label ? '-' + label : ''));
+		fetchBytes(siteOrigin() + '/api/me/objects/' + key + '/checkout', function (bytes) {
+			try {
+				fs.mkdirSync(dir, { recursive: true });
+				const scratch = path.join(tempDir(), 'checkout.zip');
+				fs.writeFileSync(scratch, bytes);
+				tool('import_pack.py', [scratch, dir, '--force']);
+				writeCheckoutMark(dir, {
+					site: siteOrigin(), hash: key, id: pieceId || null,
+					origin: origin && origin.id
+						? { kind: String(origin.kind || ''), id: String(origin.id), name: String(origin.name || '') }
+						: null,
+				});
+				done({ dir: dir, hash: key, id: pieceId || null });
+			} catch (err) {
+				fail(err instanceof Error ? err : new Error(String(err)));
+			}
+		}, fail, siteOptions());
+	}
+
+	/*
+	 * And back. The answer says which of three things happened: `changed: false` when the bytes
+	 * ingest to the hash they came from and nothing was touched, a new hash when they do not, and
+	 * a refusal when the piece moved in the library while it was open here - which is a message,
+	 * not a silent overwrite.
+	 */
+	function checkinPiece(dir, done, fail) {
+		const mark = checkoutOf(dir);
+		if (!mark) return fail(new Error('That folder is not a checkout'));
+		if (!mark.origin || !mark.origin.id) {
+			return fail(new Error('This checkout does not say which pack or collection it belongs to'));
+		}
+		let out;
+		try {
+			out = path.join(tempDir(), 'checkin.zip');
+			tool('export_pack.py', [dir, out]);
+		} catch (err) {
+			return fail(err instanceof Error ? err : new Error(String(err)));
+		}
+		const query = (mark.origin.kind === 'pack' ? '?pack=' : '?collection=') + encodeURIComponent(mark.origin.id)
+			+ (mark.hash ? '&from=' + encodeURIComponent(mark.hash) : '');
+		sendBytes(siteOrigin() + '/api/me/objects/checkin' + query, fs.readFileSync(out), function (body) {
+			let answer = {};
+			try { answer = JSON.parse(body); } catch (err) { /* the site answered text */ }
+			// The hash it has NOW, written down before anything else can save: the next check-in
+			// names this one as what it replaces, and naming the one from two saves ago is the
+			// conflict the site rightly refuses.
+			if (answer.hash && answer.hash !== mark.hash) {
+				mark.hash = answer.hash;
+				if (answer.id) mark.id = answer.id;
+				writeCheckoutMark(dir, mark);
+			}
+			done(answer);
+		}, fail, siteOptions({ contentType: 'application/zip' }));
+	}
+
+	/*
+	 * The piece a checkout folder holds, as a piece record. By FOLDER, not by id, and that is the
+	 * whole point: `open(key)` resolves an id across every pack here and the first found wins, so
+	 * checking out your own armorpieces:circlet while a pack here also defines one would open the
+	 * pack's copy, edit that, and save it somewhere the library never hears about.
+	 */
+	function pieceInCheckout(dir) {
+		const halves = halvesIn(dir);
+		const key = Object.keys(halves)[0];
+		if (!key) return null;
+		return pieceRecord(dir, dir, halves[key].namespace, halves[key].name);
+	}
+
+	/* Was this a 401 in either of its shapes - the raw status, or the sentence the site answers? */
+	function needsSignIn(err) {
+		const message = String((err && err.message) || err);
+		return signedOut(err) || /sign in first/i.test(message);
+	}
+
+	function checkinNow(dir, loud) {
+		checkinPiece(dir, function (answer) {
+			if (answer.changed === false) {
+				if (loud) Blockbench.showQuickMessage('Already checked in', 2000);
+				return;
+			}
+			Blockbench.showQuickMessage('Checked in ' + (answer.id || 'the piece') + ' to your library', 2500);
+		}, function (err) {
+			if (needsSignIn(err)) {
+				Blockbench.showQuickMessage('Saved here. Sign in to the site to check it in.', 3000);
+				return;
+			}
+			Blockbench.showQuickMessage('Saved here, not checked in: ' + String((err && err.message) || err), 4000);
+			console.error('[armorpieces] check-in failed', err);
+		});
+	}
+
+	/*
+	 * Save checks in by itself (decision 9 of the plan), because a round trip you have to remember
+	 * is half of why the editor felt separate from the site. Debounced, because a save is one
+	 * keystroke away and every check-in is Python on somebody's one-core box; never in the way of
+	 * the local write, which has already happened by the time this is called. The checkbox turns
+	 * it off; Check In to My Library does it by hand whether or not the checkbox is on.
+	 */
+	let checkinTimer = null;
+	function checkinAfterSave(dir) {
+		if (!checkoutOf(dir) || !siteOrigin()) return;
+		if (!Settings.get(ID + '_checkin')) return;
+		if (checkinTimer) clearTimeout(checkinTimer);
+		checkinTimer = setTimeout(function () {
+			checkinTimer = null;
+			checkinNow(dir, false);
+		}, 1500);
+	}
+
 	// ---- saving -------------------------------------------------------------------------------
 
 	function savePiece() {
@@ -2244,6 +2426,10 @@
 		if (Project.undo.current_save) Project[ID + '_save_in_edit'] = true;
 		publishStatus('save', { model: false, sheets: [] });
 		Blockbench.showQuickMessage('Saved ' + piece.name + ' to ' + piece.namespace + ' - ' + notes.join(', '), 3000);
+		// The working tree is written; the library follows a moment later if this piece came out
+		// of it. Deliberately after the message: a save is local, fast and always, and a check-in
+		// that fails leaves a saved folder and a sentence, never lost work.
+		checkinAfterSave(piece.dataPack);
 		return { piece: piece.key, wrote: notes, report: report };
 	}
 
@@ -2317,22 +2503,77 @@
 	 * picks a world's datapack and a resource pack. A namespace other than the mod's is the
 	 * default outside the repository, since the mod's namespace is the mod's.
 	 */
+	/*
+	 * New Armor Piece: a name, a namespace, an anchor, and WHERE IT GOES.
+	 *
+	 * Where used to be two folder pickers, which is the question the filesystem asks rather than
+	 * the one an author has. It is one destination now (section 4 of docs/plans/editor-client.md):
+	 * a collection or a pack of yours on the site, a new collection, or a pack in this browser.
+	 * A piece has to land in a bag to be yours (decision 7 of that plan and decision 10 of the
+	 * content model), and a bag is also what a later Save knows to send it back to.
+	 *
+	 * A site destination creates the piece in a CHECKOUT folder with no hash yet: Blockbench and
+	 * the Python get their folder, and the first Save checks it in with no `from`, which creates
+	 * the object and puts it in the bag. Every Save after that swaps the hash.
+	 */
 	function newPiece() {
-		const packs = searchRoots();
-		if (!packs.length) {
-			Blockbench.showMessageBox({
-				title: 'No packs',
-				message: 'No pack folder to put the piece in. Make one with Tools > Armor Pieces > ' +
-					'New Pack..., or add an existing folder under Packs....',
-			});
-			return;
+		accountBags(function (account) {
+			const packs = searchRoots();
+			if (!packs.length && !account) {
+				Blockbench.showMessageBox({
+					title: 'No packs',
+					message: 'No pack folder to put the piece in, and no library to put it in either. ' +
+						'Make a folder with Tools > Armor Pieces > New Pack..., add one under Packs..., ' +
+						'or sign in to the site.',
+				});
+				return;
+			}
+			newPieceDialog(packs, account);
+		});
+	}
+
+	/* Your collections and packs on the site, or null when there is no site or no session. The
+	 * same query the start page's list is drawn from, asked for its rosters alone. */
+	function accountBags(then) {
+		if (!siteOrigin()) return then(null);
+		siteJson('/api/me/pieces.json', function (data) {
+			then(data && (data.collections || data.packs) ? data : null);
+		}, function () { then(null); });
+	}
+
+	/* The destinations, in the order they are offered: the library first, this browser after. */
+	function newPieceTargets(packs, account) {
+		const targets = [];
+		if (account) {
+			for (const one of account.collections || []) {
+				targets.push({ kind: 'collection', id: one.id, name: one.name, label: 'Collection: ' + one.name });
+			}
+			for (const one of account.packs || []) {
+				targets.push({ kind: 'pack', id: one.id, name: one.name, label: 'Pack: ' + one.name });
+			}
+			targets.push({ kind: 'new', label: '+ New collection...' });
 		}
+		for (const dir of packs) {
+			targets.push({ kind: 'local', dir: dir, label: 'In this browser: ' + packLabel(dir) });
+		}
+		return targets;
+	}
+
+	function newPieceDialog(packs, account) {
 		const root = repoRoot();
-		const inRepo = root && packs[0].startsWith(root);
+		const inRepo = root && packs.length && packs[0].startsWith(root);
 		const anchorOptions = {};
 		for (const name of Object.keys(anchors())) {
 			anchorOptions[name] = name + '  (' + anchors()[name].part + ')';
 		}
+		const targets = newPieceTargets(packs, account);
+		const whereOptions = {};
+		targets.forEach(function (target, i) { whereOptions[i] = target.label; });
+		// The pack being worked in, when it is one of the local folders: the same default the two
+		// folder pickers had.
+		const localAt = targets.findIndex(function (t) { return t.kind === 'local' && t.dir === packScope(); });
+		const firstLocal = targets.findIndex(function (t) { return t.kind === 'local'; });
+		const chosen = String(account ? 0 : Math.max(localAt, firstLocal, 0));
 
 		new Dialog({
 			id: ID + '_new',
@@ -2341,13 +2582,12 @@
 				name: { label: 'Name', type: 'text', value: '', placeholder: 'gorget' },
 				namespace: { label: 'Namespace', type: 'text', value: inRepo ? 'armorpieces' : 'mypack' },
 				anchor: { label: 'Anchor', type: 'select', options: anchorOptions },
-				data_pack: {
-					label: 'Datapack', type: 'select', options: packOptions(packs), value: defaultPack(packs),
-					description: 'Where the part file, its recipe and any fittings go.',
-				},
-				asset_pack: {
-					label: 'Resource pack', type: 'select', options: packOptions(packs), value: defaultPack(packs),
-					description: 'Where the model, the textures and the language file go. The same folder is fine.',
+				where: {
+					label: 'Where', type: 'select', options: whereOptions, value: chosen,
+					description: account
+						? 'A collection or pack of yours on the site, or a pack in this browser. Saving a ' +
+							'piece that belongs to the site sends it back there.'
+						: 'The pack in this browser it goes in. Sign in to the site to put it in your library.',
 				},
 			},
 			onConfirm: function (result) {
@@ -2356,22 +2596,95 @@
 					Blockbench.showQuickMessage('Name a piece first', 2000);
 					return;
 				}
-				this.hide();
-
-				const dataPack = packs[parseInt(result.data_pack, 10)];
-				const assetPack = packs[parseInt(result.asset_pack, 10)];
 				const namespace = (result.namespace || '').trim().toLowerCase().replace(/[^a-z0-9_.-]/g, '_') || 'mypack';
-				let piece;
-				try {
-					piece = createPiece(dataPack, assetPack, namespace, name, result.anchor);
-				} catch (err) {
-					Blockbench.showMessageBox({ title: 'Already exists', message: err.message });
+				const target = targets[parseInt(result.where, 10)];
+				if (!target) {
+					Blockbench.showQuickMessage('Say where it goes', 2000);
 					return;
 				}
-				Blockbench.showQuickMessage('Created ' + namespace + ':' + name, 2500);
-				openPiece(piece, result.anchor);
+				this.hide();
+				if (target.kind === 'new') {
+					return void askNewCollection(function (bag) {
+						makeNewPiece(bag, namespace, name, result.anchor);
+					});
+				}
+				makeNewPiece(target, namespace, name, result.anchor);
 			},
 		}).show();
+	}
+
+	/* A collection made on the spot, for + New collection.... */
+	function askNewCollection(then) {
+		new Dialog({
+			id: ID + '_new_collection',
+			title: 'New collection',
+			form: { name: { label: 'Name', type: 'text', value: '', placeholder: 'Helmets' } },
+			onConfirm: function (result) {
+				const name = String(result.name || '').trim();
+				if (!name) {
+					Blockbench.showQuickMessage('Name the collection first', 2000);
+					return;
+				}
+				this.hide();
+				sendBytes(siteOrigin() + '/api/me/collections',
+					new TextEncoder().encode(JSON.stringify({ name: name })), function (body) {
+						let made = null;
+						try { made = JSON.parse(body); } catch (err) { /* not JSON */ }
+						if (!made || !made.collection) {
+							return Blockbench.showQuickMessage('The site did not say which collection it made', 4000);
+						}
+						then({ kind: 'collection', id: made.collection.id, name: made.collection.name });
+					}, function (err) {
+						Blockbench.showMessageBox({
+							title: 'Could not make the collection',
+							message: String((err && err.message) || err),
+						});
+					}, siteOptions({ contentType: 'application/json' }));
+			},
+		}).show();
+	}
+
+	/* A folder for a piece that has never been checked in: named after the piece, since there is
+	 * no hash to name it after yet. The mark carries an empty hash, which is what says "new" to
+	 * the check-in - it sends no `from` and the site creates the object. */
+	function freshCheckoutDir(name) {
+		let dir = path.join(checkoutHome(), 'new-' + name);
+		let n = 2;
+		while (fs.existsSync(dir)) dir = path.join(checkoutHome(), 'new-' + name + '-' + (n++));
+		return dir;
+	}
+
+	function makeNewPiece(target, namespace, name, anchor) {
+		let dataPack = target.dir;
+		let assetPack = target.dir;
+		if (target.kind !== 'local') {
+			const dir = freshCheckoutDir(name);
+			fs.mkdirSync(dir, { recursive: true });
+			// A real pack, because everything downstream reads one: the tools here, and the site's
+			// ingest, which refuses a zip with no pack.mcmeta in it.
+			writeJson(path.join(dir, 'pack.mcmeta'), {
+				pack: { description: namespace + ':' + name, pack_format: packFormats().datapack },
+			});
+			dataPack = dir;
+			assetPack = dir;
+		}
+		let piece;
+		try {
+			piece = createPiece(dataPack, assetPack, namespace, name, anchor);
+		} catch (err) {
+			Blockbench.showMessageBox({ title: 'Already exists', message: err.message });
+			return;
+		}
+		if (target.kind !== 'local') {
+			writeCheckoutMark(dataPack, {
+				site: siteOrigin(), hash: '', id: namespace + ':' + name,
+				origin: { kind: target.kind, id: target.id, name: target.name || '' },
+			});
+			Blockbench.showQuickMessage('Created ' + namespace + ':' + name + ' for ' + (target.name || 'your library'), 3000);
+		} else {
+			Blockbench.showQuickMessage('Created ' + namespace + ':' + name, 2500);
+		}
+		openPiece(piece, anchor);
 	}
 
 	/*
@@ -6555,6 +6868,15 @@
 				value: LIBRARY_INDEX,
 				onChange: function () { libraryCache = null; },
 			}));
+			registered.push(new Setting(ID + '_checkin', {
+				name: 'Check in saves to your library',
+				description: 'A piece checked out of your library on the site goes back to it when you ' +
+					'save, a moment after the save is written here. Turn it off for offline or throwaway ' +
+					'work; Check In to My Library sends it by hand either way.',
+				category: 'edit',
+				type: 'checkbox',
+				value: true,
+			}));
 			registered.push(new Setting(ID + '_site_token', {
 				name: 'Armor Pieces site token',
 				description: 'The device token Sign in to the site... keeps, so this editor can reach ' +
@@ -6636,6 +6958,16 @@
 				description: 'Write the model and texture back where they came from.',
 				icon: 'save',
 				click: savePiece,
+			});
+			const checkin = new Action(ID + '_checkin_now', {
+				name: 'Check In to My Library',
+				description: 'Send this piece back to the pack or collection on the site it was checked out of.',
+				icon: 'cloud_upload',
+				condition: function () { return !!currentCheckout(); },
+				click: function () {
+					const piece = currentPiece();
+					if (piece) checkinNow(piece.dataPack, true);
+				},
 			});
 			const create = new Action(ID + '_new', {
 				name: 'New Armor Piece...',
@@ -6740,11 +7072,11 @@
 				name: 'Armor Pieces',
 				description: 'Browse, edit and preview Armor Pieces.',
 				icon: 'shield',
-				children: [open, create, save, '_',
+				children: [open, create, save, checkin, '_',
 					openSkinAction, newSkinAction, editSkinAction, saveSkinAction, '_',
 					packs, createPack, exportZip, '_', useGame, '_', signIn, signOutAction],
 			});
-			registered.push(open, save, create, openSkinAction, newSkinAction, editSkinAction,
+			registered.push(open, save, create, checkin, openSkinAction, newSkinAction, editSkinAction,
 				saveSkinAction, packs, createPack, exportZip, useGame, signIn, signOutAction, menu);
 			MenuBar.addAction(menu, 'tools');
 			registered.push(Blockbench.addCSS(PACKS_DIALOG_CSS));
@@ -7028,6 +7360,26 @@
 						}, function (err) { if (fail) fail(err); },
 						siteOptions({ contentType: 'application/zip', method: 'PUT' }));
 				},
+				/*
+				 * Checkouts: one piece of your library, here, by hash. The new tab hands `origin`
+				 * the bag the card came from, so a save knows where to send it back.
+				 */
+				checkout: function (hash, origin, done, fail) {
+					if (typeof origin === 'function') { fail = done; done = origin; origin = null; }
+					checkoutPiece(hash, origin, done || function () {}, fail || function () {});
+				},
+				checkin: function (dir, done, fail) {
+					checkinPiece(dir, done || function () {}, fail || function () {});
+				},
+				/* Open the piece a checkout folder holds - the folder is the address. */
+				openCheckout: function (dir) {
+					const piece = pieceInCheckout(dir);
+					if (!piece) throw new Error('nothing to open in ' + dir);
+					if (!openPiece(piece)) throw new Error('could not open ' + piece.key);
+					return piece.key;
+				},
+				checkouts: checkouts,
+				checkoutOf: checkoutOf,
 				signIn: function (then) { signInDialog(then || null); },
 				signOut: signOut,
 				setSiteToken: function (token) { setSetting(ID + '_site_token', String(token || '')); return !!siteToken(); },

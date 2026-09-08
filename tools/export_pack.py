@@ -23,7 +23,10 @@ import zipfile
 from pathlib import Path
 
 SKIP_DIRS = {".git", ".svn", "__pycache__", ".idea", ".vscode", "node_modules"}
-SKIP_FILES = {".DS_Store", "Thumbs.db", "desktop.ini"}
+# `.armorpieces-checkout.json` marks a folder as one piece checked out of a library
+# (docs/plans/editor-client.md section 2). It is the editor's bookkeeping, not pack content:
+# the site would drop it at ingest anyway, and a pack handed round should not carry it.
+SKIP_FILES = {".DS_Store", "Thumbs.db", "desktop.ini", ".armorpieces-checkout.json"}
 
 
 # ZIP's epoch; a member cannot be dated earlier.
