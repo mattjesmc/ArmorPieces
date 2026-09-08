@@ -168,8 +168,130 @@ somewhere else. A layer is for looking.
   a piece URL pasted into a fresh tab, which is the whole page.
 - With JavaScript off, every one of those links still navigates.
 
-## Not in this pass
+## Not in the first pass
 
-The library's own pack page, a collection and the review queue stay pages. They are forms, tables
-and an embedded Blockbench rather than read-only details, and an editor inside a sheet is a
+The library's own pack page, a collection and the review queue stayed pages. They are forms,
+tables and an embedded Blockbench rather than read-only details, and an editor inside a sheet is a
 separate design problem.
+
+---
+
+# The second pass: the library
+
+The first pass drew the rule and applied it to the three read-only details. The library, which is
+where a person's own things are, kept every one of its verbs as a navigation — and it is the page
+where that costs most, because looking at your library is a loop: what is in this bag, what is in
+that pack, make another one, back to the list. Six full document loads to answer four questions.
+
+So the same rule, twice more.
+
+## A view is not a detail: `[data-live]`
+
+The library's four tabs are not layers — picking *Collections* changes **what you are looking at**,
+which the first pass called a navigation and left as a document load. It is a navigation, and it
+still is one: the URL changes, Back works, a crawler gets a page. What it is not is a reason to
+throw the document away.
+
+`public/views.js` is `overlay.js`'s sibling for that case. The page marks the part of itself that
+is the view, `[data-live]`, every route that has one answers `?partial=1` with exactly that element,
+and a plain left click on `a[data-view]` fetches it, swaps it and pushes the real URL.
+
+The two files divide the history between them by the state they push — `{ap}` is a layer, `{apView}`
+is a view — and each ignores the other's entries. A layer over a swapped view still closes onto it,
+because closing is `history.go` and the entry underneath is a view entry.
+
+`components/LibraryBody.astro` is that element; `pages/library/index.astro` is the two-branch route
+around it, as the three details already were.
+
+## What the library's verbs became
+
+| verb | was | is |
+|---|---|---|
+| the four tabs | a document load each | the `[data-live]` swap |
+| **New pack** | a page | a layer, and still a page. It ends by **becoming** the pack |
+| **New collection** | a page | the same |
+| **Open** a pack of your own | a page | a layer. A public pack's *Details* is the gallery's page; a private one has no gallery page, and this is what its card opens instead |
+| **Open** a collection | its own page | **the Pieces tab with that bag's filter set** — because that tab already is every piece you hold, and a bag is a way of asking for some of them |
+| a collection's **Details** | (the same page) | a layer: what the bag IS and what you can do to it |
+| **Export** a pack | four links in three places, none on the card | one verb, on the card and on the pack's screen |
+
+*Making* a thing was called "somewhere you go" in the first pass, and that was half right: it wants
+a URL, it is linked from a collection and from the editor, and it ends by handing you the thing.
+What it does not want is to throw away the list you were looking at in order to ask three questions.
+So both, on the contract every detail is already on — and `UI.become` replaces the form's layer with
+the new thing's rather than pushing it on top, so Back from a new pack is the library and not a form
+for a pack that now exists.
+
+## Export
+
+A collection has had one since it existed. A pack — the thing people actually hand to other people —
+had none, and its zips lived in three places under three names: the current version's link on the
+pack's page, the three per-version links in its table, and `/draft`, called "Download the working
+copy". None of them is on the card you are looking at when you want the file, and none says out loud
+that a pack has **two** things you might mean by "the pack".
+
+So one dialog with the two questions that have real answers — **which contents** (a version, or the
+working copy) and **which halves** (datapack, resource pack, both) — and the file is *fetched* rather
+than linked, so a refusal arrives as the server's own sentence instead of as a downloaded file full
+of JSON. `public/export.js`; `/api/me/packs/:id/draft` grew the `?half=` the version URLs and the
+collection export already had.
+
+## Filters
+
+Every view has a row now, and they are all one idea: **a control named after the `data-` attribute it
+matches**, over rows that carry those attributes, with `q` over `data-text`. `gallery.js` stopped
+naming its five filters in an array and reads the controls that are in the row, so the library's
+Pieces tab could grow `collection` and `held` (yours or linked) without touching it; a control marked
+`data-multi` matches one of a space-separated list, which is what a piece's bags are. Packs,
+Collections and Outfits get the same over `[data-row]`, in `library.js`.
+
+## What had to move, and two things that were broken
+
+Nothing may bind at load if it can arrive in a swapped view or a sheet, and nothing may answer a
+change with `location.reload()`. So `library.js`, `collection.js`, `pack.js`, `picker.js`,
+`publish.js` and `account.js`'s pack half are on `UI.mounted`, and `ui.js` grew the three verbs that
+replace the reload:
+
+- **`UI.again(node)`** — "show this again", as an event that bubbles: the nearest region that can
+  redraw itself claims it (a sheet redraws its layer, a live region re-fetches itself), and if
+  nothing does it is a reload after all.
+- **`UI.leave(url)`** — "this is gone": a page navigates, a layer closes onto the list underneath and
+  that list is asked again, because the row just deleted is still drawn on it.
+- **`UI.become(url)`** — "this new thing is what you wanted".
+
+Two real bugs turned up while wiring it:
+
+- a piece in a pack of yours was filed under the pack's **gallery entry** id, which is empty until a
+  version has been cut — so *Its pieces* on a fresh pack linked to `?pack=` and matched nothing. It
+  is filed under the pack's own id now.
+- the card's counts come off the current **version**, so a pack with pieces in it and no version cut
+  said nothing about them — and Export would have offered nothing at all. One grouped count over
+  `pack_items` fixes both.
+
+`data-add-to-pack` on a collection's table row became `data-item-to-pack`: it is a piece **card's**
+verb in `verbs.js`, and with a collection open as a layer over the library both modules answered the
+same click.
+
+## Check
+
+- `npm run build && npm test` in `ArmorPiecesSite`: **126 pass**, the 116 that were there plus ten.
+- New `test/library-views.test.mjs`: each of the four views answers as a page and as a partial under
+  the same cache header; a pack of your own, a collection and the two forms answer as
+  `[data-detail]` partials naming only modules that exist; *Open* on a collection is the Pieces tab
+  with that bag selected and the cards carrying it; every list view has a filter row; Export hands
+  over a real zip in the half that was asked for, for a pack's working copy and for a collection.
+- Driven in a real Chromium, signed in, with a marker on `window` to prove no document was thrown
+  away: the tabs and Back swap in place, New pack / Open pack / Details open as sheets and Escape
+  puts the URL back, the embedded editor is hidden inside a sheet and the full-screen link is not,
+  Export downloads `ravenwood-draft-datapack.zip`, New collection becomes the collection it made and
+  the list underneath has it, and the filter row hides what does not match. No script errors.
+
+## Still not in this pass
+
+- The review queue, and the account pages.
+- A `data-view` link clicked while a layer is open falls through to an ordinary navigation rather
+  than closing the layer and swapping: closing is `history.go`, which is asynchronous, and racing a
+  `pushState` against it is not worth the load it saves.
+- The signed-out shelf's own toggle stays a document load. It is drawn in the browser at load from
+  `/gallery/index.json`, so swapping it in place would mean putting `shelf.js` on `UI.mounted` for a
+  view whose two states are the same markup.
