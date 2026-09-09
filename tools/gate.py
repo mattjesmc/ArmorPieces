@@ -10,7 +10,7 @@ Checks are grouped by WHAT THEY NEED, because that is what decides whether one c
 
     tier 0   the tree      python and node. Runs anywhere, in a couple of minutes.
     tier 1   the JVM       gradle. Compiles the mod and runs the JUnit tests.
-    tier 2   the server    a dedicated server with the mcp-toolkit bridge (not built yet)
+    tier 2   the server    a dedicated server with the mcp-toolkit bridge, started and stopped here
     tier 3   the client    a client with the bridge, for rendering and screens (not built yet)
 
 Sequential on purpose. `check_painters.py` re-runs every painter and puts the masters back, so a
@@ -97,12 +97,19 @@ def tier1() -> list[Check]:
     ]
 
 
+def tier2() -> list[Check]:
+    """The scenarios, on a dedicated server this starts and stops. See tools/gate/tier2.py."""
+    return [
+        Check("server-scenarios", 2,
+              "loading, loot, effects, the settings and the load-time rules, on a dedicated server",
+              [PY, "tools/gate/tier2.py", "--json", "build/gate/tier2.json"],
+              needs="gradle", timeout=3600),
+    ]
+
+
 def pending() -> list[Check]:
     """Tiers designed and not built. Named here so the gate reports its own coverage honestly."""
     return [
-        Check("server-scenarios", 2,
-              "loading, loot, effects, config and the load-time refusals, on a dedicated server",
-              []),
         Check("client-frames", 3,
               "the render layer, skins, cloth, fittings, the smithing screen and the tooltip",
               []),
@@ -159,7 +166,7 @@ def main(argv: list[str]) -> int:
                         help="lines of a failure's output to print (default 25)")
     args = parser.parse_args(argv)
 
-    checks = tier0() + tier1() + pending()
+    checks = tier0() + tier1() + tier2() + pending()
     if args.tier is not None:
         checks = [c for c in checks if c.tier <= args.tier]
     if args.only:

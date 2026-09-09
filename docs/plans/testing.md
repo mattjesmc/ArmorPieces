@@ -183,9 +183,93 @@ game: no world, no server, no client. That is the line between tier 1 and tier 2
 
 The four traps of 0.4.0 are `ConfigCodecTest` (both write codecs, asserted against the record's own
 component count so the test does not need editing when a field is added), `TableEntryCodecTest`,
-`MemberSetTest` and `WearerPredicateTest`. What is still owed here is the row above them: every
-shipped part, skin, cloth and loot group decoded and re-encoded to its own bytes, which needs a
-`RegistryOps` over a registry access rather than plain `JsonOps`.
+`MemberSetTest` and `WearerPredicateTest`.
+
+### The owed row, closed (2026-09-09)
+
+Every shipped part, skin, cloth, fitting and loot group is now decoded and re-encoded, and so is
+every one in `packs/`. The fixture is `src/test/.../data/ShippedData.java`, and it is a real
+**datapack load**, not a hand-built registry: `RegistryDataLoader.load` - the call a dedicated server
+makes - over `src/main/resources` and every `packs/*/datapack`, stacked on top of vanilla's own
+built-in datapack (`ServerPacksSource.createVanillaPackSource()`). Five test classes ask questions of
+it, and the suite went from 38 tests to 68:
+
+| class | what it holds |
+| --- | --- |
+| `ShippedDataTest` | the files on disk and the registry are the same set; every element survives its own codec; a part's fittings are bound; every loot line and group is sane; no uid is used twice; no former id is also a live id |
+| `PartAssetsTest` | every part's geometry parses AND BAKES through vanilla's `LayerDefinition`; its master sheet is there; a masked fitting has its mask; a replaced bone exists |
+| `ShippedTagsTest` | every tag file this repository ships loads through `TagLoader`, has members, and names only ids that exist |
+| `ShippedRecipesTest` | all 63 recipes decode through `Recipe.CODEC` and re-encode stably; all four smithing serializers are exercised by what ships; every template a recipe hands out names a piece that exists |
+| `DecorationEffectsTest` | one sample per registered effect type (the registry is the checklist), `reaches` through a gate, and both `if_wearer` load-time refusals |
+
+Four things had to be learned, and each is a trap for the next person:
+
+- **Nothing may touch `ArmorPiecesRegistries` from a static initialiser.** JUnit loads a test class
+  before any `@BeforeAll` runs, so a `static final Map` naming a registry key initialises that class
+  before the game is bootstrapped, and the failure is a `NoClassDefFoundError` from a Fabric mixin.
+  Both the fixture and the test use methods where a constant would read better.
+- **Vanilla's trim materials must be loaded IN THE SAME PASS**, not handed in as a parent lookup. A
+  tag resolved against a parent belongs to the loader's own wrapper for that lookup, so a fitting
+  holding `#armorpieces:gemstones` decodes and then refuses to encode: "not valid in current registry
+  set". Taking `Registries.TRIM_MATERIAL`'s entry out of `RegistryDataLoader.SYNCHRONIZED_REGISTRIES`
+  and loading it with everything else is the fix; taking the whole list is not, because the rest of
+  it is worldgen and `minecraft:overworld` will not parse without registries this pass has no reason
+  to load.
+- **Binding tags is two different calls, and which one is right depends on state.** An `Ingredient`
+  names an item tag and binds it as it reads, so no recipe decodes until the tags are bound.
+  `bindTags` refuses a frozen registry; `prepareTagReload` refuses an unfrozen one; and in a Fabric
+  environment the built-in registries are still OPEN at the end of mod init, which is where a test
+  JVM stops. An open registry also answers every tag with "Tags not bound" however the members were
+  handed to it, so the order is: bind, then freeze.
+- **A test JVM has to register the mod's own content**, not only its codecs: `GameBootstrap.content()`
+  registers the components, block, items, recipe serializers, menu and loot pieces. Without it
+  `data/minecraft/tags/block/mineable/axe.json` names a block that does not exist, and a tag with a
+  missing member is not a smaller tag - the whole tag is dropped.
+
+### Tier 2, as built (2026-09-09)
+
+`python tools/gate/tier2.py` starts a dedicated server, asks it everything, and stops it again;
+`tools/gate.py` runs it as the tier-2 check. Four files:
+
+| file | what it is |
+| --- | --- |
+| `tools/gate/bridge.py` | the HTTP client for `127.0.0.1:25599`, plus the stale-instance guard |
+| `tools/gate/scenarios.py` | the scenarios, and the `Game` helper every one of them shares |
+| `tools/gate/fixtures.py` | the datapacks that have to be in the world BEFORE it loads |
+| `tools/gate/tier2.py` | the runner: boot, attach, run, boot again for the load-time checks, stop |
+
+Nine scenarios run against one server - `load`, `commands`, `stage`, `loot-groups`, `loot-rolls`,
+`foreign-table`, `config`, `effects`, `identity` - and two more get a server each, because what they
+are about happens while a world loads.
+
+What the building taught, beyond the plan:
+
+- **A registry entry cannot be pushed into a running game.** `push_data` + `/reload` is enough for a
+  loot table, a recipe or a tag, and useless for a part, a fitting, a skin, a cloth or a loot group:
+  those are datapack REGISTRIES, and vanilla reads a registry exactly once, when the world loads. So
+  anything that needs new content of ours is a fixture pack written into the world folder before the
+  boot (`fixtures.py`), and a scenario that would assert on one refuses to pass if it is missing.
+- **A dedicated server can wear armor.** Half of `/armorpieces` refuses a console because it is about
+  a wearer; `bot_body {action:"spawn", type:"player"}` puts a real headless player on the flat
+  surface, and `item replace entity <player> armor.chest with <item>[armorpieces:decorations={...}]`
+  dresses it. That is the whole of what the effects work was verified by hand, in one call.
+- **An attribute is read a few ticks late.** Equipment lands immediately; the modifiers it carries
+  are reconciled on the entity's next tick, so a read in the same breath measures what the wearer had
+  before putting it on.
+- **A game that refuses a datapack does not necessarily exit.** The toolkit's bridge holds the JVM
+  open, so a boot check that waits for the process to end waits for its whole timeout and reports the
+  right answer seven minutes late. The runner watches the log for "Failed to load registries" too.
+- **Stopping a server means stopping the game, not the Gradle wrapper.** Terminating what was started
+  leaves the game holding port 25599, where the next run finds it and mistakes it for its own.
+
+**The gate's first tier-2 run found a defect, and it is the one this tier exists for.** A loot group
+naming a tag no installed pack defines does not load as an empty set: it takes the WHOLE WORLD down,
+with `Unbound tags in registry armorpieces:armor_decoration`. `LootGroup` binds its `parts`, `skins`,
+`cloths` and `fittings` with `RegistryCodecs.homogeneousList`, which resolves a tag when the file is
+read, while `MemberSet` - written for exactly this, and used by `TemplateEntry` - keeps the tag and
+asks for it at the moment it is used. This is the cross-pack case the whole pack line rests on: a
+player who installs one pack and not another. The `missing-tag` boot check is that finding, and it
+fails until `LootGroup` uses `MemberSet`.
 
 ## What the gate is not
 

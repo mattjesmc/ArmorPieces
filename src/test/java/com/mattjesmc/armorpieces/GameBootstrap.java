@@ -40,6 +40,58 @@ public final class GameBootstrap {
         components = true;
     }
 
+    private static boolean types;
+
+    /**
+     * The mod's effect and fitting TYPES, once per JVM.
+     *
+     * <p>A third layer, and the one a datapack test cannot do without: both registries hold
+     * {@link com.mojang.serialization.MapCodec}s, which is to say code, so a part naming
+     * {@code armorpieces:glide} or a fitting naming {@code armorpieces:material} is an unknown
+     * dispatch key until the mod has put that key on the shelf. The flag is not an optimisation -
+     * {@link net.minecraft.core.Registry#register} throws on a second registration of the same id.
+     */
+    public static synchronized void types() {
+        if (types) {
+            return;
+        }
+        once();
+        com.mattjesmc.armorpieces.decoration.effect.DecorationEffects.register();
+        com.mattjesmc.armorpieces.decoration.fitting.Fittings.register();
+        types = true;
+    }
+
+    private static boolean content;
+
+    /**
+     * Everything this mod puts into a BUILT-IN registry: its components, its block and items, its
+     * recipe serializers, its menu, and the two loot pieces. The order is
+     * {@link com.mattjesmc.armorpieces.ArmorPieces#onInitialize()}'s own, and for its reasons -
+     * a template item reads the decoration component, so components come first.
+     *
+     * <p>What this is FOR: a datapack file may name any of them. {@code data/minecraft/tags/block/
+     * mineable/axe.json} names the advanced smithing table, and a tag whose member does not exist is
+     * not a smaller tag - the whole tag is dropped. So a test that reads this repository's tags
+     * without this has vanilla's game, not this mod's, and fails on the mod's own files.
+     *
+     * <p>Still nothing that needs a game: every call below writes into a registry. The parts of
+     * {@code onInitialize} that subscribe to an event or read a config are not here.
+     */
+    public static synchronized void content() {
+        if (content) {
+            return;
+        }
+        types();
+        components();
+        com.mattjesmc.armorpieces.registry.ModBlocks.register();
+        com.mattjesmc.armorpieces.registry.ModItems.register();
+        com.mattjesmc.armorpieces.registry.ModRecipeSerializers.register();
+        com.mattjesmc.armorpieces.registry.ModMenus.register();
+        com.mattjesmc.armorpieces.registry.ModLootFunctions.register();
+        com.mattjesmc.armorpieces.registry.ModLootEntries.register();
+        content = true;
+    }
+
     /** Idempotent: {@link Bootstrap#bootStrap()} is itself a no-op the second time, this is cheaper. */
     public static synchronized void once() {
         if (done) {
