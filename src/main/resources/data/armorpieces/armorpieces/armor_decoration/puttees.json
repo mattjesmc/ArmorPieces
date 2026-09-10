@@ -9,5 +9,14 @@
   "fittings": [
     "armorpieces:inlay"
   ],
+  "effects": [
+    {
+      "type": "armorpieces:attribute",
+      "id": "armorpieces:puttees_speed",
+      "attribute": "minecraft:movement_speed",
+      "amount": 0.05,
+      "operation": "add_multiplied_base"
+    }
+  ],
   "uid": "ap16t26ts6aelhm6nmuu6fa"
 }

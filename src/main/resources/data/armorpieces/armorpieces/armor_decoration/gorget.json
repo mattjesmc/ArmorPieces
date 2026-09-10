@@ -6,6 +6,22 @@
   "anchors": [
     "collar"
   ],
+  "effects": [
+    {
+      "type": "armorpieces:attribute",
+      "id": "armorpieces:gorget_health",
+      "attribute": "minecraft:max_health",
+      "amount": {
+        "default": 2.0,
+        "by_material": [
+          {
+            "material": "minecraft:netherite",
+            "value": 4.0
+          }
+        ]
+      }
+    }
+  ],
   "loot": [
     {
       "table": "minecraft:chests/stronghold_corridor",

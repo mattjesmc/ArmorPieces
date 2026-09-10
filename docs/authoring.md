@@ -30,14 +30,22 @@ never has to live inside it. A player's part is two folders — a resource pack 
 the plugin knows both. *Tools › Armor Pieces › New Pack…* makes either kind, with a `pack.mcmeta`
 at the format the game this mod is built for wants, and adds it to your list; *Packs…* is that
 list, any folder holding `data/` or `assets/`, added with a folder picker. Pieces are looked for
-in your list, then the repository's own places, then the game's `resourcepacks/` and every world's
-`datapacks/`, and the two halves of a `namespace:name` are paired wherever they sit, so the piece
+in your list, then the repository's own places — `src/main/resources`, then every pack under
+`packs/`, then its `run/` resource packs and worlds' datapacks — then the game's `resourcepacks/`
+and every world's `datapacks/`, and the two halves of a `namespace:name` are paired wherever they sit, so the piece
 list shows `mypack:visor  (.minecraft/saves/Home/datapacks/mine + .minecraft/resourcepacks/mine)`
 and every write goes to the right half. *Export Pack…* zips a folder for handing round, contents
 at the root the way the game wants them. Three settings: *Armor Pieces repository* (the clone),
 *Armor Pieces Python* (the interpreter, `python` by default) and *Armor Pieces packs* (your list,
 edited through *Packs…*). Only the mod's own namespace has masters in `tools/decoration_masters`;
 a pack's `circlet` is its own file.
+
+**This repository's own packs** — `packs/<name>/{datapack,resourcepack}`, where the pack line, the
+set packs and the legacy restore pack keep their SOURCE — are found without being added to your
+list, the same way `src/main/resources` is: they ship with the clone, so a clone has them. They are
+searched **before** `run/`, because `run/` holds what `export_pack.py` copied there for the game to
+load and `packs/` holds the source those copies were made from; the first root holding both halves
+of a piece is the one every write goes to, and that must be the source.
 
 **Install.** Blockbench 5.1 or later, and Python 3 with Pillow on `PATH` (the same requirement
 as every tool in the repository). In Blockbench: *File › Plugins › Load Plugin from File*, and pick
@@ -369,6 +377,16 @@ not in that list, it does not have one.
 **Overriding what this mod ships.** Same ids, your pack. A resource pack can restyle any part's
 geometry or texture and a datapack can change where it may be worn.
 
+Pieces do not merge: **the last pack to load wins the file**, whole. So a pack that carries
+`data/armorpieces/armorpieces/armor_decoration/circlet.json` replaces the mod's circlet outright for
+anyone who has it below the mod in the list, and armor already wearing `armorpieces:circlet` picks up
+the new one with nothing to migrate — the id is what the save holds, and the id still resolves. The
+short way to do it is to take the piece into a collection on the site (or a pack of your own) and
+edit it there; by hand, copy the files and keep every id.
+
+Leave `uid` out of an override. The library recognises the id and gives your version the mod's
+lineage, which is what says the two are the same piece redrawn rather than strangers.
+
 **Turning a recipe off.** A datapack cannot delete a file the mod ships, so the mod ships a recipe
 type that loads and does nothing. Override the recipe's file with it:
 
@@ -412,10 +430,23 @@ from the player. It is the only one of the two that works on an item saved befor
 existed, which is why the mod's own 0.3.0 → 0.4.0 split is carried by thirty of these rather than by
 anything cleverer. An id may be claimed by one piece only.
 
-**`uid`** is a lineage identifier. You do not write it: `python tools/mint_uids.py` mints one for
-anything that has none and records it in `uids.lock`, and the content library mints them for pieces
-published through the site. It is consulted only after the id and every `former_ids` have missed, and
-it makes a move you FORGOT to declare survivable too.
+**`uid`** is a lineage identifier, and **you never make one up**. It is issued, once, by whichever
+registry your pack belongs to, and it is consulted only after the id and every `former_ids` have
+missed — which is what makes a move you FORGOT to declare survivable too. Two registries issue them:
+
+- **the content library**, and this is the one to prefer for a pack published through
+  [armorpieces.com](https://armorpieces.com/). Upload the pack, or save it from the editor, and the
+  site mints a uid for every piece that has none and **writes it into the piece's own file in
+  everything you download back** — the zip, the export, the pack the editor opens. Nothing to type,
+  and the site is then the thing that knows the piece is yours;
+- **`python tools/mint_uids.py`**, for a pack kept in a repository with this mod's toolchain. It
+  mints one for anything that has none and records it in `uids.lock`.
+
+Either way the uid travels in the file from then on, so uploading the pack again is recognised: the
+site matches the uids against what it already holds and tells you which of the pieces it already
+knows, instead of taking them for new ones.
+
+Never copy somebody else's uid into a piece of yours, and never change one that is already there.
 
 > **A uid is minted once and never changes.** A changed uid is worse than no uid, because a stale one
 > sitting in somebody's save rebinds to the wrong piece. `uids.lock` is append-only — a line stays
@@ -476,6 +507,41 @@ further are one entry with no Java at all:
 
 `id` only has to be unique within the part: the same part in two sockets contributes two modifiers
 that stack, because the socket is prefixed onto the id for you.
+
+**`operation` is the field to get right, because most attributes have a small base.** `add_value`
+adds your number to the base, `add_multiplied_base` adds that fraction *of the base*, and
+`add_multiplied_total` scales everything already added. Movement speed's base is `0.1`, so the two
+readings of the same figure are a world apart — `{"amount": 0.05, "operation": "add_value"}` is half
+again as fast, and the same 0.05 as `add_multiplied_base` is a twentieth faster, which is what the
+mod's own `puttees` say:
+
+```json
+{ "type": "armorpieces:attribute", "id": "armorpieces:puttees_speed",
+  "attribute": "minecraft:movement_speed", "amount": 0.05, "operation": "add_multiplied_base" }
+```
+
+**Extra hearts are the other shape**: `max_health` is counted in half-hearts and wants a flat
+`add_value`, so `2.0` is one heart. That is also the default operation, which is why the mod's
+`gorget` can leave the field out — it gives one heart, and two in netherite:
+
+```json
+{ "type": "armorpieces:attribute", "id": "armorpieces:gorget_health",
+  "attribute": "minecraft:max_health",
+  "amount": { "default": 2.0, "by_material": [ { "material": "minecraft:netherite", "value": 4.0 } ] } }
+```
+
+What a part grants is the *maximum*; where the wearer's health actually sits is vanilla's business,
+and vanilla caps it on the tick after the piece comes off — `LivingEntity.tick` refreshes the
+attributes the change marked dirty, and a lowered `max_health` clamps the current health to it. So
+hearts cannot leave anybody standing above their own maximum, and nothing on your side has to
+arrange that. `max_absorption` behaves the same way, if a yellow shield suits the part better than
+red hearts.
+
+Two more in the palette are worth knowing before reaching for them: `scale` moves the wearer's
+**hitbox**, not just how they look — vanilla answers a changed scale with `refreshDimensions()` —
+and `gravity`, `friction_modifier` and `air_drag_modifier` are strong enough at small numbers to
+read as a bug rather than a piece of armor. They work; they are simply not the quiet tier the rest
+of the list is.
 
 ### The two gates
 
@@ -550,10 +616,11 @@ wearer to ask — so `/armorpieces effects [<wearer>]` prints what somebody is w
 socket, and marks each effect with whether it is contributing at that moment. It takes any living
 entity, an armor stand included.
 
-Six parts in this mod carry an effect, one per mechanism: `claws` (an equipment condition and a
-per-material number), `head_fins` (a world condition), `heel_wings` (a bare scaled attribute),
-`circlet` (a fitting gate), `cloak` (a dodge) and `pinions` (a glider). Every one of them is a file any pack
-could have written; the other eighty-five parts carry nothing at all.
+Six parts in this mod carry an effect, one per mechanism: `heel_wings` (a scaled attribute),
+`puttees` (a fraction of a small base), `gorget` (a flat one — hearts), `circlet` (a fitting gate),
+`cloak` (a dodge) and `pinions` (a glider). Two more live in the packs alongside it: `claws` (an
+equipment condition and a per-material number) and `head_fins` (a world condition). Every one of
+them is a file any pack could have written; the other sixty parts carry nothing at all.
 
 **A new effect type is the one thing that needs Java**, because behaviour is code. Implement a
 hook, register the codec, and add nothing else:

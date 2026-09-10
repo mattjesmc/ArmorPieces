@@ -143,13 +143,22 @@ it has no wearer to ask, so `/armorpieces effects [<wearer>]` prints what somebo
 by socket and marks each effect with whether it is contributing at that moment. It takes any living
 entity, an armor stand included.
 
-**Six parts carry an effect, one per mechanism.** The system shipped, was documented and then went
-almost unused - one part in ninety-one. It is still content this mod mostly does not have, on
-purpose: `claws` bite bare-handed and bite harder in netherite, `head_fins` give a swimmer dolphin's
-grace, `heel_wings` jump, `circlet` set with an emerald makes its wearer a hero of the village,
-`cloak` blinks out of the path of an arrow more often the finer its material, and `pinions` still
-fly. Every one of them is a file any pack could have written, which is the whole point of listing
-them.
+**Six parts in the mod carry an effect, one per mechanism.** The system shipped, was documented and
+then went almost unused - one part in ninety-one. It is still content this mod mostly does not have,
+on purpose: `heel_wings` jump, `puttees` walk a twentieth faster, `gorget` is worth a heart and two
+in netherite, `circlet` set with an emerald makes its wearer a hero of the village, `cloak` blinks
+out of the path of an arrow more often the finer its material, and `pinions` still fly. Two more
+went to the packs with their pieces: `claws` bite bare-handed and bite harder in netherite, and
+`head_fins` give a swimmer dolphin's grace. Every one of them is a file any pack could have written,
+which is the whole point of listing them.
+
+The last two are there because the two attributes a pack is most likely to reach for are the two
+easiest to write wrongly, and neither had a worked example. Movement speed's base is `0.1`, so
+`puttees` ask for a fraction of it - `0.05` as `add_multiplied_base` is a twentieth faster, while
+the same figure as a flat `add_value` would be half again as fast. Hearts are the opposite shape:
+`max_health` counts half-hearts and wants the flat operation, so the `gorget`'s `2.0` is one heart.
+What a part grants is the maximum; vanilla caps the wearer's current health at it on the tick after
+the piece comes off, so hearts cannot leave anybody standing above their own maximum.
 
 **Damage the wearer deals is still not a hook, and that is now written down.** Fabric offers no
 damage-modification event - `ALLOW_DAMAGE` is a veto, not a pipeline - and reaching it would mean a

@@ -5,7 +5,8 @@
 > ArmorPiecesSite - `911c5c3` the object store, `9ec29e1` packs as lists and per-piece review,
 > `7a5df10` collections, `ee0d786` the picker and the outfit's verbs, `ff4b7ac` outfits
 > first-class, `046f5c1` the gallery over objects. 101 tests pass. **Nothing is pushed**: a push
-> to the site is a deploy. Section 7 is the cleanup, deliberately a release later, and the
+> to the site is a deploy. Section 7 was to be the cleanup a release later; it was built on
+> 2026-09-10 instead, guarded rather than deferred (see the block under section 7), and the
 > migration is `/api/admin/objects` rather than a script (see below).
 >
 > What was decided while building, that this plan did not settle:
@@ -579,6 +580,27 @@ object under that id, official first.
 
 Drop `pack_versions.object_key` and the `data/objects/` zips, `library_pieces`, the `pieces` table,
 the draft columns, `officialSets` and its prefix. `npm run gc` runs nightly from then on.
+
+> **BUILT 2026-09-10, and not a release later after all.** "A release later" was written to protect
+> other people's data: keep both shapes until a release has run on production, because if assembly
+> had drifted the stored zips would be the only way back. The site has no users yet and one
+> published entry - the mod's own, re-derivable from the mirrored release zips in a command - so
+> the wait was protecting nothing, and holding two shapes meant every path had a dead branch
+> nothing exercised. The safety net that mattered is the parity test, and it is untouched: it
+> diffs assembly against the zips four real releases shipped, with or without these columns.
+>
+> What guards the drop instead is `drizzle/0014_section-seven.sql`, which refuses to run while
+> anything still needs the old shape - a version holding a zip and no item list, a pack holding a
+> draft and no working list, a bookmark whose owner has no collection items. Each is a row the
+> migrate action would have converted, so the guard fires exactly when `/api/admin/objects
+> {action:'migrate'}` has not been run on that database. `test/section7.test.mjs` is the four
+> cases against the real SQL. **So the deploy order is still migrate first**: run migrate on the
+> box, then deploy this; the migration will stop the boot rather than let the drop lose a pack.
+>
+> `migrate` and `check` retired with the columns they read (`src/pages/api/admin/objects.ts`
+> keeps `seed` and `lineage`); `readObject` and `data/objects/` went with them, and the nightly
+> sweep deletes that directory the first time it runs. `officialSets` was already gone - section 5
+> replaced it with rows. There is no `npm run gc`: `npm run sweep` is that script.
 
 ---
 
