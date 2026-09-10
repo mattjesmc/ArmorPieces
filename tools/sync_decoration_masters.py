@@ -48,10 +48,17 @@ from pathlib import Path
 
 from PIL import Image
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import decoration_paths  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
 MASTERS = ROOT / "tools" / "decoration_masters"
-GEO = ROOT / "src" / "main" / "resources" / "assets" / "armorpieces" / "armorpieces" / "decoration"
-OUT = ROOT / "src" / "main" / "resources" / "assets" / "armorpieces" / "textures" / "entity" / "decoration"
+
+# Where a part's geometry is, and where its sheets are installed, is decoration_paths' question
+# since the 2026-09-07 split: 25 parts ship in packs/ now, and this used to copy every master into
+# the mod's folder whether the part lived there or not - which would have written a Wild Hunt sheet
+# into the mod, where nothing loads it and check_additive.py would report it as a collision.
 
 STATIC_SUFFIX = "_static"
 FACES = ("up", "down", "east", "north", "west", "south")
@@ -172,9 +179,10 @@ def check_geometry_doc(doc, master: Image.Image, label: str) -> list[str]:
 
 def check_geometry(name: str, master: Image.Image) -> list[str]:
     """check_geometry_doc over the shipped geometry of a part, by name."""
-    path = GEO / f"{name}.json"
-    if not path.is_file():
-        return [f"no geometry at {path.relative_to(ROOT)} - nothing to check the net against"]
+    try:
+        path = decoration_paths.geometry(name)
+    except SystemExit as err:
+        return [f"{err} - nothing to check the net against"]
     doc = json.loads(path.read_text(encoding="utf-8"))
     return check_geometry_doc(doc, master, path.name)
 
@@ -260,12 +268,13 @@ def install(master_path: Path) -> None:
         else:
             warnings += check_mask(extra, master)
 
-    OUT.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(master_path, OUT / master_path.name)
+    out = decoration_paths.textures(name)
+    out.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(master_path, out / master_path.name)
     for extra in extras:
-        shutil.copy2(extra, OUT / extra.name)
+        shutil.copy2(extra, out / extra.name)
 
-    print(f"{name}: installed {1 + len(extras)} file(s) to {OUT}")
+    print(f"{name}: installed {1 + len(extras)} file(s) to {out.relative_to(ROOT).as_posix()}")
     for warning in warnings:
         print(f"  warning: {warning}")
 

@@ -1,0 +1,10 @@
+{
+  "asset_id": "armorpieces:antlers",
+  "description": {
+    "translate": "decoration.armorpieces.antlers"
+  },
+  "anchors": [
+    "horns"
+  ],
+  "uid": "ap1s7rkiric2gx7b7zfjwsa"
+}

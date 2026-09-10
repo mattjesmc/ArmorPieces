@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces:wing_cases",
+  "description": {
+    "translate": "decoration.armorpieces.wing_cases"
+  },
+  "anchors": [
+    "pauldrons"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "uid": "ap1tfvcym2wj6ovrvwoj6ha"
+}

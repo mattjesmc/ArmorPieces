@@ -160,10 +160,11 @@ from pathlib import Path
 
 from PIL import Image
 
+import decoration_paths
 from fitting_mask import write_mask
 
 ROOT = Path(__file__).resolve().parent.parent
-GEO = ROOT / "src" / "main" / "resources" / "assets" / "armorpieces" / "armorpieces" / "decoration" / "pelt.json"
+GEO = decoration_paths.geometry("pelt")
 OUT = ROOT / "tools" / "decoration_masters" / "pelt.png"
 
 TEX_W, TEX_H = 64, 32

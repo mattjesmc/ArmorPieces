@@ -41,12 +41,15 @@ from pathlib import Path
 from PIL import Image
 
 import bb_geo
+import decoration_paths
 import sync_decoration_masters as sync
 import trace_geometry as trace
-from bb_rig import GEO_DIR, ROOT, parse_anchors
+from bb_rig import ROOT, parse_anchors
 
 MASTERS = ROOT / "tools" / "decoration_masters"
-DEC_DIR = trace.DEC_DIR
+# A part is the mod's OR a pack's since the 2026-09-07 split, so where its files are is
+# decoration_paths' question. This check is what the Blockbench plugin runs on every reply, so a
+# part it cannot find is a part the editor cannot check - silently, on the 25 that moved.
 AXES = trace.AXES
 
 
@@ -182,11 +185,12 @@ def references(stem: str, anchor: str, anchors: dict) -> dict:
     means; and the bone-mates the clash pass does compare. Saves opening any of them."""
     bone = anchors[anchor]["attachments"][0]["part"]
     same, mates = [], []
-    for dec in sorted(DEC_DIR.glob("*.json")):
+    for dec in decoration_paths.all_parts():
         if dec.stem == stem:
             continue
-        geo_path = GEO_DIR / f"{dec.stem}.json"
-        if not geo_path.is_file():
+        try:
+            geo_path = decoration_paths.geometry(dec.stem)
+        except SystemExit:
             continue
         entry = json.loads(dec.read_text(encoding="utf-8"))
         geo = json.loads(geo_path.read_text(encoding="utf-8"))
@@ -408,9 +412,10 @@ def from_status(folder: Path):
 
 def from_shipped(name: str, anchor: str | None):
     anchors = parse_anchors()
-    geo_path = GEO_DIR / f"{name}.json"
-    if not geo_path.is_file():
-        sys.exit(f"no shipped geometry for {name!r} at {geo_path}")
+    try:
+        geo_path = decoration_paths.geometry(name)
+    except SystemExit as err:
+        sys.exit(f"no shipped geometry for {name!r}: {err}")
     anchor = anchor or trace.anchor_of(name)
     if anchor is None:
         sys.exit(f"{name}: no armor_decoration entry, so pass --anchor")
@@ -464,7 +469,7 @@ def main() -> None:
 
     if args.all:
         clean = True
-        for geo_path in sorted(GEO_DIR.glob("*.json")):
+        for geo_path in decoration_paths.all_geometry():
             r = from_shipped(geo_path.stem, None)
             print(r["text"] if not args.json else json.dumps(r))
             clean &= r["ok"]

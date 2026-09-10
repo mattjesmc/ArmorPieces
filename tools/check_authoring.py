@@ -509,16 +509,33 @@ def check_loot_groups(pack: Path) -> list[str]:
                                 ("cloths", "cloth"), ("fittings", "fitting")):
             for member in _holder_set(group.get(field)):
                 if member.startswith("#"):
-                    tag_ns, tag_path = member[1:].split(":", 1) if ":" in member[1:] else ("minecraft", member[1:])
-                    tag = pack / "data" / tag_ns / "tags" / "armorpieces" / registry / f"{tag_path}.json"
-                    if not tag.exists():
+                    if _tag_file(pack, registry, member) is None:
                         failures.append(f"loot group {group_file.name}: {field} names {member}, "
-                                        f"but there is no tag at {tag} - an unresolved tag is empty, "
-                                        "and the group would put nothing anywhere")
+                                        "but neither this pack nor the mod defines that tag - an "
+                                        "unresolved tag is empty, and the group would put nothing "
+                                        "anywhere")
                 elif ":" not in member:
                     failures.append(f"loot group {group_file.name}: {field} entry {member!r} is not a namespaced id")
         print(f"loot group {group_file.name}: ok ({len(tables)} tables)")
     return failures
+
+
+def _tag_file(pack: Path, registry: str, member: str) -> Path | None:
+    """Where a `#tag` a loot group names actually is, or None if nothing defines it.
+
+    The pack first, then the MOD'S OWN resources - because a pack may name a tag the mod ships and
+    the mod is always installed. `#armorpieces:common` is the case that forced this: the restore
+    pack's three loot groups are 0.3.0's verbatim and name the fitting tag that never left, and
+    requiring the tag inside the pack would have reported three failures for a group that resolves
+    perfectly in game. Checking the mod second rather than first keeps a pack's own tag winning,
+    which is what the game does with two files at one path.
+    """
+    tag_ns, tag_path = member[1:].split(":", 1) if ":" in member[1:] else ("minecraft", member[1:])
+    for root in (pack, RESOURCES):
+        candidate = root / "data" / tag_ns / "tags" / "armorpieces" / registry / f"{tag_path}.json"
+        if candidate.exists():
+            return candidate
+    return None
 
 
 def _holder_set(value) -> list[str]:
@@ -553,9 +570,8 @@ def check_reachable(pack: Path, data_files: list[Path]) -> list[str]:
             if not member.startswith("#"):
                 tagged.add(member)
                 continue
-            tag_ns, tag_path = member[1:].split(":", 1) if ":" in member[1:] else ("minecraft", member[1:])
-            tag = pack / "data" / tag_ns / "tags" / "armorpieces" / "armor_decoration" / f"{tag_path}.json"
-            if tag.exists():
+            tag = _tag_file(pack, "armor_decoration", member)
+            if tag is not None:
                 tagged.update(v for v in json.loads(tag.read_text(encoding="utf8")).get("values", [])
                               if isinstance(v, str))
 

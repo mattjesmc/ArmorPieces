@@ -5,6 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -183,12 +184,13 @@ public record Tolerant<T>(Optional<T> value, Optional<Dynamic<?>> raw) implement
     }
 
     /**
-     * Delegates to the value when there is one, and otherwise says so in one grey line.
+     * Delegates to the value when there is one, and otherwise names what is missing in one grey line.
      *
      * <p>A component that wraps a {@link TooltipProvider} keeps its tooltip - a skinned chestplate
-     * still says which skin - and one that cannot be resolved says the only useful thing there is to
-     * say: a pack is missing. Without the line a player sees plain armor and concludes the mod is
-     * broken.
+     * still says which skin - and one that cannot be resolved says the two useful things there are to
+     * say: the id it holds, and the pack that id belongs to where {@link Moved} can place it. Without
+     * the line a player sees plain armor and concludes the mod is broken; without the id they know it
+     * is broken and still cannot act.
      */
     @Override
     public void addToTooltip(
@@ -203,8 +205,31 @@ public record Tolerant<T>(Optional<T> value, Optional<Dynamic<?>> raw) implement
             }
             return;
         }
-        consumer.accept(NOT_INSTALLED);
+        consumer.accept(this.rawId()
+            .<Component>map(id -> Component
+                .translatable("item.armorpieces.not_installed_named", Moved.describe(id))
+                .withStyle(ChatFormatting.DARK_GRAY))
+            .orElse(NOT_INSTALLED));
     }
+
+    /**
+     * The id the raw data names, however this component happens to write one.
+     *
+     * <p>Three of the four tolerant components are a bare holder, which is written as its id and needs
+     * no field at all; {@code cloth} is an object, because a garment carries a dye and banner layers
+     * beside its id. Hence the short list rather than a parameter: {@link #addToTooltip} is handed no
+     * clue which component it belongs to, and this is a label, so guessing wrong costs a grey line
+     * that says "Not installed" instead of naming an id.
+     */
+    public Optional<String> rawId() {
+        return this.raw.flatMap(dynamic -> dynamic.asString().result()
+            .or(() -> ID_FIELDS.stream()
+                .flatMap(field -> dynamic.get(field).asString().result().stream())
+                .findFirst()));
+    }
+
+    /** The id-bearing field of every tolerant component that is not a bare holder. */
+    private static final List<String> ID_FIELDS = List.of("cloth", "decoration", "skin", "fitting");
 
     private static final Component NOT_INSTALLED =
         Component.translatable("item.armorpieces.not_installed").withStyle(ChatFormatting.DARK_GRAY);

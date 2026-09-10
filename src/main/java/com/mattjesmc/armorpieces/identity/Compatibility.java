@@ -59,6 +59,16 @@ public final class Compatibility {
         ServerLifecycleEvents.SERVER_STARTED.register(started -> state = ArmorPiecesState.open(started));
         // A pack installed into a running server, or removed from one. END rather than START: the
         // new registries are what the index has to be built from.
+        //
+        // This does NOT make a newly installed pack's pieces resolve, and it was never going to.
+        // armor_decoration, armor_skin and cloth are datapack REGISTRIES, read by RegistryDataLoader
+        // when the world loads, exactly like vanilla's worldgen and trim registries - a resource
+        // reload does not touch them. Measured 2026-09-10 on a real 0.3.0 save: the packs report as
+        // enabled after /datapack enable and /reload, and every one of their ids still misses. The
+        // world has to be opened again, which is what the advice strings now say.
+        //
+        // The rebuild is still right: the index must not go stale against a registry that a reload
+        // CAN change (a world datapack overriding one of ours), and it costs one walk.
         ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((reloaded, resources, success) -> {
             if (success) {
                 Rebind.rebuild(reloaded.registryAccess());

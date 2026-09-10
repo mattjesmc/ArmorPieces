@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces:spine_ridge",
+  "description": {
+    "translate": "decoration.armorpieces.spine_ridge"
+  },
+  "anchors": [
+    "back"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1wfq6zgtcih6up4arpeka"
+}

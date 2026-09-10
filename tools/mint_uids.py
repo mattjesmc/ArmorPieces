@@ -43,6 +43,13 @@ LOCK = ROOT / "uids.lock"
 # an unresolvable one without trying to rebind it.
 KINDS = ("armor_decoration", "armor_skin", "cloth")
 
+# Experiments, not content. A uid is minted once and then binds forever, so a throwaway pack must
+# never get one: its ids would sit in the append-only lock for good. `build_moved_index.py` and
+# `check_surfaces.py` skip the same pack for the same reason. `legacy` is NOT here - it is generated
+# from the other packs' `former_ids` and carries each restored piece's original uid, which is the
+# point of it.
+SKIP_PACKS = {"vlm-scratch"}
+
 # ap1 says which minting scheme, so a later one can be told apart without guessing at the length.
 # 96 bits, base32, lower case: 20 characters, and a collision needs about 10^14 pieces.
 PREFIX = "ap1"
@@ -59,7 +66,8 @@ def shipped() -> list[tuple[str, str, Path]]:
     roots = [ROOT / "src/main/resources/data"]
     packs = ROOT / "packs"
     if packs.is_dir():
-        roots += [pack / "datapack" / "data" for pack in sorted(packs.iterdir()) if pack.is_dir()]
+        roots += [pack / "datapack" / "data" for pack in sorted(packs.iterdir())
+                  if pack.is_dir() and pack.name not in SKIP_PACKS]
     for root in roots:
         if not root.is_dir():
             continue

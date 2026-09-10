@@ -3,8 +3,9 @@ Paint the grayscale master for the "antlers" part.
 
 Like the mantle and the pelt - the two Beast parts this one is written to match - this does not
 merely claim that CUBES is the shipped geometry, it reads
-assets/armorpieces/armorpieces/decoration/antlers.json at run time and asserts it: sizes, uvs AND
-origins, because every clearance below is made out of the origins (check_geometry). Output is a
+assets/<ns>/armorpieces/decoration/antlers.json at run time and asserts it: sizes, uvs AND origins,
+because every clearance below is made out of the origins (check_geometry). The part left the mod in
+0.4.0 and ships in the Wild Hunt now, so decoration_paths says where that file is. Output is a
 single sheet, tools/decoration_masters/antlers.png, which sync_decoration_masters.py installs for
 the game to colour per trim material.
 
@@ -22,7 +23,7 @@ in five points that stop at five different heights.
 `antlers` is the branching stag rack on the `horns` socket - the mod's third part there, against
 Horns (curled, close to the skull, topping out at entity y -14.36) and Helm Wings (a swept plate
 pair, y -13.60). Both of those hug the head. This one does not: it stands 12.49 units proud of the
-head box and 21.92 wide across the pair, which makes it the largest silhouette the helmet can wear
+head box and 24.80 wide across the pair, which makes it the largest silhouette the helmet can wear
 and the reason the socket needed a third answer at all.
 
 `horns` is a MIRRORED pair - Attachment.of(HEAD, 4, -5, 0) plus Attachment.mirrored at (-4, -5, 0) -
@@ -52,12 +53,12 @@ bone-local IS entity space here, and it is part-local plus the anchor's (4, -5, 
 Rotated cubes are given as their axis-aligned hull.
 
     cube    bone    size       part x          part y           part z          entity x
-    burr    burr    4 x 2 x 3  -0.60 .. 3.40   -3.40 .. -1.40   -1.70 ..  1.30   3.40 ..  7.40
-    brow    brow    1 x 4 x 2   0.57 .. 2.58   -6.32 .. -1.89   -4.55 .. -0.38   4.57 ..  6.58
+    burr    burr    4 x 2 x 3  -1.10 .. 2.90   -3.40 .. -1.40   -1.70 ..  1.30   2.90 ..  6.90
+    brow    brow    1 x 4 x 2   1.07 .. 3.09   -8.34 .. -3.91   -3.73 ..  0.43   5.07 ..  7.09
     beam1   beam1   2 x 5 x 2   0.41 .. 4.39   -8.27 .. -2.61   -0.83 ..  2.17   4.41 ..  8.39
-    bez     bez     1 x 4 x 1   2.26 .. 4.25  -10.23 .. -6.09   -1.28 ..  1.41   6.26 ..  8.25
+    bez     bez     1 x 4 x 1   2.50 .. 4.49  -11.10 .. -6.95   -1.72 ..  0.97   6.50 ..  8.49
     beam2   beam2   2 x 4 x 2   2.28 .. 5.18  -11.80 .. -7.01    0.39 ..  4.01   6.28 ..  9.18
-    trez    trez    1 x 4 x 1   3.31 .. 6.96  -12.63 .. -8.97    1.56 ..  3.20   7.31 .. 10.96
+    trez    trez    1 x 4 x 1   4.75 .. 8.40  -13.99 .. -10.34    1.79 ..  3.43   8.75 .. 12.40
     beam3   beam3   1 x 3 x 2   3.35 .. 4.72  -13.44 .. -9.77    1.87 ..  5.43   7.35 ..  8.72
     crown   crown   1 x 5 x 1   1.68 .. 4.50  -15.49 .. -11.35   3.39 ..  7.76   5.68 ..  8.50
 
@@ -82,15 +83,15 @@ and the tines' positive X rotations are the ones that come forward off it.
 WHERE THE TIPS LAND, which is this part's version of the pelt's hem line. Read up the rack:
 
     tine / prong   tip at entity y   reach at entity x   deepest z
-    brow               -11.32              6.58            -4.55  (forward, past the temple)
-    bez                -15.23              8.25            -1.28
-    trez               -17.63             10.96             3.20
+    brow               -13.34              7.09            -3.73  (forward, past the temple)
+    bez                -16.10              8.49            -1.72
     beam3              -18.44              8.72             5.43
+    trez               -18.99             12.40             3.43
     crown              -20.49              8.50             7.76
 
-The steps between those five are +3.91, +2.40, +0.81 and +2.05: no two alike, which is the same
+The steps between those five are +2.76, +2.34, +0.55 and +1.50: no two alike, which is the same
 refusal the pelt's four-lock hem makes and the mantle's four locks after it. The outboard reaches
-step 6.58, 8.25, 10.96, 8.72, 8.50 - the widest point is NOT the highest, which is what stops the
+step 7.09, 8.49, 8.72, 12.40, 8.50 - the widest point is NOT the highest, which is what stops the
 rack reading as a fan. Three of the five tips also differ in depth by more than two units, so from
 any camera angle at all the five are five and not a comb.
 
@@ -109,9 +110,9 @@ painter treats as the burial line - trace_geometry stops at the 1.0 shell becaus
 keeps `hat` as a child rather than a slot part, so the extra half unit has to be carried by hand.
 Four numbers decide the part:
 
-  * **x = 5.5 is the burial wall.** The burr spans 3.40 .. 7.40, so its inboard half is inside the
+  * **x = 5.5 is the burial wall.** The burr spans 2.90 .. 6.90, so its inboard half is inside the
     helmet and its outboard half is not: of its four x columns, 0 and 1 are buried, 2 straddles the
-    wall by a tenth, and 3 is free. That is the whole reason the burr is four units wide - a burr
+    wall by six tenths, and 3 is free. That is the whole reason the burr is four units wide - a burr
     that started outside the helmet would be a lump stuck ON the helmet rather than growing out of
     it, and the two shipped parts here both make the same choice with their bosses.
 
@@ -122,19 +123,19 @@ Four numbers decide the part:
     inside the hat), so all five tines and all three beam segments are read against sky, not
     against armour. That is why this master has no INNER filler outside the burr and the joints.
 
-  * **z = -5.5 is the front of the helmet**, and the brow tine stops at -4.55. It is a full unit
-    short on purpose: a brow tine that reached in front of the face would read as a beak from every
+  * **z = -5.5 is the front of the helmet**, and the brow tine stops at -3.73. It is well short
+    on purpose: a brow tine that reached in front of the face would read as a beak from every
     camera the player has of themselves, and it is already the part's forward silhouette at entity
-    x 4.57 .. 6.58, which is beside the helmet rather than in front of it.
+    x 5.07 .. 7.09, which is beside the helmet rather than in front of it.
 
 Cross-part, on the same head bone, trace_geometry compares this against the two brow parts and the
-two crest parts. The crest pair live inside |x| <= 1.50 and this part's inboard face is at x 3.40,
-so they clear by 1.90 without either having to know about the other. The visor stays inside
+two crest parts. The crest pair live inside |x| <= 1.50 and this part's inboard face is at x 2.90,
+so they clear by 1.40 without either having to know about the other. The visor stays inside
 x +-4.00 and z <= -3.75, and the nearest thing to it here is the brow tine, whose whole span is
-outboard of x 4.57. The circlet is the 0.40 above.
+outboard of x 5.07. The circlet is the 0.40 above.
 
 No two faces of this part lie in a plane of any shell, and only the burr could - it is the only
-unrotated cube here, and its six faces are at x -0.60 / 3.40, y -3.40 / -1.40 and z -1.70 / 1.30 in
+unrotated cube here, and its six faces are at x -1.10 / 2.90, y -3.40 / -1.40 and z -1.70 / 1.30 in
 part-local, none of which is a wall of anything. The other seven cubes sit on rotated bones and a
 rotated face can never be coplanar with an axis-aligned shell at all, which is the cheapest form
 that guarantee takes.
@@ -231,8 +232,10 @@ from pathlib import Path
 
 from PIL import Image
 
+import decoration_paths
+
 ROOT = Path(__file__).resolve().parent.parent
-GEO = ROOT / "src" / "main" / "resources" / "assets" / "armorpieces" / "armorpieces" / "decoration" / "antlers.json"
+GEO = decoration_paths.geometry("antlers")
 OUT = ROOT / "tools" / "decoration_masters" / "antlers.png"
 
 TEX_W, TEX_H = 64, 32
@@ -240,15 +243,23 @@ TEX_W, TEX_H = 64, 32
 # origin, size (w, h, d) and uv (u, v), mirroring antlers.json in that file's own order, which is
 # the order walk() visits: the burr, then the brow tine, then the beam chain with each node's tine
 # ahead of the beam segment that follows it. Origins are asserted as well as sizes because the
-# docstring's whole clearance argument - the 0.40 over the circlet, the 5.5 burial wall, the -4.55
+# docstring's whole clearance argument - the 0.40 over the circlet, the 5.5 burial wall, the -3.73
 # the brow tine stops at - is made out of them.
+#
+# Four of these origins - burr's x, and the y of brow, bez and trez - were corrected on 2026-09-08
+# to what the shipped geometry has always said. The part had been nudged in Blockbench after the
+# master was painted and this table never followed, so `check_geometry` had been failing since
+# 0.3.0. THE SHEET IS UNAFFECTED: sizes and uvs did not move, so every face rectangle is where it
+# was, and the burr's four x columns still fall on the same side of the burial wall. What did move
+# is the measured record above, which is re-derived rather than adjusted - the tip ladder now puts
+# trez above beam3 instead of below it.
 CUBES = {
-    "burr":  ((-0.6, -3.4, -1.7), (4, 2, 3), (0, 0)),
-    "brow":  ((-0.5, -4, -0.9), (1, 4, 2), (14, 0)),
+    "burr":  ((-1.1, -3.4, -1.7), (4, 2, 3), (0, 0)),
+    "brow":  ((-0.5, -5, 1.1), (1, 4, 2), (14, 0)),
     "beam1": ((-1, -5, -1.05), (2, 5, 2), (20, 0)),
-    "bez":   ((-0.55, -4, -0.5), (1, 4, 1), (28, 0)),
+    "bez":   ((-0.55, -5, -0.5), (1, 4, 1), (28, 0)),
     "beam2": ((-0.95, -4.2, -0.95), (2, 4, 2), (32, 0)),
-    "trez":  ((-0.5, -4, -0.5), (1, 4, 1), (40, 0)),
+    "trez":  ((-0.5, -6, -0.5), (1, 4, 1), (40, 0)),
     "beam3": ((-0.45, -2.6, -0.9), (1, 3, 2), (44, 0)),
     "crown": ((-0.5, -5, -0.55), (1, 5, 1), (50, 0)),
 }
@@ -326,8 +337,8 @@ CAPPED = ("beam1", "beam2")
 BRANCHES = ("brow", "beam1", "bez", "trez", "crown")
 
 # The burr is the one cube whose burial runs along COLUMNS instead of rows, because it is the one
-# cube that lies half inside the helmet. Its four x columns span entity x 3.40-4.40, 4.40-5.40,
-# 5.40-6.40 and 6.40-7.40 against a burial wall at 5.5, and columns 0 and 1 are wholly behind it.
+# cube that lies half inside the helmet. Its four x columns span entity x 2.90-3.90, 3.90-4.90,
+# 4.90-5.90 and 5.90-6.90 against a burial wall at 5.5, and columns 0 and 1 are wholly behind it.
 # `up` loses column 2 as well, to the beam and the brow tine standing on it; `south` counts its
 # columns the other way, so its buried pair is 2 and 3.
 BURR_FREE = {

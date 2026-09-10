@@ -1,0 +1,7 @@
+{
+  "pack": {
+    "description": "Armor Pieces: Legacy 0.1.0 - the datapack half. Restores the 25 pieces and 5 skins that left the mod in 0.4.0, under their original armorpieces: ids. Requires the Armor Pieces mod, 0.4.0 or later.",
+    "min_format": 107,
+    "max_format": 107
+  }
+}

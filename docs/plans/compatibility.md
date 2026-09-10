@@ -1,13 +1,23 @@
 # Plan: identity and compatibility
 
-> **Status (2026-09-08): BUILT in the mod, steps 1, 2, 6 and 7 - working copy only, committed
-> nowhere.** Sections 1, 2 and 4 are in the game and were verified there (see
-> [As built](#as-built)). Step 3 (the restore pack), step 4 (`check_additive.py`) and step 5 (the
-> library's publication guard) are NOT built: the first two are content and tool work that belongs
-> with the split, the third is in `ArmorPiecesSite`.
+> **Status (2026-09-08): BUILT in the mod, steps 1, 2, 6 and 7 - committed as `3fec698`.** Sections
+> 1, 2 and 4 are in the game and were verified there (see [As built](#as-built)).
+>
+> **Step 3 (the restore pack) and step 4 (`check_additive.py`) were built later the same day** and
+> live in `docs/plans/additive-packs.md`, whose "As built" section holds them: `packs/legacy`
+> restores the 25 pieces and 5 skins under their `armorpieces:` ids, generated from the `former_ids`
+> the packs carry, and `tools/check_additive.py` is the gate's tier-0 `additive` check. Working copy
+> only, committed nowhere. Step 5 (the library's publication guard) is NOT built; it is in
+> `ArmorPiecesSite`.
 >
 > `docs/plans/additive-packs.md` sketched the tolerant decode; this plan owns it, sizes it, and puts
 > the identifier the user asked for around it.
+>
+> **Corrected 2026-09-10 — read [§5](#5-the-correction-2026-09-10--no-compatibility-pack-is-owed)
+> before §3 or §4.** No pack has to be installed for a 0.2.0 or 0.3.0 save to cross to 0.4.0. Both
+> documents were written while that was still true and neither was rewritten when sections 1 and 2
+> made it false. `packs/legacy` is a convenience download, not an upgrade step, and the mod is
+> heading for no shipped content at all.
 
 The user's brief, 2026-09-08:
 
@@ -151,15 +161,20 @@ unresolved entry.
 - **It can always be overwritten.** `with(anchor, entry)` clears the raw entry for that socket, so a
   player who applies a new crest gets a clean item — the brief's "untill the piece is overwritten",
   and the escape hatch that means nobody is stuck.
-- **It resolves the moment the pack arrives.** Resolution is attempted on decode, so installing the
-  Wild Hunt a month later brings the antlers back with no migration step.
+- **It resolves the next time the item is read, once the pack is there.** Resolution is attempted on
+  decode, so installing the Wild Hunt a month later brings the antlers back with no migration step.
+  **"There" means loaded, and a datapack registry loads when the world does** — installing a pack
+  into a running world and reloading leaves it invisible to this. See
+  [§5.4](#54-proved-on-a-real-030-save-2026-09-10); it is what the advice strings now say.
 
 ### 1.3 Telling the player, without nagging
 
-- **One tooltip line**, in the existing grey style, under the decorated block: *"1 part not
-  installed"*. Under an advanced tooltip (F3+H) it names the ids. This is the answer to the brief's
+- **A tooltip block**, in the existing grey style, under the decorated block: a count line, and
+  under it **the id of each thing that is missing, on the face of the tooltip and not behind F3+H**,
+  named with its pack where the mod knows which pack that is. This is the answer to the brief's
   "warn the user", and it is the difference between a player thinking the mod is broken and a player
-  knowing which pack to install.
+  knowing what to install — or writing the piece themselves. Superseded in detail by
+  [§5.1](#51-what-the-tooltip-says); what was built on 2026-09-08 is the count line alone.
 - **One log line per distinct missing id per session**, not per item and never per tick.
 - **`/armorpieces missing`** lists every unresolved id this server has seen, with a count. An admin
   gets a shopping list.
@@ -389,6 +404,259 @@ sitting in somebody's save.
 
 ---
 
+## 5. The correction, 2026-09-10 — no compatibility pack is owed
+
+**What the documents implied, and should not have.** Read in order, this plan and
+`additive-packs.md` say that a player crossing 0.3.0 → 0.4.0 needs `packs/legacy`. That was true on
+2026-09-07, when the only answer to an id nothing defined was a pack that defined it again. It
+stopped being true on 2026-09-08, the moment sections 1 and 2 were built and verified in the game,
+and neither document was rewritten to say so. `additive-packs.md` still opens by calling the restore
+pack "the answer"; this plan's own status block still lists it as step 3 of the crossing;
+`main-pack-split.md` still says the absence of the pack is unsurvivable.
+
+**What is actually true.** 0.4.0 opens a 0.2.0 or 0.3.0 save and, with nothing installed:
+
+- **keeps the item** — that is section 1, and it is the whole of the safety;
+- **rebinds every id an installed pack claims** through `former_ids`, and writes the new id and the
+  uid back on the next save — that is section 2 and §4.1, with no upgrade code, no data fixer, no
+  first-launch step and no world sweep;
+- **keeps the rest verbatim** and says on the item what it is holding.
+
+So the id system *is* the compatibility story. A pack is what makes a missing piece **visible**
+again; it is not what makes the save **survivable**. Those two were being said as though they were
+one thing, and saying them as one thing is what produced a compatibility pack the design does not
+need.
+
+The cost of a missing pack is a rendering gap — §4.5 already said so, and §4.5 is the sentence the
+rest of the documentation should have been written from.
+
+### 5.1 What the tooltip says
+
+The user, 2026-09-10: *"The tooltip of the item can say: 'Missing pack x'. [...] And show the
+missing piece id so used can just make their own packs."*
+
+**What was built on 2026-09-08 is a count line** — `1 not installed` — with the ids hidden behind an
+advanced tooltip. That is one keypress too many for the two things a player actually does next.
+
+**The id goes on the face of the tooltip.** Two reasons, and the second is the mod's own promise:
+
+1. The id is the only fact that says what to install. A count says something is wrong; an id says
+   what.
+2. A part is three JSON files and a PNG. A player who cannot get the pack — abandoned, private,
+   never published — can **define the id themselves** and their armor comes back. The id is the
+   entire input to that, and hiding it behind F3+H hides the escape hatch.
+
+**The pack goes there too, where the mod can know it.** Shape:
+
+```
+Decorated
+  Circlet
+  2 not installed
+    armorpieces:tusks — The Wild Hunt
+    somepack:crown
+```
+
+Three cases, and only the first needs anything new:
+
+| the missing id | shown as | why |
+|---|---|---|
+| one the mod's own history moved | `armorpieces:tusks — The Wild Hunt` | the moved index, below |
+| any other id | `somepack:crown` | the namespace is already the best guess at the pack, and the mod has no business inventing a name for someone else's |
+| more than four | the first four, then `+3 more` | uncapped under F3+H, which is what an advanced tooltip is for |
+
+**The moved index, and why a table has to come back.** `former_ids` lives *inside* the pack that
+took the piece. A pack that is not installed declares nothing, so with nothing installed
+`armorpieces:tusks` is a string in the mod's own namespace and the namespace names nothing. Saying
+*The Wild Hunt* therefore needs a table in the jar — the one `additive-packs.md` proposed and §2.1
+of this plan removed.
+
+It comes back, for a **strictly smaller job**: a label, never a rebind. Rules that keep it small:
+
+- **Generated, never hand-written.** The same 30 `former_ids` rows `build_legacy_pack.py` reads are
+  the source. `tools/build_moved_index.py` writes `assets/armorpieces/compat/moved.json`, mapping
+  old id to current id; `--check` fails on drift, in the gate's tier 0, exactly as
+  `build_legacy_pack.py --check` does.
+- **No display name is in it.** A row is two ids and the name comes from a lang key on the current
+  id's namespace — `pack.armorpieces_hunt` → *The Wild Hunt* — so it translates for free.
+- **The namespaces it can name are in it**, though, as a second list read out of the mod's own
+  `en_us.json`. Whether a lang key exists cannot be asked at runtime: `/armorpieces missing` runs on
+  a **dedicated server**, whose `Language` holds vanilla's keys and none of the mod's, so a lookup
+  there names nothing or prints a raw key at an operator. The list also covers the case that needs no
+  row at all — `armorpieces_hunt:anything` under a pack that is simply not installed already names
+  its own pack, and the list is how the mod knows that namespace is one it can name rather than a
+  stranger's. **After §5.3 that is the common case and the rows are the rump**, which is the right
+  way round.
+- **Read from the classpath once, not through the resource manager.** It is not a game resource, it
+  must not be overridable by a resource pack, and it is wanted on both sides.
+- **It never resolves anything.** If the index and the registry disagree, the registry wins and the
+  index is not consulted; it is only ever asked about an id that has already failed every step of
+  §2.3. That is what makes a *generated* table safe here where a generated alias would not be: a
+  stale row costs a wrong pack **name** on a tooltip, not a wrong **piece** in a save.
+
+**As built, 2026-09-10.** `identity/Moved` (the reader), `tools/build_moved_index.py` and the gate's
+tier-0 `moved` check, the eight `pack.<namespace>` lang lines, and the tooltip itself in
+`ArmorDecorations.addToTooltip` — count, then up to four ids, then `+n more`, uncapped under F3+H.
+`Tolerant.addToTooltip` gained the same treatment, so a missing **skin**, **cloth** or **template**
+names its id instead of saying only *Not installed*; `Tolerant.rawId()` finds the id whether the
+component is a bare holder or an object. `/armorpieces missing` names the pack beside each id, as a
+translatable so the receiving client renders it. The two tests that pinned the old behaviour
+(`ArmorDecorationsTest`, `TemplateItemsTest`) were rewritten to pin this one. 514 unit tests pass;
+**not yet seen on a client.**
+
+**Ten tests in `MovedIndexTest`, and four of them are about the table being SHIPPED** rather than
+about what it says. That distinction is the one worth keeping: a jar the table fell out of degrades
+to "show the id", which is correct in the game and invisible to every behavioural test, so the
+packaging is asserted on its own — the resource is at the path `Moved` asks for, every moved id
+lands in a namespace the table can name, every named namespace has a line in `en_us.json`, and
+`Moved.parse` returns an empty table (never an exception) for a file that is absent, corrupt or the
+wrong shape. Falsified by deleting the resource: four tests fail, the graceful-degradation ones
+still pass.
+
+### 5.2 Where `packs/legacy` goes
+
+It stays — generated, gate-checked, and out of the crossing. What changes is only how it is
+described and where it is offered:
+
+- **It ships on the website's library and on the mod pages**, labelled for what it is: the 30 pieces
+  and skins the 0.4.0 split moved, under their old ids, for a world saved before 0.4.0. A player
+  looks for content where content is; nobody should meet it in a warning.
+- **It is never bundled and never required**, and the first-launch advisory does not name it as a
+  step. The advisory names ids and packs, and the player decides.
+- **A player who installs it and the pack it came from gets both**, because §2.3 says a resolved id
+  wins. Two definitions of one piece, one of them uncraftable — the known trade-off of a pack that
+  redefines a namespace, and the reason the advisory points at the pack first.
+
+### 5.3 The direction: the mod becomes the engine
+
+The user, 2026-09-10: *"the best thing we can do is move the remaining items out of the mod, and
+move everything into packs."*
+
+That finishes what `main-pack-split.md` started — it moved 30 of 91 — and it lands on this plan in
+three places.
+
+1. **It makes a full legacy pack legitimate rather than partial.** `additive-packs.md` refused a
+   0.3.0 snapshot because it would redefine the 66 pieces the mod still ships and freeze their art
+   at 0.3.0 for exactly the players most likely to install it. Once the mod ships none, nothing else
+   defines them: the snapshot is simply the archive of what 0.3.0 was, additive by construction.
+   `packs/legacy` grows from 30 ids to 91 and the objection disappears with the content.
+2. **It makes "which pack" the ordinary question rather than the migration question.** Today a
+   missing pack is a version-crossing event. After this it is the normal condition of a save — every
+   piece names a pack that may or may not be installed, forever. §5.1 is not a migration affordance;
+   it is the permanent UI, and that is the argument for putting the id on the tooltip's face rather
+   than behind a key.
+3. **It forces the question `main-pack-split.md` left open** — *whether the mod should bundle its
+   packs* — and the answer decides how much of this plan a player ever meets.
+
+**Recommendation on the bundle, for the record and still Open.** The jar ships the content as a
+**built-in pack, on by default and switchable off**, rather than as registry entries or as nothing
+at all. `ResourceManagerHelper.registerBuiltinResourcePack` and its datapack counterpart are the
+vanilla-blessed mechanism, and this shape satisfies both halves of the direction:
+
+- everything is a pack, including the mod's own, so there is one content mechanism and no privileged
+  tier;
+- a fresh install still has content, which a mod that renders nothing on first run does not;
+- the bundled pack carries the split's `former_ids`, so **every 0.3.0 save rebinds on a default
+  install with nothing downloaded** — the crossing costs the player no action at all;
+- and `parts.mod_parts` in `additive-packs.md`'s [switch](additive-packs.md#the-switch) becomes the
+  ordinary act of turning a pack off, rather than a special case in Java.
+
+The alternative — an empty jar and a separate core download — is the purer reading of "everything
+into packs" and is worse for every player who is not reading the documentation.
+
+**This needs its own plan before it is built.** It touches the loot groups, the three surviving
+theme tags, the stage sets, the gate's content checks, the site's library entry for the mod, and
+every tool that resolves a decoration path. `main-pack-split.md` gains the direction under
+[Finishing the split](main-pack-split.md#finishing-the-split); nothing here waits on it.
+
+### 5.4 Proved on a real 0.3.0 save, 2026-09-10
+
+Not a synthesised item and not a hand-edited marker: **0.3.0 was checked out at its tag, built, run,
+and used to write a save**, which was then opened by the working copy. Three boots through the
+toolkit bridge. The helmet carried three sockets on purpose — `crest: armorpieces:dorsal_fin` (moved
+to Coral), `brow: armorpieces:circlet` (stayed), `horns: armorpieces:tusks` (moved to the Wild Hunt)
+— plus a chestplate wearing `armorpieces:varangian` (moved to Legends), and a custom name, because
+the claim is about the ITEM and not about the socket.
+
+**The save is genuinely 0.3.0-shaped.** Its player data holds the five ids and **no `uid` tag
+anywhere** — 0.3.0 predates the field.
+
+**Opened on 0.4.0 with nothing installed**, `data get entity @p Inventory` reads:
+
+```
+"armorpieces:decorations": {brow: {uid: "ap1sl5j4mr6qkmfbot3v6qa", material: "minecraft:gold",
+                                   decoration: "armorpieces:circlet"},
+                            horns: {material: "minecraft:iron", decoration: "armorpieces:tusks"},
+                            crest: {material: "minecraft:copper", decoration: "armorpieces:dorsal_fin"}},
+"minecraft:custom_name": '"Grandfather"'
+```
+
+The helmet is there, the name is there, the socket that resolves **has been stamped with its uid**,
+and the two that cannot are byte-for-byte what 0.3.0 wrote. §4.1's lazy port, happening. The file
+0.4.0 wrote back on logout carries the uid; 0.3.0's own file does not.
+
+The tooltip, with nothing installed:
+
+```
+"Grandfather"                              Diamond Chestplate
+Decorated                                  Not installed: armorpieces:varangian — Legends
+ Circlet
+  Hero of the Village, while fitted
+ 2 not installed
+  armorpieces:dorsal_fin — Coral
+  armorpieces:tusks — The Wild Hunt
+```
+
+Two packs named on one item, from the shipped index. `/armorpieces missing` lists all three with
+their packs. **Then the three packs were installed into the world's `datapacks/`, the world reopened,
+and every socket rebound** — `armorpieces_hunt:tusks`, `armorpieces_coral:dorsal_fin`,
+`armorpieces_legends:varangian`, each with its uid, the helmet still named Grandfather, and
+`/armorpieces missing` answering *Nothing is missing*. With the packs' language files pushed in, the
+tooltip reads `Dorsal Fin / Circlet / Tusks` — identical to what 0.3.0 drew.
+
+#### What the run broke
+
+**1. `/reload` does not bring a pack's pieces back, and the mod said it did.** Copying the packs into
+a running world's `datapacks/` and reloading is not enough, and neither is `/datapack enable` plus a
+reload: the packs show as enabled, and **the pieces still do not resolve**. A datapack REGISTRY —
+`armor_decoration`, `armor_skin`, `cloth`, like vanilla's own worldgen and trim registries — is read
+by `RegistryDataLoader` when the world loads and is not touched by a resource reload. What *does*
+reload is the reloadable half, which is how the failure announces itself: the count went from 3
+missing ids to 13, the ten new ones being the packs' own ids, named by loot groups that had just
+loaded against a registry that still had none of them.
+
+> **None of that is new, and that is the actual finding.** This repository had already established
+> it, in writing, at least four times: `docs/authoring.md`'s "it needs the world left and re-entered;
+> `/reload` is not enough", `set-packs.md`'s "neither `/reload` nor `datapack enable` re-detects it",
+> `testing.md`'s "a registry entry cannot be pushed into a running game", and `tools/gate/fixtures.py`,
+> which **exists** because of it — the gate writes fixture packs into the world folder before the
+> boot for precisely this reason. So the defect is not a gap in what the project knew. It is that the
+> two strings the mod says **to a player** contradicted all of it, and nothing connected the two: the
+> knowledge lived in author and test documentation, and the sentence that needed it was in a language
+> file. Worth remembering when the next instruction is written.
+
+`Compatibility` rebuilding `Rebind` on `END_DATA_PACK_RELOAD` is right and is not the problem — the
+index it rebuilds is over a registry that has not changed.
+
+So two strings were wrong, and are fixed: `armorpieces.compat.advice` and
+`commands.armorpieces.missing.advice` now say **open the world again**, and say why. This is the one
+place the mod gives a player an instruction, and it was an instruction that does not work.
+
+> This also contradicts `additive-packs.md`'s as-built line that installing `packs/legacy` into a
+> world and reloading brought the pieces back. That entry is corrected there rather than deleted;
+> whatever was seen on 2026-09-08, a reload alone does not do it.
+
+**2. The advisory can never say "was last played on 0.3.0" to a real 0.3.0 world.** `ArmorPiecesState`
+did not exist in 0.3.0, so a genuine pre-0.4.0 world has no marker; `upgradedFrom` is empty and the
+line is skipped. The three-line advisory seen on 2026-09-08 had its `state.dat` hand-edited, which is
+exactly the thing that hid this. The player still gets the count and the advice, so nothing is
+broken — but §4.4's "Absent means pre-0.4.0" is not what the code does with an absent marker, and
+`ArmorPiecesState.upgradedFrom`'s own javadoc argues for the silence. **Left as it is, deliberately,
+and flagged**: the fix is a second sentence for the absent case ("last played on a version before
+0.4.0"), which is honest without guessing which one, and it is a behaviour decision rather than a
+defect.
+
+---
+
 ## Tests
 
 Four, and the first is the probe from section 0 turned into an assertion:
@@ -420,17 +688,23 @@ no game, so they belong in the gate's tier 1 rather than tier 2.
    shipping it never: every world opened in between loses items permanently.
 2. **`former_ids`** on the four registry types, and the split's thirty declarations in the packs that
    took the pieces.
-3. **The restore pack** — `additive-packs.md`, unchanged, now a convenience rather than a rescue.
+3. **The restore pack** — `additive-packs.md`. Not part of the crossing at all: a download offered
+   where content is offered ([§5.2](#52-where-packslegacy-goes)), never a step a player is told to
+   take.
 4. **`check_additive.py`**, extended to claim former ids as well as ids.
 5. **The library's publication guard** (§3.3) — the cheapest thing that prevents rather than repairs.
 6. **`uid`**: `mint_uids.py` and `uids.lock` for the mod's own content, the library column and
    minting, the data field, the component field, the resolution order.
 7. **The upgrade** (§4): the `armorpieces_state` record, the first-launch message,
    `/armorpieces upgrade`. Small, and last, because 6 is what it stamps.
+8. **The tooltip and the moved index** ([§5.1](#51-what-the-tooltip-says)): the ids on the face of
+   the tooltip, `tools/build_moved_index.py` and its gate check, the pack-name lang keys. Added
+   2026-09-10, and it belongs in 0.4.0 with the rest — a player meeting the crossing without it
+   meets a number and no way to act on it.
 
-Steps 1 and 2 are what 0.4.0 cannot ship without. 3 to 7 can follow it, in that order — though 6 and
+Steps 1 and 2 are what 0.4.0 cannot ship without. 3 to 8 can follow it, in that order — though 6 and
 7 shipping *in* 0.4.0 is what makes 0.4.0 the last version this problem happens in, so they are worth
-holding the release for if they are close.
+holding the release for if they are close, and 8 is small enough that it should simply be in.
 
 ---
 
@@ -515,5 +789,24 @@ holding the release for if they are close.
 elsewhere - so a failing patch really does fail the whole stack. Section 0's claim is confirmed at the
 bytecode, not just inferred from the error text.
 
-**Not verified:** the tooltip line (`item.armorpieces.missing_parts`) and the join advisory, both of
-which need a client. `/armorpieces prune` and `/armorpieces upgrade` were not exercised in game.
+**Seen on a client**, 2026-09-08, a flat creative world on the 26.2 dev client through the toolkit
+bridge - the two things the server cycles could not reach:
+
+- **The tooltip line.** A diamond helmet with `brow: armorpieces:circlet` and
+  `horns: armorpieces:tusks` reads `Decorated / Circlet / Hero of the Village, while fitted /
+  1 not installed`. The good socket keeps its name, its effect and its fitting line; the missing one
+  costs one grey line and nothing else. With a second unresolvable socket the count says `2 not
+  installed`, and under F3+H the ids are listed under it, one per line.
+- **The operator advisory**, on the join that first reads such an item and again on the next join,
+  all three lines: `This world was last played on Armor Pieces 0.2.0; it is now on 0.3.0.` (grey),
+  `1 piece ids in this world are not installed. Armor wearing them keeps them but cannot show them.`
+  (yellow), `Install the pack that provides them and they come back. /armorpieces missing lists what
+  is waiting.` (grey). `/armorpieces missing` then lists each id with its read count.
+- **And the restore path with the real pack**: `packs/legacy` copied into that world's `datapacks/`,
+  the pieces come back under their `armorpieces:` ids with nothing else done, and the `not
+  installed` line disappears.
+
+**One wart seen there and not fixed:** `armorpieces.compat.missing` reads "1 piece ids", because the
+string has no singular form.
+
+**Still not verified:** `/armorpieces prune` and `/armorpieces upgrade`.

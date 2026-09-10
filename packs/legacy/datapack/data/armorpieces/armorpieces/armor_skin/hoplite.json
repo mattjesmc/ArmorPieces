@@ -1,0 +1,14 @@
+{
+  "asset_id": "armorpieces:hoplite",
+  "description": {
+    "translate": "skin.armorpieces.hoplite"
+  },
+  "loot": [
+    {
+      "table": "minecraft:chests/buried_treasure",
+      "weight": 1,
+      "chance": 0.05
+    }
+  ],
+  "uid": "ap175kr6gcudi666tmthnoq"
+}

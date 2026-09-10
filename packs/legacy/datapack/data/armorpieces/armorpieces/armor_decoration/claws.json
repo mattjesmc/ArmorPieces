@@ -1,0 +1,44 @@
+{
+  "asset_id": "armorpieces:claws",
+  "description": {
+    "translate": "decoration.armorpieces.claws"
+  },
+  "anchors": [
+    "vambraces"
+  ],
+  "fittings": [
+    "armorpieces:guard",
+    "armorpieces:inlay"
+  ],
+  "effects": [
+    {
+      "type": "armorpieces:if_wearer",
+      "if": {
+        "equipment": {
+          "mainhand": {
+            "items": "minecraft:air"
+          }
+        }
+      },
+      "then": {
+        "type": "armorpieces:attribute",
+        "id": "armorpieces:claws_bite",
+        "attribute": "minecraft:attack_damage",
+        "amount": {
+          "default": 1.0,
+          "by_material": [
+            {
+              "material": "minecraft:netherite",
+              "value": 2.0
+            },
+            {
+              "material": "minecraft:diamond",
+              "value": 1.5
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "uid": "ap12g7qrkdd7ktlvcmym6la"
+}

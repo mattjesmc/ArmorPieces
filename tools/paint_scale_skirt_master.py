@@ -155,10 +155,11 @@ from pathlib import Path
 
 from PIL import Image
 
+import decoration_paths
 from fitting_mask import write_mask
 
 ROOT = Path(__file__).resolve().parent.parent
-GEO = ROOT / "src" / "main" / "resources" / "assets" / "armorpieces" / "armorpieces" / "decoration" / "scale_skirt.json"
+GEO = decoration_paths.geometry("scale_skirt")
 OUT = ROOT / "tools" / "decoration_masters" / "scale_skirt.png"
 GUARD = OUT.with_name("scale_skirt_guard.png")
 

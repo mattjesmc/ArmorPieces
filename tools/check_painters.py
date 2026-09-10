@@ -29,6 +29,13 @@ compared, and anything that changed is put back - so running this never silently
 `trace_geometry.py` is exercised too, over every part, because that is the tool the whole authoring
 process leans on and it is the one that died most quietly.
 
+**Every part means the packs' too.** The split of 2026-09-07 moved 25 parts out of the mod, and both
+halves of this check went blind to them at once: seven painters raised on a geometry file that was
+no longer where they looked, and the trace pass simply stopped visiting a quarter of the parts
+without saying so. `decoration_paths` is where "which file is this part's" lives now; the masters
+did not move, because `tools/decoration_masters/` is one authoring directory and which pack a part
+ships in is decided after it is drawn.
+
 Usage:
     python tools/check_painters.py                 # every painter, then trace over every part
     python tools/check_painters.py greaves sash    # just these
@@ -45,10 +52,13 @@ import sys
 import tempfile
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import decoration_paths  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
 TOOLS = ROOT / "tools"
 MASTERS = TOOLS / "decoration_masters"
-GEO = ROOT / "src" / "main" / "resources" / "assets" / "armorpieces" / "armorpieces" / "decoration"
 
 PAINTER = re.compile(r"^paint_(?P<part>.+)_master\.py$")
 
@@ -107,7 +117,7 @@ def main() -> int:
 
     traced = 0
     if do_trace:
-        for geometry in sorted(GEO.glob("*.json")):
+        for geometry in decoration_paths.all_geometry():
             if args and geometry.stem not in args:
                 continue
             done = subprocess.run([sys.executable, str(TOOLS / "trace_geometry.py"), str(geometry)],

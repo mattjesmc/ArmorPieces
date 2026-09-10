@@ -178,10 +178,11 @@ from pathlib import Path
 
 from PIL import Image
 
+import decoration_paths
 from fitting_mask import write_mask
 
 ROOT = Path(__file__).resolve().parent.parent
-GEO = ROOT / "src" / "main" / "resources" / "assets" / "armorpieces" / "armorpieces" / "decoration" / "head_fins.json"
+GEO = decoration_paths.geometry("head_fins")
 OUT = ROOT / "tools" / "decoration_masters" / "head_fins.png"
 INLAY = OUT.with_name("head_fins_inlay.png")
 

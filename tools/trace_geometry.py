@@ -48,8 +48,9 @@ import math
 import sys
 from pathlib import Path
 
+import decoration_paths
 import mc_humanoid
-from bb_rig import GEO_DIR, ROOT, parse_anchors
+from bb_rig import ROOT, parse_anchors
 
 # The vanilla figure lives in mc_humanoid, transcribed from the decompiled sources; these two tables
 # are read out of it rather than kept as a second copy that can drift. BODY is bone -> (pivot,
@@ -65,7 +66,9 @@ ARMOR_LAYERS = {
     for slot in mc_humanoid.ARMOR_SLOTS
 }
 
-DEC_DIR = ROOT / "src" / "main" / "resources" / "data" / "armorpieces" / "armorpieces" / "armor_decoration"
+# Parts live in the mod OR in a pack since the 2026-09-07 split, so where a part is is asked of
+# decoration_paths rather than written down here - a bone-mate in the Wild Hunt is still a
+# bone-mate, and tracing a part against two thirds of its neighbours would report clean.
 
 EPS = 1e-6
 AXES = ("x", "y", "z")
@@ -179,7 +182,7 @@ def neighbours(subject_stem, subject_anchor, bone, anchors):
     session out once.
     """
     out = []
-    for dec in sorted(DEC_DIR.glob("*.json")):
+    for dec in decoration_paths.all_parts():
         if dec.stem == subject_stem:
             continue
         entry = json.loads(dec.read_text(encoding="utf-8"))
@@ -188,8 +191,9 @@ def neighbours(subject_stem, subject_anchor, bone, anchors):
                 continue
             if not any(att["part"] == bone for att in anchors[name]["attachments"]):
                 continue
-            geo_path = GEO_DIR / f"{dec.stem}.json"
-            if not geo_path.is_file():
+            try:
+                geo_path = decoration_paths.geometry(dec.stem)
+            except SystemExit:
                 continue
             geo = json.loads(geo_path.read_text(encoding="utf-8"))
             for att in anchors[name]["attachments"]:
@@ -366,8 +370,8 @@ def report(geo_path, anchor_name, anchors):
 def anchor_of(stem):
     """A part's declared anchor, from its registry entry. Parts legal in several sockets have to be
     traced against each one, so the first is only a default."""
-    path = DEC_DIR / f"{stem}.json"
-    if not path.is_file():
+    path = decoration_paths.part(stem)
+    if path is None:
         return None
     return json.loads(path.read_text(encoding="utf-8"))["anchors"][0]
 
@@ -375,7 +379,7 @@ def anchor_of(stem):
 def main():
     args = [a for a in sys.argv[1:] if a != "--all"]
     anchors = parse_anchors()
-    targets = sorted(GEO_DIR.glob("*.json")) if "--all" in sys.argv else [Path(args[0])]
+    targets = decoration_paths.all_geometry() if "--all" in sys.argv else [Path(args[0])]
     if not targets:
         sys.exit("usage: trace_geometry.py <geometry.json> [anchor] | --all")
 

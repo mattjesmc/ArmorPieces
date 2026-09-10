@@ -1,6 +1,7 @@
 package com.mattjesmc.armorpieces.command;
 
 import com.mattjesmc.armorpieces.decoration.ArmorDecorations;
+import com.mattjesmc.armorpieces.identity.Moved;
 import com.mattjesmc.armorpieces.identity.Rebind;
 import com.mattjesmc.armorpieces.registry.ModDataComponents;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -79,8 +80,15 @@ public final class CompatibilityCommand {
         source.sendSuccess(() -> Component.translatable(
             "commands.armorpieces.missing.header", misses.size()).withStyle(ChatFormatting.YELLOW), false);
         for (final Map.Entry<Rebind.Miss, Integer> miss : misses) {
+            // The pack, where the shipped index can place the id - this is the shopping list, and an
+            // id an operator has to search for is half a list. Translated on the receiving client,
+            // not here: a dedicated server's Language holds vanilla's keys and none of ours.
+            final Component pack = Moved.pack(miss.getKey().id())
+                .map(name -> Component.literal("  ").append(name).withStyle(ChatFormatting.YELLOW))
+                .orElseGet(Component::empty);
             source.sendSuccess(() -> Component.literal(" ")
                 .append(Component.literal(miss.getKey().id()).withStyle(ChatFormatting.WHITE))
+                .append(pack)
                 .append(Component.literal("  x" + miss.getValue()).withStyle(ChatFormatting.DARK_GRAY))
                 .append(Component.literal("  " + miss.getKey().registry().identifier().getPath())
                     .withStyle(ChatFormatting.DARK_GRAY)), false);

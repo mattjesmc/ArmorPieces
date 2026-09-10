@@ -1,0 +1,14 @@
+{
+  "asset_id": "armorpieces:samurai",
+  "description": {
+    "translate": "skin.armorpieces.samurai"
+  },
+  "loot": [
+    {
+      "table": "minecraft:chests/jungle_temple",
+      "weight": 1,
+      "chance": 0.05
+    }
+  ],
+  "uid": "ap152panaa4hexianpvayga"
+}

@@ -1,6 +1,7 @@
 package com.mattjesmc.armorpieces.decoration;
 
 import com.mattjesmc.armorpieces.decoration.effect.DecorationEffect;
+import com.mattjesmc.armorpieces.identity.Moved;
 import com.mattjesmc.armorpieces.identity.Rebind;
 import com.mattjesmc.armorpieces.identity.Tolerant;
 import com.mattjesmc.armorpieces.decoration.fitting.Fitting;
@@ -274,19 +275,32 @@ public record ArmorDecorations(
                 }
             }
         }
-        // Last, and only when there is something to say. This one line is the difference between a
-        // player thinking the mod is broken and a player knowing which pack to install; under an
-        // advanced tooltip it names the ids, because by then they are looking for exactly that.
+        // Last, and only when there is something to say. The count is the difference between a player
+        // thinking the mod is broken and a player knowing something is absent; the ids under it are
+        // the difference between knowing that and being able to do anything about it, which is why
+        // they are on the face of the tooltip and not behind F3+H - see docs/plans/compatibility.md
+        // section 5.1. A part is three JSON files and a PNG, so an id is a complete instruction even
+        // to a player who cannot get the pack.
         if (!this.unresolved.isEmpty()) {
             consumer.accept(CommonComponents.space()
                 .append(Component.translatable("item.armorpieces.missing_parts", this.unresolved.size())
                     .withStyle(ChatFormatting.DARK_GRAY)));
-            if (flag.isAdvanced()) {
-                for (final String name : this.unresolvedNames()) {
-                    consumer.accept(CommonComponents.space().append(CommonComponents.space())
-                        .append(Component.literal(name).withStyle(ChatFormatting.DARK_GRAY)));
-                }
+            final List<String> names = this.unresolvedNames();
+            // Twelve sockets can all be missing at once, and twelve lines is a wall. Four covers
+            // every case anyone actually meets; the advanced tooltip is where the rest belongs.
+            final int shown = flag.isAdvanced() ? names.size() : Math.min(names.size(), MISSING_SHOWN);
+            for (int index = 0; index < shown; index++) {
+                consumer.accept(CommonComponents.space().append(CommonComponents.space())
+                    .append(Moved.describe(names.get(index)).copy().withStyle(ChatFormatting.DARK_GRAY)));
+            }
+            if (shown < names.size()) {
+                consumer.accept(CommonComponents.space().append(CommonComponents.space())
+                    .append(Component.translatable("item.armorpieces.missing_more", names.size() - shown)
+                        .withStyle(ChatFormatting.DARK_GRAY)));
             }
         }
     }
+
+    /** How many missing ids an ordinary tooltip names before it says "+n more". */
+    private static final int MISSING_SHOWN = 4;
 }

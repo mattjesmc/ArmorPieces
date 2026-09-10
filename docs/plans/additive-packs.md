@@ -1,11 +1,32 @@
 # Additive packs
 
-**Status: design only, nothing built.** 2026-09-08. Follows `docs/plans/main-pack-split.md`, which
-moved 25 pieces and 5 skins out of the mod and left one thing unresolved: armor saved on 0.3.0
-loses a piece the mod no longer defines.
+> **Status (2026-09-08): steps 1 to 4 are BUILT** — working copy only, committed nowhere. Step 1
+> (the move table) and step 2 (tolerant decode) are `docs/plans/compatibility.md`'s, committed as
+> `3fec698`; step 3 (`packs/legacy`) and step 4 (`tools/check_additive.py`, in the gate's tier 0) are
+> this session's. See [As built](#as-built). Steps 5 (versioned artifacts) and 6 (the config switch)
+> are not.
+>
+> **Corrected 2026-09-10.** The restore pack is **not** the compatibility answer and this document
+> should never have said it was — `docs/plans/compatibility.md` §1 and §2, built and verified the
+> day after this was written, carry the crossing on their own with no pack installed. `packs/legacy`
+> is a convenience download. See that plan's
+> [§5](compatibility.md#5-the-correction-2026-09-10--no-compatibility-pack-is-owed), which owns the
+> correction; the rest of this document — the additive rule, the checker, versioned artifacts, the
+> switch — is unaffected and still stands.
 
-The answer is a **restore pack** rather than an alias table in Java, and around it a rule the whole
-library follows.
+2026-09-08. Follows `docs/plans/main-pack-split.md`, which moved 25 pieces and 5 skins out of the
+mod and left one thing unresolved: armor saved on 0.3.0 loses a piece the mod no longer defines.
+
+The answer this document reached was a **restore pack** rather than an alias table in Java, and
+around it a rule the whole library follows.
+
+**The restore pack half of that was wrong, and the rule was right.** A day later the break was
+measured properly — a missing id costs the whole `ItemStack`, not the socket — and the fix went into
+the mod instead: a decode that cannot fail, plus `former_ids` declared by the pack that took the
+piece. Both are built and were verified in the game. So a 0.3.0 save crosses to 0.4.0 with **nothing
+installed**, and `packs/legacy` went from the rescue to a download for a player who wants the old
+pieces back under their old ids. `docs/plans/compatibility.md` owns all of that; what remains this
+document's, and is untouched by the correction, is **the additive rule** below.
 
 ---
 
@@ -17,7 +38,10 @@ This is the user's rule and it decides several questions at once:
 
 - The restore pack ships only the 30 things that **left** the mod, not a snapshot of all 91. A
   snapshot would redefine the 66 pieces the mod still ships and silently freeze their data and art
-  at 0.3.0, for exactly the players most likely to install it.
+  at 0.3.0, for exactly the players most likely to install it. (**This objection expires** the day
+  the mod ships no content of its own — nothing else would define those 66, so the snapshot becomes
+  additive by construction and the pack grows to 91. See
+  [compatibility.md §5.3](compatibility.md#53-the-direction-the-mod-becomes-the-engine).)
 - The library's current `armorpieces` entry (`content/mod/library.json` in `ArmorPiecesSite`, v0.3.0,
   107 items) **breaks the rule today**. It is the whole mod as a standalone pack, so installing it
   over 0.4.0 overrides everything. It becomes an archive download or it goes.
@@ -82,6 +106,11 @@ table at all.
 ---
 
 ## The restore pack
+
+> **Read this section as a description of a download, not of an upgrade step.** Everything below is
+> accurate about what `packs/legacy` *is*; the framing around it — that a player crossing to 0.4.0
+> needs it — was corrected on 2026-09-10. It is offered in the website's library and on the mod
+> pages, never bundled, and never named in the first-launch advisory as something to do.
 
 `packs/legacy`, namespace **`armorpieces`** — the mod's own, which is the trick that makes it work.
 A datapack may define ids in any namespace, so the pack restores `armorpieces:tusks` exactly as
@@ -204,23 +233,87 @@ Each step unlocks the next.
 5. **Versioned artifacts** in the library, and `export_pack.py` targeting a version.
 6. **The config switch.**
 
-Steps 1 to 3 are what 0.4.0 cannot ship without. Steps 4 to 6 can follow it.
+**Corrected 2026-09-10.** Step 2 is the only one 0.4.0 cannot ship without, and it is built. Step 1
+was deleted by `compatibility.md` §2.1 in favour of `former_ids` and comes back in §5.1 as a
+*generated* index used only to name a pack in a tooltip. Step 3 is a download, on nobody's critical
+path. Steps 4 to 6 can follow whenever.
+
+---
+
+## As built
+
+2026-09-08, steps 3 and 4. Everything below is in the working copy and committed nowhere.
+
+**`tools/build_legacy_pack.py` generates `packs/legacy`.** There is no move-table file: the 30 pack
+data files carrying a `former_ids` entry that starts `armorpieces:` ARE the table, and the generator
+reads them. It rewrites each piece's `asset_id` and language key back to the mod's namespace, drops
+`former_ids` (this file *is* the former id, and two claims on one former id is what
+`mint_uids.py --check` reports), copies the geometry and sheets, and writes the 30 language lines.
+The three loot groups, their three tags and the pack's paperwork are hand-written and never touched
+by a rebuild; `--check` fails if the tree is not what a fresh build produces. 133 files, 25 pieces,
+5 skins, 0 template recipes.
+
+**The art tracks the packs, not 0.3.0's bytes.** What a save needs back is the *id*; a piece the Wild
+Hunt has since redrawn should come back redrawn. (The generated data is in fact identical to 0.3.0's
+for every row but two — `claws` and `head_fins` gained a wearer-gated effect after the split, which
+the restored copies now carry as well.)
+
+**The two mechanisms the plan said to confirm before trusting it, confirmed:**
+
+1. **Language files merge across packs**, key by key. `ClientLanguage.loadFrom` asks the resource
+   manager for the whole *stack* of `lang/en_us.json` under each namespace and puts every file's
+   entries into one map (verified in 26.2's bytecode). A partial `assets/armorpieces/lang/en_us.json`
+   therefore adds 30 lines and wipes none of the mod's own.
+2. **Nothing derives a namespace from a folder name.** `pack_manifest.py` and `check_authoring.py`
+   both glob `data/*/…` and take the namespace from the path, so `packs/legacy/` holding
+   `data/armorpieces/` reads correctly — 25 pieces, 5 skins, labels resolved, reach found.
+   `check_authoring.py` had a *different* assumption that this pack was the first to break: that a
+   `#tag` a loot group names is inside the pack. The three restored groups name
+   `#armorpieces:common`, the mod's fitting tag, which never left; the check now looks in the pack
+   and then in the mod's own resources.
+
+**`tools/check_additive.py`** walks the mod and every pack and fails when two of them define one
+registry id, recipe id or asset path. Tags and language files are exempt by design, because the game
+merges those rather than letting one win. 787 definitions across 8 sources, none twice. It is
+`gate.py`'s tier-0 `additive` check. It does not repeat `mint_uids.py --check`'s former-id pass.
+
+**Seen in the game**, 26.2 dev client, a flat creative world:
+
+- the tooltip on a diamond helmet whose `horns` socket names `armorpieces:tusks` reads
+  `Decorated / Circlet / … / 1 not installed`, with the good socket intact; under F3+H it names the
+  ids.
+- the operator advisory arrives on the join that first reads such an item, and again on the next
+  join, with `This world was last played on Armor Pieces 0.2.0; it is now on 0.3.0.` in front of it
+  when the world's `armorpieces_state` says so.
+- installing `packs/legacy` into that world and reloading brings the pieces back under their old
+  ids, with nothing else done.
+  > **Corrected 2026-09-10 by a measurement that contradicts it.** A reload alone does **not** do it,
+  > and neither does `/datapack enable` plus a reload — a datapack REGISTRY is read when the world
+  > loads, not on a resource reload, so the pack shows as enabled and its pieces still do not
+  > resolve. The world has to be opened again. Whatever was seen on 2026-09-08, this is what three
+  > boots of a real 0.3.0 save show; see
+  > [compatibility.md §5.4](compatibility.md#54-proved-on-a-real-030-save-2026-09-10). The two
+  > strings that told a player to `/reload` are fixed.
 
 ---
 
 ## Open
 
 - **Does the restore pack carry the three retired outfits?** It would duplicate the ones the Wild
-  Hunt, Coral and the Hive now declare. Leaving them out is the recommendation.
+  Hunt, Coral and the Hive now declare. Leaving them out is the recommendation, and is what was
+  built.
 - **Licence.** ARR like the mod, since the art is the mod's, rather than CC BY like Animals and
-  Coral. Same open question as the three packs the split created.
+  Coral. Same open question as the three packs the split created. Built as ARR, copied from the
+  Wild Hunt's credits file.
 - **What "for": "0.4"` matches.** A mod version, a range, or a pack-format number. A range is
   probably right and is the more annoying one to get wrong.
 - **Whether `parts.disabled` should also take skins, cloths and fittings.** The same predicate would
   serve all four registries, and "full customizability" reads like it should.
-- **Whether the raw unresolved entries should be visible** — a tooltip line saying a socket holds
-  something this install cannot draw, and naming nothing else, would tell a player why their helmet
-  looks plain instead of leaving them to guess.
+- ~~**Whether the raw unresolved entries should be visible**~~ — **answered, and then answered
+  again.** Built 2026-09-08 as a count line with the ids behind F3+H; corrected 2026-09-10 to put
+  the ids and the pack name on the face of the tooltip, because "naming nothing else" leaves a
+  player who cannot get the pack with nothing to act on. See
+  [compatibility.md §5.1](compatibility.md#51-what-the-tooltip-says).
 
 ## What this is not
 

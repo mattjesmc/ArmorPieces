@@ -60,8 +60,10 @@ from pathlib import Path
 
 from PIL import Image
 
+import decoration_paths
+
 ROOT = Path(__file__).resolve().parent.parent
-GEO = ROOT / "src" / "main" / "resources" / "assets" / "armorpieces" / "armorpieces" / "decoration" / "horns.json"
+GEO = decoration_paths.geometry("horns")
 OUT = ROOT / "tools" / "decoration_masters" / "horns.png"
 OUT_STATIC = ROOT / "tools" / "decoration_masters" / "horns_static.png"
 
