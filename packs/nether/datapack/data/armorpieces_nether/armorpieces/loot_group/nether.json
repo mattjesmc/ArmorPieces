@@ -1,0 +1,10 @@
+{
+  "chance": 0.15,
+  "tables": [
+    "minecraft:chests/bastion_treasure",
+    "minecraft:chests/bastion_other",
+    "minecraft:chests/bastion_hoglin_stable",
+    "minecraft:chests/nether_bridge"
+  ],
+  "parts": "#armorpieces_nether:nether"
+}
