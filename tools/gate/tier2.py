@@ -224,7 +224,9 @@ def main(argv: list[str]) -> int:
         for check in BOOT_CHECKS:
             print(f"tier 2  {check.name:<20} {check.what}   (a server of its own)")
         return 0
-    if not scenarios:
+    boot_checks = [c for c in BOOT_CHECKS
+                   if not args.only or any(term in c.name for term in args.only)]
+    if not scenarios and not boot_checks:
         print("nothing matched")
         return 2
 
@@ -233,7 +235,7 @@ def main(argv: list[str]) -> int:
     log = ROOT / "build" / "gate" / "server.log"
     started = time.monotonic()
 
-    if not args.attach:
+    if not args.attach and scenarios:
         if bridge.alive():
             raise SystemExit(
                 f"something is already answering on {args.url}. A second server cannot bind that "
@@ -245,12 +247,13 @@ def main(argv: list[str]) -> int:
         server = start_server(log)
 
     try:
-        bridge.wait(args.boot_seconds if server else 30, server=True)
-        print(f"attached to Armor Pieces {check_instance(bridge)} "
-              f"after {time.monotonic() - started:.0f}s\n")
+        results = []
+        if scenarios:
+            bridge.wait(args.boot_seconds if server else 30, server=True)
+            print(f"attached to Armor Pieces {check_instance(bridge)} "
+                  f"after {time.monotonic() - started:.0f}s\n")
 
         game = Game(bridge)
-        results = []
         for scene in scenarios:
             began = time.monotonic()
             status, note = "pass", ""
@@ -275,11 +278,10 @@ def main(argv: list[str]) -> int:
         # The boot checks come last and cost a server each; they are the claims that cannot be
         # asked of a running game, because they are about what happens while a world loads.
         if not args.attach and not args.no_boot_checks:
-            stop_server(server, bridge)
-            server = None
-            for check in BOOT_CHECKS:
-                if args.only and not any(term in check.name for term in args.only):
-                    continue
+            if server is not None:
+                stop_server(server, bridge)
+                server = None
+            for check in boot_checks:
                 began = time.monotonic()
                 status, note = run_boot_check(check, args.boot_seconds)
                 results.append({"name": check.name, "status": status, "note": note,

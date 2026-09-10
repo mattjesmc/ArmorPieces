@@ -131,6 +131,20 @@ public record ArmorPiecesServerConfig(
     }
 
     /**
+     * The settings in force, replaced. Package-private, like {@link #WRITE_CODEC}, and for the same
+     * kind of reason: {@code ServerConfigFixture} in the tests is the only caller.
+     *
+     * <p>A loot table is assembled against whatever {@link #get()} holds at that moment, so a test
+     * that cannot say "on a server whose owner halved the multiplier" cannot ask the question at
+     * all - and the alternative, writing {@code config/armorpieces-server.json} into whatever
+     * directory the test JVM calls home and reading it back, tests the file rather than the rule.
+     * Nothing in the game calls this: {@link #load()} is how the value moves in a running server.
+     */
+    static void apply(final ArmorPiecesServerConfig config) {
+        current = config;
+    }
+
+    /**
      * Reads the file now and again at the start of every datapack reload.
      *
      * <p>The reload hook is what makes the file live. Loot tables are assembled as the packs load,

@@ -233,6 +233,25 @@ public final class DecorationEffectDispatcher {
         if (!(entity.level() instanceof ServerLevel)) {
             return;
         }
+        equipmentChanged(entity, slot, previous, current);
+    }
+
+    /**
+     * The reconcile itself, with the server check left behind at the event.
+     *
+     * <p>Split out and package-private for exactly one reason: everything below this line is a pure
+     * function of an entity's attribute map and two item stacks - no level is read, no event is
+     * fired, nothing is sent - so it can be asked in a test JVM, and it is the half of this class
+     * where the rules live. The check above cannot be: a {@link ServerLevel} is a running game. See
+     * {@code EffectDispatchTest} and {@code WornAttributesTest}, which put a piece on and take it off
+     * again with no world at all.
+     */
+    static void equipmentChanged(
+        final LivingEntity entity,
+        final EquipmentSlot slot,
+        final ItemStack previous,
+        final ItemStack current
+    ) {
         if (!ARMOR_SLOTS.contains(slot)) {
             // A hand changed. No socket rides on a hand, so nothing is equipped or unequipped here -
             // but a condition may have been about what that hand holds, so the armor slots' modifiers

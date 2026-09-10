@@ -34,6 +34,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -89,8 +90,19 @@ DYE_TYPE = "armorpieces:dye"
 BANNER_TYPE = "armorpieces:banner"
 
 
+def _half_up(value: float) -> int:
+    """Java's Math.round, which is floor(x + 0.5) and NOT Python's round().
+
+    Python rounds a half to the nearest EVEN number, so round(14.5) is 14 where Math.round(14.5F) is
+    15, and a channel that lands exactly on a half then comes out one unit off. Which happens
+    constantly here: halving an odd channel and interpolating at t = 1/2 both land there. Nothing in
+    a picture, everything in a port - the previews were a unit away from the game on those pixels
+    until DecorationBakeTest asked, and a digest that can never match is a check that can never run."""
+    return math.floor(value + 0.5)
+
+
 def _lerp(a, b, t):
-    return tuple(round(a[i] + (b[i] - a[i]) * t) for i in range(3))
+    return tuple(_half_up(a[i] + (b[i] - a[i]) * t) for i in range(3))
 
 
 def _ramp(dark, mid, light):
@@ -140,9 +152,9 @@ def static_ramp(rgb):
     """DecorationPalette.ofStaticColour - dark is half the colour, light is halfway to white."""
     r, g, b = rgb
     return _ramp(
-        (round(r * 0.5), round(g * 0.5), round(b * 0.5)),
+        (_half_up(r * 0.5), _half_up(g * 0.5), _half_up(b * 0.5)),
         (r, g, b),
-        (round(r + (255 - r) * 0.5), round(g + (255 - g) * 0.5), round(b + (255 - b) * 0.5)))
+        (_half_up(r + (255 - r) * 0.5), _half_up(g + (255 - g) * 0.5), _half_up(b + (255 - b) * 0.5)))
 
 
 def _cached_ramps() -> dict:
@@ -499,6 +511,143 @@ def fitting_choices(pack: Path) -> dict:
     return {"materials": materials, "tags": tags}
 
 
+# ---- the reference the game's own bake is held to ---------------------------------------------
+
+REFERENCE = ROOT / "docs" / "plans" / "decoration-bake-reference.json"
+DECORATIONS = RESOURCES / "assets" / "armorpieces" / "textures" / "entity" / "decoration"
+PART_DATA = RESOURCES / "data" / "armorpieces" / "armorpieces" / "armor_decoration"
+
+# What a case fills each of the mod's masked fittings with. A material fitting takes a palette
+# suffix and a dye fitting takes a dye name, which are the two shapes FittingColour has; the banner
+# fitting draws geometry rather than colouring a mask, so it never appears here.
+FITTING_VALUES = {"guard": "gold", "gemstone": "emerald", "inlay": "red"}
+
+# The part every material is composited over: the only one that is a master, a static layer and two
+# masks at once, so one sweep exercises every branch of recolour and applyMask together.
+RICH_PART = "bandolier"
+
+
+def _sha1(data: bytes) -> str:
+    import hashlib
+
+    return hashlib.sha1(data).hexdigest()
+
+
+def _digest(image: Image.Image) -> str:
+    """The picture, as one string: sha1 over its RGBA bytes, row-major.
+
+    Language-neutral on purpose - the Java half writes the same four bytes per pixel in the same
+    order, so a digest that differs means a pixel that differs and nothing else."""
+    return _sha1(image.convert("RGBA").tobytes())
+
+
+def _ramp_reference(ramp) -> dict:
+    """A 256-entry table as data: a digest of all of it, and the stops worth reading by eye."""
+    marks = sorted({*range(0, 256, 17), 126, 127, 128, 255})
+    return {
+        "sha1": _sha1(bytes(channel for stop in ramp for channel in stop)),
+        "samples": {str(v): "%02x%02x%02x" % ramp[v] for v in marks},
+    }
+
+
+def _parts() -> list[tuple[str, list[str]]]:
+    """Every part the mod itself ships, as (texture name, fitting ids), in a fixed order.
+
+    The mod's own, not the packs': the arithmetic is the same whoever painted the master, and a
+    reference that named a pack would go stale the day that pack moved."""
+    parts = []
+    for path in sorted(PART_DATA.glob("*.json")):
+        data = _read_json(path)
+        namespace, name = _split_id(data.get("asset_id", ""), "minecraft")
+        if namespace != "armorpieces" or not (DECORATIONS / f"{name}.png").is_file():
+            continue
+        parts.append((name, [f for f in data.get("fittings", []) if isinstance(f, str)]))
+    return parts
+
+
+def _sheets(name: str, fittings: list[str]):
+    """The files one part is composited from: its master, its static layer if it has one, and one
+    mask per fitting that both ships a sheet and has a value this reference knows how to fill."""
+    statics = DECORATIONS / f"{name}{STATIC_SUFFIX}.png"
+    masks = []
+    for fitting in fittings:
+        _, path = _split_id(fitting, "armorpieces")
+        sheet = DECORATIONS / f"{name}_{path}.png"
+        if path in FITTING_VALUES and sheet.is_file():
+            masks.append((path, sheet))
+    return DECORATIONS / f"{name}.png", (statics if statics.is_file() else None), masks
+
+
+def _case(name: str, fittings: list[str], material: str, fill: bool) -> dict:
+    """One composited picture, described so another implementation can produce it and compare.
+
+    The master's own digest travels with it: a repainted master changes the answer without anything
+    being wrong, and the Java half should say so in those words rather than accusing the arithmetic."""
+    master_path, static_path, masks = _sheets(name, fittings)
+    master = Image.open(master_path)
+    statics = Image.open(static_path) if static_path is not None else None
+    out = recolour(master, statics, material_ramp(material))
+    filled = []
+    if fill:
+        for fitting, sheet in masks:
+            value = FITTING_VALUES[fitting]
+            apply_mask(out, master, Image.open(sheet), fitting_ramp(value))
+            filled.append({"mask": sheet.name, "value": value})
+    return {
+        "part": name,
+        "material": material,
+        "master": master_path.name,
+        "static": static_path.name if static_path is not None else None,
+        "masks": filled,
+        "master_sha1": _digest(master),
+        "width": out.width,
+        "height": out.height,
+        "sha1": _digest(out),
+    }
+
+
+def reference() -> dict:
+    """Everything the recolour depends on, as data, so the game's own bake can be held to it.
+
+    This file is a PORT and DecorationPalette is the original, which is worth exactly nothing unless
+    somebody checks. The skins already work this way (docs/plans/skin-bake-reference.json); this is
+    the same bargain for decorations: the ramps, the static ramps a dye and a static layer go
+    through, and a digest of the finished picture for every part the mod ships - in iron as it is
+    worn with nothing set, in gold with every mask it has filled, and one part with a static layer
+    and two masks through every material there is.
+
+    A Java test that reads this and disagrees has found a real difference: the editor is previewing
+    a colour the game does not draw."""
+    materials = {}
+    for material in MATERIALS:
+        if has_palette(material):
+            materials[material] = _ramp_reference(material_ramp(material))
+
+    # Every colour a static ramp is ever built around here: the dyes an inlay can be, and the
+    # colours the shipped static layers actually use, which is what recolour builds one for.
+    colours = {"#%02x%02x%02x" % rgb: rgb for rgb in DYES.values()}
+    for path in sorted(DECORATIONS.glob(f"*{STATIC_SUFFIX}.png")):
+        for pixel in set(Image.open(path).convert("RGBA").getdata()):
+            if pixel[3]:
+                colours["#%02x%02x%02x" % pixel[:3]] = pixel[:3]
+    statics = {key: _ramp_reference(static_ramp(rgb)) for key, rgb in sorted(colours.items())}
+
+    parts = _parts()
+    cases = [_case(name, fittings, "iron", False) for name, fittings in parts]
+    cases += [_case(name, fittings, "gold", True)
+              for name, fittings in parts if _sheets(name, fittings)[2]]
+    rich = dict(parts).get(RICH_PART, [])
+    cases += [_case(RICH_PART, rich, material, True) for material in materials]
+
+    return {
+        "note": "generated by python tools/preview_material.py --reference; the Java bake must match",
+        "mid_stop": MID_STOP,
+        "materials": materials,
+        "static": statics,
+        "cases": cases,
+    }
+
+
 def _parse_pairs(values, what: str) -> list[tuple[str, str]]:
     pairs = []
     for item in values or []:
@@ -537,6 +686,10 @@ def main() -> None:
                          "guard=#c0c0c0; repeatable, laid over in the order given")
     ap.add_argument("--mask", action="append", metavar="NAME=PATH",
                     help="use this file as the fitting's mask instead of the authored one")
+    ap.add_argument("--reference", action="store_true",
+                    help="write docs/plans/decoration-bake-reference.json for the Java half")
+    ap.add_argument("--check", action="store_true",
+                    help="with --reference: fail if that file is not what this tool produces now")
     ap.add_argument("--all", action="store_true", help="every material")
     ap.add_argument("--out-dir", type=Path, default=ROOT / "build" / "preview")
     ap.add_argument("--master", type=Path,
@@ -544,6 +697,24 @@ def main() -> None:
     ap.add_argument("--static", type=Path,
                     help="use this file as the static layer instead of the authored one")
     args = ap.parse_args()
+
+    if args.reference:
+        written = json.dumps(reference(), indent=2) + "\n"
+        if args.check:
+            # The Java half is held to this file, so a change HERE that never reaches it is a drift
+            # nothing would report: the game would still agree with a reference describing the port
+            # as it used to be. The gate runs this.
+            if not REFERENCE.is_file():
+                sys.exit(f"error: {REFERENCE} is missing - write it with --reference")
+            if REFERENCE.read_text(encoding="utf8") != written:
+                sys.exit(f"error: {REFERENCE} is not what this tool produces now - "
+                         f"regenerate it with python tools/preview_material.py --reference, "
+                         f"and expect DecorationBakeTest to have something to say about why")
+            print(f"{REFERENCE} is current")
+            return
+        REFERENCE.write_text(written, encoding="utf8")
+        print(f"wrote {REFERENCE}")
+        return
 
     if args.ramp:
         colours = [c for c in args.static_colours.split(",") if c.strip()]

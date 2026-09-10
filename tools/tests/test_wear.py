@@ -149,6 +149,21 @@ class WearTests(unittest.TestCase):
         with self.assertRaises(SystemExit):
             self.build({"name": "no", "pieces": {"brow": {"id": "armorpieces:not_a_piece"}}})
 
+    def test_a_piece_borrowed_from_a_pack(self):
+        """An outfit may name a piece from any pack, and since the 2026-09-07 split most of them
+        must: the mantle this set used to wear as `armorpieces:mantle` is `armorpieces_hunt:mantle`
+        now. The rig finds it because the pack's folders are named alongside the mod's."""
+        hunt = ROOT / "packs" / "wildhunt"
+        spec = {"name": "borrowed", "pieces": {"pauldrons": {"id": "armorpieces_hunt:mantle"}}}
+        model, worn = bb_rig.build_worn_rig(
+            spec, out_dir=self.out, animate=False,
+            packs=[hunt / "datapack", hunt / "resourcepack"])
+        self.assertEqual([w["socket"] for w in worn], ["pauldrons"])
+        self.assertTrue(cubes_under(model, "pauldrons"), "the borrowed piece has cubes")
+        # And without the pack it is simply not there, which is the split's break in miniature.
+        with self.assertRaises(SystemExit):
+            self.build(spec)
+
 
 if __name__ == "__main__":
     unittest.main()

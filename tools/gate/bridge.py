@@ -59,6 +59,25 @@ class Bridge:
         with urllib.request.urlopen(f"{self.url}/tools", timeout=self.timeout) as response:
             return json.load(response)
 
+    def wait_for_tool(self, tool: str, seconds: int = 300) -> None:
+        """Block until the game offers `tool`, which is not the same moment as the first pong.
+
+        The bridge answers while the game is still starting, and the CLIENT's own tools - the whole
+        of tier 3 - are registered later still. A run that trusts the pong asks for `create_world`
+        and is told there is no such tool, which reads like a toolkit that is too old.
+        """
+        deadline = time.monotonic() + seconds
+        while time.monotonic() < deadline:
+            try:
+                if any(offered.get("name") == tool for offered in self.tools()):
+                    return
+            except (urllib.error.URLError, OSError, ValueError):
+                pass
+            time.sleep(2)
+        raise BridgeError(
+            f"the game on {self.url} never offered `{tool}` within {seconds}s. A client-only tool "
+            "on a dedicated server, or a toolkit older than this suite, both look like this.")
+
     def alive(self) -> bool:
         try:
             self.call("ping")

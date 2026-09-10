@@ -178,8 +178,7 @@ public final class LootCommand {
         for (final Holder.Reference<LootGroup> holder : loaded) {
             final LootGroup group = holder.value();
             final ArmorPiecesServerConfig.GroupOverride override = config.override(holder.key());
-            final int members = group.parts().size() + group.skins().size()
-                + group.cloths().size() + group.fittings().size();
+            final int members = group.memberCount(source.registryAccess());
             final float chance = override == null ? group.chance() : override.chance().orElse(group.chance());
             final int weight = override == null ? group.weight() : override.weight().orElse(group.weight());
             // Counted rather than added up: a removed table the group never named would otherwise

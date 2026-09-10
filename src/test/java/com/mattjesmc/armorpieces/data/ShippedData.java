@@ -74,13 +74,32 @@ public final class ShippedData {
 
     private static final Path PACKS = ROOT.resolve("packs");
 
-    /** The vanilla datapack registries a shipped file of ours actually points at. */
-    private static final Set<ResourceKey<? extends Registry<?>>> NEEDED =
-        Set.of(Registries.TRIM_MATERIAL);
+    /**
+     * The vanilla datapack registries that have to be loaded in the same pass.
+     *
+     * <p>{@link Registries#TRIM_MATERIAL} because a shipped file of ours points at it - a material
+     * fitting holds a {@code HolderSet} of them. {@link Registries#DAMAGE_TYPE} because the ITEMS do:
+     * {@link #bakeItemComponents} runs vanilla's own initializers, and {@code Item.Properties
+     * .fireResistant} asks for {@code #minecraft:is_fire} by name, which is a tag of a registry that
+     * has to exist before an item can have a default component at all.
+     *
+     * <p>{@link Registries#TRIM_PATTERN} because a VANILLA file points at it: every
+     * {@code minecraft:*_armor_trim_smithing_template_smithing_trim} recipe in the built-in pack
+     * names a pattern, and {@code menu/Table} reads the whole stacked pack's recipes into a real
+     * recipe manager. A load without it refuses those recipes with "Registry does not exist".
+     *
+     * <p>{@link Registries#BANNER_PATTERN} because a garment's design is banner layers, and a layer
+     * holds a pattern by reference: {@code ClothBakeTest} asks what two different designs are filed
+     * under, and a direct holder has no registered name to be filed by.
+     */
+    private static final Set<ResourceKey<? extends Registry<?>>> NEEDED = Set.of(
+        Registries.TRIM_MATERIAL, Registries.TRIM_PATTERN, Registries.DAMAGE_TYPE,
+        Registries.BANNER_PATTERN);
 
     private static List<HolderLookup.RegistryLookup<?>> parents;
     private static ResourceManager assets;
     private static final java.util.Set<Loaded> bound = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+    private static final java.util.Set<Loaded> baked = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
     private static Loaded mod;
     private static Loaded everything;
 
@@ -151,6 +170,20 @@ public final class ShippedData {
     }
 
     /**
+     * The mod plus ONE pack written by the test itself, loaded together - the shape of a player who
+     * installed a pack this repository does not ship.
+     *
+     * <p>Not cached, because the caller owns the directory: two tests handing in two temporary packs
+     * are two different worlds, and a cached one would be the first test's. A load is around a
+     * second, which is the price of asking what a datapack load does to a file that is not ours.
+     *
+     * @param datapack a directory holding {@code pack.mcmeta} and {@code data/}.
+     */
+    public static Loaded withPack(final Path datapack) {
+        return load(List.of(MOD, datapack));
+    }
+
+    /**
      * The art half: the mod's own assets and every pack's resource pack, stacked as a client would
      * have them. Vanilla's assets are NOT under this - nothing here reads one, and the vanilla
      * client pack is the one part of the game that is not in the common jar.
@@ -178,6 +211,30 @@ public final class ShippedData {
      * not part of the load itself, because the question "does this decode with no tags bound at all"
      * is the one {@link com.mattjesmc.armorpieces.loot.MemberSet} exists to answer yes to.
      */
+    /**
+     * Bind every item's default components, once, the way a server does at the end of a datapack load.
+     *
+     * <p>Needed by anything that builds an {@link net.minecraft.world.item.ItemStack} at all: an
+     * item's components are no longer fixed at registration, they are BAKED from a registry provider
+     * ({@code DataComponentInitializers}), because a default may point into a datapack registry -
+     * an emerald's {@code minecraft:provides_trim_material} names a trim material, which is loaded
+     * data. Until the bake has run every item holder answers {@code Components not bound yet}, and
+     * {@code new ItemStack(Items.DIAMOND_HELMET)} throws a {@link NullPointerException} saying so.
+     *
+     * <p>After the tags, because the bake reads registries that a tag may point into, and after
+     * {@link GameBootstrap#content()} - which the load does - so that this mod's own items are in
+     * the list rather than only vanilla's.
+     */
+    public static synchronized void bakeItemComponents(final Loaded loaded) {
+        if (!baked.add(loaded)) {
+            return;
+        }
+        bindTags(loaded);
+        BuiltInRegistries.DATA_COMPONENT_INITIALIZERS
+            .build(net.minecraft.data.registries.VanillaRegistries.createLookup())
+            .forEach(net.minecraft.core.component.DataComponentInitializers.PendingComponents::apply);
+    }
+
     public static synchronized void bindTags(final Loaded loaded) {
         if (!bound.add(loaded)) {
             return;

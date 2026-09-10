@@ -11,7 +11,8 @@ Checks are grouped by WHAT THEY NEED, because that is what decides whether one c
     tier 0   the tree      python and node. Runs anywhere, in a couple of minutes.
     tier 1   the JVM       gradle. Compiles the mod and runs the JUnit tests.
     tier 2   the server    a dedicated server with the mcp-toolkit bridge, started and stopped here
-    tier 3   the client    a client with the bridge, for rendering and screens (not built yet)
+    tier 3   the client    a client with the bridge, for rendering and screens, started and stopped
+                             here. The only tier whose subject is a picture: see tools/gate/frames.py
 
 Sequential on purpose. `check_painters.py` re-runs every painter and puts the masters back, so a
 check reading those PNGs at the same moment would read a file mid-rewrite.
@@ -67,15 +68,24 @@ def tier0() -> list[Check]:
         Check("skins", 0,
               "every master pair: unpainted slots, off-net paint, ramp range, overruled steps",
               [PY, "tools/check_skin.py", "--all"]),
+        Check("additive", 0,
+              "no pack defines a registry path the mod or another pack already defines",
+              [PY, "tools/check_additive.py"]),
         Check("uids", 0,
               "every shipped piece has a lineage uid, none doubled, none ever changed",
               [PY, "tools/mint_uids.py", "--check"]),
+        Check("moved", 0,
+              "the shipped index still names the pack every moved id went to",
+              [PY, "tools/build_moved_index.py", "--check"]),
         Check("lang", 0,
               "every name the mod shows has a line in en_us.json",
               [PY, "tools/check_lang.py"]),
         Check("effect-schema", 0,
               "the schema the Blockbench dialog reads still describes the Java it is parsed from",
               [PY, "tools/check_effect_schema.py"]),
+        Check("bake-reference", 0,
+              "the decoration bake reference still says what the preview port produces",
+              [PY, "tools/preview_material.py", "--reference", "--check"]),
         Check("painters", 0,
               "every painter still describes its geometry and reproduces its sheet; every part traces",
               [PY, "tools/check_painters.py"], timeout=3600),
@@ -107,13 +117,19 @@ def tier2() -> list[Check]:
     ]
 
 
-def pending() -> list[Check]:
-    """Tiers designed and not built. Named here so the gate reports its own coverage honestly."""
+def tier3() -> list[Check]:
+    """The scenes, on a client this starts and stops. See tools/gate/tier3.py."""
     return [
         Check("client-frames", 3,
-              "the render layer, skins, cloth, fittings, the smithing screen and the tooltip",
-              []),
+              "the render layer, skins, cloth, fittings, the icons, the table and the tooltip",
+              [PY, "tools/gate/tier3.py", "--json", "build/gate/tier3.json"],
+              needs="gradle", timeout=3600),
     ]
+
+
+def pending() -> list[Check]:
+    """Tiers designed and not built. Named here so the gate reports its own coverage honestly."""
+    return []
 
 
 def available(needs: str) -> bool:
@@ -166,7 +182,7 @@ def main(argv: list[str]) -> int:
                         help="lines of a failure's output to print (default 25)")
     args = parser.parse_args(argv)
 
-    checks = tier0() + tier1() + tier2() + pending()
+    checks = tier0() + tier1() + tier2() + tier3() + pending()
     if args.tier is not None:
         checks = [c for c in checks if c.tier <= args.tier]
     if args.only:

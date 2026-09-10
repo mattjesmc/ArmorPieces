@@ -214,8 +214,34 @@ tasks.named('assemble') {
 // Both sides now compute `mcptk-${process.ppid}` - this session's own claude.exe, shared by its
 // servers and by nothing else - and .mcp.json sets no session id at all. An extract older than
 // 0.136.0 therefore re-splits the pair the moment that variable is gone, which it now is.
+//
+// 0.140.0 / shim 0.68.0 / Blockbench plugin 0.6.0 (2026-09-08) is A WINDOW EACH, and the reason the
+// extract has to move a fourth time. 0.139.0 built step 2 of the isolation design: each Blockbench
+// window's plugin takes the first FREE port at or above 25801 (sixteen wide) so the port names the
+// window, `GET /hello` carries `{window, port, base_port, span, reserved, claimed_by}`, and a shim
+// scans that range and REJOINS the window already holding its session id, else CLAIMS a free one,
+// else ASKS an existing window for another (`POST /window` - a shim cannot make one; relaunching the
+// exe forwards to the running instance and exits), else SHARES and says so on stderr. That is the
+// answer to what this repo's own A/B measured (docs/measurements/CONCURRENCY_AB.md): the contended
+// pair cost negative wall clock because a session has no binding until it has a piece, so the call
+// that would give it one resolved against the active tab - which in one window belongs to whoever is
+// working. 0.137.0 (`project op:new {bind:false}`) and 0.138.0 (the active-tab fallback no longer
+// hands out a stranger's piece; closing one window no longer wipes every window's crash recovery)
+// are the two smaller fixes underneath it, both found by that measurement.
+//
+// 0.140.0 itself is what a consumer needs on top: `risky_eval` injects `GAME` beside `PROJECT`, so
+// the two older hand-loaded plugins (`mcptoolkitPush`, `mcptoolkitEntity`) take an explicit bridge
+// and a project OBJECT instead of a hardcoded 25599 and a name - the hardcoded port named the
+// TOOLKIT's own dev game from any consumer repo, and resolving by name bypassed the session binding
+// outright. And it is the first version of the three that is PUBLISHED to mavenLocal: 0.137.0
+// through 0.139.0 were committed in the toolkit and never published, so no consumer could resolve
+// them whatever its build.gradle said, and a consumer arm run against a 0.139.0 label before
+// 2026-09-08 would have measured the 0.136.0 shim. The consumer half of step 2 is in this
+// repository: tools/mcp/server.mjs discovers over the same range instead of pinning 25801 - pinning
+// it while the shim scanned would have undone the whole thing, by sending this session's piece work
+// into the window another session had taken.
 // ---------------------------------------------------------------------------
-def toolkitVersion = project.findProperty('mcptoolkit_version') ?: '0.136.0'
+def toolkitVersion = project.findProperty('mcptoolkit_version') ?: '0.140.0'
 def m2Root = file(System.getProperty('maven.repo.local')
     ?: "${System.getProperty('user.home')}/.m2/repository")
 def toolkitJar = new File(m2Root,

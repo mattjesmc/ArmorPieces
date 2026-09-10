@@ -75,8 +75,10 @@ def make_pack(root: Path, namespace: str = "somebody", credits: dict | None = No
 class ManifestTests(unittest.TestCase):
     def test_the_mods_own_pack(self):
         m = pack_manifest.manifest([MOD])
-        self.assertEqual(m["counts"]["pieces"], 91)
-        self.assertGreaterEqual(m["counts"]["skins"], 14)
+        # 66 since the split of 2026-09-07 moved 25 pieces and 5 skins into content packs; see
+        # docs/plans/main-pack-split.md. The moved ones are checked through packs/legacy below.
+        self.assertEqual(m["counts"]["pieces"], 66)
+        self.assertGreaterEqual(m["counts"]["skins"], 9)
         self.assertEqual(m["counts"]["cloths"], 2)
         circlet = next(p for p in m["pieces"] if p["id"] == "armorpieces:circlet")
         self.assertEqual(circlet["label"], "Circlet")
@@ -93,6 +95,22 @@ class ManifestTests(unittest.TestCase):
         tunic = next(c for c in m["cloths"] if c["id"] == "armorpieces:tunic")
         self.assertEqual(tunic["sheet"], "shield")
         self.assertIn("assets/armorpieces/textures/item/cloth_template_tunic.png", tunic["files"])
+
+    def test_the_restore_pack_whose_folder_is_not_its_namespace(self):
+        """packs/legacy is the one pack whose folder name and namespace differ: it declares
+        `armorpieces`, the mod's own, which is how it restores the ids 0.3.0 wrote into saves.
+        Nothing here may derive a namespace from a folder name."""
+        legacy = ROOT / "packs" / "legacy"
+        m = pack_manifest.manifest([legacy / "datapack", legacy / "resourcepack"])
+        self.assertEqual(m["counts"]["pieces"], 25)
+        self.assertEqual(m["counts"]["skins"], 5)
+        self.assertEqual(m["pack"]["namespaces"], ["armorpieces"])
+        tusks = next(p for p in m["pieces"] if p["id"] == "armorpieces:tusks")
+        self.assertEqual(tusks["label"], "Tusks")
+        self.assertEqual(tusks["anchor"], "horns")
+        self.assertTrue(tusks["loot"])
+        # No template recipes at all: the packs that took the pieces already own their centres.
+        self.assertFalse(any(e["craftable"] for e in m["pieces"] + m["skins"]))
 
     def test_credits_default_and_override(self):
         with tempfile.TemporaryDirectory() as tmp:

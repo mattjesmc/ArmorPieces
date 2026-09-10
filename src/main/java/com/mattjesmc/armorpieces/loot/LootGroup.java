@@ -12,8 +12,7 @@ import com.mojang.serialization.Encoder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Optional;
-import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryCodecs;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.ExtraCodecs;
@@ -57,6 +56,15 @@ import net.minecraft.world.level.storage.loot.LootTable;
  *                other groups sharing a table: a group at weight 1 beside one at weight 3 supplies
  *                a quarter of what that table offers.
  * @param tables  the category itself - the loot tables these members are found in.
+ * <p><b>The members are named, not bound.</b> All four are a {@link MemberSet}, which keeps a tag as
+ * a tag and asks for it at the moment the group is used. That is not a detail: the ordinary
+ * {@code RegistryCodecs.homogeneousList} resolves a tag when the FILE IS READ, and a tag no
+ * installed pack defines is then an unbound tag, which does not make a smaller group - it takes the
+ * whole registry down with {@code Unbound tags in registry armorpieces:armor_decoration} and the
+ * world will not open. A player who installs one pack of the line and not another meets that on
+ * every group either pack ships, so late resolution is the only shape this field can have. The
+ * gate's {@code missing-tag} boot check is that case, and it is what found this.
+ *
  * @param parts    the parts in the group, normally a tag.
  * @param skins    the armor skins in the group.
  * @param cloths   the cloths in the group.
@@ -71,27 +79,27 @@ public record LootGroup(
     float chance,
     int weight,
     List<LootGroup.TableEntry> tables,
-    HolderSet<ArmorDecoration> parts,
-    HolderSet<ArmorSkin> skins,
-    HolderSet<Cloth> cloths,
-    HolderSet<Fitting> fittings
+    MemberSet<ArmorDecoration> parts,
+    MemberSet<ArmorSkin> skins,
+    MemberSet<Cloth> cloths,
+    MemberSet<Fitting> fittings
 ) {
     public static final Codec<LootGroup> DIRECT_CODEC = RecordCodecBuilder.create(
         i -> i.group(
                 Codec.floatRange(0.0f, 1.0f).fieldOf("chance").forGetter(LootGroup::chance),
                 ExtraCodecs.POSITIVE_INT.optionalFieldOf("weight", 1).forGetter(LootGroup::weight),
                 TableEntry.CODEC.listOf().fieldOf("tables").forGetter(LootGroup::tables),
-                RegistryCodecs.homogeneousList(ArmorPiecesRegistries.ARMOR_DECORATION)
-                    .optionalFieldOf("parts", HolderSet.direct(List.of()))
+                MemberSet.<ArmorDecoration>codec(ArmorPiecesRegistries.ARMOR_DECORATION)
+                    .optionalFieldOf("parts", MemberSet.empty())
                     .forGetter(LootGroup::parts),
-                RegistryCodecs.homogeneousList(ArmorPiecesRegistries.ARMOR_SKIN)
-                    .optionalFieldOf("skins", HolderSet.direct(List.of()))
+                MemberSet.<ArmorSkin>codec(ArmorPiecesRegistries.ARMOR_SKIN)
+                    .optionalFieldOf("skins", MemberSet.empty())
                     .forGetter(LootGroup::skins),
-                RegistryCodecs.homogeneousList(ArmorPiecesRegistries.CLOTH)
-                    .optionalFieldOf("cloths", HolderSet.direct(List.of()))
+                MemberSet.<Cloth>codec(ArmorPiecesRegistries.CLOTH)
+                    .optionalFieldOf("cloths", MemberSet.empty())
                     .forGetter(LootGroup::cloths),
-                RegistryCodecs.homogeneousList(ArmorPiecesRegistries.FITTING)
-                    .optionalFieldOf("fittings", HolderSet.direct(List.of()))
+                MemberSet.<Fitting>codec(ArmorPiecesRegistries.FITTING)
+                    .optionalFieldOf("fittings", MemberSet.empty())
                     .forGetter(LootGroup::fittings)
             )
             .apply(i, LootGroup::new)
@@ -99,6 +107,18 @@ public record LootGroup(
 
     public LootGroup {
         tables = List.copyOf(tables);
+    }
+
+    /**
+     * How many members the group has right now - which is a question only the loaded packs can
+     * answer, since a tag naming nothing is a group of nothing. What {@code /armorpieces loot
+     * groups} prints.
+     */
+    public int memberCount(final HolderGetter.Provider registries) {
+        return this.parts.resolve(registries).size()
+            + this.skins.resolve(registries).size()
+            + this.cloths.resolve(registries).size()
+            + this.fittings.resolve(registries).size();
     }
 
     /**

@@ -101,10 +101,23 @@ public final class DecorationLootTables {
         // A report describes one load of one set of packs. Clearing at the START of a reload means
         // a table a pack stopped shipping stops being explained, rather than lingering as an answer
         // about a world that no longer exists.
-        ServerLifecycleEvents.START_DATA_PACK_RELOAD.register((server, resources) -> {
-            REPORTS.clear();
-            offNoticed = false;
-        });
+        ServerLifecycleEvents.START_DATA_PACK_RELOAD.register((server, resources) -> forget());
+        // And a reload is not the only way one JVM sees two sets of packs: a single-player client
+        // opens a world, quits to the menu and opens another without ever reloading, and the loot
+        // tables are built afresh for the second one. Without this, a table the first world's packs
+        // reached is still explained in the second - by a report naming a group that world may not
+        // even have. Found by LootTablesTest, which is a JVM with no reload in it at all.
+        ServerLifecycleEvents.SERVER_STOPPED.register(server -> forget());
+    }
+
+    /**
+     * Drops everything recorded about the packs that were loaded. Called at every boundary between
+     * one set of packs and the next; package-private so {@code LootTablesTest} can stand at the same
+     * boundary, since a test JVM has none of its own.
+     */
+    static void forget() {
+        REPORTS.clear();
+        offNoticed = false;
     }
 
     /** What the mod added to {@code table}, or null if it added nothing. */
@@ -189,19 +202,22 @@ public final class DecorationLootTables {
             final float c = chance.get();
             final int weight = override == null ? group.weight() : override.weight().orElse(group.weight());
             int offered = 0;
-            for (final Holder<ArmorDecoration> part : group.parts()) {
+            // Resolved HERE and not when the file was read: a tag no installed pack defines is an
+            // empty list and the group simply offers nothing, where an eagerly bound one would have
+            // taken the world down long before this. See MemberSet.
+            for (final Holder<ArmorDecoration> part : group.parts().resolve(registries)) {
                 offers.offer(part, c, weight, partEntry(part));
                 offered++;
             }
-            for (final Holder<ArmorSkin> skin : group.skins()) {
+            for (final Holder<ArmorSkin> skin : group.skins().resolve(registries)) {
                 offers.offer(skin, c, weight, skinEntry(skin));
                 offered++;
             }
-            for (final Holder<Cloth> cloth : group.cloths()) {
+            for (final Holder<Cloth> cloth : group.cloths().resolve(registries)) {
                 offers.offer(cloth, c, weight, clothEntry(cloth));
                 offered++;
             }
-            for (final Holder<Fitting> fitting : group.fittings()) {
+            for (final Holder<Fitting> fitting : group.fittings().resolve(registries)) {
                 offers.offer(fitting, c, weight, fittingEntry(fitting));
                 offered++;
             }

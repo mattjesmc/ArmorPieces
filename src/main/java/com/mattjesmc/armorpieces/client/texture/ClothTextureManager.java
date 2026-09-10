@@ -80,6 +80,15 @@ import org.jspecify.annotations.Nullable;
  * the layer being composited onto is itself a bake. The same image is what the garment is CLIPPED to,
  * and the two jobs want the same picture: the thing the cloth is worn on.
  *
+ * <h2>Why some of this is package-private rather than private</h2>
+ *
+ * <p>{@link #composite}, {@link #paint}, {@link #paintedFaces}, {@link #clipped}, {@link #panel}
+ * and {@link #bakedId} are the whole of what a clothed piece looks like, and none of them needs a
+ * game: they are arithmetic over images, a dye and a mask. {@link #bake} keeps everything that does
+ * - the resource manager, the texture registration - and hands the pictures down. Widened by exactly
+ * one step so {@code ClothBakeTest} can ask them questions without a client, which is the only way
+ * any of it was ever checked below tier 3.
+ *
  * <h2>Resolution</h2>
  *
  * <p>The bake runs at {@link #WIDTH} texels wide however wide the armor texture is. A shield pattern
@@ -249,67 +258,9 @@ public final class ClothTextureManager implements SimpleSynchronousResourceReloa
             if (base == null) {
                 return false;
             }
-
-            final int scale = Math.max(1, Math.round((float) WIDTH / base.width()));
-            final int width = base.width() * scale;
-            final int height = base.height() * scale;
-
             final Image armor = shading == null ? null : image(manager, shading);
-            final byte[] lightmap = armor == null ? null : SkinBake.lightmap(armor.pixels(), ARMOR_LIGHT);
-            final boolean[] painted = armor == null ? null : paintedFaces(armor);
-
-            final Panel panel = panel(manager, value);
-            final Map<Integer, DecorationPalette> ramps = new HashMap<>();
-
-            final NativeImage out = new NativeImage(width, height, false);
-            for (int y = 0; y < height; y++) {
-                for (int x = 0; x < width; x++) {
-                    final int bx = x / scale;
-                    final int by = y / scale;
-                    final int under = base.pixels()[by * base.width() + bx];
-
-                    final int mx = x * mask.getWidth() / width;
-                    final int my = y * mask.getHeight() / height;
-                    final int m = mask.getPixel(mx, my);
-                    if (ARGB.alpha(m) == 0) {
-                        out.setPixel(x, y, under);
-                        continue;
-                    }
-
-                    // The texel's place on the 64x32 net, in fractions, so a panel is sampled at the
-                    // bake's resolution rather than the armor texture's.
-                    final float gx = x * (float) GRID_WIDTH / width;
-                    final float gy = y * (float) GRID_HEIGHT / height;
-                    final int colour = panel == null
-                        ? value.base().getTextureDiffuseColor() & 0x00FFFFFF
-                        : panel.sample(gx, gy, value.base().getTextureDiffuseColor() & 0x00FFFFFF);
-
-                    int shade = ARGB.red(m);
-                    if (armor != null) {
-                        final int ax = x * armor.width() / width;
-                        final int ay = y * armor.height() / height;
-                        final int texel = ay * armor.width() + ax;
-                        // A garment is worn ON the armor, so on a face the armor USES, where the
-                        // armor paints nothing there is nothing to hang the cloth on and it stops
-                        // too. That is what gives the neck's notch and the hem's taper without
-                        // counting rows into a mask by hand, and it gives them from whatever the
-                        // piece actually is - vanilla's cut, or a skin's, which is not the same cut.
-                        //
-                        // On a face the armor uses NOWHERE the rule is off, and deliberately: the top
-                        // of the chest box is empty on every vanilla material because a breastplate
-                        // has no lid, and a tunic's shoulders and a tabard's straps live exactly
-                        // there. An empty face is not a hole to respect, it is room to use.
-                        if (clipped(painted, gx, gy) && ARGB.alpha(armor.pixels()[texel]) == 0) {
-                            out.setPixel(x, y, under);
-                            continue;
-                        }
-                        shade += lightmap[texel];
-                    }
-                    final DecorationPalette ramp =
-                        ramps.computeIfAbsent(colour, DecorationPalette::ofStaticColour);
-                    out.setPixel(x, y, 0xFF000000 | (ramp.rgb(clamp(shade)) & 0x00FFFFFF));
-                }
-            }
+            final NativeImage out = composite(
+                mask, base, armor, panel(manager, value), value.base().getTextureDiffuseColor() & 0x00FFFFFF);
 
             final Minecraft client = Minecraft.getInstance();
             client.getTextureManager().release(baked);
@@ -322,6 +273,83 @@ public final class ClothTextureManager implements SimpleSynchronousResourceReloa
         } finally {
             close(mask);
         }
+    }
+
+    /**
+     * The five steps of the class note, over one garment: the whole of what a clothed piece looks
+     * like, and nothing that needs a client.
+     *
+     * @param mask       the cut mask - alpha says where the cloth is, red says how it folds.
+     * @param base       the pixels the garment is composited onto, upsampled nearest to {@link #WIDTH}.
+     * @param armor      the image the light and the clip are both measured from, or null for a
+     *                   garment drawn with its own folds and no armor form.
+     * @param panel      the banner's design, stretched over the two torso panels, or null for a
+     *                   garment in its base dye alone.
+     * @param baseColour the dye everywhere the design does not reach, as opaque RGB.
+     */
+    static NativeImage composite(
+        final NativeImage mask,
+        final Image base,
+        final @Nullable Image armor,
+        final @Nullable Panel panel,
+        final int baseColour
+    ) {
+        final int scale = Math.max(1, Math.round((float) WIDTH / base.width()));
+        final int width = base.width() * scale;
+        final int height = base.height() * scale;
+
+        final byte[] lightmap = armor == null ? null : SkinBake.lightmap(armor.pixels(), ARMOR_LIGHT);
+        final boolean[] painted = armor == null ? null : paintedFaces(armor);
+        final Map<Integer, DecorationPalette> ramps = new HashMap<>();
+
+        final NativeImage out = new NativeImage(width, height, false);
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                final int bx = x / scale;
+                final int by = y / scale;
+                final int under = base.pixels()[by * base.width() + bx];
+
+                final int mx = x * mask.getWidth() / width;
+                final int my = y * mask.getHeight() / height;
+                final int m = mask.getPixel(mx, my);
+                if (ARGB.alpha(m) == 0) {
+                    out.setPixel(x, y, under);
+                    continue;
+                }
+
+                // The texel's place on the 64x32 net, in fractions, so a panel is sampled at the
+                // bake's resolution rather than the armor texture's.
+                final float gx = x * (float) GRID_WIDTH / width;
+                final float gy = y * (float) GRID_HEIGHT / height;
+                final int colour = panel == null ? baseColour : panel.sample(gx, gy, baseColour);
+
+                int shade = ARGB.red(m);
+                if (armor != null) {
+                    final int ax = x * armor.width() / width;
+                    final int ay = y * armor.height() / height;
+                    final int texel = ay * armor.width() + ax;
+                    // A garment is worn ON the armor, so on a face the armor USES, where the
+                    // armor paints nothing there is nothing to hang the cloth on and it stops
+                    // too. That is what gives the neck's notch and the hem's taper without
+                    // counting rows into a mask by hand, and it gives them from whatever the
+                    // piece actually is - vanilla's cut, or a skin's, which is not the same cut.
+                    //
+                    // On a face the armor uses NOWHERE the rule is off, and deliberately: the top
+                    // of the chest box is empty on every vanilla material because a breastplate
+                    // has no lid, and a tunic's shoulders and a tabard's straps live exactly
+                    // there. An empty face is not a hole to respect, it is room to use.
+                    if (clipped(painted, gx, gy) && ARGB.alpha(armor.pixels()[texel]) == 0) {
+                        out.setPixel(x, y, under);
+                        continue;
+                    }
+                    shade += lightmap[texel];
+                }
+                final DecorationPalette ramp =
+                    ramps.computeIfAbsent(colour, DecorationPalette::ofStaticColour);
+                out.setPixel(x, y, 0xFF000000 | (ramp.rgb(clamp(shade)) & 0x00FFFFFF));
+            }
+        }
+        return out;
     }
 
     /**
@@ -345,7 +373,7 @@ public final class ClothTextureManager implements SimpleSynchronousResourceReloa
      * Which faces of the torso box the armor paints anything at all on - the six of {@link #FACES},
      * in order. Measured once per bake, since it is a property of the armor and not of the texel.
      */
-    private static boolean[] paintedFaces(final Image armor) {
+    static boolean[] paintedFaces(final Image armor) {
         final boolean[] painted = new boolean[FACES.length];
         for (int i = 0; i < FACES.length; i++) {
             final int[] rect = FACES[i];
@@ -368,7 +396,7 @@ public final class ClothTextureManager implements SimpleSynchronousResourceReloa
      * uses, no on one it leaves entirely empty, and yes off the torso box altogether - a mask that
      * strays onto an arm is trimmed to the sleeve that is there.
      */
-    private static boolean clipped(final boolean[] painted, final float gx, final float gy) {
+    static boolean clipped(final boolean[] painted, final float gx, final float gy) {
         for (int i = 0; i < FACES.length; i++) {
             if (within(FACES[i], gx, gy)) {
                 return painted[i];
@@ -389,7 +417,7 @@ public final class ClothTextureManager implements SimpleSynchronousResourceReloa
      * over a 12x22 rect and the panels are two 32x48 ones: compositing once and sampling twice is
      * both the cheaper and the more obviously correct order.
      */
-    private static @Nullable Panel panel(final ResourceManager manager, final ClothValue value) {
+    static @Nullable Panel panel(final ResourceManager manager, final ClothValue value) {
         final boolean banner = value.cloth().value().sheet() == BannerFitting.Sheet.BANNER;
         final int[] box = banner ? FLAG : PLATE;
         final int width = box[0];
@@ -442,6 +470,23 @@ public final class ClothTextureManager implements SimpleSynchronousResourceReloa
         if (sprite == null) {
             return false;
         }
+        paint(pixels, width, height, box, sprite, colour);
+        return true;
+    }
+
+    /**
+     * The arithmetic of one pass, over a sprite somebody else read. Separated from {@link #pass}
+     * only so it can be asked a question without a resource pack behind it - a sprite is an image
+     * and a dye is a number, and neither needs a client.
+     */
+    static void paint(
+        final int[] pixels,
+        final int width,
+        final int height,
+        final int[] box,
+        final Image sprite,
+        final DyeColor colour
+    ) {
         // The face rectangle on the sprite's own sheet: the net puts the north face one depth in from
         // the left and one down from the top. Scaled off 64 so a pack's larger sprite still works.
         final float unit = sprite.width() / SPRITE_SHEET;
@@ -467,11 +512,10 @@ public final class ClothTextureManager implements SimpleSynchronousResourceReloa
                     : 0xFF000000 | blend(pixels[y * width + x], tint, alpha);
             }
         }
-        return true;
     }
 
     /** The composited design, and where on the net it is stretched to. */
-    private record Panel(int[] pixels, int width, int height) {
+    record Panel(int[] pixels, int width, int height) {
         /**
          * The design at a point on the 64x32 net, or {@code fallback} where that point is not on one
          * of the two panels - the sides, the shoulders and the hem underside, which carry the base
@@ -497,14 +541,14 @@ public final class ClothTextureManager implements SimpleSynchronousResourceReloa
     // ---- plumbing -------------------------------------------------------------------------------
 
     /** An image as the bake wants it: pixels in a flat array, so nothing is read twice. */
-    private record Image(int[] pixels, int width, int height) {}
+    record Image(int[] pixels, int width, int height) {}
 
     /**
      * Where a bake is registered. The design is HASHED rather than spelled out: a banner is a colour
      * and up to six patterns, which is not a path, and two different designs must not collide. The
      * garment, the sheet and the armor stay readable in the path, which is what a log line needs.
      */
-    private static Identifier bakedId(final ClothValue value, final String sheetName, final Identifier target) {
+    static Identifier bakedId(final ClothValue value, final String sheetName, final Identifier target) {
         final StringBuilder key = new StringBuilder(target.toString()).append('|').append(value.base().getName());
         for (final BannerPatternLayers.Layer layer : value.patterns().layers()) {
             key.append('|')

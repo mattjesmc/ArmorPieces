@@ -50,6 +50,12 @@ import org.jspecify.annotations.Nullable;
  *       an error: it is a skin that has nothing to say about that layer.</li>
  * </ol>
  *
+ * <p><b>Why some of this is package-private rather than private.</b> {@link #colour},
+ * {@link #material}, {@link #materialName} and {@link #bakedId} are what decides which material a
+ * texture belongs to, what colour it lends and where the result is filed, and none of them needs a
+ * game: they are arithmetic over images read out of a resource manager. Widened by exactly one step
+ * so {@code ArmorSkinTextureTest} can ask them questions without a client.
+ *
  * <p>Which LAYER a skin replaces is decided by the caller - see
  * {@code com.mattjesmc.armorpieces.client.mixin.EquipmentLayerRendererMixin}. This class only ever
  * answers "what would this skin look like in place of that texture".
@@ -106,10 +112,10 @@ public final class ArmorSkinTextureManager implements SimpleSynchronousResourceR
      * the split the arithmetic asks for: one ramp per material or the leggings would drift away from
      * the body they are worn under, but the light on a leg is not the light on a chest.
      */
-    private record Material(int[] table, Map<String, Lighting> lighting) {}
+    record Material(int[] table, Map<String, Lighting> lighting) {}
 
     /** Vanilla's lighting for one sheet, with the size it was measured at. */
-    private record Lighting(byte[] map, int width, int height) {}
+    record Lighting(byte[] map, int width, int height) {}
 
     /** A baked sheet's pixels, for a caller that has to draw over them. See {@link #baked}. */
     public record Baked(int[] pixels, int width, int height) {}
@@ -198,14 +204,7 @@ public final class ArmorSkinTextureManager implements SimpleSynchronousResourceR
             }
             final int width = master.getWidth();
             final int height = master.getHeight();
-            final Lighting lighting = material.lighting().get(sheet);
-            // A pack whose skin sheet is not the size of the armor texture it is worn over gets the
-            // pattern without the light rather than light applied to the wrong texels. The colour is
-            // per-texel and does not care about size, so the skin still works.
-            final byte[] light = lighting != null && lighting.width() == width && lighting.height() == height
-                ? lighting.map()
-                : null;
-            final int[] baked = SkinBake.bake(pixels(master), material.table(), light);
+            final int[] baked = colour(master, material, sheet);
 
             final NativeImage out = new NativeImage(width, height, false);
             for (int y = 0; y < height; y++) {
@@ -229,13 +228,32 @@ public final class ArmorSkinTextureManager implements SimpleSynchronousResourceR
     }
 
     /**
+     * One skin sheet through one material: the whole of what a skinned piece looks like, and nothing
+     * that needs a client.
+     *
+     * <p>The size guard is the only decision here that is not {@link SkinBake}'s. A pack whose skin
+     * sheet is not the size of the armor texture it is worn over gets the pattern without the light,
+     * rather than light applied to the wrong texels; the colour is per-texel and does not care about
+     * size, so the skin still works.
+     */
+    static int[] colour(final NativeImage master, final Material material, final String sheet) {
+        final Lighting lighting = material.lighting().get(sheet);
+        final byte[] light =
+            lighting != null && lighting.width() == master.getWidth()
+                && lighting.height() == master.getHeight()
+                ? lighting.map()
+                : null;
+        return SkinBake.bake(pixels(master), material.table(), light);
+    }
+
+    /**
      * One material's ramp and lighting, measured from its own vanilla textures.
      *
      * <p>Both sheets are read here whichever one is being baked, because the ramp is the material's
      * and not the sheet's. A material with only one sheet - the turtle scute is a helmet and nothing
      * else - is measured from that one.
      */
-    private @Nullable Material material(final ResourceManager manager, final Identifier vanillaTexture) {
+    @Nullable Material material(final ResourceManager manager, final Identifier vanillaTexture) {
         final String name = materialName(vanillaTexture);
         if (name == null) {
             return null;
@@ -285,7 +303,7 @@ public final class ArmorSkinTextureManager implements SimpleSynchronousResourceR
      * The material an equipment texture names: the file's own name, which is what vanilla and every
      * mod alike key their armor art by. Null for a texture that is not an equipment layer at all.
      */
-    private static @Nullable String materialName(final Identifier texture) {
+    static @Nullable String materialName(final Identifier texture) {
         final String path = texture.getPath();
         if (!path.startsWith(EQUIPMENT_DIRECTORY) || !path.endsWith(".png")) {
             return null;
@@ -298,7 +316,7 @@ public final class ArmorSkinTextureManager implements SimpleSynchronousResourceR
      * Where the baked pair is registered. The material's whole id is in the path, namespace and all,
      * so two mods' materials of the same name cannot collide in the cache.
      */
-    private static Identifier bakedId(final ArmorSkin skin, final String sheet, final Identifier vanillaTexture) {
+    static Identifier bakedId(final ArmorSkin skin, final String sheet, final Identifier vanillaTexture) {
         return Identifier.fromNamespaceAndPath(
             ArmorPieces.MOD_ID,
             EQUIPMENT_DIRECTORY + sheet + "/" + skin.assetId().getNamespace() + "/" + skin.assetId().getPath()

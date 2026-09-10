@@ -40,7 +40,7 @@ final class DecorationPalette {
      * beside it. Expressed as a fraction rather than an index so a palette that is not eight stops
      * long still maps sensibly.
      */
-    private static final float MID_STOP = 5.0F / 7.0F;
+    static final float MID_STOP = 5.0F / 7.0F;
 
     /** Indexed by a master pixel's luminance; values are opaque ARGB. Alpha comes from the master. */
     private final int[] byLuminance;

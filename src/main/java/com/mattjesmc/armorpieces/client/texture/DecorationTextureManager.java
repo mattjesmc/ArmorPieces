@@ -51,6 +51,12 @@ import org.jspecify.annotations.Nullable;
  * through the static ramp - on top of the recoloured master. An empty fitting costs nothing: the
  * mask is not read and the bake is the one it always was.
  *
+ * <p><b>Why some of this is package-private rather than private.</b> {@link #recolour},
+ * {@link #applyMask}, {@link #bakedId}, {@link #palette} and {@link #loadPaletteMapping} are the
+ * whole of what decides how a part looks, and none of them needs a game: they are arithmetic over
+ * images and a map read out of an atlas. Widened by exactly one step so {@code DecorationBakeTest}
+ * can ask them questions without a client, which is the only way any of it was ever checked at all.
+ *
  * <p>Resolution order for a part and a material suffix:
  *
  * <ol>
@@ -226,7 +232,7 @@ public final class DecorationTextureManager implements SimpleSynchronousResource
      * is then drawn at the master's own greys rather than being dropped - shading intact, tint
      * missing, which reads as an unfinished material instead of a broken mod.
      */
-    private static NativeImage recolour(
+    static NativeImage recolour(
         final NativeImage master,
         final @Nullable NativeImage statics,
         final @Nullable DecorationPalette palette
@@ -281,7 +287,7 @@ public final class DecorationTextureManager implements SimpleSynchronousResource
      * <p>A null ramp means a palette fitting named a material with no palette; the mask then shows
      * at its own greys, the same honest answer the master gives for such a material.
      */
-    private static void applyMask(
+    static void applyMask(
         final NativeImage out,
         final NativeImage master,
         final NativeImage mask,
@@ -321,7 +327,7 @@ public final class DecorationTextureManager implements SimpleSynchronousResource
 
     // ---- palettes -------------------------------------------------------------------------------
 
-    private @Nullable DecorationPalette palette(final ResourceManager manager, final String suffix) {
+    @Nullable DecorationPalette palette(final ResourceManager manager, final String suffix) {
         return this.palettes.computeIfAbsent(suffix, s -> Optional.ofNullable(loadPalette(manager, s)))
             .orElse(null);
     }
@@ -356,7 +362,7 @@ public final class DecorationTextureManager implements SimpleSynchronousResource
      * atlas sources across packs, which is how two material mods coexist, and taking only the
      * winning pack here would have quietly broken the second one.
      */
-    private void loadPaletteMapping(final ResourceManager manager) {
+    void loadPaletteMapping(final ResourceManager manager) {
         final Map<String, Identifier> found = new HashMap<>();
         Identifier keyPath = DEFAULT_PALETTE_KEY;
         for (final Resource resource : manager.getResourceStack(ARMOR_TRIMS_ATLAS)) {
@@ -422,7 +428,7 @@ public final class DecorationTextureManager implements SimpleSynchronousResource
      * Where a baked texture is registered. Namespaced under this mod so it collides with nothing,
      * and naming every filled fitting so that each combination is its own texture.
      */
-    private static Identifier bakedId(final Identifier assetId, final String suffix, final List<Mask> masks) {
+    static Identifier bakedId(final Identifier assetId, final String suffix, final List<Mask> masks) {
         final StringBuilder path = new StringBuilder("coloured/")
             .append(assetId.getNamespace()).append('/').append(assetId.getPath()).append('_').append(suffix);
         for (final Mask mask : masks) {
