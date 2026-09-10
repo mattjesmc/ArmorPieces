@@ -6,5 +6,8 @@
   "anchors": [
     "spurs"
   ],
-  "uid": "ap1a2kvqujm6lrrodhagatq"
+  "uid": "ap1a2kvqujm6lrrodhagatq",
+  "fittings": [
+    "armorpieces:guard"
+  ]
 }

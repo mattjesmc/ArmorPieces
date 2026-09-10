@@ -95,6 +95,11 @@ tab.
 
 ## Lessons from the session
 
+> **Written on an older bridge.** The tool names below (`remove_element`, `paint_with_brush`, …)
+> were the third-party Blockbench plugin's and no longer exist; the toolkit's own bridge replaced
+> them with 26 tools behind `op` families (`element`, `texture`, `inspect`). The numbers about
+> THIS piece are still true — the technique is not. `docs/plans/briefs/LESSONS.md` is current.
+
 Built in 19 bridge calls, 3 of them paint (master, static, gemstone mask), 3 pictures (the frog
 texture once, then a three-quarter and a front render). `armorpieces_save` accepted without
 `force`; `check_authoring.py packs/animals/datapack packs/animals/resourcepack` is clean and

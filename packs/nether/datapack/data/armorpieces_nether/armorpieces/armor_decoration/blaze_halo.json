@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_nether:blaze_halo",
+  "description": {
+    "translate": "decoration.armorpieces_nether.blaze_halo"
+  },
+  "anchors": [
+    "back"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1ey5csjbpg2v6uhoowoga"
+}

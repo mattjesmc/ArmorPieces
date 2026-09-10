@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_village:allay_wisps",
+  "description": {
+    "translate": "decoration.armorpieces_village.allay_wisps"
+  },
+  "anchors": [
+    "spurs"
+  ],
+  "fittings": [
+    "armorpieces:gemstone"
+  ],
+  "uid": "ap17iloi3r42vhcso7dkmta"
+}

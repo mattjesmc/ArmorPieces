@@ -15,6 +15,7 @@ except the C/D boundary, which is a date, because what changed there is who each
 | **B** kit split | the toolkit's shim; Blockbench still the **third-party** plugin | `paint_with_brush`, `remove_element`, … |
 | **C** own plugin | the toolkit's shim; Blockbench is **mcp-toolkit's own bridge** | `element`, `texture`, `inspect`, … (26) |
 | **D** own id | the same 26 tools, but each session presents its **own** `mcptk-<ppid>` | same as C; the boundary is a date, not a name |
+| **E** a window each | the same 26 tools, but each session works in its **own Blockbench window** | same as C/D; the boundary is a date, and `claimed_by` is the evidence |
 
 ## The comparison that matters
 
@@ -27,6 +28,20 @@ Like for like: pack pieces, same brief shape, same model (Sonnet 5), one session
 | **C** Coral, new plugin, **contended** (n=2) | 14.3 | 123 | 59 | 159k | 13.7M | **$5.15** |
 | **D** Dragonslayer, own id, alone (n=2) | 7.4 | 71 | 37 | 114k | 4.5M | **$2.67** |
 | **D** Dragonslayer, own id, **contended** (n=2) | 11.6 | 90 | 39 | 126k | 6.1M | **$3.01** |
+| **E** Dragonslayer, a window each, sequential (n=2, *void*) | 7.0 | 56 | 38 | 29k | 2.9M | **$1.42** |
+| **E** Dragonslayer, a window each, **concurrent** (n=2) | 5.6 | 30 | 24 | 26k | 1.4M | **$0.78** |
+
+**Era E reverses the verdict below: two sessions started together produced two pieces in 7.0
+minutes, against 14.8 sequential.** `risky_eval`, `held_by` and `armorpieces_open` are all 0 in both
+concurrent runs, each session claimed a Blockbench window of its own within 26 seconds, and the
+window a person had reserved was never touched. Two caveats travel with those rows and are argued in
+`CONCURRENCY_AB.md`'s round 2: the E *sequential* arm is **void as a baseline** — a launcher quoting
+defect gave both its children the prompt `"Build"`, so each spent about a quarter of its calls
+choosing a piece before starting — and the **$/piece drop is confounded**, because round 2's briefs
+pre-solve the rotation arithmetic that round 1's did not. The wall clock and the three zeros are what
+era E establishes; the money is suggestive.
+
+Everything below this line is the era-D reading, kept as written.
 
 **Contention now costs 1.13x per piece instead of 2.4x — and is still not worth doing.** The
 identity fix plus a binding fix (below) brought the *alone* row back to the C era's shape, and the
@@ -188,3 +203,94 @@ manifest at a phase boundary. This is the biggest remaining lever on cost that i
 - ArgCheck refusing an undeclared argument **by name** (`undeclared argument(s) cubes; declared:
   project, elements, …`) was correct and immediately actionable in the one case it fired here.
   Keep it.
+
+---
+
+# Orientation, re-measured on the new bridge (2026-09-08)
+
+Every mechanism this repository built to keep a session from researching its way to the start line is
+still in place and still current — envelopes riding on `armorpieces_open`/`_new`, face rectangles on
+the call that moved them, the check on every reply, the priced keep-list, the rig frame inline in the
+agent profile, the brief carrying the numbers. They work: **a cleanly-prompted session now spends 3
+calls, about 10% of its run, before it has its piece** — read its brief, read one other brief,
+`armorpieces_pieces`.
+
+So the calls were not the problem. Ranking context by what it actually costs — bytes multiplied by
+the turns still to come, which is what the cache-read column is — found the problem somewhere else:
+
+| source | calls/run | tok each | **tok/turn carried** |
+|---|---|---|---|
+| `Read` (two briefs) | 2.0 | 2,714 | **5,084** |
+| `list_outline` | 1.0 | 1,305 | 1,051 |
+| `place_cube` | 4.5 | 379 | 977 |
+| `armorpieces_new` | 1.0 | 1,000 | 860 |
+| `armorpieces_check` | 1.5 | 1,845 | 828 |
+| `armorpieces_pieces` | 1.0 | 847 | 749 |
+| **all tool results** | 29 | 555 | **10,620** |
+| *manifest floor on top* | | | *7,358* |
+
+**Reading briefs was 48% of everything a session carried**, and half of that was the line in every
+brief telling it to skim a sibling's Lessons section for technique. That line had rotted: **52 of the
+77 briefs teach the third-party plugin's tools** — `remove_element`, `rename_element`,
+`draw_shape_tool`, `paint_with_brush`, `activate_texture` — which two bridge changes have since
+removed, and at least one makes a claim that is now false. The most expensive thing a session read
+was also the least accurate.
+
+**What changed.** `docs/plans/briefs/LESSONS.md` is new: the technique the current-bridge sessions
+worked out, distilled to sixteen numbered items — build straight then aim, budget for the corner not
+the centreline, a rotated bone moves its base too, `inspect bounds` measures a rotated cube by its
+unrotated box, `!` needs a decision and `-` does not, one paint call, and the `FileNotFoundError`
+workaround. `part-author.md` and `part-author-kit.md` now send sessions there and tell them **not** to
+skim other briefs for technique; a brief is opened only for a named neighbour's numbers. The 52 stale
+Lessons sections keep their content — they are the record of what each piece cost — under a banner
+saying which bridge they were written on.
+
+**And the keep-list was re-cut on the same evidence.** Eleven of the nineteen served tools were never
+called in any of the four runs (~2,488 tok/turn, 49% of the shim's manifest). Four came out —
+`set_camera_angle` (superseded by `capture_screenshot {views}`, measured 2.7 calls per piece → 0),
+`find_elements_by_criteria`, `get_selection`, `redo` — for 534 tok/turn. The other seven stayed on
+purpose, and the reason is written into `.mcptoolkit/loop.json` so nobody finishes the job later:
+`texture`, `get_texture` and `inspect` are the rework tools and none of these four pieces reworked;
+`undo` and `get_undo_stack` are the same insurance; and **`risky_eval` is the health metric** — 0.0 in
+every clean run of every era, 11.5 in the contended C-era ones — so removing it would hide the signal
+that says the tools have stopped being trustworthy.
+
+Honest sizes, so the next reader spends effort in the right place: the manifest cut is worth about a
+third of a cent a piece. The reading change is worth roughly ten times that, and it also stops
+sessions being taught tools that do not exist. The next real lever is neither — it is mid-session
+phase narrowing (mcp-toolkit `TODO.md` 1.7): nothing in the painting half of a session calls
+`place_cube`, `add_group` or `element`.
+
+## Validated, on one piece (`dragon_mask`, 2026-09-08 22:27)
+
+The change was aimed at one number, so that number is what was checked. Same agent, same model, same
+launcher, brief written to the new convention:
+
+| the session's second read | tok | carried |
+|---|---|---|
+| `wing_tatters.md` — `dragon_spines`, before | 3,391 | 3,108 tok/turn |
+| `wing_tatters.md` — `dragon_tail`, before | 3,391 | 3,144 tok/turn |
+| **`LESSONS.md` — `dragon_mask`, after** | **1,748** | **1,674 tok/turn** |
+
+**A 48% cut on the thing that was changed**, and what it now reads is current instead of teaching six
+tools that no longer exist. With the keep-list re-cut on top, a session carries about **1,980 tok/turn
+less** than it did that afternoon. Orientation is 3 calls and 8% of the run; the own-brief read is
+unchanged at ~2,000 tok, which is right — that one is the piece's own numbers.
+
+**What did NOT get cheaper, said plainly.** The run was longer than either concurrent run (71 turns
+against 48 and 55) and carried *more* in total (12,338 tok/turn of results against 10,620). Three
+reasons, and none of them is the intervention: this brief asked for work the others did not (edit the
+pack's loot tag, and contribute back to `LESSONS.md` — 3 `Edit` calls and a fourth read), the session
+hit a real snag and wrote it up (item 7b: a bone and a cube sharing a name make `element set` refuse
+by name), and `armorpieces_check` ran 3 times against 1–2. Run-level cost lands in the same band as
+the correctly-prompted runs either way — **$0.87 against $0.58 and $0.99** — with `risky_eval`,
+`held_by` and `armorpieces_open` all still 0.
+
+So: the lever moved as designed and the piece is correct (5 bones, 5 cubes, saved without `force`,
+`check_authoring` clean, and the session added itself to the loot tag). A single run cannot say what
+the change is worth end to end, and this one is not a like-for-like; what it establishes is that the
+substitution works and costs nothing.
+
+**And the channel works in both directions**, which was the other half of the point: the session
+appended two items to `LESSONS.md` rather than burying them in its own brief where the next session
+would not look. That is the file accumulating instead of 78 briefs accumulating separately.

@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_nether:blaze_bracers",
+  "description": {
+    "translate": "decoration.armorpieces_nether.blaze_bracers"
+  },
+  "anchors": [
+    "vambraces"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1zcyywrca7jdsjudb7wtq"
+}

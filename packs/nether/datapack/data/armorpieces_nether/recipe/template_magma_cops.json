@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:fire_charge"
+  },
+  "result": {
+    "id": "armorpieces:knees_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces_nether:magma_cops"
+    }
+  },
+  "category": "equipment"
+}

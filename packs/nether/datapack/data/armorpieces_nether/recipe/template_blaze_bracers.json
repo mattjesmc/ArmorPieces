@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:magma_cream"
+  },
+  "result": {
+    "id": "armorpieces:vambraces_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces_nether:blaze_bracers"
+    }
+  },
+  "category": "equipment"
+}

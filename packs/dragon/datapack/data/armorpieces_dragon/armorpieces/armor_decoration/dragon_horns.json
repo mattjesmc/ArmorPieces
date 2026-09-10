@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_dragon:dragon_horns",
+  "description": {
+    "translate": "decoration.armorpieces_dragon.dragon_horns"
+  },
+  "anchors": [
+    "horns"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1uy6bz54nlqik36hfiaha"
+}

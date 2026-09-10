@@ -30,6 +30,11 @@ lessons paragraph below filled in.
 
 ## Lessons from the session
 
+> **Written on an older bridge.** The tool names below (`remove_element`, `paint_with_brush`, …)
+> were the third-party Blockbench plugin's and no longer exist; the toolkit's own bridge replaced
+> them with 26 tools behind `op` families (`element`, `texture`, `inspect`). The numbers about
+> THIS piece are still true — the technique is not. `docs/plans/briefs/LESSONS.md` is current.
+
 Built 2026-09-03 through the bridge. Band 9×2×1 at Blockbench x −4.5..4.5, y 28..30,
 z −5.5..−4.5 (front face 0.5 past the helmet shell, back face buried in it); bar 1×2×1 at
 x ±0.5, y 26..28, z −5.75..−4.75, a child bone of the band. Master 70..240 grey, guard mask the

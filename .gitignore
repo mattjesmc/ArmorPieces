@@ -63,3 +63,13 @@ tools/mcp/node_modules/
 
 # Session transcripts and their archive: evidence, not source (tools/measure_sessions.py).
 .mcptoolkit/runs/
+
+# A downloaded third-party Blockbench plugin (Ewan Howell's CEM Template Loader), kept at the root
+# of the working copy so Blockbench can load it from a fixed path. Somebody else's code and not ours
+# to redistribute, and it has been reported as stray untracked noise more than once.
+/cem.js
+
+# The VLM trial's scratch pack: two throwaway pieces used to measure whether a local model could
+# work the bridge at all. `build_moved_index.py`, `check_surfaces.py` and `mint_uids.py` already skip
+# it by name - a uid minted for it would sit in the append-only lock forever.
+/packs/vlm-scratch/

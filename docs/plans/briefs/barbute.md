@@ -86,6 +86,11 @@ the leanest sessions on record took every shot after the painting was done.
 
 ## Lessons from the session
 
+> **Written on an older bridge.** The tool names below (`remove_element`, `paint_with_brush`, …)
+> were the third-party Blockbench plugin's and no longer exist; the toolkit's own bridge replaced
+> them with 26 tools behind `op` families (`element`, `texture`, `inspect`). The numbers about
+> THIS piece are still true — the technique is not. `docs/plans/briefs/LESSONS.md` is current.
+
 Built 2026-09-05 in 13 bridge calls: 1 `armorpieces_pieces`, 1 `armorpieces_new`, 1 `add_group`,
 1 `place_cube`, 1 `list_outline`, 2 `remove_element` (starter cube, then its `main` bone), 1
 `armorpieces_check`, 2 `armorpieces_set_part`, **2 `armorpieces_paint`** (master, inlay mask), 2

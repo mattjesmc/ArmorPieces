@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_dragon:dragon_crest",
+  "description": {
+    "translate": "decoration.armorpieces_dragon.dragon_crest"
+  },
+  "anchors": [
+    "crest"
+  ],
+  "fittings": [
+    "armorpieces:gemstone"
+  ],
+  "uid": "ap1a5oiq7b2athzd7ia5noq"
+}

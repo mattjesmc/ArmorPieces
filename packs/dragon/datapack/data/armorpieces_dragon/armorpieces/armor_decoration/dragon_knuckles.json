@@ -6,5 +6,8 @@
   "anchors": [
     "knees"
   ],
-  "uid": "ap13jwbq6m66jtfz7gnzi2q"
+  "uid": "ap13jwbq6m66jtfz7gnzi2q",
+  "fittings": [
+    "armorpieces:guard"
+  ]
 }

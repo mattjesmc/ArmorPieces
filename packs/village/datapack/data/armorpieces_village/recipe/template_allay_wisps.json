@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:amethyst_shard"
+  },
+  "result": {
+    "id": "armorpieces:spurs_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces_village:allay_wisps"
+    }
+  },
+  "category": "equipment"
+}

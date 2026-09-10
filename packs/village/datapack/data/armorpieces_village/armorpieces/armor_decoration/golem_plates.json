@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_village:golem_plates",
+  "description": {
+    "translate": "decoration.armorpieces_village.golem_plates"
+  },
+  "anchors": [
+    "greaves"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "uid": "ap1qxaxf3vjnu72b5joq6hq"
+}

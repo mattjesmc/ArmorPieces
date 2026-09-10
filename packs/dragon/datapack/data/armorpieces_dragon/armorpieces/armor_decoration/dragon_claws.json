@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_dragon:dragon_claws",
+  "description": {
+    "translate": "decoration.armorpieces_dragon.dragon_claws"
+  },
+  "anchors": [
+    "vambraces"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap16bc3oizfrhui7gkvwxka"
+}

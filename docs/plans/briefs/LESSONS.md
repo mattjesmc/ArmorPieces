@@ -90,6 +90,14 @@ gives the current rectangles — stray paint is whatever falls outside them.
 then per-face overrides, and a `[top, bottom]` pair where you want a gradient down a face. Five of
 the last six pieces needed no `texture op:rects` and no pixel work at all.
 
+**11a. When a piece DOES need single texels (rivets, studs, a one-pixel border), use
+`armorpieces_paint`'s own `pixels` list rather than reaching for `texture op:rects`.** It takes
+`{x, y, value}` sheet addresses directly, in the SAME call as the whole-face `faces` map, on the
+same sheet — one undo entry for the whole piece's master (or mask), not a separate tool and a
+separate call. Get the addresses from the face rectangle the placing call already returned (a
+face's texel count is exact, so "the middle row" or "spaced two pixels apart, centred" is
+arithmetic on that rectangle, not a guess) — `brute_belt`'s studs never touched `texture op:rects`.
+
 **12. On the negative-x side, `west` is the outboard face** — the leading edge of anything sweeping
 away from the body. `north` is the front (`−z`).
 
@@ -111,3 +119,114 @@ contact sheet, so it costs one picture rather than one per angle.
 **16. Two names for one sheet.** `armorpieces_paint` takes the sheet ID (`part`, `part_static`,
 `part_<fitting>`); the Blockbench texture tools take the name Blockbench holds, which for everything
 but the master is the file name. `list_textures` prints the names they want.
+
+**FIXED IN THE LAUNCHER, 2026-09-09 — read 17-18a as diagnosis, not as a standing condition.**
+The cause was named correctly by the session that wrote item 17: the toolkit shim's **Blockbench**
+adapter pins on `MCPTK_BLOCKBENCH`, while `MCPTK_URL` is its *Minecraft* upstream (default 25599).
+`tools/run_briefs.ps1` was setting the latter, so every session's shim range-scanned 25801-25816 and
+claimed a window of its own. The runner now exports `MCPTK_BLOCKBENCH`, and `.mcp.json` interpolates
+it (`${MCPTK_BLOCKBENCH:-}`) so it actually reaches the server — a variable the config does not name
+never arrives, whatever the launcher exported. If you see `no project is open` again, check those two
+places first, then fall back to 18a.
+
+**17. `mcp__mcptoolkit__*` answering `no project is open` on every call, right after a working
+`armorpieces_open`, is a launcher wiring bug, not a workspace problem.** `tools/mcp/server.mjs` (the
+`armorpieces_*` proxy) can be pinned to this session's own Blockbench window via `ARMORPIECES_BB_URL`;
+the `mcp-toolkit` shim's separate Blockbench adapter needs its own matching pin, `MCPTK_BLOCKBENCH`,
+or it range-scans 25801-25816 and claims whatever unreserved window is left — which is never the
+pinned, human-reserved one, so it ends up in a different, empty window under the same session id.
+Diagnose it the same way every time: `curl http://127.0.0.1:<port>/hello` across 25801-25816 (the
+`armorpieces_*` tools work throughout, so `armorpieces_pieces`/`armorpieces_check` already say which
+piece is yours) to find the port whose `active` is your piece, then read that port's
+`claimed_by.session` — the session id both your processes actually share. From there, `POST
+http://127.0.0.1:<port>/cmd` with `{"tool", "args", "session": {"id": "<that id>", "client":
+"armorpieces", "profile": "kit"}}` and header `X-MCPTK-Session: <that id>` reaches the SAME plugin
+the broken shim would have, with the SAME argument shape as the `mcp__mcptoolkit__*` tools document
+(`place_cube`, `add_group`, `element`, `capture_screenshot`, `inspect`, …) — it is not
+`risky_eval`, it is the documented protocol, addressed directly because the proxy that should carry
+it is pointed at the wrong window. Keep using `armorpieces_check` after every raw call to confirm it
+landed, exactly as the working proxy would want.
+
+**18. If every `mcptoolkit` call — `get_project_info`, `list_outline`, `risky_eval`, anything —
+answers `no project is open ... (open: (none open))` right after a normal `armorpieces_open`/`_new`
+that itself succeeded and shows your piece, that is not a naming problem to retry through: it means
+the `mcptoolkit` server in this session cannot see the Blockbench window the `armorpieces` server is
+using at all (two disconnected bridges, not one tab race). Confirm with two calls
+(`get_project_info` with no argument, then `risky_eval` with a one-line body) rather than trying every
+name variant — a session lost an entire turn budget to this before concluding the connection itself
+was broken. There is no tool-level fix; place_cube/add_group/element all need `mcptoolkit`; a piece
+with no geometry beyond the starter cube cannot be built until this is repaired, so discard, close and
+report it rather than forcing a save of the starter piece.
+
+**18a. There IS a fallback, found the next time this happened (`wither_ribs`): call the bridge
+directly.** The `mcptoolkit` MCP *tool* being unreachable does not mean the underlying HTTP bridge
+is down — `env | grep MCPTK_URL` gives the exact port your session is meant to be using (it was
+correct and pointed at the window holding the piece); `curl http://127.0.0.1:<port>/hello` showed
+the piece open and active; a `curl -X POST .../cmd -d '{"tool":"place_cube","args":{...},"session":
+"<MCPTK_SESSION>"}'` for every geometry tool (`list_outline`, `place_cube`, `add_group`, `element`,
+`capture_screenshot`) worked exactly as the wrapped tool would have — same tool names, same
+argument shapes (`curl .../tools` lists them and their declared args). A whole piece was built this
+way with no `risky_eval` involved — it is the same declared tools over their own native transport,
+not a bypass of them. **Diagnose before giving up**: eight `mcptoolkit_bridge` windows can be
+listening on `25801`-`25808` at once (one per concurrent session); confirm your OWN port from
+`MCPTK_URL`/`ARMORPIECES_BB_URL` and hit `/hello` on it directly before concluding the piece is
+unbuildable.
+
+**18b. The direct-bridge fallback's `element` tool wants `id` (or `ids`), not `name`, for `remove`.**
+`{"op":"remove","name":"x"}` errors `give id or ids`; `{"op":"remove","id":"x"}` (a bone or cube name
+works fine as the id, not just a uuid) is what the schema actually takes. `set`/`rename` accept
+`id` the same way.
+
+**19a. Over the raw bridge (18a), `element {op: remove}` (and similarly `rename`) wants the
+element addressed by `id`, not `name` — `{"name": "main_0"}` answers `"give id or ids"` even
+though `name` is a valid field on the tool (it's for *setting* a new name, not addressing the
+target). Pass the element's current name string as `id`; it resolves by name just as well as by
+uuid.**
+
+**19. `[top, bottom]` shades the face's HEIGHT axis, not its length.** On a thin, elongated cube
+(a rib, a spike, a wire) box-UV maps a face's texture HEIGHT to whichever physical axis is
+shortest on that face, which is often not the axis you want to grade. A face that is 1 texel tall
+has no "top" and "bottom" to shade between — `[top, bottom]` there paints one flat row, not a
+gradient. Grade the LENGTH instead with `pixels`, one texel per column, and get the column order
+from the cube's own `from`→`to` on that axis: box-UV lays out column 0 at `from`, the last column
+at `to`, regardless of which one is world-near or world-far — so two mirrored cubes (`from`/`to`
+swapped by sign) need the gradient's values written in opposite order to read the same in-game.
+
+**20. When several sessions build sibling pieces at once, `armorpieces_check`/`_paint` can answer for
+the WRONG piece.** Three concurrent sessions on the Nether pack (`wither_mask`, `wither_heads`,
+`wither_ribs`) shared one Blockbench window; a bare `armorpieces_check` right after a clean
+`armorpieces_open` sometimes printed a sibling's report instead of mine, because whichever session's
+tab call landed last on the shared window is what "check" reads. `armorpieces_open` on your own piece
+name reliably snaps the active tab back before your next call — call it again immediately before
+anything that reads state, and read the piece name in the reply's first line every time, not just
+once.
+
+**20a. That mismatch is in `armorpieces_check`'s status-file publish, not in your actual edits.**
+`crystal_pendant`, built alongside `dragon_claws` in a shared window, saw the same wrong-piece report
+from the very first `armorpieces_check` — but `mcp__mcptoolkit__get_project_info` (no arguments) showed
+`"project":{"bound":true}` on the correct piece the whole time, and every `place_cube`/`element` call
+landed correctly throughout. The mcptoolkit tools bind to your session's project; `armorpieces_check`
+narrates whatever tab last went active in the real UI. These are different failure modes: a check
+*reporting* the wrong piece does not mean your last edit *landed* on the wrong piece. If a check looks
+wrong, call `get_project_info` (cheap, one line) before distrusting the edits you just made — then
+re-`armorpieces_open` your own piece to fix the narration for the next read.
+
+**21. The check only measures YOUR OWN armor shell.** `ominous_banner` (2026-09-10) ran a pole from
+the `back` socket up past the head, and the clearance block printed `past body / past chestplate /
+past leggings` and **no `past helmet` line at all** — because a helmet is not a `back` piece's shell.
+So the check will happily let you drive a piece straight through a shell that belongs to a different
+armor slot, and stay silent about it. Whenever a piece leaves the neighbourhood of its own armor
+piece, clear the other shell **by arithmetic in the brief**, not by waiting for a flag. The helmet
+shell is `x -5..5, y 23..33, z -5..5`; anything on `back` that rises past `y = 23` therefore has to
+sit at `z >= 5.25`.
+
+**22. A `!` COPLANAR against a piece on a DIFFERENT socket is a stop, and it is common.** Two of the
+first four Hero of the Village sessions (`witch_hat`, `golem_plates`) built cleanly, stayed inside
+budget, painted every sheet — and then stopped without saving, because a brief that says "allowed to
+force: nothing" makes a plane coincidence with a piece you are worn *with* into a blocker. Both were
+the brief's fault, not the session's: `x = -6.15` is an internal face of `helm_wings`, `z = -3.95`
+is `fanged_cop`'s front face. Two fixes, and you want both. In the brief, pick coordinates that sit
+**outside** a neighbour's whole printed envelope rather than merely inside your budget. And give the
+session standing permission to nudge its own face by 0.1 and repaint it, because a shared plane
+z-fights in game and moving is always right — it is only the size of the move that ever needed
+asking. Without that permission the session burns its whole turn budget and saves nothing.

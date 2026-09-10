@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_nether:ghast_tendrils",
+  "description": {
+    "translate": "decoration.armorpieces_nether.ghast_tendrils"
+  },
+  "anchors": [
+    "tassets"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "uid": "ap1vordljmjcht5bgufbdhq"
+}

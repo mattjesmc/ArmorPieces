@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_nether:magma_cops",
+  "description": {
+    "translate": "decoration.armorpieces_nether.magma_cops"
+  },
+  "anchors": [
+    "knees"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1gwppop4f2owkfxissrlq"
+}

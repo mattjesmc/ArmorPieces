@@ -1,0 +1,20 @@
+{
+  "asset_id": "armorpieces_nether:wither_heads",
+  "description": {
+    "translate": "decoration.armorpieces_nether.wither_heads"
+  },
+  "anchors": [
+    "pauldrons"
+  ],
+  "loot": [
+    {
+      "table": "minecraft:entities/wither",
+      "weight": 1,
+      "chance": 1
+    }
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1o5j3we27s5exeityuhda"
+}

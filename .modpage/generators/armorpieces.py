@@ -322,10 +322,11 @@ TRIM_TAGS = f"{RESOURCES}/data/armorpieces/tags/trim_material"
 ARMOR_ITEM = {"gold": "golden"}
 
 _SET = re.compile(
-    r'new GallerySet\("(?P<name>\w+)", EquipmentAssets\.(?P<base>\w+), skin\("(?P<skin>\w+)"\),'
+    r'new GallerySet\("(?P<name>\w+)", EquipmentAssets\.(?P<base>\w+), '
+    r'(?:skin\("(?P<skin>[\w:]+)"\)|null),'
     r'\s*(?:cloth\("(?P<cloth>\w+)", DyeColor\.(?P<colour>\w+)\)|null), List\.of\(')
 _SOCKET = re.compile(
-    r'on\(DecorationAnchor\.(?P<anchor>\w+), "(?P<part>\w+)", TrimMaterials\.(?P<material>\w+)'
+    r'on\(DecorationAnchor\.(?P<anchor>\w+), "(?P<part>[\w:]+)", TrimMaterials\.(?P<material>\w+)'
     r'(?P<items>(?:,\s*(?:metal|dyed|flag)\((?:TrimMaterials|DyeColor)\.\w+\))*)\)')
 _ITEM = re.compile(r'(metal|dyed|flag)\((?:TrimMaterials|DyeColor)\.(\w+)\)')
 
@@ -374,6 +375,23 @@ def _accepts(fitting: dict[str, Any], item: tuple[str, str]) -> Any:
     return None
 
 
+def _pack_pieces(ctx: Context) -> dict[str, dict[str, Any]]:
+    """Every piece every pack under `packs/` ships, by its full id.
+
+    A stage set may wear one: the mod's own themed sets became pack sets when their themes moved
+    out, and the transcription keeps them dressable. A pack that is not there is a warning and a
+    dropped socket, exactly as a missing mod piece is.
+    """
+    out: dict[str, dict[str, Any]] = {}
+    for path in sorted((ctx.root / "packs").glob(
+            "*/datapack/data/*/armorpieces/armor_decoration/*.json")):
+        try:
+            out[f"{path.parents[2].name}:{path.stem}"] = json.loads(path.read_text(encoding="utf-8"))
+        except ValueError as error:
+            ctx.warn(f"{path.name}: {error}")
+    return out
+
+
 @generator("armorpieces.sets")
 def sets(ctx: Context) -> list[dict[str, Any]]:
     """The sets `/armorpieces stage set` dresses, as the wardrobe saves a set.
@@ -391,7 +409,8 @@ def sets(ctx: Context) -> list[dict[str, Any]]:
     text = source.read_text(encoding="utf-8")
     lines = _lang(ctx)
     fittings = _fitting_kinds(ctx)
-    parts = {entry["name"]: entry["body"] for entry in _entries(ctx, "piece")}
+    parts = {f"armorpieces:{entry['name']}": entry["body"] for entry in _entries(ctx, "piece")}
+    parts.update(_pack_pieces(ctx))
     anchors = {row["id"]: row["slot"] for row in _anchor_table(ctx)}
 
     found = list(_SET.finditer(text))
@@ -416,15 +435,18 @@ def sets(ctx: Context) -> list[dict[str, Any]]:
         for socket in _SOCKET.finditer(block):
             anchor = socket.group("anchor").lower()
             part = socket.group("part")
-            if part not in parts:
-                ctx.warn(f"set {name}: no piece called {part}")
+            part_id = part if ":" in part else f"armorpieces:{part}"
+            if part_id not in parts:
+                ctx.warn(f"set {name}: no piece called {part_id}")
                 continue
+            namespace = part_id.partition(":")[0]
             piece: dict[str, Any] = {
-                "id": f"armorpieces:{part}",
-                "pack": "armorpieces",
+                "id": part_id,
+                # The pack slug the library and the wardrobe use: the namespace, hyphenated.
+                "pack": namespace.replace("_", "-"),
                 "material": socket.group("material").lower(),
             }
-            declared = [f for f in (parts[part].get("fittings") or []) if isinstance(f, str)]
+            declared = [f for f in (parts[part_id].get("fittings") or []) if isinstance(f, str)]
             values: dict[str, Any] = {}
             for item in _ITEM.findall(socket.group("items")):
                 for fitting_id in declared:
@@ -434,19 +456,27 @@ def sets(ctx: Context) -> list[dict[str, Any]]:
                         values[fitting_id] = stored
                         break
                 else:
-                    ctx.warn(f"set {name}: {part} has no fitting that takes {item[0]} {item[1].lower()}")
+                    ctx.warn(f"set {name}: {part_id} has no fitting that takes {item[0]} {item[1].lower()}")
             if values:
                 piece["fittings"] = values
             if anchor not in anchors:
                 ctx.warn(f"set {name}: no socket called {anchor}")
             pieces[anchor] = piece
+        # A set wearing another namespace's pieces belongs to that pack, which declares it in
+        # its own `armorpieces-sets.json` - the file the site and the wardrobe actually read. The
+        # Java copy exists so `/armorpieces stage set` can dress it; it is not a second listing.
+        foreign = sorted({p["pack"] for p in pieces.values()} - {"armorpieces"})
+        if foreign:
+            continue
         title = lines.get(f"commands.armorpieces.stage.set.{name}", name.replace("_", " ").title())
         spec: dict[str, Any] = {
             "name": title,
             "slots": {slot: {"material": material} for slot in ("helmet", "chestplate", "leggings", "boots")},
-            "skin": f"armorpieces:{match.group('skin')}",
             "pieces": pieces,
         }
+        if match.group("skin"):
+            worn = match.group("skin")
+            spec["skin"] = worn if ":" in worn else f"armorpieces:{worn}"
         if match.group("cloth"):
             spec["cloth"] = {"cloth": f"armorpieces:{match.group('cloth')}",
                              "base": match.group("colour").lower(), "patterns": []}

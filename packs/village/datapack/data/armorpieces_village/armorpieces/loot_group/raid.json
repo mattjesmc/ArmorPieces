@@ -1,0 +1,8 @@
+{
+  "chance": 0.15,
+  "tables": [
+    "minecraft:chests/pillager_outpost",
+    "minecraft:chests/woodland_mansion"
+  ],
+  "parts": "#armorpieces_village:raid"
+}

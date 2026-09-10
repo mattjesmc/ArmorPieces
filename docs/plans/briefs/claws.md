@@ -151,6 +151,11 @@ accepted and why, and whether it reads.
 
 ## Lessons from the session
 
+> **Written on an older bridge.** The tool names below (`remove_element`, `paint_with_brush`, …)
+> were the third-party Blockbench plugin's and no longer exist; the toolkit's own bridge replaced
+> them with 26 tools behind `op` families (`element`, `texture`, `inspect`). The numbers about
+> THIS piece are still true — the technique is not. `docs/plans/briefs/LESSONS.md` is current.
+
 Reworked 2026-09-05 in 35 bridge calls: 1 `armorpieces_pieces`, 1 `armorpieces_open`,
 1 `list_outline`, 1 `armorpieces_part`, 2 `armorpieces_check`, 7 `remove_element`,
 4 `eraser_tool` (useless, see below), 9 `add_group`, 10 `place_cube`, 2 `armorpieces_paint`,

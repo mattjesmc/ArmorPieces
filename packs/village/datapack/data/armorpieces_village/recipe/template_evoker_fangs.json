@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:ominous_bottle"
+  },
+  "result": {
+    "id": "armorpieces:knees_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces_village:evoker_fangs"
+    }
+  },
+  "category": "equipment"
+}

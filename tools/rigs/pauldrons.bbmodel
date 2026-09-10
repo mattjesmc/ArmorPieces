@@ -3910,5 +3910,10 @@
         }
       }
     }
-  ]
+  ],
+  "armorpieces_figure": {
+    "figure": "vanilla",
+    "material": "iron",
+    "label": "vanilla iron"
+  }
 }

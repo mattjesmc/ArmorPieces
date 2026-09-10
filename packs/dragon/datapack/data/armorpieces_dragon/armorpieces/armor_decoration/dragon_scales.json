@@ -6,5 +6,8 @@
   "anchors": [
     "greaves"
   ],
-  "uid": "ap1kvzk5q56iubbpn57tvkq"
+  "uid": "ap1kvzk5q56iubbpn57tvkq",
+  "fittings": [
+    "armorpieces:guard"
+  ]
 }

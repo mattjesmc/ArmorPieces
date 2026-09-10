@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_nether:hoglin_hooves",
+  "description": {
+    "translate": "decoration.armorpieces_nether.hoglin_hooves"
+  },
+  "anchors": [
+    "spurs"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1c7zalizpchn76fkkbawq"
+}

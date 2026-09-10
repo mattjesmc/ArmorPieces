@@ -1,0 +1,14 @@
+{
+  "asset_id": "armorpieces_village:ominous_banner",
+  "description": {
+    "translate": "decoration.armorpieces_village.ominous_banner"
+  },
+  "anchors": [
+    "back"
+  ],
+  "fittings": [
+    "armorpieces:banner",
+    "armorpieces:guard"
+  ],
+  "uid": "ap12d5typ6gseiyj7b6vo5a"
+}

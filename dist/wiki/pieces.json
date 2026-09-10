@@ -418,7 +418,7 @@
       },
       {
         "after": "fittings",
-        "body": "A piece may carry effects, configured in the same data file: attributes, mob effects, a\ndodge, gliding. The `pinions` are a cut-down elytra that actually flies. Effects can be gated\non a fitting, so the circlet grants Hero of the Village only with an emerald in it. The\n[authoring guide](/wiki/authoring/) lists every effect type.\n",
+        "body": "A piece may carry effects, configured in the same data file: attributes, mob effects, a\ndodge, gliding. The `pinions` are a cut-down elytra that actually flies, the `gorget` is worth\na heart and two in netherite, and the `puttees` walk a twentieth faster. Effects can be gated\non a fitting, so the circlet grants Hero of the Village only with an emerald in it. The\n[authoring guide](/wiki/authoring/) lists every effect type, and says which attributes want\nwhich operation.\n",
         "id": "behaviour",
         "title": "Behaviour"
       },
@@ -777,7 +777,7 @@
     },
     {
       "banner": null,
-      "body": "A piece may carry effects, configured in the same data file: attributes, mob effects, a\ndodge, gliding. The `pinions` are a cut-down elytra that actually flies. Effects can be gated\non a fitting, so the circlet grants Hero of the Village only with an emerald in it. The\n[authoring guide](/wiki/authoring/) lists every effect type.",
+      "body": "A piece may carry effects, configured in the same data file: attributes, mob effects, a\ndodge, gliding. The `pinions` are a cut-down elytra that actually flies, the `gorget` is worth\na heart and two in netherite, and the `puttees` walk a twentieth faster. Effects can be gated\non a fitting, so the circlet grants Hero of the Village only with an emerald in it. The\n[authoring guide](/wiki/authoring/) lists every effect type, and says which attributes want\nwhich operation.",
       "data": {},
       "empty_text": null,
       "id": "behaviour",

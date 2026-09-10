@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_village:ravager_bracers",
+  "description": {
+    "translate": "decoration.armorpieces_village.ravager_bracers"
+  },
+  "anchors": [
+    "vambraces"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1g7dr5vbckctk5nbnub6q"
+}

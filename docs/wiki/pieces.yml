@@ -83,9 +83,11 @@ custom_sections:
     after: fittings
     body: |
       A piece may carry effects, configured in the same data file: attributes, mob effects, a
-      dodge, gliding. The `pinions` are a cut-down elytra that actually flies. Effects can be gated
+      dodge, gliding. The `pinions` are a cut-down elytra that actually flies, the `gorget` is worth
+      a heart and two in netherite, and the `puttees` walk a twentieth faster. Effects can be gated
       on a fitting, so the circlet grants Hero of the Village only with an emerald in it. The
-      [authoring guide](/wiki/authoring/) lists every effect type.
+      [authoring guide](/wiki/authoring/) lists every effect type, and says which attributes want
+      which operation.
 
   - id: what-is-here
     title: What is here

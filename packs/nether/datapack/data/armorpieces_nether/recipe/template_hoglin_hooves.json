@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:crimson_fungus"
+  },
+  "result": {
+    "id": "armorpieces:spurs_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces_nether:hoglin_hooves"
+    }
+  },
+  "category": "equipment"
+}

@@ -81,6 +81,11 @@ not yours.
 
 ## Lessons from the session
 
+> **Written on an older bridge.** The tool names below (`remove_element`, `paint_with_brush`, …)
+> were the third-party Blockbench plugin's and no longer exist; the toolkit's own bridge replaced
+> them with 26 tools behind `op` families (`element`, `texture`, `inspect`). The numbers about
+> THIS piece are still true — the technique is not. `docs/plans/briefs/LESSONS.md` is current.
+
 Built in 14 bridge calls, 4 of them paint, 3 pictures (the fox texture, then two renders). Clean
 save without `force`; `check_authoring.py packs/animals/datapack packs/animals/resourcepack` passes.
 

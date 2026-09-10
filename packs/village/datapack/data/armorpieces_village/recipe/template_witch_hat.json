@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:glass_bottle"
+  },
+  "result": {
+    "id": "armorpieces:crest_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces_village:witch_hat"
+    }
+  },
+  "category": "equipment"
+}

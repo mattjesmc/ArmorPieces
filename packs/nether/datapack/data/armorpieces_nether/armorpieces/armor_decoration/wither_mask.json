@@ -1,0 +1,20 @@
+{
+  "asset_id": "armorpieces_nether:wither_mask",
+  "description": {
+    "translate": "decoration.armorpieces_nether.wither_mask"
+  },
+  "anchors": [
+    "brow"
+  ],
+  "loot": [
+    {
+      "table": "minecraft:entities/wither",
+      "weight": 1,
+      "chance": 1
+    }
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1x6wmh5eezxjcayiepjiq"
+}

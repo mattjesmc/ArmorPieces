@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_village:totem_pendant",
+  "description": {
+    "translate": "decoration.armorpieces_village.totem_pendant"
+  },
+  "anchors": [
+    "collar"
+  ],
+  "fittings": [
+    "armorpieces:gemstone"
+  ],
+  "uid": "ap1rlwiastibnz6bcd2d7da"
+}

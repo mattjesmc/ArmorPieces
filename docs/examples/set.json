@@ -18,7 +18,7 @@
     "brow": { "id": "armorpieces:circlet", "material": "gold", "fittings": { "gemstone": "minecraft:emerald" } },
     "horns": { "id": "armorpieces:helm_wings", "material": "gold" },
     "pauldrons": { "id": "armorpieces:spaulders", "material": "iron" },
-    "back": { "id": "armorpieces:mantle", "material": "iron" },
+    "back": { "id": "armorpieces:cloak", "material": "iron" },
     "collar": { "id": "armorpieces:gorget", "material": "gold" },
     "vambraces": { "id": "armorpieces:vambraces", "material": "iron" },
     "belt": { "id": "armorpieces:buckled_belt", "material": "gold" },

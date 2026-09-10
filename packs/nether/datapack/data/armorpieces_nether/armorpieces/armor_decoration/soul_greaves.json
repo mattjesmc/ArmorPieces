@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_nether:soul_greaves",
+  "description": {
+    "translate": "decoration.armorpieces_nether.soul_greaves"
+  },
+  "anchors": [
+    "greaves"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1qeduekt74pbwbjpelwyq"
+}

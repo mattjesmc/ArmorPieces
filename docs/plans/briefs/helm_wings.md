@@ -69,6 +69,11 @@ filled in. No `modpage.yml` entry, no recipe, no page rebuild.
 
 ## Lessons from the session
 
+> **Written on an older bridge.** The tool names below (`remove_element`, `paint_with_brush`, …)
+> were the third-party Blockbench plugin's and no longer exist; the toolkit's own bridge replaced
+> them with 26 tools behind `op` families (`element`, `texture`, `inspect`). The numbers about
+> THIS piece are still true — the technique is not. `docs/plans/briefs/LESSONS.md` is current.
+
 **What was built.** `base` (one small `mount` cube, x -6.40..-5.30, y 31.5..32.5, z 0.0..2.4 in
 Blockbench) carries four sibling bones `plate_a..d`, rotated 22 / 34 / 46 / 60 degrees about X, each
 holding a `quill_` root plate and a narrower `vane_` tip plate. Envelope bone-local

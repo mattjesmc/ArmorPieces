@@ -170,7 +170,7 @@ offers to install itself, which is not this change's business.
 | library id | `armorpieces-animals` |
 | display name | Armor Pieces: Animals |
 | version | 0.1.0 |
-| requires | Armor Pieces 0.3.0 or later |
+| requires | Armor Pieces 0.4.0 or later |
 | licence | **CC BY 4.0** — open and free, credit kept |
 | release | `mattjesmc/ArmorPieces`, tag `animals-0.1.0` |
 

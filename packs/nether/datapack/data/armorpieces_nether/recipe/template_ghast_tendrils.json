@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:ghast_tear"
+  },
+  "result": {
+    "id": "armorpieces:tassets_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces_nether:ghast_tendrils"
+    }
+  },
+  "category": "equipment"
+}

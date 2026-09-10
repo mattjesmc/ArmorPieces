@@ -143,6 +143,11 @@ the leanest sessions on record took every shot after the painting was done.
 
 ## Lessons from the session
 
+> **Written on an older bridge.** The tool names below (`remove_element`, `paint_with_brush`, …)
+> were the third-party Blockbench plugin's and no longer exist; the toolkit's own bridge replaced
+> them with 26 tools behind `op` families (`element`, `texture`, `inspect`). The numbers about
+> THIS piece are still true — the technique is not. `docs/plans/briefs/LESSONS.md` is current.
+
 Built clean on the first pass — geometry exactly as briefed, `armorpieces_save` accepted without
 `force`, `check_part`/`check_authoring` clean, page rebuilt offline (its only warning is the
 pre-existing `minecraft:chain` one; `netherite_ingot` was already cached). **Two paint calls, and

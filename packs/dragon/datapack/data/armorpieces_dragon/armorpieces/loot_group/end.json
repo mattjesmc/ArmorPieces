@@ -1,0 +1,7 @@
+{
+  "chance": 0.15,
+  "tables": [
+    "minecraft:chests/end_city_treasure"
+  ],
+  "parts": "#armorpieces_dragon:dragonslayer"
+}

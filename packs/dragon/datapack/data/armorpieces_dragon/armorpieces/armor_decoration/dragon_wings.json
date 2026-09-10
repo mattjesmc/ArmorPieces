@@ -1,0 +1,20 @@
+{
+  "asset_id": "armorpieces_dragon:dragon_wings",
+  "description": {
+    "translate": "decoration.armorpieces_dragon.dragon_wings"
+  },
+  "anchors": [
+    "back"
+  ],
+  "effects": [
+    {
+      "type": "armorpieces:glide",
+      "sink": 0.02,
+      "wear_interval": 6
+    }
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "uid": "ap1bxrzttquqybq34cu5twq"
+}

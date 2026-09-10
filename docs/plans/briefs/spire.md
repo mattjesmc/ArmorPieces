@@ -31,6 +31,11 @@ filled in.
 
 ## Lessons from the session
 
+> **Written on an older bridge.** The tool names below (`remove_element`, `paint_with_brush`, …)
+> were the third-party Blockbench plugin's and no longer exist; the toolkit's own bridge replaced
+> them with 26 tools behind `op` families (`element`, `texture`, `inspect`). The numbers about
+> THIS piece are still true — the technique is not. `docs/plans/briefs/LESSONS.md` is current.
+
 The bridge did the whole job; nothing needed `risky_eval` and nothing was hand-edited.
 
 **What the bridge told me.** `armorpieces_check` prints the anchor in the game's units — for

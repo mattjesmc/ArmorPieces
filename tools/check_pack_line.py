@@ -21,19 +21,19 @@ for f in glob.glob('src/main/resources/data/armorpieces/armorpieces/armor_decora
 # pack: { socket: (piece, centre or None) }
 PLAN = {
  'dragon': {
-   'crest':('dragon_crest','minecraft:dragon_breath'), 'brow':('dragon_mask',None),
+   'crest':('dragon_crest','BUILT'), 'brow':('dragon_mask',None),
    'horns':('dragon_horns',None), 'pauldrons':('dragon_spines',None),
-   'back':('dragon_wings',None), 'collar':('crystal_pendant','minecraft:end_crystal'),
+   'back':('dragon_wings',None), 'collar':('crystal_pendant','BUILT'),
    'vambraces':('dragon_claws',None), 'belt':('dragon_tail',None),
-   'tassets':('wing_tatters','minecraft:chorus_fruit'), 'knees':('dragon_knuckles','minecraft:end_rod'),
-   'greaves':('dragon_scales','minecraft:purpur_block'), 'spurs':('dragon_talons','minecraft:chorus_flower')},
+   'tassets':('wing_tatters','BUILT'), 'knees':('dragon_knuckles','BUILT'),
+   'greaves':('dragon_scales','BUILT'), 'spurs':('dragon_talons','BUILT')},
  'nether': {
-   'crest':('hoglin_hair','minecraft:porkchop'), 'brow':('wither_mask',None),
-   'horns':('strider_hair','minecraft:warped_fungus'), 'pauldrons':('wither_heads',None),
-   'back':('blaze_halo','minecraft:blaze_powder'), 'collar':('wither_ribs',None),
-   'vambraces':('blaze_bracers','minecraft:magma_cream'), 'belt':('brute_belt','minecraft:golden_axe'),
-   'tassets':('ghast_tendrils','minecraft:ghast_tear'), 'knees':('magma_cops','minecraft:magma_block'),
-   'greaves':('soul_greaves','minecraft:soul_lantern'), 'spurs':('hoglin_hooves','minecraft:crimson_fungus')},
+   'crest':('hoglin_hair','BUILT'), 'brow':('wither_mask',None),
+   'horns':('strider_hair','BUILT'), 'pauldrons':('wither_heads',None),
+   'back':('blaze_halo','BUILT'), 'collar':('wither_ribs',None),
+   'vambraces':('blaze_bracers','BUILT'), 'belt':('brute_belt','BUILT'),
+   'tassets':('ghast_tendrils','BUILT'), 'knees':('magma_cops','BUILT'),
+   'greaves':('soul_greaves','BUILT'), 'spurs':('hoglin_hooves','BUILT')},
  'caves': {
    'crest':('shrieker_crown','minecraft:sculk_shrieker'), 'brow':('warden_mask',None),
    'horns':('warden_antennae',None), 'pauldrons':('catalyst_bloom','minecraft:sculk_catalyst'),
@@ -49,12 +49,12 @@ PLAN = {
    'tassets':('hanging_roots','minecraft:hanging_roots'), 'knees':('dripstone_cops','minecraft:dripstone_block'),
    'greaves':('moss_greaves','minecraft:moss_block'), 'spurs':('dripstone_spurs','minecraft:calcite')},
  'village': {
-   'crest':('witch_hat','minecraft:glass_bottle'), 'brow':('illager_mask',None),
-   'horns':('ravager_horns',None), 'pauldrons':('vex_wings',None),
-   'back':('ominous_banner',None), 'collar':('totem_pendant','minecraft:totem_of_undying'),
-   'vambraces':('ravager_bracers',None), 'belt':('pillager_belt','minecraft:crossbow'),
-   'tassets':('ravager_saddle',None), 'knees':('evoker_fangs','minecraft:ominous_bottle'),
-   'greaves':('golem_plates','minecraft:iron_helmet'), 'spurs':('allay_wisps','minecraft:amethyst_shard')},
+   'crest':('witch_hat','BUILT'), 'brow':('illager_mask','BUILT'),
+   'horns':('ravager_horns','BUILT'), 'pauldrons':('vex_wings','BUILT'),
+   'back':('ominous_banner','BUILT'), 'collar':('totem_pendant','BUILT'),
+   'vambraces':('ravager_bracers','BUILT'), 'belt':('pillager_belt','BUILT'),
+   'tassets':('ravager_saddle','BUILT'), 'knees':('evoker_fangs','BUILT'),
+   'greaves':('golem_plates','BUILT'), 'spurs':('allay_wisps','BUILT')},
  'coral': {
    'crest':('coral_crown','BUILT'), 'brow':('coral_visor','minecraft:tube_coral_block'),
    'horns':('axolotl_frills','BUILT'), 'pauldrons':('kelp_mantle','BUILT'),

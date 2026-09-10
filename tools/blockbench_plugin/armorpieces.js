@@ -431,11 +431,54 @@
 	}
 
 	/*
-	 * Where packs are looked for: the author's own list first, then the repository's three places
-	 * when there is a repository - its resources, its run/ resource packs, its run/ worlds'
-	 * datapacks - then the installed game's. The repository is the toolkit, not the workspace, so
-	 * content never has to live in it; the game folders are there so a pack made for the launcher
-	 * needs no adding.
+	 * One folder as a comparable key. The author's list holds whatever string a picker or a script
+	 * put there - `C:/x/y` and `C:\x\y` are the same folder and neither `indexOf` nor `===` says so
+	 * - so every "is this folder already known" question normalises first.
+	 */
+	function pathKey(dir) {
+		return path.resolve(dir).toLowerCase();
+	}
+
+	function hasPath(list, dir) {
+		const key = pathKey(dir);
+		return list.some(function (entry) { return pathKey(entry) === key; });
+	}
+
+	/* A folder is half a pack if it holds either of the two trees a piece can live in. */
+	function isPackHalf(dir) {
+		return fs.existsSync(path.join(dir, 'data')) || fs.existsSync(path.join(dir, 'assets'));
+	}
+
+	/*
+	 * The repository's own packs. `packs/<name>/` is where this repository keeps a pack's SOURCE -
+	 * the pack line, the set packs and the legacy restore pack all live there, usually as a
+	 * `datapack` and a `resourcepack` folder, sometimes as one folder holding both trees. They are
+	 * found here for the same reason src/main/resources is: they are content that ships with the
+	 * clone, so an author who has the clone has them.
+	 *
+	 * Before this they were invisible until something wrote them into `armorpieces_packs`, which
+	 * armorpieces_new does for a pack it is told to write into. That is a setting, and a setting is
+	 * one blob saved whole by whichever window saves last - so a registration could quietly go
+	 * away and take a whole pack's pieces with it. A folder that is here on disk should not need
+	 * remembering.
+	 */
+	function packsInRepo(root) {
+		const roots = [];
+		for (const pack of subdirs(path.join(root, 'packs'))) {
+			const halves = subdirs(pack).filter(isPackHalf);
+			if (halves.length) roots.push(...halves);
+			else if (isPackHalf(pack)) roots.push(pack);
+		}
+		return roots;
+	}
+
+	/*
+	 * Where packs are looked for: the author's own list first, then the repository's own places
+	 * when there is a repository - its resources, its packs/ sources, its run/ resource packs, its
+	 * run/ worlds' datapacks - then the installed game's. Content never HAS to live in the
+	 * repository, and a pack anywhere else is added through Packs...; but the packs a clone ships
+	 * with are found without asking, and the game folders are there so a pack made for the
+	 * launcher needs no adding either.
 	 */
 	/*
 	 * The roots found without being told about: the repository's, the game's, and - off the
@@ -448,6 +491,7 @@
 		const root = repoRoot();
 		if (root) {
 			roots.push(path.join(root, 'src', 'main', 'resources'));
+			roots.push(...packsInRepo(root));
 			roots.push(...packsUnderGameDir(path.join(root, 'run')));
 		}
 		if (!isApp) roots.push(...subdirs(packHome()));
@@ -460,6 +504,10 @@
 		const root = repoRoot();
 		if (root) {
 			roots.push(path.join(root, 'src', 'main', 'resources'));
+			// The repository's packs BEFORE its run/ folder: run/ holds what export_pack.py copied
+			// there for the game to load, packs/ holds the source those copies were made from, and
+			// the first root with both halves of a piece is the one every tool here edits.
+			roots.push(...packsInRepo(root));
 			roots.push(...packsUnderGameDir(path.join(root, 'run')));
 		}
 		// The web build has no game folder to look in. What it has instead is one root that
@@ -477,7 +525,7 @@
 		roots.push(...packsUnderGameDir(minecraftDir()));
 		const seen = new Set();
 		return roots.filter(function (dir) {
-			const key = path.resolve(dir).toLowerCase();
+			const key = pathKey(dir);
 			if (seen.has(key) || !fs.existsSync(dir)) return false;
 			seen.add(key);
 			return true;
@@ -738,7 +786,7 @@
 			author: readCredits([dir]).pack.author || '',
 			// Forgetting a folder only does anything if being in the author's list is the only
 			// reason it shows up. A pack that is found anyway has to be deleted or left alone.
-			mine: userPacks().indexOf(dir) !== -1 && autoRoots().indexOf(dir) === -1,
+			mine: hasPath(userPacks(), dir) && !hasPath(autoRoots(), dir),
 			/*
 			 * Deleting is offered only where this plugin is the only way to do it. In a browser
 			 * that is true of everything under the folder packs live in - there is no file manager

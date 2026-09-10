@@ -1,6 +1,15 @@
 # The concurrency A/B: does a second session pay, now that it has its own name?
 
-**Status: run 2026-09-08, both arms complete. Answer: step 2 is the fix.** Contention no longer
+**Status: asked and answered twice.** Round 1 (2026-09-08 morning, below) said *step 2 is the fix*:
+contention was no longer damaging but it was total, and two sessions took longer than one. Round 2
+(**2026-09-08 evening**, at the end of this file) ran the same question on step 2 as built — a window
+each, mcp-toolkit 0.140.0 — and **two sessions started together produced two pieces in 7.0 minutes
+against 14.8 sequential.** Concurrency pays now. Read round 1 for the case that got step 2 built and
+round 2 for what it bought; round 2's sequential arm is void for a launcher reason it explains.
+
+---
+
+**Round 1 status: run 2026-09-08, both arms complete. Answer: step 2 is the fix.** Contention no longer
 corrupts anything — `risky_eval` is 0 in both concurrent runs and the guards hold — but the second
 session is locked out of the shared window until the first finishes, so two sessions started
 together took *longer* (16.4 min) than the same two pieces in sequence (14.8 min). See Results. A
@@ -276,6 +285,14 @@ Fixed 2026-09-08 in `tools/mcp/server.mjs`:
   on disk is invisible to the plugin until it is in `armorpieces_packs`, which cost the first
   session of this pack entirely. hive, legends and wildhunt were also missing and were registered.
 
+  **Superseded 2026-09-10 for packs inside the repository.** Registering was only half a fix:
+  `armorpieces_packs` is one setting saved whole by whichever Blockbench window saves last, so the
+  registrations went away again, and by 2026-09-10 the setting held only `legacy` and `vlm-scratch`
+  — every piece in dragon, nether, animals, coral, hive and wildhunt was unreachable, which is
+  exactly the failure this row describes, returning. The plugin now finds `packs/<name>/*` in the
+  repository itself (`packsInRepo`, ahead of `run/`), so a folder that is here on disk needs no
+  remembering. `armorpieces_new` still registers, for packs kept outside the clone.
+
 The fix is worth its own row, because it is most of the "era D" gain:
 
 | `dragon_knuckles`, same brief, same model | min | turns | bridge | `risky_eval` | "no piece is open" |
@@ -301,3 +318,160 @@ The seven Sonnet authoring runs cost **$23.47** — $12.11 for the three voided 
 $11.36 for the four that count ($1.79 + $3.55 + $2.17 + $3.85). Opus driver sessions cost several
 times that: the first evening alone added $48.75. Budget a batch like this at **$60–100 all in**,
 not the brief's "$10–20" — that figure counted only the authoring arm, and it is the smaller half.
+
+---
+
+# Round 2, on a window each: step 2 works
+
+**Run 2026-09-08 evening, mcp-toolkit 0.140.0 / shim 0.68.0 / Blockbench plugin 0.6.0. Two sessions
+started at the same second produced two pieces in 7.0 minutes, against 13.9 for two built one after
+the other the same evening and the 14.8 round 1 measured.** Each session took a window of its own
+within 26 seconds and held its own piece within 41; `held_by` refusals, `risky_eval` calls and
+re-opens were all **zero**, in both arms. The reserved window was never touched. Round 1's verdict —
+*"concurrency currently has negative value"* — is reversed by the change it asked for.
+
+## What was different
+
+`BLOCKBENCH_ISOLATION_DESIGN.md` section 6.3, built as toolkit 0.139.0 and published to mavenLocal
+as 0.140.0: each Blockbench window's plugin takes the first free port at or above 25801, so the port
+names the window, and a shim rejoins its own window, claims a free one, or asks an existing window
+for another. This repository's half is `tools/mcp/server.mjs` discovering over the same range instead
+of pinning the base port — **and that half is load-bearing**: a proxy pinned to 25801 while the shim
+scanned would have sent this session's piece work into the window another session had taken, which is
+the failure being measured. `build.gradle` names 0.140.0 and `run/mcptoolkit/mcp-server` is
+re-extracted from it (`.extracted-version` says which).
+
+## Two things a live second window settled that no harness could
+
+**A new window served nothing, and the reason was not in any of the code.** `POST /window` opened a
+real window every time — and none of them answered `/hello`. Blockbench's stored `installed_plugins`
+did not contain `mcptoolkit_bridge`: it had been loaded from file without being installed, so it
+lived in the window that loaded it and in no other. A new window boots from the persisted list, got
+the ArmorPieces plugin and the two older toolkit plugins, and got no bridge. Worse, the shim's
+`askForWindow` has no memory of having asked, so every call that found no window asked for another:
+one `check_kit.mjs` run left **five** blank windows behind, twelve seconds apart. Installing the
+plugin properly fixes it; the shim asking once per call is worth a cap or a "did the window I asked
+for ever appear" check on the toolkit side.
+
+**`TODO.md` 3.4 step 6, answered: the two older plugins ARE there.** In a real second window
+`typeof mcptoolkitPush` and `typeof mcptoolkitEntity` are both `function`, alongside
+`armorpieces_api` and the bridge — because all four are in `installed_plugins` and a new window loads
+that list. So 1.9's port gap in a second window was never a loud `ReferenceError`. It was a working
+push aimed at whichever game answered 25599, which is exactly the silent-and-wrong case 0.140.0's
+`GAME` injection closes.
+
+## The four pieces
+
+The next four unbuilt pieces of **Armor Pieces: Dragonslayer**, briefs written for this run, all with
+mutually disjoint envelope budgets so no session carried clearance work another did not:
+
+| | piece | socket | bone | centre | kind |
+|---|---|---|---|---|---|
+| sequential | `dragon_crest` | crest | head | `dragon_breath` | small hard part |
+| sequential | `dragon_horns` | horns | head | `ender_pearl` | medium hard part |
+| concurrent | `dragon_spines` | pauldrons | left_arm | `amethyst_shard` | medium multi-element |
+| concurrent | `dragon_tail` | belt | body | `popped_chorus_fruit` | medium multi-element |
+
+`pack-line.md` gives a recipe centre only to `dragon_crest`; the other three were given one so that
+every session did identical work. **They were dropped after the run** — a measurement is not a reason
+to add craftables to a pack — and the three are reached the way the plan says the pack is reached:
+the `end` loot group over `minecraft:chests/end_city_treasure` at 0.15, tag
+`#armorpieces_dragon:dragonslayer`, both written when the recipes came out. Worth knowing before that
+group is played: `pack-line.md` records that this table is already claimed by the mod's `court` and
+`carapace` groups at the same 0.15, so three groups must resolve to one pool rolled once.
+
+## The headline
+
+| | min | turns | bridge | out | cache read | **$/piece** |
+|---|---|---|---|---|---|---|
+| **C** new plugin, alone (n=2) | 5.2 | 60 | 31 | 95k | 3.4M | **$2.19** |
+| **C** new plugin, contended (n=2) | 14.3 | 123 | 59 | 159k | 13.7M | **$5.15** |
+| **D** own id, alone (n=2) | 7.4 | 71 | 37 | 114k | 4.5M | **$2.67** |
+| **D** own id, contended (n=2) | 11.6 | 90 | 39 | 126k | 6.1M | **$3.01** |
+| **E** a window each, sequential (n=2, *void — see below*) | 7.0 | 56 | 38 | 29k | 2.9M | **$1.42** |
+| **E** a window each, **concurrent** (n=2) | 5.6 | 30 | 24 | 26k | 1.4M | **$0.78** |
+
+And the column the whole thing is for:
+
+| | wall clock for two pieces |
+|---|---|
+| round 1, the solo pair in sequence | 14.8 min |
+| this evening, two in sequence (void) | 13.9 min |
+| this evening, **two started together** | **7.0 min** |
+
+**Two sessions now produce two pieces in half the time one session takes to produce two.** Round 1's
+concurrent pair took *longer* than sequential; this one is 2.0x faster than the sequential run beside
+it and 2.1x faster than round 1's.
+
+## What the pair actually did — which is the point
+
+| | min | turns | bridge | `risky_eval` | `held_by` | `armorpieces_open` | window |
+|---|---|---|---|---|---|---|---|
+| `dragon_spines` | 4.2 | 29 | 22 | **0** | **0** | **0** | 25802 `win-nqwo9t54` |
+| `dragon_tail` | 7.0 | 31 | 26 | **0** | **0** | **0** | 25803 `win-juedetll` |
+
+The two runs are indistinguishable from solo runs, which is what round 1 could not say about either
+of its concurrent pair. Read off the plugin's own claim records, every two seconds, from outside both
+sessions:
+
+```
+20:02:07  both children launched
+20:02:33  25801 reserved      25802 mcptk-77440           25803 mcptk-67600
+20:02:48  25801 reserved      25802 …/dragon_spines       25803 …/dragon_tail
+20:06:35  25801 reserved      25802 released              25803 …/dragon_tail
+20:09:22  25801 reserved      25802 released              25803 released
+```
+
+Both sessions had a window in 26 seconds and their own piece in 41. Round 1's second session was
+refused ten times, retried `armorpieces_new` three times, and first held a piece of its own at
+10:46:09 — **9 minutes after launch and 3¼ minutes after the other session had already finished.**
+`dragon_spines` finishing at 20:06 released 25802 while `dragon_tail` worked on undisturbed in 25803,
+which is the claim-dies-with-the-connection half of 0.135.0 doing its job in a second window.
+
+## Identity: evidence at last, and how
+
+Round 1's identity column was decoration. `measure_sessions.py` read session ids out of reply text,
+and the only id that appears there is the one a `held_by` refusal names — which is by definition
+somebody else's, so every id it had ever collected was the *holder's* (mcp-toolkit CHANGELOG
+0.140.0). Two fixes make the column evidence here:
+
+- **`tools/mcp/server.mjs` says its own id once, on stderr, at startup** — `mcptk-<ppid>`, computed
+  by the process that uses it. Nothing but that process writes that line.
+- **The windows were watched from outside**, every two seconds, recording `claimed_by.session` per
+  port. That sees BOTH sessions at once, which no single transcript can.
+
+`mcptk-77440` and `mcptk-67600` are exactly the two pids the launcher printed. Two ids, two windows,
+no shared-connections note anywhere. And a warning for the next reader of these numbers: a
+`held_by`-shaped string in a transcript is usually a session's own project info naming **itself** as
+the holder. Counting those as refusals shows 1 per sequential run here; there were none.
+
+## Why the sequential arm is void, and what it costs the conclusion
+
+**Both children of the sequential arm were launched with the prompt `"Build"`.** PowerShell's
+`Start-Process -ArgumentList @(...)` joins an array with spaces and quotes nothing, so a multi-word
+prompt arrives as many argv entries and `claude -p` takes only the first word — the same trap
+`docs/plans/set-packs.md:662` recorded. Each session then went looking through `docs/plans/briefs/`
+for something to do: one found `dragon_crest.md` and built it, the other read three briefs and built
+`dragon_horns` instead of the `dragon_spines` it was sent for. Both pieces are correct and clean —
+they were built to their briefs, and both briefs' Lessons sections are filled in — but as a
+*controlled baseline* the arm is void: **25% of each run's tool calls went on orientation before
+`armorpieces_new`**, which inflates every column, wall clock included.
+
+That matters in one direction only, and it is the safe one: a padded sequential arm **flatters**
+concurrency. So the honest reading is:
+
+- The **13.9 min** sequential figure is an upper bound; a cleanly-prompted pair would land nearer 11.
+- Round 1's **14.8 min** is the un-padded baseline the criterion was written against, on an older
+  build.
+- **7.0 min beats both by about 2x**, which is wide enough that the contamination cannot explain it.
+
+**Do not read the $/piece column as a 3.4x cost win over era D.** These briefs pre-solve the rotation
+signs and give exact coordinates — more prescriptive than round 1's — so part of the drop from 71
+turns to 30 is the brief, not the bridge. The wall clock and the three zeros (`risky_eval`,
+`held_by`, `armorpieces_open`) are what this run establishes; the money is suggestive and confounded.
+
+## Still owed
+
+A cleanly-prompted sequential pair, if anyone wants the $/piece row to mean something. It is two more
+pieces and about $3, and the launcher bug that made it necessary is fixed. Nothing about the verdict
+on step 2 turns on it.

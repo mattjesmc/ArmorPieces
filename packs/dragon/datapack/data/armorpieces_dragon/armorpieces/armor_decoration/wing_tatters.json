@@ -6,5 +6,8 @@
   "anchors": [
     "tassets"
   ],
-  "uid": "ap1axb2eqrdpi2ndzxrrf5q"
+  "uid": "ap1axb2eqrdpi2ndzxrrf5q",
+  "fittings": [
+    "armorpieces:inlay"
+  ]
 }

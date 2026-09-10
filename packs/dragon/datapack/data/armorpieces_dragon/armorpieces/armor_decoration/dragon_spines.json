@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_dragon:dragon_spines",
+  "description": {
+    "translate": "decoration.armorpieces_dragon.dragon_spines"
+  },
+  "anchors": [
+    "pauldrons"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1osvdg7aifuqtrdzgqi5a"
+}

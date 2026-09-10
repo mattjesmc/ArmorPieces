@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_nether:hoglin_hair",
+  "description": {
+    "translate": "decoration.armorpieces_nether.hoglin_hair"
+  },
+  "anchors": [
+    "crest"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "uid": "ap1ukg473ykk4gnep34fiiq"
+}

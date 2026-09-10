@@ -1,6 +1,15 @@
 # The pack line
 
-> **Where this stands (2026-09-07).** Design only. **Nothing here is built.** Animals is complete in
+> **Where this stands (2026-09-09).** **Dragonslayer and Nether are BUILT** — twelve pieces each, in
+> `packs/dragon/` and `packs/nether/`, `check_authoring.py` clean on both and every piece reachable.
+> Nether's first five came from the Qwen pilot and Dragonslayer's first nine from earlier sessions;
+> the remaining ten — Nether's seven and Dragonslayer's last three — were authored on 2026-09-09 from
+> ten briefs run through `tools/run_briefs.ps1` (see `docs/plans/briefs/RUNNING.md`). `dragon_wings` carries
+> `armorpieces:glide` — **the first effect any pack has shipped**, and it survives the round trip.
+> Neither pack is committed, and neither has been seen in game. Caves, Hero of the Village and
+> Ocean's *Monument* are still design only; Caves remains gated on the glow sheet.
+>
+> **Where this stood (2026-09-07).** Design only. **Nothing here was built.** Animals is complete in
 > the working copy and published nowhere; Coral is complete and holds one outfit (*The Reef*). This
 > document is the packs that come after them, and it exists because the "Boss pack" in
 > `set-packs.md` dissolved once we tried to fill twelve sockets with it.
@@ -245,18 +254,24 @@ dimension is its body. Netherite with gold hardware.
 
 | socket | piece | what it is | fitting | centre |
 |---|---|---|---|---|
-| `crest` | `hoglin_hair` | the bristled tuft over the crown | — | `porkchop` |
-| `brow` | `wither_mask` | the skull's face over your own | — | drop |
-| `horns` | `strider_hair` | the long red side-tufts at the temples | — | `warped_fungus` |
+| `crest` | `hoglin_hair` | the bristled tuft over the crown | `inlay` — the bristles, dyeable over their static brown | `porkchop` |
+| `brow` | `wither_mask` | the skull's face over your own | `guard` — the brow ledge holding it on | drop |
+| `horns` | `strider_hair` | the long red side-tufts at the temples | `inlay` — the tufts, dyeable over their static red | `warped_fungus` |
 | `pauldrons` | `wither_heads` | two wither skulls, one per shoulder | `guard` | drop |
-| `back` | `blaze_halo` | a static ring of rods standing behind the shoulders | — | `blaze_powder` |
-| `collar` | `wither_ribs` | the ribcage worn high at the chest | — | drop |
+| `back` | `blaze_halo` | a static ring of rods standing behind the shoulders | `guard` — all eight rods | `blaze_powder` |
+| `collar` | `wither_ribs` | the ribcage worn high at the chest | `guard` — the sternum plate | drop |
 | `vambraces` | `blaze_bracers` | two short rods banded to each forearm | `guard` | `magma_cream` |
 | `belt` | `brute_belt` | the piglin brute's gold-studded belt | `inlay` | `golden_axe` |
-| `tassets` | `ghast_tendrils` | nine pale tentacles hanging from the hips | — | `ghast_tear` |
-| `knees` | `magma_cops` | cracked magma cops, glowing in the seams | — | `magma_block` |
-| `greaves` | `soul_greaves` | soul fire licking up the shins | — | `soul_lantern` |
-| `spurs` | `hoglin_hooves` | cloven hooves at the heels | — | `crimson_fungus` |
+| `tassets` | `ghast_tendrils` | nine pale tentacles hanging from the hips | `inlay` — the tendrils, dyeable over their static white | `ghast_tear` |
+| `knees` | `magma_cops` | cracked magma cops, glowing in the seams | `guard` — the boss and lower lip | `fire_charge` |
+| `greaves` | `soul_greaves` | soul fire licking up the shins | `guard` — the shin plate under the fire | `soul_lantern` |
+| `spurs` | `hoglin_hooves` | cloven hooves at the heels | `guard` — the mount plate | `crimson_fungus` |
+
+**`magma_cops` takes `minecraft:fire_charge`, not `magma_block`** (changed 2026-09-09 while writing the
+briefs). A magma block has no flat inventory sprite — the game renders it from a 3D model — so any
+page that draws the recipe would draw a checkerboard, and `tools/gen_recipe_icons.py` exists exactly
+because that costs a hand-drawn icon. `fire_charge` is flat, free, and reads better for a knee that is
+cracked open and burning.
 
 **`wither_mask` and `wither_heads` worn together are the wither's three heads, with yours in the
 middle.** That is the pack's hero idea and should be the library page's picture.
@@ -361,18 +376,18 @@ sense that matters. The rest by the recipes above plus a group over `chests/anci
 
 | socket | piece | what it is | fitting | centre |
 |---|---|---|---|---|
-| `crest` | `witch_hat` | the pointed brim | — | `glass_bottle` |
-| `brow` | `illager_mask` | the long grey nose and heavy brow | — | chest |
-| `horns` | `ravager_horns` | the two chipped, down-curved horns | — | chest |
-| `pauldrons` | `vex_wings` | two small grey wings at the shoulder blades | — | chest |
-| `back` | `ominous_banner` | **a pole rising behind the head, banner flying above it** | `banner` | chest |
+| `crest` | `witch_hat` | the pointed brim | `inlay` — the felt of the hat | `glass_bottle` |
+| `brow` | `illager_mask` | the long grey nose and heavy brow | `inlay` — the hood band behind it | chest |
+| `horns` | `ravager_horns` | the two chipped, down-curved horns | `guard` — the caps and temple bands | chest |
+| `pauldrons` | `vex_wings` | two small grey wings at the shoulder blades | `inlay` — the membrane | chest |
+| `back` | `ominous_banner` | **a pole rising behind the head, banner flying above it** | `banner` + `guard` — the pole and its bracket | chest |
 | `collar` | `totem_pendant` | the totem's face hung at the throat | `gemstone` | `totem_of_undying` |
 | `vambraces` | `ravager_bracers` | the ravager's hide banded over the forearms | `guard` | chest |
-| `belt` | `pillager_belt` | the crossbow belt with its quarrel loops | — | `crossbow` |
-| `tassets` | `ravager_saddle` | the leather saddle skirt over the hips | — | chest |
-| `knees` | `evoker_fangs` | fangs erupting from under each kneecap | — | `ominous_bottle` |
-| `greaves` | `golem_plates` | the iron golem's slab legs, cut down | — | `iron_helmet` |
-| `spurs` | `allay_wisps` | two small blue wisps trailing at the ankles | — | `amethyst_shard` |
+| `belt` | `pillager_belt` | the crossbow belt with its quarrel loops | `guard` — the buckle and quarrel loops | `crossbow` |
+| `tassets` | `ravager_saddle` | the leather saddle skirt over the hips | `inlay` — the saddle leather | chest |
+| `knees` | `evoker_fangs` | fangs erupting from under each kneecap | `guard` — the cop the fangs burst through | `ominous_bottle` |
+| `greaves` | `golem_plates` | the iron golem's slab legs, cut down | `inlay` — the vine growing over them | `iron_helmet` |
+| `spurs` | `allay_wisps` | two small blue wisps trailing at the ankles | `gemstone` — the wisp core | `amethyst_shard` |
 
 The allay is the piece that makes the pack's name true: you free it from a cage at the outpost or the
 mansion, which is exactly what a hero of the village does. It is also the pack's one glow piece.

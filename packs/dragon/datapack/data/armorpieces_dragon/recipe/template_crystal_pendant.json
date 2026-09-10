@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:end_crystal"
+  },
+  "result": {
+    "id": "armorpieces:collar_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces_dragon:crystal_pendant"
+    }
+  },
+  "category": "equipment"
+}

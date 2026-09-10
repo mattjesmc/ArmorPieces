@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_dragon:dragon_mask",
+  "description": {
+    "translate": "decoration.armorpieces_dragon.dragon_mask"
+  },
+  "anchors": [
+    "brow"
+  ],
+  "fittings": [
+    "armorpieces:gemstone"
+  ],
+  "uid": "ap1biudw37nscoqrwwnrrta"
+}

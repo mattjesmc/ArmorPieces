@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_village:evoker_fangs",
+  "description": {
+    "translate": "decoration.armorpieces_village.evoker_fangs"
+  },
+  "anchors": [
+    "knees"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1l42dkuiwfmj3zmp2fdia"
+}

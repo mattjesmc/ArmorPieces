@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_village:ravager_saddle",
+  "description": {
+    "translate": "decoration.armorpieces_village.ravager_saddle"
+  },
+  "anchors": [
+    "tassets"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "uid": "ap1g2nykiozgpjndbr5oxkq"
+}

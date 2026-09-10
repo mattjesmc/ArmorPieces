@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_village:ravager_horns",
+  "description": {
+    "translate": "decoration.armorpieces_village.ravager_horns"
+  },
+  "anchors": [
+    "horns"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1x3kcrbkngsatpnhvekma"
+}

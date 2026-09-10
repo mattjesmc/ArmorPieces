@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_dragon:dragon_tail",
+  "description": {
+    "translate": "decoration.armorpieces_dragon.dragon_tail"
+  },
+  "anchors": [
+    "belt"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1fm5utkfr7ftiefdhxy4q"
+}

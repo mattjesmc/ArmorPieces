@@ -41,6 +41,11 @@ filled in. Count your paint calls and say what the painter did and did not cover
 
 ## Lessons from the session
 
+> **Written on an older bridge.** The tool names below (`remove_element`, `paint_with_brush`, …)
+> were the third-party Blockbench plugin's and no longer exist; the toolkit's own bridge replaced
+> them with 26 tools behind `op` families (`element`, `texture`, `inspect`). The numbers about
+> THIS piece are still true — the technique is not. `docs/plans/briefs/LESSONS.md` is current.
+
 Built 2026-09-03 in 17 bridge calls: 1 `armorpieces_pieces`, 1 `armorpieces_new`, 1 `add_group`,
 3 `place_cube`, 1 `list_outline`, 2 `remove_element`, 1 `armorpieces_check`, 1
 `armorpieces_set_part`, **2 `armorpieces_paint`**, 2 `set_camera_angle`, 1 `armorpieces_save`.

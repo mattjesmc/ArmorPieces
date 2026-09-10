@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_village:pillager_belt",
+  "description": {
+    "translate": "decoration.armorpieces_village.pillager_belt"
+  },
+  "anchors": [
+    "belt"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1fmn4nkneskndvs5kvyea"
+}
