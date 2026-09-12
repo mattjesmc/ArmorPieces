@@ -86,6 +86,10 @@ a feature that lands without a row here is not finished.
 | Apply | 1 | the smithing table's own lookup over the table's three stacks - this mod's four recipes, a vanilla trim and a netherite upgrade - written back into the display slot and spending both inputs; the narrowing of a fitting to a picked socket or place, and the template's own choice beating it; and a result that could not go back in the slot it came from |
 | the decorations tooltip | 1 | one heading, anchor order rather than map order, one line per effect, a fitting line only while it holds something, the missing-parts line last and its ids behind the advanced flag |
 | the decorations map | 1 | a part written over a hole, `without` reporting nothing to remove, `pruned` dropping only the holes, and the saved form in anchor order |
+| what a pack author got wrong | 1 | a socket that does not exist, a fitting nothing defines, an unreadable effect or loot row, a part with no name: each costs its own field and the report names the file. See `docs/plans/pack-mistakes.md` |
+| an element that cannot be read at all | 1 | `PackSkips` takes this mod's five registries out of the load's fatal error map and leaves every other mod's where they were; `MissingFittings` binds a dangling fitting reference so the registry can freeze |
+| a part left with no socket | 1 | no loot table offers it - the state lenient anchors created, and `primaryAnchor()` throws on it |
+| a pack full of mistakes, installed | 2 | the world OPENS, `/armorpieces packs` names all five, and the good file in the same pack is still there (`broken-pack`) |
 | a world loads the mod's own pack | 2 | no `Failed to load`, no mod warning in `get_log` |
 | loot groups | 2 | `/armorpieces loot list\|explain\|groups\|roll`, and `roll_loot` with a seed over the tables a group names — share and avg, not presence |
 | `set_decoration` + `armorpieces:template` | 2 | a pushed foreign table hands out a part on the right socket template |

@@ -219,7 +219,10 @@ public final class StageCommand {
             // to be safe, which is the point of it being a report rather than a repair.
             .then(CompatibilityCommand.missingNode())
             .then(CompatibilityCommand.pruneNode())
-            .then(CompatibilityCommand.upgradeNode()));
+            .then(CompatibilityCommand.upgradeNode())
+            // And the other half of that question: not what this world names and is missing, but
+            // what is installed and could not be used. See PackCommand.
+            .then(PackCommand.node()));
     }
 
     private static int openTable(final CommandSourceStack source) throws CommandSyntaxException {

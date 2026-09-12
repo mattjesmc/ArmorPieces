@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.mattjesmc.armorpieces.mixin",
+  "mixins": [
+    "PendingRegistrationMixin",
+    "RegistryLoadTaskMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -5,6 +5,10 @@ import com.mattjesmc.armorpieces.decoration.fitting.Fitting;
 import com.mattjesmc.armorpieces.identity.Identified;
 import com.mattjesmc.armorpieces.identity.Rebind;
 import com.mattjesmc.armorpieces.identity.Tolerant;
+import com.mattjesmc.armorpieces.pack.Lenient;
+import com.mattjesmc.armorpieces.pack.MissingFittings;
+import com.mattjesmc.armorpieces.pack.PackFile;
+import com.mattjesmc.armorpieces.pack.PackProblems;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -20,7 +24,6 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryFileCodec;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.equipment.trim.ArmorTrim;
 
 /**
@@ -77,22 +80,62 @@ public record ArmorDecoration(
     List<Identifier> formerIds,
     Optional<String> uid
 ) implements Identified {
+    /**
+     * Read so that one mistake costs one field.
+     *
+     * <p>Every list here is a {@link Lenient} one: an {@code anchors} naming a socket that does not
+     * exist is the part on the sockets that do, a {@code fittings} naming an id nothing defines is
+     * the part with its other fittings, and each drop is a line in {@link PackProblems} naming the
+     * file. The reason is not tidiness - see {@code docs/plans/pack-mistakes.md}: a strict list
+     * failed the ELEMENT, a failed element is collected by {@code RegistryDataLoader} and thrown at
+     * the end of the load, and the world then does not open at all. One typo used to cost a player
+     * every part of every pack they had installed.
+     *
+     * <p>Two fields are deliberately not lenient. {@code asset_id} is required, because a part with
+     * nothing to draw is not a part and is better skipped whole than loaded as an invisible one; and
+     * a list that is not a list ({@code "anchors": "crest"}) still fails, because there is no entry
+     * to keep and nothing to guess. Both end at the same place: the element is skipped, by name, and
+     * the rest of the pack loads.
+     *
+     * <p>{@code description} is optional here and required in practice - a part with no name is
+     * named by its own id, which is what the game would have drawn anyway for a missing lang line,
+     * and the report says so.
+     */
     public static final Codec<ArmorDecoration> DIRECT_CODEC = RecordCodecBuilder.create(
         i -> i.group(
                 Identifier.CODEC.fieldOf("asset_id").forGetter(ArmorDecoration::assetId),
-                ComponentSerialization.CODEC.fieldOf("description").forGetter(ArmorDecoration::description),
-                ExtraCodecs.nonEmptyList(DecorationAnchor.CODEC.listOf())
+                ComponentSerialization.CODEC.optionalFieldOf("description")
+                    .forGetter(decoration -> Optional.of(decoration.description())),
+                Lenient.list(DecorationAnchor.CODEC, "anchor")
                     .xmap(Set::copyOf, List::copyOf)
                     .fieldOf("anchors").forGetter(ArmorDecoration::anchors),
-                Fitting.CODEC.listOf().optionalFieldOf("fittings", List.of()).forGetter(ArmorDecoration::fittings),
-                DecorationEffect.LIST_CODEC.optionalFieldOf("effects", List.of()).forGetter(ArmorDecoration::effects),
-                DecorationLoot.LIST_CODEC.optionalFieldOf("loot", List.of()).forGetter(ArmorDecoration::loot),
+                Lenient.list(MissingFittings.TRACKED, "fitting")
+                    .optionalFieldOf("fittings", List.of()).forGetter(ArmorDecoration::fittings),
+                Lenient.list(DecorationEffect.CODEC, "effect")
+                    .optionalFieldOf("effects", List.of()).forGetter(ArmorDecoration::effects),
+                Lenient.list(DecorationLoot.CODEC, "loot row")
+                    .optionalFieldOf("loot", List.of()).forGetter(ArmorDecoration::loot),
                 Identifier.CODEC.listOf()
                     .optionalFieldOf("former_ids", List.of()).forGetter(ArmorDecoration::formerIds),
                 Codec.STRING.optionalFieldOf("uid").forGetter(ArmorDecoration::uid)
             )
-            .apply(i, ArmorDecoration::new)
+            .apply(i, (assetId, description, anchors, fittings, effects, loot, formerIds, uid) ->
+                new ArmorDecoration(assetId, description.orElseGet(ArmorDecoration::unnamed),
+                    anchors, fittings, effects, loot, formerIds, uid))
     );
+
+    /**
+     * The name a part with no {@code description} is given: its own id, which is what a tooltip
+     * shows for a missing lang line anyway, so the part reads the same as one whose name was simply
+     * never translated.
+     */
+    private static Component unnamed() {
+        final String id = PackFile.currentId().map(Identifier::toString).orElse("an unnamed part");
+        PackProblems.workedAround(PackFile.current(),
+            "has no `description`, so it is named by its id. Add a `description` naming a lang key, "
+                + "the way every part in this mod's own data does.");
+        return Component.literal(id);
+    }
     /**
      * Effects travel with the part, and they have to.
      *

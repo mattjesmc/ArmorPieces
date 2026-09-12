@@ -314,6 +314,38 @@ class LootTablesTest {
             "the row's weight is what the entry carries");
     }
 
+    /**
+     * A part whose every socket was misspelled names a table, and the table is built anyway.
+     *
+     * <p>The hazard is one this mod made for itself on 2026-09-11. {@code anchors} is read leniently
+     * now - a socket that does not exist is dropped and the part keeps the rest - which means "a part
+     * with no sockets at all" became a state a third party's file can reach, and
+     * {@code primaryAnchor()} throws on one. It is called while a LOOT TABLE is being built, on the
+     * server thread, during a world load: the leniency would have turned a misspelled socket into a
+     * crash one step further along than the one it was written to prevent.
+     *
+     * <p>So the part is not a candidate, the table is built without it, and
+     * {@code PackAudit} is where a player is told the part can never be worn.
+     */
+    @Test
+    void aPartWithNoSocketIsNotOfferedToATable(@TempDir final Path dir) throws IOException {
+        final Path parts = dir.resolve("data").resolve("socketless").resolve("armorpieces")
+            .resolve("armor_decoration");
+        Files.createDirectories(parts);
+        write(parts.resolve("nowhere.json"), """
+            { "asset_id": "armorpieces:brooch",
+              "description": {"translate": "decoration.armorpieces.brooch"},
+              "anchors": ["nose"],
+              "loot": [{"table": "%s", "chance": 1.0}] }
+            """.formatted(ALWAYS));
+        final ShippedData.Loaded socketless = ShippedData.withPack(dir);
+        ShippedData.bindTags(socketless);
+
+        final Built built = modify(socketless, ALWAYS);
+        assertTrue(pools(built.json()).isEmpty(),
+            "the only source for this table was a part that fits nowhere, so there was nothing to add");
+    }
+
     // ------------------------------------------------------------------- what the server owner says
 
     /** The off switch: nothing is added to any table, and nothing is reported. */

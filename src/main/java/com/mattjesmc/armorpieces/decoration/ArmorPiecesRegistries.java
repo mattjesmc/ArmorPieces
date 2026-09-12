@@ -94,7 +94,29 @@ public final class ArmorPiecesRegistries {
                     Identifier.fromNamespaceAndPath(ArmorPieces.MOD_ID, "fitting_type")))
             .buildAndRegister();
 
+    /**
+     * The five this mod loads from datapacks, as a set.
+     *
+     * <p>Read by {@code RegistryLoadTaskMixin}, which is the one place that has to answer "is this
+     * registry mine" about a registry it is handed: an element of ONE OF THESE that cannot be read is
+     * skipped and reported rather than taking the load down, and every other registry in the game -
+     * vanilla's, and every other mod's - keeps vanilla's behaviour exactly. Declared after the five
+     * fields, since a static initialiser reads them in order.
+     */
+    private static final java.util.Set<ResourceKey<? extends Registry<?>>> DATAPACK_REGISTRIES =
+        java.util.Set.of(FITTING, ARMOR_DECORATION, ARMOR_SKIN, CLOTH, LOOT_GROUP);
+
     private ArmorPiecesRegistries() {}
+
+    /** Whether a registry is one of the five this mod loads from datapacks. */
+    public static boolean isOurs(final ResourceKey<? extends Registry<?>> key) {
+        return DATAPACK_REGISTRIES.contains(key);
+    }
+
+    /** The five, in load order, for anything that walks them all. */
+    public static java.util.Set<ResourceKey<? extends Registry<?>>> datapackRegistries() {
+        return DATAPACK_REGISTRIES;
+    }
 
     public static void register() {
         // Fittings first: a part refers to fittings by id, and although the loader resolves

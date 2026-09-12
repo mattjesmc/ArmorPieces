@@ -16,6 +16,10 @@ server is started and deleted after it stops. Two packs, because they want diffe
   `armorpieces_gate_missing_tag`
                               a loot group naming a tag no installed pack defines - the cross-pack
                               case the whole pack line rests on.
+  `armorpieces_gate_broken`   a pack an author got wrong five different ways at once, including one
+                              file that is not JSON at all. Everything in it has to be warned about
+                              and worked around or skipped, and the world has to open - see
+                              docs/plans/pack-mistakes.md.
 
 The last two are packs of their own and are booted on their own, because content that is refused
 takes the pack it is in down with it: put beside the fixtures above, one bad file would make every
@@ -36,6 +40,7 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 GOOD = "armorpieces_gate"
 REFUSAL = "armorpieces_gate_refusal"
 MISSING_TAG = "armorpieces_gate_missing_tag"
+BROKEN = "armorpieces_gate_broken"
 
 #: The namespace every fixture is in, so that a stray one is obvious in any listing.
 NAMESPACE = "gate"
@@ -109,6 +114,47 @@ def files(kind: str) -> dict[str, dict]:
                 }],
             },
         }
+    if kind == BROKEN:
+        parts = f"data/{NAMESPACE}/armorpieces/armor_decoration"
+        return {
+            # Not JSON at all. Vanilla files this as an element that failed to parse, and a failed
+            # element takes the whole registry - and so the world - down with it. It has to cost
+            # itself and nothing else.
+            f"{parts}/markup.json": '{ "asset_id": "armorpieces:pinions", ',
+            # A socket that does not exist beside one that does: the real one has to survive.
+            f"{parts}/socket.json": {
+                "asset_id": "armorpieces:brooch",
+                "description": {"translate": "decoration.armorpieces.brooch"},
+                "anchors": ["collar", "nose"],
+            },
+            # No name at all. The part is named by its own id and still works.
+            f"{parts}/nameless.json": {
+                "asset_id": "armorpieces:brooch",
+                "anchors": ["collar"],
+            },
+            # A fitting nothing defines. Resolved at the END of the load, when the fitting registry
+            # freezes, which is why it needs a stand-in rather than a dropped field.
+            f"{parts}/dangling.json": {
+                "asset_id": "armorpieces:brooch",
+                "description": {"translate": "decoration.armorpieces.brooch"},
+                "anchors": ["collar"],
+                "fittings": [f"{NAMESPACE}:no_such_fitting"],
+            },
+            # A loot table no pack defines: legal, loaded, and the part will never be found.
+            f"{parts}/nowhere.json": {
+                "asset_id": "armorpieces:brooch",
+                "description": {"translate": "decoration.armorpieces.brooch"},
+                "anchors": ["collar"],
+                "loot": [{"table": "minecraft:chests/no_such_table", "chance": 0.5}],
+            },
+            # And one file with nothing wrong with it, in the same pack as all of that. If this one
+            # is missing afterwards, a mistake cost its neighbours, which is the whole failure.
+            f"{parts}/fine.json": {
+                "asset_id": "armorpieces:brooch",
+                "description": {"translate": "decoration.armorpieces.brooch"},
+                "anchors": ["collar"],
+            },
+        }
     raise ValueError(kind)
 
 
@@ -131,7 +177,10 @@ def install(kind: str, run: Path | None = None) -> Path:
     for path, content in files(kind).items():
         target = directory / path
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(json.dumps(content, indent=2), encoding="utf-8")
+        # A str is written verbatim: a fixture whose whole point is that it is not valid JSON
+        # cannot be expressed as a dict and dumped.
+        target.write_text(content if isinstance(content, str) else json.dumps(content, indent=2),
+                          encoding="utf-8")
     return directory
 
 
@@ -142,5 +191,5 @@ def remove(kind: str, run: Path | None = None) -> None:
 
 def installed(run: Path | None = None) -> list[str]:
     """Which fixture packs are in the world right now - the check a run makes before it trusts one."""
-    return [kind for kind in (GOOD, REFUSAL, MISSING_TAG)
+    return [kind for kind in (GOOD, REFUSAL, MISSING_TAG, BROKEN)
             if (world(run) / "datapacks" / kind).is_dir()]

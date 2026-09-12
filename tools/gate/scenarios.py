@@ -179,11 +179,12 @@ def load(game: Game) -> None:
 @scenario("commands", "every node of /armorpieces answers, and the ones about a wearer take one")
 def commands(game: Game) -> None:
     listed = game.out("help armorpieces")
-    for node in ("stage", "loot", "effects", "table", "missing", "prune", "upgrade"):
+    for node in ("stage", "loot", "effects", "table", "missing", "prune", "upgrade", "packs"):
         line_with(listed, node)
 
     # The console can answer these.
     expect(game.out("armorpieces missing"), "missing said nothing at all")
+    expect(game.out("armorpieces packs"), "packs said nothing at all")
     expect(game.out("armorpieces upgrade"), "upgrade said nothing at all")
     expect(game.out("armorpieces loot list"), "loot list said nothing at all")
 

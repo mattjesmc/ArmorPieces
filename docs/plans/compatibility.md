@@ -645,15 +645,38 @@ place the mod gives a player an instruction, and it was an instruction that does
 > world and reloading brought the pieces back. That entry is corrected there rather than deleted;
 > whatever was seen on 2026-09-08, a reload alone does not do it.
 
-**2. The advisory can never say "was last played on 0.3.0" to a real 0.3.0 world.** `ArmorPiecesState`
-did not exist in 0.3.0, so a genuine pre-0.4.0 world has no marker; `upgradedFrom` is empty and the
-line is skipped. The three-line advisory seen on 2026-09-08 had its `state.dat` hand-edited, which is
-exactly the thing that hid this. The player still gets the count and the advice, so nothing is
-broken — but §4.4's "Absent means pre-0.4.0" is not what the code does with an absent marker, and
-`ArmorPiecesState.upgradedFrom`'s own javadoc argues for the silence. **Left as it is, deliberately,
-and flagged**: the fix is a second sentence for the absent case ("last played on a version before
-0.4.0"), which is honest without guessing which one, and it is a behaviour decision rather than a
-defect.
+**2. The advisory said nothing at all to a real 0.3.0 world — fixed.** `ArmorPiecesState` did not
+exist in 0.3.0, so a genuine pre-0.4.0 world has no marker; `upgradedFrom` was empty and the line was
+skipped. The three-line advisory seen on 2026-09-08 had its `state.dat` hand-edited, which is exactly
+what hid this: the trick manufactured a marker no real world of that age could have.
+
+**The user's call, 2026-09-11: the absence is evidence enough.** Every world played before 0.4.0 has
+no marker *because the marker did not exist*, so absence says "older than 0.4.0" — which names no
+version, guesses nothing, and is the fact the player needs. §4.4's "Absent means pre-0.4.0", now
+implemented.
+
+**One more fact was needed to read the absence, and it is the whole subtlety.** A world being
+**created right now** has no marker either, and telling that player their world predates 0.4.0 would
+be a plain lie — which is what `upgradedFrom`'s javadoc was really objecting to. The game clock
+separates them: a world that has been played has ticked, one being made has not. So
+`playedBeforeMarkers` is `version == null && overworld().getGameTime() > 0`, read at `open()` and not
+when the advisory fires, because by then every world has ticked. `MARKED_SINCE` is a constant rather
+than the running version, so the sentence stays precise ("older than 0.4.0") when 0.6.0 is running.
+
+**Both halves seen on a client, 2026-09-11.** A pre-0.4.0 world — `Crossing` with its marker file
+removed, which is exactly the shape 0.3.0 left it in — gets all three lines:
+
+```
+This world was last played on a version of Armor Pieces older than 0.4.0, when the mod shipped its own pieces.
+3 piece ids in this world are not installed. Armor wearing them keeps them but cannot show them.
+Install the pack that provides them, then open the world again — a pack's pieces are read when a
+world loads, so /reload alone will not do it. /armorpieces missing lists what is waiting.
+```
+
+and a **brand-new world**, given an item naming `armorpieces:nonesuch`, gets the last two and **not**
+the first. That second boot is the one that matters: it is the case that would have made the new
+sentence a lie, and it was checked rather than reasoned about. It also showed the stranger fallback
+working on a real client — `armorpieces:nonesuch` renders as itself, with no pack invented for it.
 
 ---
 

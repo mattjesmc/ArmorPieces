@@ -468,6 +468,42 @@ pack does — has to be allowed to.
 `prune` is the only thing in the mod that destroys a saved piece. Worn and carried armor needs nothing
 from `upgrade`: player data is written on logout whatever happens.
 
+## When a pack is wrong
+
+A mistake in a pack file costs that mistake and nothing else. The world opens, the rest of the pack
+loads, and the report says what happened. Every mistake belongs to one of three buckets:
+
+| bucket | what it means | examples |
+|---|---|---|
+| **worked around** | the file was readable and one part of it was not; it loaded without that part | a socket that does not exist in `anchors`; a `fittings` id nothing defines (it gets an inert stand-in, so the part loads and that fitting can never be filled); an `effects` or `loot` entry that could not be read; no `description`, so the id is used |
+| **skipped** | the file could not be read at all; that one element is left out and everything else loads | broken JSON; no `asset_id`; `anchors` that is not a list; a rule the record refuses (`if_wearer` over a glider) |
+| **reported** | the file is legal and cannot do what you meant; nothing to drop, so it is a line in the report | `anchors` ends up empty; `loot` names a table no pack defines; a recipe for a part that is not installed, or for a socket it does not fit; two shaped recipes with the same grid; two packs defining one id, or claiming one `former_ids` entry or `uid`; an `asset_id` with no geometry in any resource pack |
+
+A skipped element is missing content, and a piece wearing it is kept the same way a piece from an
+uninstalled pack is — see [Moving or renaming a piece](#moving-or-renaming-a-piece). The promise is
+not that a broken pack works; it is that the cost of a mistake is proportional to it.
+
+**Where to read it.** Every line names the pack and the file.
+
+| | |
+|---|---|
+| the server log | once per load, grouped by bucket, and again after every `/reload` |
+| `/armorpieces packs` | the same lines, at gamemaster level, with what was done about each |
+| on join | one line to operators, only when the report is not empty |
+
+The client keeps a report of its own, because half of what can be wrong is art and art is only ever
+wrong on the client: a part whose `asset_id` has no geometry in any loaded resource pack is swept once
+per world join and named, rather than drawing nothing in silence. A mistyped `asset_id` — the datapack
+half shipped without its resource pack — has always looked exactly like the mod being broken, and now
+says what it is.
+
+**What it does not cover.** A texture or mask sheet that is missing gets vanilla's missing texture and
+the bake's own log line, nothing more. A fitting naming a trim material that does not exist dangles in
+*vanilla's* registry and is still fatal with vanilla's message: registering a fake trim material to
+paper over a typo is not this mod's business. And the runtime only sees the pack that is installed —
+`tools/check_authoring.py`, `check_additive.py` and `check_lang.py` take a pack directory and see what
+no runtime can, so run them against your own work before shipping it.
+
 ## Giving a part behaviour
 
 Parts are cosmetic by default. A part that should do something while it is worn carries `effects`

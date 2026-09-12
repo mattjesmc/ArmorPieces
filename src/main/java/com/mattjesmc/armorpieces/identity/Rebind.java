@@ -2,6 +2,7 @@ package com.mattjesmc.armorpieces.identity;
 
 import com.mattjesmc.armorpieces.ArmorPieces;
 import com.mattjesmc.armorpieces.decoration.ArmorPiecesRegistries;
+import com.mattjesmc.armorpieces.pack.PackProblems;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -91,13 +92,39 @@ public final class Rebind {
             for (final Identifier former : value.formerIds()) {
                 // putIfAbsent, not put: two packs claiming one former id is a collision the additive
                 // checker exists to catch, and the first one wins rather than the last one loaded.
-                map.putIfAbsent(formerKey(former), entry);
+                claim(map, formerKey(former), entry, "the former id " + former);
             }
-            value.uid().ifPresent(uid -> map.putIfAbsent(uidKey(uid), entry));
+            value.uid().ifPresent(uid -> claim(map, uidKey(uid), entry, "the lineage uid " + uid));
         });
         if (!map.isEmpty()) {
             into.put(key, map);
         }
+    }
+
+    /**
+     * The first claim on a former id or a uid wins, and a second one is reported.
+     *
+     * <p>Silent until 2026-09-11, and it is the kind of silence that costs a player a piece: two
+     * packs claiming one former id means a saved item that names it is rebound to whichever pack
+     * loaded first, and nothing anywhere said the other pack existed. {@code tools/check_additive.py}
+     * catches this across the packs THIS repository ships; a player's pack folder is a set nothing in
+     * this repository has ever seen.
+     */
+    private static void claim(
+        final Map<String, Holder<?>> map,
+        final String key,
+        final Holder.Reference<?> claimant,
+        final String what
+    ) {
+        final Holder<?> first = map.putIfAbsent(key, claimant);
+        if (first == null || first == claimant) {
+            return;
+        }
+        PackProblems.reported(claimant.key().identifier().toString(),
+            "claims " + what + ", which "
+                + first.unwrapKey().map(existing -> existing.identifier().toString()).orElse("another piece")
+                + " already claims. The first claim stands, so a saved piece naming it comes back as "
+                + "that one; two packs cannot both inherit one id.");
     }
 
     private static String formerKey(final Identifier id) {

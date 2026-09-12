@@ -8,6 +8,8 @@ import com.mattjesmc.armorpieces.decoration.effect.DecorationEffects;
 import com.mattjesmc.armorpieces.identity.Compatibility;
 import com.mattjesmc.armorpieces.decoration.fitting.Fittings;
 import com.mattjesmc.armorpieces.loot.DecorationLootTables;
+import com.mattjesmc.armorpieces.pack.PackAudit;
+import com.mattjesmc.armorpieces.pack.PackOverrides;
 import com.mattjesmc.armorpieces.registry.ModBlocks;
 import com.mattjesmc.armorpieces.registry.ModCreativeTabs;
 import com.mattjesmc.armorpieces.registry.ModDataComponents;
@@ -77,6 +79,12 @@ public class ArmorPieces implements ModInitializer {
         ArmorPiecesServerConfig.register();
         // Parts that name a loot table are added to it as it loads. See DecorationLootTables.
         DecorationLootTables.register();
+        // What the installed packs got wrong: the part of the report that needs a whole loaded
+        // world to see, plus the clearing and the advisory. The rest of the report is filed as the
+        // packs are read - see PackProblems and the two mixins over the registry loader.
+        PackAudit.register();
+        // And the one thing only the resource manager can see: two packs that define one piece.
+        PackOverrides.register();
         // A preview of the whole cross product, for judging parts against each other rather than
         // one smithing operation at a time. See StageCommand.
         CommandRegistrationCallback.EVENT.register(

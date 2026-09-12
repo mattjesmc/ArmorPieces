@@ -162,6 +162,12 @@ public final class DecorationLootTables {
         //    cities" is, and what a pack writes when it wants no group at all.
         final Direct direct = new Direct();
         for (final Holder.Reference<ArmorDecoration> part : parts.listElements().toList()) {
+            // A part with no socket left has no template to be found AS - see PackAudit, which is
+            // where it is reported. Skipped rather than crashed over: since a pack's anchors are
+            // read leniently, "no anchors" is a state a third party's file can reach.
+            if (part.value().anchors().isEmpty()) {
+                continue;
+            }
             for (final DecorationLoot drop : part.value().loot()) {
                 if (drop.table().equals(key)) {
                     offers.offer(part, drop.chance(), drop.weight(), partEntry(part));
@@ -206,6 +212,9 @@ public final class DecorationLootTables {
             // empty list and the group simply offers nothing, where an eagerly bound one would have
             // taken the world down long before this. See MemberSet.
             for (final Holder<ArmorDecoration> part : group.parts().resolve(registries)) {
+                if (part.value().anchors().isEmpty()) {
+                    continue;
+                }
                 offers.offer(part, c, weight, partEntry(part));
                 offered++;
             }

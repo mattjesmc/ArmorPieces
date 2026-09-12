@@ -110,9 +110,21 @@ public final class Compatibility {
         }
         final ArmorPiecesState opened = state;
         if (opened != null) {
-            opened.upgradedFrom().ifPresent(previous -> player.sendSystemMessage(
-                Component.translatable("armorpieces.compat.upgraded", previous, ArmorPiecesState.running())
-                    .withStyle(ChatFormatting.GRAY)));
+            // Two halves of one sentence: name the version this world came from when it was written
+            // down, and otherwise say what an absent marker is still evidence of. A world played
+            // before 0.4.0 has no marker because none existed, and telling that player only that
+            // something is missing leaves out the thing that explains it.
+            opened.upgradedFrom().ifPresentOrElse(
+                previous -> player.sendSystemMessage(
+                    Component.translatable("armorpieces.compat.upgraded", previous, ArmorPiecesState.running())
+                        .withStyle(ChatFormatting.GRAY)),
+                () -> {
+                    if (opened.playedBeforeMarkers()) {
+                        player.sendSystemMessage(Component.translatable(
+                            "armorpieces.compat.upgraded.before", ArmorPiecesState.MARKED_SINCE)
+                            .withStyle(ChatFormatting.GRAY));
+                    }
+                });
         }
         player.sendSystemMessage(Component.translatable(
             "armorpieces.compat.missing", Rebind.misses().size()).withStyle(ChatFormatting.YELLOW));

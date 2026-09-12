@@ -46,6 +46,18 @@ public class ArmorPiecesState extends SavedData {
     /** The version this world was opened on BEFORE now, if it was a different one. Not saved. */
     private @Nullable String upgradedFrom;
 
+    /** Whether this world had no marker and had already been played. Not saved. */
+    private boolean playedBeforeMarkers;
+
+    /**
+     * The first version that wrote a marker, which is what an absent one is evidence about.
+     *
+     * <p>Deliberately not {@link #running}: a world with no marker was last played before <b>this</b>
+     * version, whatever is running now, and "older than 0.4.0" stays true and stays precise when the
+     * running version is 0.6.0.
+     */
+    public static final String MARKED_SINCE = "0.4.0";
+
     private ArmorPiecesState() {
         this(null);
     }
@@ -66,6 +78,14 @@ public class ArmorPiecesState extends SavedData {
      *
      * <p>Called once, when the server starts. A world whose marker is absent or different remembers
      * what it was, for the one line the advisory adds.
+     *
+     * <p><b>An absent marker is evidence, and it takes one more fact to read it.</b> Every world
+     * played before {@value #MARKED_SINCE} has none, because the marker did not exist - so absence
+     * says "older than that" and nothing finer, which is the whole of what
+     * {@link #playedBeforeMarkers} reports. The catch is that a world being CREATED right now has no
+     * marker either, and telling it that it was last played on something older would be a plain lie.
+     * The game clock separates them: a world that has been played has ticked, and one that is being
+     * made has not. Read here rather than when the advisory fires, because by then it has ticked too.
      */
     public static ArmorPiecesState open(final MinecraftServer server) {
         final ArmorPiecesState state =
@@ -73,6 +93,7 @@ public class ArmorPiecesState extends SavedData {
         final String running = running();
         if (!running.equals(state.version)) {
             state.upgradedFrom = state.version;
+            state.playedBeforeMarkers = state.version == null && server.overworld().getGameTime() > 0L;
             state.version = running;
             state.setDirty();
         }
@@ -83,12 +104,24 @@ public class ArmorPiecesState extends SavedData {
      * The version this world was last opened on, when that is not the running one - so "was last
      * played on 0.3.0" is only ever said to a world that really was.
      *
-     * <p>Empty for a world that has never been opened by a version that wrote the marker, which is
-     * the honest answer: it might have been 0.3.0 and it might have been created yesterday by a
-     * version with no marker, and guessing between them would put a wrong sentence in front of a
-     * player.
+     * <p>Empty for a world that has never been opened by a version that wrote the marker - there is
+     * no version to name, because none was ever written down. That is not the same as having nothing
+     * to say about it: see {@link #playedBeforeMarkers}.
      */
     public Optional<String> upgradedFrom() {
         return Optional.ofNullable(this.upgradedFrom);
+    }
+
+    /**
+     * Whether this world was played before any version wrote a marker - so, before
+     * {@value #MARKED_SINCE}.
+     *
+     * <p>Only ever true when {@link #upgradedFrom} is empty; the two are the two halves of one
+     * sentence. This one names no version because none is known, and none has to be: a player whose
+     * armor has gone plain needs to be told the mod's contents changed under them, and "older than
+     * 0.4.0" tells them that without guessing which older version it was.
+     */
+    public boolean playedBeforeMarkers() {
+        return this.playedBeforeMarkers;
     }
 }

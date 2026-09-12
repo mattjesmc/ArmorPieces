@@ -126,6 +126,27 @@ class BootCheck:
 GAVE_UP = ("Failed to load registries", "Failed to load datapacks", "Exception in server tick loop")
 
 
+def is_ours(bridge: "Bridge") -> bool:
+    """Whether the game answering the bridge is a SERVER running this mod's current build.
+
+    Boot checks used to accept whatever answered the port, and on 2026-09-11 that turned a failed
+    boot into a pass-shaped answer: the server under test died on its datapacks while an unrelated
+    mcp-toolkit dev client, started hours earlier, kept holding 25599 and answered every call. The
+    check read "the world opened" off a game that had never heard of the pack. A boot check is
+    exactly the situation where this happens, because the game it is judging is the one that may
+    refuse to start.
+    """
+    try:
+        ping = bridge.call("ping")
+    except (BridgeError, OSError):
+        return False
+    if not ping.get("serverRunning"):
+        return False
+    build = ping.get("build") or {}
+    mods = {mod.get("id") for mod in build.get("mods") or [] if isinstance(mod, dict)}
+    return "armorpieces" in mods and not build.get("stale")
+
+
 def boot_with(pack: str, boot_seconds: int, log: Path) -> tuple[str, "Bridge | None", subprocess.Popen]:
     """Start a server with one fixture pack installed and wait for it to settle either way."""
     fixtures.install(pack)
@@ -134,7 +155,7 @@ def boot_with(pack: str, boot_seconds: int, log: Path) -> tuple[str, "Bridge | N
     deadline = time.monotonic() + boot_seconds
     while time.monotonic() < deadline:
         try:
-            if bridge.call("ping").get("serverRunning"):
+            if is_ours(bridge):
                 return read(log), bridge, server
         except (BridgeError, OSError):
             pass
@@ -179,15 +200,59 @@ def survives_a_missing_tag(text: str, up: "Bridge | None") -> tuple[str, str]:
                     + "; ".join(str(line) for line in listed))
 
 
+def survives_an_author(text: str, up: "Bridge | None") -> tuple[str, str]:
+    """A pack got wrong five ways at once: every one warned about, and the world still opens."""
+    if up is None:
+        gave_up = [line for line in text.splitlines()
+                   if "Registry Loading" in line or "Failed to parse" in line]
+        return "FAIL", (
+            "a pack with mistakes in it stopped the world from opening. Before "
+            "docs/plans/pack-mistakes.md that was every one of these mistakes: one file of one pack "
+            "took down armorpieces:armor_decoration entirely, the mod's own pieces with it, and on a "
+            "dedicated server the process exited - the throw lands on the background executor, whose "
+            "handler answers a ReportedException with System.exit(-1). "
+            + " / ".join(gave_up))
+    report = up.say("armorpieces packs")
+    # Each of the five mistakes in the fixture, by a word the report uses for it.
+    wanted = {
+        "the file that is not JSON is skipped by name": "gate:markup",
+        "the socket that does not exist is dropped": "anchor",
+        "the part with no name is named by its id": "description",
+        "the fitting nothing defines gets a stand-in": "no_such_fitting",
+        "the loot table nothing defines is reported": "no_such_table",
+    }
+    missed = [claim for claim, word in wanted.items() if word not in report]
+    if missed:
+        return "FAIL", ("the world opened, which is the hard half, but the report does not say: "
+                        + "; ".join(missed) + ". What it does say is: " + report)
+    # And the half that is easy to forget: the good file in the same pack is still there, and so is
+    # the mod's own content. A report that names everything over a registry that lost it is no better.
+    staged = up.say("armorpieces stage pieces")
+    if "Nothing to stage" in staged:
+        return "FAIL", ("every warning was printed and the registry came up empty: the mistakes cost "
+                        "their neighbours after all. " + staged)
+    up.command("armorpieces stage clear")
+    return "pass", ""
+
+
 BOOT_CHECKS = [
     BootCheck("refusals", "a part the load-time rules forbid is refused when the pack loads, by name",
               fixtures.REFUSAL, refused_by_name),
     BootCheck("missing-tag", "a group naming a tag nobody installed is an empty set, not a dead world",
               fixtures.MISSING_TAG, survives_a_missing_tag),
+    BootCheck("broken-pack", "a pack full of an author's mistakes warns about each and still loads",
+              fixtures.BROKEN, survives_an_author),
 ]
 
 
 def run_boot_check(check: BootCheck, boot_seconds: int) -> tuple[str, str]:
+    # Nothing may be on the port before this starts its own game. A game that is already there
+    # cannot be the one about to boot, and every answer it gives is about some other world.
+    if Bridge().alive():
+        raise SystemExit(
+            "something is already answering the bridge port, and a boot check starts a game of its "
+            "own - the two cannot both have it, and the check would judge the wrong game. Stop the "
+            "other game (a dev client left open counts) and run again.")
     log = ROOT / "build" / "gate" / f"boot-{check.name}.log"
     text, up, server = boot_with(check.pack, boot_seconds, log)
     try:

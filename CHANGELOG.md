@@ -2,6 +2,29 @@
 
 ## Unreleased
 
+**A mistake in a pack costs that mistake, not the world.** Until now nearly any error in a pack's
+`armor_decoration` file — a truncated file, a missing `description`, `anchors: []`, a misspelled
+socket, a fitting id nothing defines, an effect type nobody installed — stopped the world from
+opening, and took every other pack's content down with it: the game collects every failed element
+into one map and throws at the end of the load, so one bad file lost the whole registry, the mod's own
+sixty-six parts included, and on a dedicated server the process simply ended. Now every mistake lands
+in one of three buckets and the world opens either way. **Worked around**: the file is readable and one
+part of it is not, so that part is dropped — an unknown socket, an unreadable effect or loot row, a
+fitting nothing defines (which gets an inert stand-in, so the part loads and that one fitting can
+never be filled) — and a missing `description` becomes the id. **Skipped**: the file cannot be read at
+all, so that one element is left out and everything else in the pack loads; the pieces wearing it are
+kept, exactly as a piece from an uninstalled pack is. **Reported**: the file is legal and cannot do what
+its author meant — a part with no socket left, a `loot` row naming a table no pack defines, a recipe
+for a part that is not installed, two packs defining one id, an `asset_id` with no geometry in any
+resource pack — so it is a line in the report, which is the first place a mistake like that has ever
+been visible. Every line names the pack and the file. Nothing is silent, and nothing in any bucket
+refuses the world. The report goes to the log once per load, to operators as one line on join when it
+is not empty, and to **`/armorpieces packs`**, beside `/armorpieces missing`, which is the same
+question asked of the other half. Only this mod's five registries are handled this way; every other
+registry in the game keeps vanilla's behaviour exactly. A client applies the same rule to what a
+server sends it, so a part naming an effect from a mod the client lacks is dropped rather than the
+connection.
+
 **Armor is never destroyed by content that is not installed, and a piece that moves finds its way
 home.** Every component this mod saves — parts, skins, garments and both template kinds — used to be
 read by a strict codec, and a strict component codec does not lose the component: it loses **the

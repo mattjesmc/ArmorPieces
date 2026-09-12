@@ -77,6 +77,10 @@ public class ArmorPiecesClient implements ClientModInitializer {
             }
         });
 
+        // A part whose art this client does not have draws nothing and says nothing. Swept once per
+        // world join - see ClientPackAudit, and docs/plans/pack-mistakes.md.
+        ClientPackAudit.register();
+
         ArmorPieces.LOGGER.info("[Armor Pieces] Client ready.");
     }
 

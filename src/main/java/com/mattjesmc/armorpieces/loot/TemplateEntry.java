@@ -151,7 +151,11 @@ public class TemplateEntry extends LootPoolSingletonContainer {
     private List<ItemStack> candidates(final HolderGetter.Provider registries) {
         final List<ItemStack> stacks = new ArrayList<>();
         for (final Holder<ArmorDecoration> part : this.parts.resolve(registries)) {
-            stacks.add(ModItems.templateFor(part.value().primaryAnchor(), part));
+            // A part whose every socket was misspelled has no template to be handed out as. It is
+            // reported by PackAudit; here it is simply not a candidate.
+            if (!part.value().anchors().isEmpty()) {
+                stacks.add(ModItems.templateFor(part.value().primaryAnchor(), part));
+            }
         }
         for (final Holder<ArmorSkin> skin : this.skins.resolve(registries)) {
             stacks.add(ModItems.skinTemplateFor(skin));

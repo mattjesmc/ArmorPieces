@@ -16,6 +16,7 @@
     ]
   },
   "mixins": [
+    "armorpieces.mixins.json",
     {
       "config": "armorpieces.client.mixins.json",
       "environment": "client"
