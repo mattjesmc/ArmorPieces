@@ -6,7 +6,7 @@ round as zips, so bringing somebody else's parts in - or bringing your own back 
 machine - starts with one, and every route into the editor should end at a folder the rest of the
 toolchain already understands.
 
-Two things it does that a plain unzip does not:
+Three things it does that a plain unzip does not:
 
   - It finds the pack inside the zip. export_pack.py writes the folder's CONTENTS at the root,
     which is what the game wants, but plenty of zips in the wild wrap everything in a single
@@ -15,6 +15,11 @@ Two things it does that a plain unzip does not:
     extracted from.
   - It refuses to write outside the destination. A zip is somebody else's file and a member named
     ../../something is a real thing that happens.
+  - It refuses to write more than a pack's worth. A zip's COMPRESSION RATIO is the attacker's to
+    choose: a few megabytes of zeroes expand to gigabytes, and this runs under Pyodide on the
+    website, where the filesystem is the process heap and there is no disk to fill up first. So
+    the declared sizes are added up before anything is opened, and the bytes are counted again as
+    they are written, because a central directory can lie.
 
 Usage:
     python tools/import_pack.py <pack.zip> <dest dir>
@@ -33,6 +38,14 @@ SKIP_FILES = {".DS_Store", "Thumbs.db", "desktop.ini"}
 
 # What makes a directory in the zip look like the pack root, best first.
 MARKERS = ("pack.mcmeta", "data", "assets")
+
+# What a pack may unpack to. The file count is sanitize_pack.py's MAX_FILES, said here as well
+# because that tool runs over what is ALREADY unpacked and this is the step that does the
+# unpacking; the byte ceiling is four times the website's 50 MB upload cap, which is roomy for
+# any real pack and nothing like a heap.
+MAX_FILES = 5000
+MAX_TOTAL_BYTES = 200 * 1024 * 1024
+CHUNK = 256 * 1024
 
 
 def members(zf: zipfile.ZipFile) -> list[str]:
@@ -89,7 +102,15 @@ def import_pack(zip_path: Path, dest: Path, force: bool = False) -> tuple[int, i
         root = find_root(names)
         prefix = root + "/" if root else ""
 
+        if len(names) > MAX_FILES:
+            sys.exit(f"error: {zip_path.name} holds {len(names)} files; the limit is {MAX_FILES}")
+        declared = sum(info.file_size for info in zf.infolist() if not info.is_dir())
+        if declared > MAX_TOTAL_BYTES:
+            sys.exit(f"error: {zip_path.name} unpacks to {declared // (1024 * 1024)} MB; "
+                     f"the limit is {MAX_TOTAL_BYTES // (1024 * 1024)} MB")
+
         written = skipped = 0
+        total = 0
         dest.mkdir(parents=True, exist_ok=True)
         for name in names:
             if prefix and not name.startswith(prefix):
@@ -100,8 +121,20 @@ def import_pack(zip_path: Path, dest: Path, force: bool = False) -> tuple[int, i
                 skipped += 1
                 continue
             target.parent.mkdir(parents=True, exist_ok=True)
+            # In chunks against a running total rather than source.read(): what the member SAYS
+            # it weighs is the zip's claim, and the bytes that actually arrive are the ones that
+            # cost memory.
             with zf.open(name) as source, open(target, "wb") as out:
-                out.write(source.read())
+                while True:
+                    chunk = source.read(CHUNK)
+                    if not chunk:
+                        break
+                    total += len(chunk)
+                    if total > MAX_TOTAL_BYTES:
+                        out.close()
+                        sys.exit(f"error: {zip_path.name} unpacks to more than "
+                                 f"{MAX_TOTAL_BYTES // (1024 * 1024)} MB")
+                    out.write(chunk)
             written += 1
 
     if not (dest / "pack.mcmeta").is_file():
