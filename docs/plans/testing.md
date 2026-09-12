@@ -180,7 +180,15 @@ addressing mode for `click` to pair with the slots `get_screen` already reports.
    schema the plugin reads still matches the Java; `modpage build --offline` leaves `README.md` and
    `dist/` unchanged; `CHANGELOG.md` has a section for `mod_version` unless it is `Unreleased`.
 2. **Fix the three stale painters.** They are a defect the gate found on its first run, and they are
-   0.2.x/0.3.x debt, not 0.4.0 work.
+   0.2.x/0.3.x debt, not 0.4.0 work. *Closed 2026-09-12.* `antlers` was repaired (2026-09-08); the
+   other two were not repaired but RETIRED, and that is the rule for the class: `bandolier`
+   (reworked in Blockbench 2026-09-03, `5f19a37`) and `helm_wings` (reworked 2026-09-06, its brief's
+   lessons naming the orphan) were re-authored in Blockbench, which writes the geometry and the
+   master together and never the painter. A painter left behind by a bridge rework describes a
+   shape that no longer ships, and repairing it means writing a generator for art that already
+   exists and will never be regenerated - so it is deleted, as `paint_claws_master.py` was
+   (`b1649f2`). Both pieces were looked at on the figure before the delete; the art is the
+   Blockbench art and stays exactly as it is.
 3. **Tier 1.** Gradle `test` grows the codec round trips over the mod's own shipped data. The four
    0.4.0 traps become four named tests, so the class of bug that cost three game cycles costs a
    second.
