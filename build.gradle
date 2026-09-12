@@ -240,8 +240,65 @@ tasks.named('assemble') {
 // repository: tools/mcp/server.mjs discovers over the same range instead of pinning 25801 - pinning
 // it while the shim scanned would have undone the whole thing, by sending this session's piece work
 // into the window another session had taken.
+//
+// 0.147.0 / shim 0.74.0 / Blockbench plugin 0.10.0 (2026-09-12) is the fifth move of the extract, and
+// THIS REPOSITORY'S PIN IS NAMED IN IT AS THE CAUSE. 0.145.0 stopped the shim demanding a Blockbench
+// window per idle session; on this machine that fix reached nothing, because the demanding shim is
+// the copy a consumer repo pins - "ArmorPieces pins 0.140.0" - and a session that started days ago
+// keeps the copy it started with. The symptom was eight windows open with no way to see or close
+// them. So the pin below is not housekeeping: an old pin here is a defect over there, and the whole
+// point of 0.141.0's bundling (shim version N beside plugin version N, one stamp) is undone by a
+// consumer that does not move.
+//
+// What 0.147.0 adds on top of that: a CEILING on agent windows (`max_agent_windows`, 3) enforced in
+// the plugin, counting the windows that have been ASKED for and do not exist yet - six got past a
+// ceiling of three when several stale shims asked in the same second. An idle claim stops protecting
+// an empty window: a claim now has its own clock, the last CALL by its holder, and past fifteen
+// minutes it is released so the window is handed on and closes itself - the eight windows were all
+// `connected: true`, held by terminals idle for days, and a socket being open says a process exists,
+// not that anybody is working. The dock's interface moved to the START SCREEN because a Blockbench
+// `Panel` measures 0x0 in a window with no project and the dock is designed never to have one, so
+// its entire interface was unreachable in the only state it is ever in. One Tools entry instead of
+// seven. And the dist manifest inside the jar finally says which shim it is: it had read `0.13.0`
+// since the shim really was 0.13.0, sixty-one versions earlier, which matters precisely because a
+// consumer runs an EXTRACTED COPY and what that copy says about itself is the only way anyone tells
+// which code they have.
+//
+// 0.146.0 under it is the game speaking MCP on a door of its own - `POST http://127.0.0.1:<bridge port>/mcp`, served out of the jar with no Node and no
+// extracted copy of anything, where the URL carries the surface (`/mcp` the configured default,
+// `/mcp/observe` the reads) and a project declares its own in `config/mcptoolkit-surfaces.json`. That
+// door is NOT the one this repository uses and is not meant to be: an MCP client spawns its servers
+// when the CLIENT starts, which here is routinely with no game running, so .mcp.json keeps running
+// the shim out of the extract below and the private /tools + /cmd API stays the supported path.
+//
+// Below it, the four versions that moved the Blockbench half, all of them continuing to answer this
+// repository's own measurement (docs/measurements/CONCURRENCY_AB.md).
+//
+// 0.141.0 put the Blockbench
+// plugins IN THE JAR: `mcptoolkit_bridge.js`, `_sync.js` and `_entity.js` used to exist only in the
+// toolkit's working tree, so every install instruction here named a path no consumer could reach,
+// and they now land inside the shim extract's own branch - `<gameDir>/mcptoolkit/blockbench/` every
+// dev boot, `<repo>/.mcptoolkit/blockbench/` write-if-absent - under the shim's `.extracted-version`
+// stamp and with no second stamp of their own. Shim version N beside plugin version N is the whole
+// point, and it is why an extract left at 0.140.0 now pins an old plugin as well as an old shim.
+// 0.142.0 made a window SOMEBODY'S: the default is inverted, so a window is a person's unless the
+// plugin was asked to open it for an agent, an agent-born window closes itself once it has no live
+// claim and no open projects, and `reserved` survives derived so an older shim still leaves a
+// person's window alone. 0.144.0 answered six windows serving with nothing open in any of them and
+// no death condition that could fire: the window stays the unit of OWNERSHIP and stops being the
+// unit of GOVERNMENT, with one dock window owning the roster and arbitrating every close. 0.145.0 is
+// the rule this repo will feel first - a window is taken when there is WORK, not when a session
+// wakes up - and a manifest became a property of the plugin rather than of a window, so every window
+// serves the same /tools.
+//
+// 0.143.0 is the one to read before trusting an old habit here: THE LAUNCHER LEFT. The whole
+// `agent/claude/` package, the MMCP screens, the kits and `LaunchCommands` are archived, and three
+// tools left the manifest - `companion_spawn`, `companion_stop`, `session_send`. Nothing in this
+// repository calls them (checked at the bump) and nothing here drives the game by chat command, which
+// is the other thing 0.141.0 would have broken: `/claude`, `/mcptk` and `/review` are one `/mmcp`
+// tree now, deliberately WITHOUT aliases.
 // ---------------------------------------------------------------------------
-def toolkitVersion = project.findProperty('mcptoolkit_version') ?: '0.140.0'
+def toolkitVersion = project.findProperty('mcptoolkit_version') ?: '0.147.0'
 def m2Root = file(System.getProperty('maven.repo.local')
     ?: "${System.getProperty('user.home')}/.m2/repository")
 def toolkitJar = new File(m2Root,
