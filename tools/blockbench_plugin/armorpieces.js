@@ -49,13 +49,15 @@
 
 	const ID = 'armorpieces';
 	/*
-	 * The pack library: a hosted list of packs, each pointing at a zip its author hosts, plus the
-	 * mod's own. It is read from an index.json (the setting below says which) and written to by
-	 * submission - a filled-in issue on the library's repository, approved by a maintainer. The
-	 * web build of this plugin is served from LIBRARY_SITE and reads the index beside itself.
+	 * The pack library: the site's catalogue of packs - their authors' and the mod's own - read
+	 * from an index.json (the setting below says which). The site is derived from that URL:
+	 * siteOrigin() is its origin, and every account call (sign-in, your library, check-in,
+	 * upload) is made against it, which is why the default names the site itself and not a
+	 * mirror. /library/index.json is a permanent URL there by contract. Your own packs go in
+	 * through Upload to your library..., never through an issue: the site reviews them.
 	 */
 	const LIBRARY_HOME = 'https://github.com/mattjesmc/ArmorPiecesBlockbench';
-	const LIBRARY_SITE = 'https://mattjesmc.github.io/ArmorPiecesBlockbench/';
+	const LIBRARY_SITE = 'https://armorpieces.com/';
 	const LIBRARY_INDEX = LIBRARY_SITE + 'library/index.json';
 	// Everything created in onload that has a delete(), so unload can take it all down.
 	let registered = [];
@@ -987,7 +989,7 @@
 		'		</ul>',
 		'		<p class="ap_dim">Read from <a href="#" @click.prevent="open(home)">{{ url }}</a>.',
 		'			<template v-if="note">{{ note }}</template>',
-		'			<template v-else>Your own packs go in through Submit... in Packs....</template></p>',
+		'			<template v-else>Your own packs go in through Upload to your library... in Packs....</template></p>',
 		'	</template>',
 		'</div>',
 	].join('\n');
@@ -1049,107 +1051,17 @@
 		return dialog;
 	}
 
-	/*
-	 * The two places a pack can be offered, in the words the library's issue form uses - GitHub
-	 * fills a dropdown in from a URL only when the text matches an option exactly.
-	 */
-	const SUBMIT_TO = {
-		library: 'The library (hosted by me)',
-		mod: 'The mod (for inclusion)',
-	};
-
-	/* The issue that is a submission, with everything the author typed already in it. */
-	function submissionUrl(fields) {
-		const query = {
-			template: 'submission.yml',
-			title: '[Pack] ' + fields.name,
-			destination: SUBMIT_TO[fields.destination] || SUBMIT_TO.library,
-			name: fields.name,
-			author: fields.author,
-			url: fields.url,
-			homepage: fields.homepage,
-			description: fields.description,
-		};
-		return LIBRARY_HOME + '/issues/new?' + Object.keys(query)
-			.filter(function (key) { return query[key]; })
-			.map(function (key) { return key + '=' + encodeURIComponent(query[key]); })
-			.join('&');
-	}
-
-	/*
-	 * Submit...: offer a pack to the library, or to the mod. Neither is something this plugin can
-	 * do on its own - one is a listing a maintainer approves, the other is a change to the mod's
-	 * own content - so both are an issue on the library's repository, opened here with the form
-	 * filled in, and the zip written beside the pack so there is something to host or attach.
-	 */
-	function submitDialog(dir, done) {
-		const info = packInfo(dir);
-		new Dialog({
-			id: ID + '_submit',
-			title: 'Submit ' + info.label,
-			width: 600,
-			form: {
-				about: {
-					type: 'info',
-					text: 'Submitting opens an issue on ' + LIBRARY_HOME.replace('https://', '') +
-						' with this form in it, and writes a zip of the pack for you to host or attach. ' +
-						'A maintainer reviews it; an approved pack appears in the library.',
-				},
-				destination: {
-					label: 'Send it to', type: 'select', value: 'library',
-					options: SUBMIT_TO,
-					description: 'The library lists packs their authors host. The mod takes packs ' +
-						'into Armor Pieces itself, under its license.',
-				},
-				name: { label: 'Pack name', type: 'text', value: info.label },
-				author: { label: 'Your name', type: 'text', value: '' },
-				description: {
-					label: 'Description', type: 'textarea', value: '', height: 80,
-					description: 'What is in it, for the list.',
-				},
-				url: {
-					label: 'Download link', type: 'text', value: '',
-					description: 'Where the zip will be, for the library. Host it somewhere a browser ' +
-						'can fetch from - a file in a GitHub repository (raw.githubusercontent.com) or ' +
-						'on jsDelivr works; a release asset or a Drive link has to be downloaded by hand.',
-					condition: function (result) { return result.destination === 'library'; },
-				},
-				homepage: {
-					label: 'Home page', type: 'text', value: '',
-					description: 'Optional - a repository or a page about the pack.',
-				},
-			},
-			onConfirm: function (result) {
-				this.hide();
-				const fields = {
-					destination: result.destination,
-					name: String(result.name || info.label).trim(),
-					author: String(result.author || '').trim(),
-					description: String(result.description || '').trim(),
-					url: String(result.url || '').trim(),
-					homepage: String(result.homepage || '').trim(),
-				};
-				tryWritePackZip(dir, null, function (report) {
-					Blockbench.openLink(submissionUrl(fields));
-					if (done) {
-						done(report + ' - ' + (fields.destination === 'mod'
-							? 'attach the zip to the issue that opened'
-							: 'host the zip at the link you gave, then send the issue'));
-					}
-				});
-			},
-		}).show();
-	}
-
+	/* The catalogue is a place to install from; a pack of yours goes in through the account
+	 * source below (Upload to your library...), which is the one road the site reviews. The
+	 * issue-based Submit... this source used to carry asked authors to host a zip on a raw
+	 * GitHub URL, which was the second, contradictory door the UX review found. */
 	registerPackSource({
 		id: 'library',
 		label: 'the Armor Pieces library',
 		installLabel: 'From the library...',
-		publishLabel: 'Submit...',
 		install: function (dest, done) {
 			libraryDialog(function (entry) { installEntry(entry, dest, done); });
 		},
-		publish: submitDialog,
 	});
 
 	// ---- your library ----------------------------------------------------------------------------
@@ -1215,7 +1127,11 @@
 	function signInDialog(then) {
 		const origin = siteOrigin();
 		if (!origin) {
-			Blockbench.showMessageBox({ title: 'No site', message: 'The library setting does not name a site.' });
+			Blockbench.showMessageBox({
+				title: 'No site',
+				message: 'The Armor Pieces library setting (armorpieces_library) does not name a site: it is ' +
+					JSON.stringify(libraryUrl()) + '. The site is the origin of that URL; the default is ' + LIBRARY_INDEX + '.',
+			});
 			return;
 		}
 		if (!isApp) {
@@ -1270,14 +1186,19 @@
 				}, function () { /* keep polling */ });
 			}, (start.interval || 3) * 1000);
 		}, function (err) {
-			Blockbench.showMessageBox({ title: 'Could not start the sign-in', message: String((err && err.message) || err) });
+			Blockbench.showMessageBox({
+				title: 'Could not start the sign-in',
+				message: 'Could not reach ' + origin + ': ' + String((err && err.message) || err) + '. The site is ' +
+					'the origin of the Armor Pieces library setting (armorpieces_library); if that names the ' +
+					'wrong place, change it in Settings. The default is ' + LIBRARY_INDEX + '.',
+			});
 		});
 	}
 
 	function signOut() {
 		if (isApp) {
 			setSetting(ID + '_site_token', '');
-			Blockbench.showQuickMessage('Signed out of the site on this device; revoke it on the site too', 3000);
+			Blockbench.showQuickMessage('Signed out on this device. It stays listed under Connectors on the site until you revoke it there.', 4000);
 		} else {
 			Blockbench.openLink(siteOrigin() + '/account/');
 		}
@@ -1412,8 +1333,12 @@
 									: 'Saved to the working copy. Cut a version on the site when it is ready.');
 							}
 							const removed = answer && answer.report && answer.report.removed;
+							// Where it went, and what comes next: the pack's page is where a version is
+							// cut and the pack is offered to the gallery. There is no publish from here.
+							const packId = answer && answer.pack && answer.pack.id;
 							done('Uploaded' + (removed ? ' (' + removed + ' file(s) that were not pack files were dropped)' : '') +
-								(answer && answer.pack ? ': ' + answer.pack.name : ''));
+								(answer && answer.pack ? ': ' + answer.pack.name : '') +
+								(packId ? '. Cut a version on its page and offer it from there: ' + siteOrigin() + '/library/packs/' + packId + '/#publish' : ''));
 						}, function (err) {
 							Blockbench.showMessageBox({ title: 'Upload refused', message: String((err && err.message) || err) });
 						}, siteOptions({ contentType: 'application/zip', headers: headers, method: method }));
@@ -2350,13 +2275,24 @@
 			// The hash it has NOW, written down before anything else can save: the next check-in
 			// names this one as what it replaces, and naming the one from two saves ago is the
 			// conflict the site rightly refuses.
-			if (answer.hash && answer.hash !== mark.hash) {
-				mark.hash = answer.hash;
+			if ((answer.hash && answer.hash !== mark.hash) || mark.pending) {
+				if (answer.hash) mark.hash = answer.hash;
 				if (answer.id) mark.id = answer.id;
+				delete mark.pending;
 				writeCheckoutMark(dir, mark);
 			}
 			done(answer);
 		}, fail, siteOptions({ contentType: 'application/zip' }));
+	}
+
+	/* A save that did not reach the library is written on the checkout, not only said in a
+	 * three-second toast (item 2.4 of docs/plans/ux-round-4.md): the start page's card reads it
+	 * and says "not in your library yet" until a check-in succeeds and clears it. */
+	function markPending(dir, why) {
+		const mark = checkoutOf(dir);
+		if (!mark) return;
+		mark.pending = { at: new Date().toISOString(), why: String(why || '').slice(0, 200) };
+		try { writeCheckoutMark(dir, mark); } catch (err) { /* the folder is gone, or read-only */ }
 	}
 
 	/*
@@ -2387,9 +2323,11 @@
 			Blockbench.showQuickMessage('Checked in ' + (answer.id || 'the piece') + ' to your library', 2500);
 		}, function (err) {
 			if (needsSignIn(err)) {
+				markPending(dir, 'signed out');
 				Blockbench.showQuickMessage('Saved here. Sign in to the site to check it in.', 3000);
 				return;
 			}
+			markPending(dir, (err && err.message) || err);
 			Blockbench.showQuickMessage('Saved here, not checked in: ' + String((err && err.message) || err), 4000);
 			console.error('[armorpieces] check-in failed', err);
 		});
@@ -2635,7 +2573,10 @@
 					description: account
 						? 'A collection or pack of yours on the site, or a pack in this browser. Saving a ' +
 							'piece that belongs to the site sends it back there.'
-						: 'The pack in this browser it goes in. Sign in to the site to put it in your library.',
+						: isApp
+							? 'The pack it goes in. Sign in to the site to put it in your library.'
+							: 'The pack in this browser it goes in - kept by this browser only, and gone with its site ' +
+								'data. Sign in to the site to put it in your library instead.',
 				},
 			},
 			onConfirm: function (result) {
@@ -6909,8 +6850,8 @@
 			}));
 			registered.push(new Setting(ID + '_library', {
 				name: 'Armor Pieces library',
-				description: 'The index.json of the pack library that Packs... installs from and ' +
-					'Submit... offers packs to. The default is the library at ' + LIBRARY_SITE + '.',
+				description: 'The index.json of the pack library that Packs... installs from. Its origin is ' +
+					'the site this editor signs in to and uploads to. The default is ' + LIBRARY_INDEX + '.',
 				category: 'edit',
 				type: 'text',
 				value: LIBRARY_INDEX,
@@ -7351,12 +7292,13 @@
 				scope: packScope,
 				setScope: function (dir) { setPackScope(dir || ''); return packScope(); },
 				anchors: anchors,
-				// The library: the index it reads, an install into a folder, the submission form.
+				// The library: the index it reads, an install into a folder. `submit` is the upload
+				// now (item 2.4 of docs/plans/ux-round-4.md) - kept under its old name for one
+				// release so an older start page's button still does something sensible.
 				library: libraryIndex,
 				libraryUrl: libraryUrl,
 				installEntry: installEntry,
-				submit: submitDialog,
-				submissionUrl: submissionUrl,
+				submit: publishToAccount,
 				packSources: function () { return packSources.map(function (s) { return s.id; }); },
 				// The game: what is here, the dialog, and an install from a path for a caller that
 				// cannot click. `figure` is what the open rig's reference is wearing.
