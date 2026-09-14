@@ -786,6 +786,11 @@
 			// From armorpieces-credits.json, when the pack has one; all rights reserved otherwise.
 			license: readCredits([dir]).pack.license || 'ARR',
 			author: readCredits([dir]).pack.author || '',
+			// The working copy of a site pack (item 2.4 of docs/plans/ux-round-5.md), and
+			// whether the folder is unpacked from the bundle on every visit.
+			draft: draftOf(dir),
+			bundled: isBundled(dir),
+			mod: isModPack(dir),
 			// Forgetting a folder only does anything if being in the author's list is the only
 			// reason it shows up. A pack that is found anyway has to be deleted or left alone.
 			mine: hasPath(userPacks(), dir) && !hasPath(autoRoots(), dir),
@@ -882,8 +887,14 @@
 	 */
 	let libraryCache = null;
 
+	/* The setting a 0.3.0 install kept: the Pages site that never served (finding R1 of the UX
+	 * review). A value naming it is the old default, not a choice, and is read as the new one. */
+	const OLD_LIBRARY_HOSTS = /^https:\/\/mattjesmc\.github\.io\//i;
+
 	function libraryUrl() {
-		return String(Settings.get(ID + '_library') || LIBRARY_INDEX).trim();
+		const set = String(Settings.get(ID + '_library') || '').trim();
+		if (!set || OLD_LIBRARY_HOSTS.test(set)) return LIBRARY_INDEX;
+		return set;
 	}
 
 	function libraryIndex(done, fail, fresh) {
@@ -1252,6 +1263,9 @@
 					fs.writeFileSync(scratch, bytes);
 					try {
 						const report = tool('import_pack.py', [scratch, dest, '--force']);
+						try {
+							writeDraftMark(dest, { site: siteOrigin(), packId: entry.packId, name: entry.name || '', openedAt: new Date().toISOString(), savedAt: null });
+						} catch (err) { /* read-only */ }
 						done((report.trim() || ('Unpacked into ' + dest)) + ' - the working copy');
 					} catch (err) {
 						Blockbench.showMessageBox({ title: 'Import failed', message: String((err && err.stderr) || (err && err.message) || err) });
@@ -1269,84 +1283,179 @@
 		});
 	}
 
-	/* Send a pack folder up: zip it, and put it somewhere.
-	 *
-	 * Three places, and the difference between them is the point. A pack's WORKING COPY is where
-	 * a session of editing goes - saved as often as you like, published to nobody, and what the
-	 * site's own forms are editing at the same time. A VERSION is the deliberate, sequential,
-	 * publishable thing cut out of it. A NEW PACK is both at once for something that did not
-	 * exist yet. */
-	function publishToAccount(dir, done) {
+	/*
+	 * Where an upload ended, said in a dialog with the way on - not a three-second toast with an
+	 * address in it (finding 7 of docs/plans/ux-round-5.md). The pack's page is where a version
+	 * is cut and the pack is offered to the gallery; the editor never publishes.
+	 */
+	function uploadedDialog(title, lines, packId) {
+		const buttons = packId ? ['Open its page on the site', 'Close'] : ['Close'];
+		new Dialog({
+			id: ID + '_uploaded',
+			title: title,
+			lines: lines.map(function (line) { return '<p>' + line + '</p>'; }),
+			buttons: buttons,
+			confirmIndex: 0, cancelIndex: buttons.length - 1,
+			onConfirm: function () {
+				if (packId) Blockbench.openLink(siteOrigin() + '/library/packs/' + packId + '/#publish');
+				this.hide();
+			},
+		}).show();
+	}
+
+	/* The site's refusal, as a sentence: the JSON error when it sent one, the status otherwise. */
+	function refusalText(err) {
+		const text = String((err && err.message) || err);
+		const found = /\{[\s\S]*\}/.exec(text);
+		if (found) {
+			try {
+				const body = JSON.parse(found[0]);
+				if (body && body.error) return String(body.error) + (body.ids ? ' (' + body.ids.join(', ') + ')' : '');
+			} catch (e) { /* not JSON after all */ }
+		}
+		return text;
+	}
+
+	/* A pack folder zipped for sending, or null with the reason shown. */
+	function zipForUpload(dir) {
+		const out = path.join(tempDir(), 'upload.zip');
+		try {
+			tool('export_pack.py', [dir, out]);
+		} catch (err) {
+			Blockbench.showMessageBox({ title: 'Could not zip the pack', message: String((err && err.stderr) || (err && err.message) || err) });
+			return null;
+		}
+		return fs.readFileSync(out);
+	}
+
+	/*
+	 * Send a pack folder up, as one of three things - and the difference between them is the
+	 * point. A pack's WORKING COPY is where a session of editing goes: saved as often as you
+	 * like, published to nobody, what the site's own forms are editing at the same time
+	 * (`saveDraftNow`). A VERSION is the deliberate, sequential, publishable thing cut out of
+	 * it. A NEW PACK is both at once for something that did not exist yet - and once it exists,
+	 * the folder here IS its working copy, and is marked so.
+	 */
+	function uploadToAccount(dir, kind, done) {
 		withAccount(function () {
-			siteJson('/api/me/packs', function (data) {
-				const packs = data.packs || [];
-				const targets = { '': 'A new pack' };
-				for (const pack of packs) targets['draft:' + pack.id] = 'The working copy of ' + pack.name;
-				for (const pack of packs) targets[pack.id] = 'A new version of ' + pack.name;
-				const info = packInfo(dir);
-				const slug = info.label.toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'pack';
-				new Dialog({
-					id: ID + '_account_publish',
-					title: 'Upload to your library',
-					form: {
-						target: { label: 'Upload as', type: 'select', options: targets, value: '' },
-						name: { label: 'Name', type: 'text', value: info.label },
-						slug: { label: 'Slug', type: 'text', value: slug, description: 'Letters, digits and hyphens; part of the URL. For a new pack.' },
-						visibility: {
-							label: 'Visibility', type: 'select', value: 'private',
-							options: { private: 'Private - only you', unlisted: 'Unlisted - anyone with the link', public: 'Public - in the gallery, after review' },
-							description: 'For a new pack. A version of an existing pack keeps its visibility.',
-						},
-						label: { label: 'Version label', type: 'text', value: '', description: 'Optional, e.g. 1.1' },
-					},
-					onConfirm: function (result) {
-						this.hide();
-						const out = path.join(tempDir(), 'upload.zip');
-						try {
-							tool('export_pack.py', [dir, out]);
-						} catch (err) {
-							Blockbench.showMessageBox({ title: 'Could not zip the pack', message: String((err && err.stderr) || (err && err.message) || err) });
-							return;
-						}
-						const bytes = fs.readFileSync(out);
-						const target = String(result.target || '');
-						const headers = { 'x-pack-label': encodeURIComponent(String(result.label || '').trim()) };
-						let url = siteOrigin() + '/api/me/packs';
-						let method = 'POST';
-						if (target.indexOf('draft:') === 0) {
-							url += '/' + target.slice(6) + '/draft';
-							method = 'PUT';
-						} else if (target) {
-							url += '/' + target + '/versions';
-						} else {
-							headers['x-pack-slug'] = encodeURIComponent(String(result.slug || slug).trim().toLowerCase());
-							headers['x-pack-name'] = encodeURIComponent(String(result.name || info.label).trim());
-							headers['x-pack-visibility'] = encodeURIComponent(String(result.visibility || 'private'));
-						}
-						Blockbench.showQuickMessage('Uploading...', 2000);
-						sendBytes(url, bytes, function (body) {
-							let answer = null;
-							try { answer = JSON.parse(body); } catch (err) { /* text */ }
-							if (method === 'PUT') {
-								return done(answer && answer.changed === false
-									? 'The working copy already said that; nothing changed.'
-									: 'Saved to the working copy. Cut a version on the site when it is ready.');
-							}
-							const removed = answer && answer.report && answer.report.removed;
-							// Where it went, and what comes next: the pack's page is where a version is
-							// cut and the pack is offered to the gallery. There is no publish from here.
-							const packId = answer && answer.pack && answer.pack.id;
-							done('Uploaded' + (removed ? ' (' + removed + ' file(s) that were not pack files were dropped)' : '') +
-								(answer && answer.pack ? ': ' + answer.pack.name : '') +
-								(packId ? '. Cut a version on its page and offer it from there: ' + siteOrigin() + '/library/packs/' + packId + '/#publish' : ''));
-						}, function (err) {
-							Blockbench.showMessageBox({ title: 'Upload refused', message: String((err && err.message) || err) });
-						}, siteOptions({ contentType: 'application/zip', headers: headers, method: method }));
-					},
-				}).show();
-			}, function (err) {
-				Blockbench.showMessageBox({ title: 'Could not list your packs', message: String((err && err.message) || err) });
-			});
+			if (kind === 'draft') return saveDraftNow(dir, true, done);
+			if (kind === 'version') return uploadVersionDialog(dir, done);
+			uploadNewPackDialog(dir, done);
+		});
+	}
+
+	function uploadNewPackDialog(dir, done) {
+		const info = packInfo(dir);
+		const slug = info.label.toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'pack';
+		new Dialog({
+			id: ID + '_account_publish',
+			title: 'Upload to your library as a new pack',
+			form: {
+				name: { label: 'Name', type: 'text', value: info.description || info.label },
+				slug: { label: 'Slug', type: 'text', value: slug, description: 'Letters, digits and hyphens; part of the URL.' },
+				visibility: {
+					label: 'Visibility', type: 'select', value: 'private',
+					options: { private: 'Private - only you', unlisted: 'Unlisted - anyone with the link', public: 'Public - in the gallery, after review' },
+				},
+			},
+			onConfirm: function (result) {
+				this.hide();
+				const bytes = zipForUpload(dir);
+				if (!bytes) return;
+				const headers = {
+					'x-pack-slug': encodeURIComponent(String(result.slug || slug).trim().toLowerCase()),
+					'x-pack-name': encodeURIComponent(String(result.name || info.label).trim()),
+					'x-pack-visibility': encodeURIComponent(String(result.visibility || 'private')),
+					'x-pack-label': '',
+				};
+				Blockbench.showQuickMessage('Uploading...', 2000);
+				sendBytes(siteOrigin() + '/api/me/packs', bytes, function (body) {
+					let answer = null;
+					try { answer = JSON.parse(body); } catch (err) { /* text */ }
+					const pack = answer && answer.pack;
+					const removed = answer && answer.report && answer.report.removed;
+					// The folder is that pack's working copy from here on.
+					if (pack && pack.id) {
+						try { writeDraftMark(dir, { site: siteOrigin(), packId: pack.id, name: pack.name || '', openedAt: new Date().toISOString(), savedAt: new Date().toISOString() }); } catch (err) { /* read-only */ }
+					}
+					uploadedDialog('Uploaded', [
+						'<b>' + (pack ? pack.name : info.label) + '</b> is in your library' + (pack ? ' as a ' + pack.visibility + ' pack' : '') + '.' +
+							(removed ? ' ' + removed + ' file(s) that were not pack files were dropped.' : ''),
+						'This folder is its working copy now: <b>Save to site</b> sends later edits up. ' +
+							'Cut a version on its page when it is ready, and offer it to the gallery from there.',
+					], pack && pack.id);
+					if (done) done(answer);
+				}, function (err) {
+					Blockbench.showMessageBox({ title: 'Upload refused', message: refusalText(err) });
+				}, siteOptions({ contentType: 'application/zip', headers: headers, method: 'POST' }));
+			},
+		}).show();
+	}
+
+	function uploadVersionDialog(dir, done) {
+		const draft = draftOf(dir);
+		const finish = function (packId, packName) {
+			new Dialog({
+				id: ID + '_account_version',
+				title: 'Upload as a new version of ' + packName,
+				form: {
+					label: { label: 'Version label', type: 'text', value: '', description: 'Optional, e.g. 1.1' },
+					changelog: { label: 'What changed', type: 'textarea', value: '', description: 'Shown on the pack\'s page above earlier versions.' },
+				},
+				onConfirm: function (result) {
+					this.hide();
+					const bytes = zipForUpload(dir);
+					if (!bytes) return;
+					const headers = {
+						'x-pack-label': encodeURIComponent(String(result.label || '').trim()),
+						'x-pack-changelog': encodeURIComponent(String(result.changelog || '').trim()),
+					};
+					Blockbench.showQuickMessage('Uploading...', 2000);
+					sendBytes(siteOrigin() + '/api/me/packs/' + packId + '/versions', bytes, function (body) {
+						let answer = null;
+						try { answer = JSON.parse(body); } catch (err) { /* text */ }
+						const version = answer && answer.version;
+						uploadedDialog('Uploaded', [
+							'A new version of <b>' + packName + '</b>' + (version && version.label ? ' (' + version.label + ')' : '') + ' is on the site.',
+							'Offer it to the gallery from the pack\'s page; a maintainer reviews it there.',
+						], packId);
+						if (done) done(answer);
+					}, function (err) {
+						Blockbench.showMessageBox({ title: 'The site refused the version', message: refusalText(err) });
+					}, siteOptions({ contentType: 'application/zip', headers: headers, method: 'POST' }));
+				},
+			}).show();
+		};
+		if (draft) return finish(draft.packId, draft.name || 'your pack');
+		// A folder that is nobody's working copy: ask which pack it is a version of.
+		siteJson('/api/me/packs', function (data) {
+			const packs = data.packs || [];
+			if (!packs.length) {
+				Blockbench.showMessageBox({ title: 'No packs yet', message: 'You have no pack on the site to add a version to. Upload this folder as a new pack instead.' });
+				return;
+			}
+			const options = {};
+			for (const pack of packs) options[pack.id] = pack.name;
+			new Dialog({
+				id: ID + '_account_which',
+				title: 'A new version of which pack?',
+				form: { pack: { label: 'Pack', type: 'select', options: options, value: packs[0].id } },
+				onConfirm: function (result) {
+					this.hide();
+					const pack = packs.find(function (p) { return p.id === result.pack; });
+					if (pack) finish(pack.id, pack.name);
+				},
+			}).show();
+		}, function (err) {
+			Blockbench.showMessageBox({ title: 'Could not list your packs', message: String((err && err.message) || err) });
+		});
+	}
+
+	/* The account source's one publish verb, for callers that have only that: the working copy
+	 * when the folder is one, a new pack otherwise. */
+	function publishToAccount(dir, done) {
+		uploadToAccount(dir, draftOf(dir) ? 'draft' : 'new', function (answer) {
+			if (done) done(answer && answer.changed === false ? 'The site already has this' : 'Uploaded');
 		});
 	}
 
@@ -2139,29 +2248,287 @@
 		old.close(true).then(function () { if (fresh !== Project) fresh.select(); });
 	}
 
+	// ---- the piece list --------------------------------------------------------------------------
+
+	/*
+	 * One list of pieces as cards, grouped down the body, with filters named after the fields the
+	 * cards carry - the list the web start page drew for itself and the desktop never had
+	 * (items 2.3 and 2.5 of docs/plans/ux-round-5.md). It is a component so the two hosts mount
+	 * the same thing: the start page inline, under its own search box, and the desktop's Open
+	 * Armor Piece... in a dialog with the search box inside. Cards are plain objects; the host
+	 * says what opening one does.
+	 *
+	 *   { uid, id, name, kind, anchor, fittings[], license, author, thumbnail, packs[{id,name}],
+	 *     collections[{id,name}], where, checkout, half, open() }
+	 */
+	const PIECE_LIST_TEMPLATE = [
+		'<div class="armorpieces_list">',
+		'	<div class="filters" v-if="search || filters.length || groupable">',
+		'		<input v-if="search" type="search" v-model="term" placeholder="Search by name, id, socket or fitting..." autocomplete="off">',
+		'		<label class="filter" v-for="f in filters" :key="f.name" :title="f.title">',
+		'			<span>{{ f.label }}</span>',
+		'			<select v-model="chosen[f.name]" @change="changed(f.name)">',
+		'				<option value="">{{ f.any }}</option>',
+		'				<option v-for="o in f.options" :key="o.value" :value="o.value">{{ o.text }}</option>',
+		'			</select>',
+		'		</label>',
+		'		<button type="button" class="toggle" v-if="groupable && !chosen.anchor" :aria-pressed="String(grouped)" @click="grouped = !grouped">by socket</button>',
+		'		<span class="count">{{ shown.length }} of {{ cards.length }}</span>',
+		'	</div>',
+		'	<p class="empty" v-if="!shown.length">{{ empty }}</p>',
+		'	<section class="group" v-for="g in groups" :key="g.key">',
+		'		<h2 v-if="g.title">{{ g.title }}</h2>',
+		'		<div class="grid">',
+		'			<div class="card" role="button" tabindex="0" v-for="c in g.cards" :key="c.uid" @click="open(c)" @keydown.enter.prevent="open(c)" @keydown.space.prevent="open(c)">',
+		'				<img class="thumb" v-if="c.thumbnail" :src="c.thumbnail" loading="lazy" alt="">',
+		'				<span class="name">{{ c.name }}</span>',
+		'				<span class="meta">{{ meta(c) }}</span>',
+		'				<span class="tags" v-if="chips(c).length"><span class="tag" v-for="t in chips(c)" :key="t">{{ t }}</span></span>',
+		'			</div>',
+		'		</div>',
+		'	</section>',
+		'</div>',
+	].join('\n');
+
+	const PIECE_LIST_CSS = [
+		'.armorpieces_list { font-family: var(--font-main, system-ui, sans-serif); color: var(--color-text); }',
+		'.armorpieces_list .filters { display: flex; gap: .45rem; align-items: center; flex-wrap: wrap; margin: 0 0 .9rem; }',
+		'.armorpieces_list .filters input[type=search] { flex: 1 1 14rem; min-width: 10rem; padding: .4rem .6rem; border-radius: 5px; border: 1px solid var(--color-border); background: var(--color-back); color: var(--color-text); font: inherit; font-size: .85rem; height: auto; }',
+		'.armorpieces_list .filter { display: inline-flex; align-items: center; gap: .35rem; font-size: .78rem; color: var(--color-subtle_text); }',
+		'.armorpieces_list .filter select { appearance: none; -webkit-appearance: none; padding: .3rem 1.5rem .3rem .55rem; border-radius: 5px; border: 1px solid var(--color-border); background: var(--color-back) url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2710%27 height=%277%27%3E%3Cpath d=%27M1 1l4 4 4-4%27 fill=%27none%27 stroke=%27%23999%27 stroke-width=%271.5%27/%3E%3C/svg%3E") no-repeat right .5rem center; color: var(--color-text); font: inherit; font-size: .8rem; height: auto; max-width: 12rem; cursor: pointer; }',
+		'.armorpieces_list .filter select:focus-visible { outline: 1px solid var(--color-accent); }',
+		'.armorpieces_list .toggle { padding: .3rem .7rem; border-radius: 5px; border: 1px solid var(--color-border); background: var(--color-back); color: var(--color-subtle_text); font: inherit; font-size: .78rem; cursor: pointer; height: auto; }',
+		'.armorpieces_list .toggle[aria-pressed=true] { border-color: var(--color-accent); color: var(--color-light); background: var(--color-ui); }',
+		'.armorpieces_list .toggle[aria-pressed=true]::before { content: "\\2713  "; color: var(--color-accent); }',
+		'.armorpieces_list .count { margin-left: auto; font-size: .74rem; opacity: .55; }',
+		'.armorpieces_list h2 { margin: 0 0 .6rem; font-size: .74rem; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; opacity: .5; height: auto; }',
+		'.armorpieces_list .group { margin-bottom: 1.4rem; }',
+		'.armorpieces_list .grid { display: grid; gap: .5rem; grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr)); }',
+		'.armorpieces_list .card { display: flex; flex-direction: column; gap: .2rem; padding: .6rem .75rem; border-radius: 6px; background: var(--color-ui); border: 1px solid transparent; cursor: pointer; text-align: left; font: inherit; color: inherit; height: auto; }',
+		'.armorpieces_list .card:hover, .armorpieces_list .card:focus-visible { border-color: var(--color-accent); outline: none; }',
+		'.armorpieces_list .card .name { font-size: .87rem; color: var(--color-light); line-height: 1.35; }',
+		'.armorpieces_list .card .meta { font-size: .72rem; opacity: .55; line-height: 1.35; }',
+		'.armorpieces_list .card .tags { display: flex; gap: .3rem; flex-wrap: wrap; margin-top: .3rem; }',
+		'.armorpieces_list .card .tag { font-size: .68rem; padding: .05rem .4rem; border-radius: 3px; background: var(--color-back); opacity: .8; }',
+		'.armorpieces_list .card .thumb { display: block; width: 100%; aspect-ratio: 1 / 1; object-fit: contain; border-radius: 4px; background: var(--color-back); margin-bottom: .35rem; }',
+		'.armorpieces_list .empty { padding: 2rem 0; opacity: .5; font-size: .85rem; }',
+		'.armorpieces_list.compact .grid { grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); }',
+		'.armorpieces_list.compact .card { padding: .4rem .6rem; }',
+	].join('\n');
+
+	/* The component. `options.cards` is the initial list; `vue.cards = ...` replaces it. */
+	function pieceListComponent(options) {
+		options = options || {};
+		const order = Object.keys(anchors());
+		const named = anchors();
+		return {
+			data: function () {
+				return {
+					cards: options.cards || [],
+					term: '',
+					search: !!options.search,
+					groupable: options.grouped !== false,
+					grouped: options.grouped !== false,
+					chosen: { where: options.where || '', kind: '', anchor: '', collection: '', pack: '', license: '', author: '' },
+					empty: options.empty || 'Nothing matches.',
+				};
+			},
+			computed: {
+				/* The filters, built from the values the cards actually carry, so nothing is
+				 * offered that would match nothing. The source axis first: it changes what the
+				 * rest of the row means. */
+				filters: function () {
+					const cards = this.cards;
+					const chosen = this.chosen;
+					const list = [];
+					const uniq = function (values) { return Array.from(new Set(values.filter(Boolean))).sort(); };
+					const wheres = uniq(cards.map(function (c) { return c.where; }));
+					if (wheres.length > 1) {
+						const text = { library: 'in my library', browser: isApp ? 'on this computer' : 'in this browser' };
+						list.push({ name: 'where', label: 'Where', any: 'everywhere', title: 'Where the piece is',
+							options: wheres.map(function (w) { return { value: w, text: text[w] || w }; }) });
+					}
+					const inScope = cards.filter(function (c) { return !chosen.where || c.where === chosen.where; });
+					const bags = function (key) {
+						const found = new Map();
+						for (const card of inScope) for (const bag of (card[key] || [])) found.set(bag.id, bag);
+						return Array.from(found.values()).map(function (b) { return { value: b.id, text: b.name }; });
+					};
+					const plain = function (name, label, any, values) {
+						if (values.length < 2) return;
+						list.push({ name: name, label: label, any: any, title: label, options: values.map(function (v) { return { value: v, text: v }; }) });
+					};
+					plain('kind', 'Kind', 'any', uniq(inScope.map(function (c) { return c.kind; })));
+					plain('anchor', 'Socket', 'any', uniq(inScope.map(function (c) { return c.anchor; })));
+					const collections = bags('collections');
+					if (collections.length > 1) list.push({ name: 'collection', label: 'Collection', any: 'any', title: 'Collection', options: collections });
+					const packs = bags('packs');
+					if (packs.length > 1) list.push({ name: 'pack', label: 'Pack', any: 'any', title: 'Pack', options: packs });
+					plain('license', 'Licence', 'any', uniq(inScope.map(function (c) { return c.license; })));
+					plain('author', 'Author', 'any', uniq(inScope.map(function (c) { return c.author; })));
+					return list;
+				},
+				shown: function () {
+					const term = String(this.term || '').trim().toLowerCase();
+					const chosen = this.chosen;
+					return this.cards.filter(function (piece) {
+						if (chosen.where && piece.where !== chosen.where) return false;
+						if (chosen.kind && piece.kind !== chosen.kind) return false;
+						if (chosen.anchor && piece.anchor !== chosen.anchor) return false;
+						if (chosen.license && piece.license !== chosen.license) return false;
+						if (chosen.author && piece.author !== chosen.author) return false;
+						if (chosen.collection && !(piece.collections || []).some(function (c) { return c.id === chosen.collection; })) return false;
+						if (chosen.pack && !(piece.packs || []).some(function (p) { return p.id === chosen.pack; })) return false;
+						if (!term) return true;
+						return [piece.name, piece.id, piece.anchor, piece.author].concat(piece.fittings || [])
+							.filter(Boolean).join(' ').toLowerCase().indexOf(term) !== -1;
+					});
+				},
+				/* Down the body: the sockets in the rig's own order, then everything with no socket
+				 * the rig knows - a skin, a cloth, a piece whose anchor this build never heard of. */
+				groups: function () {
+					const shown = this.shown;
+					if (!shown.length) return [];
+					if (!this.grouped || this.chosen.anchor) return [{ key: 'all', title: '', cards: shown }];
+					const groups = [];
+					for (const anchor of order) {
+						const cards = shown.filter(function (p) { return p.anchor === anchor; });
+						if (!cards.length) continue;
+						const on = named[anchor] && named[anchor].part;
+						groups.push({ key: anchor, title: anchor + (on ? ' — ' + on.replace(/_/g, ' ') : ''), cards: cards });
+					}
+					const stray = shown.filter(function (p) { return order.indexOf(p.anchor) === -1; });
+					if (stray.length) groups.push({ key: 'elsewhere', title: 'elsewhere', cards: stray });
+					return groups;
+				},
+			},
+			methods: {
+				changed: function (name) {
+					// A narrower source may not carry the chosen value of the other filters.
+					if (name !== 'where') return;
+					for (const key of Object.keys(this.chosen)) if (key !== 'where') this.chosen[key] = '';
+				},
+				meta: function (piece) {
+					const meta = [piece.kind, piece.anchor, (piece.fittings || []).join(', ')].filter(Boolean).join(' · ');
+					return meta || (piece.half === false ? 'masters only, no datapack half' : '');
+				},
+				chips: function (piece) {
+					const chips = (piece.packs || []).map(function (p) { return p.name; })
+						.concat((piece.collections || []).map(function (c) { return c.name; }));
+					if (piece.where === 'browser') chips.push(isApp ? 'on this computer' : 'in this browser');
+					// A checkout whose last save did not reach the library says so on the card, and
+					// keeps saying so until a check-in succeeds - a toast is gone in three seconds.
+					if (piece.checkout && piece.checkout.pending) {
+						chips.push('saved here, not in your library yet' + (piece.checkout.pending.why === 'signed out' ? ' (sign in)' : ''));
+					}
+					return chips;
+				},
+				open: function (piece) {
+					if (options.onOpen) options.onOpen(piece);
+					else if (piece.open) piece.open();
+				},
+			},
+			template: PIECE_LIST_TEMPLATE,
+		};
+	}
+
+	function mountPieceList(host, options) {
+		const el = document.createElement('div');
+		host.appendChild(el);
+		return new Vue(pieceListComponent(options)).$mount(el);
+	}
+
+	/* The pieces here, as cards: the packs' pieces, then the checkouts, which know their hash. */
+	function localCards() {
+		const cards = allPieces().map(function (piece) {
+			const mark = checkoutOf(piece.dataPack);
+			const data = readJsonOr(piece.data, null);
+			const info = draftOf(piece.dataPack);
+			return {
+				uid: piece.dataPack + '|' + piece.key, hash: (mark && mark.hash) || null, id: piece.key,
+				name: displayName(piece, data).text || titleCase(piece.name), kind: 'piece',
+				anchor: (data && data.anchors && data.anchors[0]) || '',
+				fittings: ((data && data.fittings) || []).map(function (f) { return String(f).split(':').pop(); }),
+				license: '', author: '', thumbnail: null,
+				packs: info ? [{ id: info.packId, name: info.name || 'a pack on the site' }]
+					: [{ id: piece.dataPack, name: isBundled(piece.dataPack) ? 'example pack' : isModPack(piece.dataPack) ? "the mod's own pack" : packLabel(piece.dataPack) }],
+				collections: [], where: 'browser', checkout: mark,
+				open: function () { openPiece(piece); },
+			};
+		});
+		return cards;
+	}
+
+	/* Open Armor Piece...: the list, in a dialog, with the search box inside it. */
 	function pickPiece(title, onPick) {
-		const pieces = allPieces();
-		if (!pieces.length) {
+		const cards = localCards();
+		if (!cards.length) {
 			Blockbench.showMessageBox({
 				title: 'No pieces found',
-				message: 'No part in any pack: not in the folders added under Tools > Armor Pieces > ' +
-					'Packs..., not in the repository\'s resources or run/, and not in the game\'s ' +
-					'resourcepacks/ or worlds\' datapacks/. Add the folder your pack is in, or make one ' +
-					'with New Pack....',
+				message: 'No piece in any pack: not in the folders under Packs..., not in the repository\'s ' +
+					'resources or run/, and not in the game\'s resourcepacks/ or worlds\' datapacks/. Add the ' +
+					'folder your pack is in, or make a piece with New Armor Piece....',
 			});
 			return;
 		}
-		const options = {};
-		pieces.forEach(function (piece, i) { options[i] = pieceLabel(piece); });
-		new Dialog({
+		const pieces = allPieces();
+		const dialog = new Dialog({
 			id: ID + '_pick',
 			title: title,
-			form: { piece: { label: 'Piece', type: 'select', options: options, value: '0' } },
-			onConfirm: function (result) {
-				this.hide();
-				onPick(pieces[parseInt(result.piece, 10)]);
-			},
-		}).show();
+			width: 760,
+			singleButton: true,
+			component: pieceListComponent({
+				cards: cards, search: true,
+				onOpen: function (card) {
+					dialog.hide();
+					const piece = pieces.find(function (p) { return p.dataPack + '|' + p.key === card.uid; });
+					if (piece) onPick(piece);
+				},
+			}),
+		});
+		dialog.show();
+	}
+
+	// ---- the desktop's start screen -------------------------------------------------------------
+
+	/*
+	 * The web build replaces Blockbench's start screen with a page of its own; a plugin loaded
+	 * into somebody's desktop Blockbench must not. What it may do is add a section to it, which
+	 * is how the update notice and the backup recovery get there - so the plugin's first verbs
+	 * are on the screen a new user lands on rather than three menus deep (item 2.5 of
+	 * docs/plans/ux-round-5.md). Returns what removes it, or null off the desktop.
+	 */
+	function startScreenSection(openAction, openSkin) {
+		if (!isApp) return null;
+		const add = typeof addStartScreenSection === 'function' ? addStartScreenSection
+			: (Blockbench.addStartScreenSection || null);
+		if (!add) return null;
+		try {
+			return add(ID + '_start', {
+				graphic: { type: 'icon', icon: 'shield' },
+				text: [
+					{ type: 'h2', text: 'Armor Pieces' },
+					{ text: 'Pieces for the Armor Pieces mod: open one on the player rig in armor, or make one. ' +
+						'A pack is what you ship; sign in to the site under Tools › Armor Pieces to keep your packs in your library.' },
+					{ type: 'button', text: 'New piece...', click: function () { newPiece(); } },
+					{ type: 'button', text: 'Open piece...', click: function () { openAction.click(); } },
+					{ type: 'button', text: 'Packs...', click: function () { packsDialog(); } },
+					{ type: 'button', text: 'Open skin...', click: function () { openSkin.click(); } },
+				],
+				closable: false,
+			});
+		} catch (err) {
+			console.error('[armorpieces] could not add the start screen section', err);
+			return null;
+		}
+	}
+
+	/* The working copy a Save Working Copy to Site acts on: the open piece's pack, else the
+	 * pack being worked in. */
+	function draftHere() {
+		const piece = isWorkspace() ? currentPiece() : null;
+		if (piece && draftOf(piece.dataPack)) return piece.dataPack;
+		return packScope();
 	}
 
 	// ---- checkouts ------------------------------------------------------------------------------
@@ -2209,6 +2576,136 @@
 			const mark = checkoutOf(dir);
 			return mark ? Object.assign({ dir: dir }, mark) : null;
 		}).filter(function (one) { return !!one; });
+	}
+
+	// ---- working copies -------------------------------------------------------------------------
+
+	/*
+	 * A WORKING COPY is one of your site packs, here, whole: the draft the site autosaves and its
+	 * own forms edit, imported into a pack folder so the tools can read it. Opening one used to
+	 * leave nothing behind saying which pack the folder came from, so the only road back was
+	 * knowing to pick "The working copy of X" in an upload form (item 2.4 of
+	 * docs/plans/ux-round-5.md). The marker is what the pack card reads to say "working copy of
+	 * X", what Save to site sends to, and what the push-after-save below is keyed on: the
+	 * checkout's marker, one level up - a pack rather than a piece.
+	 */
+	const DRAFT_FILE = '.armorpieces-draft.json';
+
+	function draftOf(dir) {
+		if (!dir) return null;
+		try {
+			const mark = JSON.parse(fs.readFileSync(path.join(dir, DRAFT_FILE), 'utf8'));
+			return mark && typeof mark.packId === 'string' && mark.packId ? mark : null;
+		} catch (err) {
+			return null;
+		}
+	}
+
+	function writeDraftMark(dir, mark) {
+		fs.writeFileSync(path.join(dir, DRAFT_FILE), JSON.stringify(mark, null, 2) + '\n', 'utf8');
+	}
+
+	/* The folder a site pack's working copy is opened into: one per pack, so opening it again is
+	 * a refresh rather than a second copy. */
+	function draftDir(packId) {
+		return path.join(packHome(), 'site-' + String(packId).slice(0, 8));
+	}
+
+	/* The working copy here of a site pack, if it has been opened here. */
+	function draftFolderOf(packId) {
+		return searchRoots().find(function (dir) {
+			const mark = draftOf(dir);
+			return !!mark && mark.packId === packId;
+		}) || null;
+	}
+
+	/*
+	 * One of your site packs' WORKING COPIES, in a pack here, opened for editing. This is what
+	 * the deep link from the site's pack page uses: the page knows the pack id and nothing about
+	 * folders, and this knows folders and nothing about why.
+	 */
+	function openDraft(packId, name, done, fail) {
+		const id = String(packId || '').trim();
+		if (!id) return fail && fail(new Error('no pack id'));
+		const dir = draftFolderOf(id) || draftDir(id);
+		fetchBytes(siteOrigin() + '/api/me/packs/' + id + '/draft', function (bytes) {
+			try {
+				fs.mkdirSync(dir, { recursive: true });
+				const scratch = path.join(tempDir(), 'draft.zip');
+				fs.writeFileSync(scratch, bytes);
+				tool('import_pack.py', [scratch, dir, '--force']);
+				const was = draftOf(dir) || {};
+				writeDraftMark(dir, {
+					site: siteOrigin(), packId: id, name: String(name || was.name || ''),
+					openedAt: new Date().toISOString(), savedAt: was.savedAt || null,
+				});
+				const list = userPacks();
+				if (!list.includes(dir)) { list.push(dir); setUserPacks(list); }
+				setPackScope(dir);
+				if (done) done(dir);
+			} catch (err) {
+				if (fail) fail(err instanceof Error ? err : new Error(String(err)));
+			}
+		}, function (err) {
+			if (fail) fail(err instanceof Error ? err : new Error(String(err)));
+		}, siteOptions());
+	}
+
+	/* And back: the folder, zipped, as that pack's working copy on the site. */
+	function saveDraft(packId, dir, done, fail) {
+		const out = path.join(tempDir(), 'draft-out.zip');
+		try {
+			tool('export_pack.py', [dir, out]);
+		} catch (err) {
+			return fail && fail(err instanceof Error ? err : new Error(String(err)));
+		}
+		sendBytes(siteOrigin() + '/api/me/packs/' + String(packId) + '/draft',
+			fs.readFileSync(out), function (body) {
+				let answer = null;
+				try { answer = JSON.parse(body); } catch (err) { /* text */ }
+				const mark = draftOf(dir);
+				if (mark) {
+					delete mark.pending;
+					mark.savedAt = new Date().toISOString();
+					try { writeDraftMark(dir, mark); } catch (err) { /* read-only */ }
+				}
+				if (done) done(answer || {});
+			}, function (err) { if (fail) fail(err); },
+			siteOptions({ contentType: 'application/zip', method: 'PUT' }));
+	}
+
+	/* Save to site for a marked folder, saying what happened. A failure is written on the mark,
+	 * so the pack card says the folder is ahead of the site until a save gets through. */
+	function saveDraftNow(dir, loud, then) {
+		const mark = draftOf(dir);
+		if (!mark) {
+			if (loud) Blockbench.showQuickMessage('This pack is not the working copy of a pack on the site', 3000);
+			return;
+		}
+		saveDraft(mark.packId, dir, function (answer) {
+			if (answer.changed === false) {
+				if (loud) Blockbench.showQuickMessage('The site already has this', 2000);
+			} else {
+				const counts = answer.counts;
+				Blockbench.showQuickMessage('Saved ' + (mark.name || 'the pack') + ' to the site' +
+					(counts ? ' - ' + counts.pieces + ' pieces, ' + counts.skins + ' skins' : ''), 2500);
+			}
+			if (then) then(answer);
+		}, function (err) {
+			markDraftPending(dir, needsSignIn(err) ? 'signed out' : (err && err.message) || err);
+			Blockbench.showQuickMessage(needsSignIn(err)
+				? 'Saved here. Sign in to the site to save it there.'
+				: 'Saved here, not on the site: ' + String((err && err.message) || err), 4000);
+			console.error('[armorpieces] save to site failed', err);
+			if (then) then(null);
+		});
+	}
+
+	function markDraftPending(dir, why) {
+		const mark = draftOf(dir);
+		if (!mark) return;
+		mark.pending = { at: new Date().toISOString(), why: String(why || '').slice(0, 200) };
+		try { writeDraftMark(dir, mark); } catch (err) { /* the folder is gone, or read-only */ }
 	}
 
 	/* The checkout the open piece sits in, if it sits in one. */
@@ -2342,12 +2839,19 @@
 	 */
 	let checkinTimer = null;
 	function checkinAfterSave(dir) {
-		if (!checkoutOf(dir) || !siteOrigin()) return;
-		if (!Settings.get(ID + '_checkin')) return;
+		if (!siteOrigin()) return;
+		const draft = checkoutOf(dir) ? null : draftOf(dir);
+		if (!draft && !checkoutOf(dir)) return;
+		if (!Settings.get(ID + '_checkin')) {
+			// Off: the pack card still says the folder is ahead of the site.
+			if (draft) markDraftPending(dir, 'edited here');
+			return;
+		}
 		if (checkinTimer) clearTimeout(checkinTimer);
 		checkinTimer = setTimeout(function () {
 			checkinTimer = null;
-			checkinNow(dir, false);
+			if (draft) saveDraftNow(dir, false);
+			else checkinNow(dir, false);
 		}, 1500);
 	}
 
@@ -2502,19 +3006,10 @@
 	 * the Python get their folder, and the first Save checks it in with no `from`, which creates
 	 * the object and puts it in the bag. Every Save after that swaps the hash.
 	 */
-	function newPiece() {
+	function newPiece(options) {
+		options = options || {};
 		accountBags(function (account) {
-			const packs = searchRoots();
-			if (!packs.length && !account) {
-				Blockbench.showMessageBox({
-					title: 'No packs',
-					message: 'No pack folder to put the piece in, and no library to put it in either. ' +
-						'Make a folder with Tools > Armor Pieces > New Pack..., add one under Packs..., ' +
-						'or sign in to the site.',
-				});
-				return;
-			}
-			newPieceDialog(packs, account);
+			newPieceDialog(searchRoots(), account, options);
 		});
 	}
 
@@ -2527,27 +3022,106 @@
 		}, function () { then(null); });
 	}
 
-	/* The destinations, in the order they are offered: the library first, this browser after. */
+	/*
+	 * On the web the repository's own folders are unpacked from the bundle on every visit, so a
+	 * piece made in one is gone with the next build - the page even says the example pack
+	 * "resets". They are shown for what they are and never offered as somewhere to put new work
+	 * (item 2.2 of docs/plans/ux-round-5.md). On the desktop the repository is the author's own
+	 * clone and its pack is where the mod's pieces are made.
+	 */
+	function isBundled(dir) {
+		const root = repoRoot();
+		return !isApp && !!root && pathKey(dir).indexOf(pathKey(root) + '/') === 0;
+	}
+
+	function isModPack(dir) {
+		const root = repoRoot();
+		return !!root && pathKey(dir) === pathKey(path.join(root, 'src', 'main', 'resources'));
+	}
+
+	/* A pack folder as a place to put a NEW piece: not a bundled one, not a checkout (a working
+	 * tree for one piece is not a pack). */
+	function pieceHomes(packs) {
+		return packs.filter(function (dir) { return !isBundled(dir) && !checkoutOf(dir); });
+	}
+
+	/* The namespace a pack's pieces use: the one already in it, else the pack's name, slugged. */
+	function namespaceOf(dir) {
+		if (!dir) return 'mypack';
+		if (isModPack(dir)) return 'armorpieces';
+		const found = namespacesIn(dir, 'data').concat(namespacesIn(dir, 'assets'))
+			.filter(function (ns) { return ns !== 'minecraft'; });
+		if (found.length) return found[0];
+		const draft = draftOf(dir);
+		return slugNamespace(draft && draft.name ? draft.name : path.basename(dir));
+	}
+
+	function slugNamespace(text) {
+		return String(text || '').toLowerCase().replace(/^site-/, '').replace(/[^a-z0-9_.-]+/g, '_')
+			.replace(/^_+|_+$/g, '') || 'mypack';
+	}
+
+	/*
+	 * The destinations, in the order they are offered: your packs on the site, packs here, and a
+	 * pack that does not exist yet. A site pack whose working copy is open here is offered ONCE,
+	 * as the folder - a piece made in it goes up with the next Save to site, which is the road
+	 * the folder is on; the checkout road (by hash, into a bag) is for a pack not opened here.
+	 */
 	function newPieceTargets(packs, account) {
 		const targets = [];
+		const homes = pieceHomes(packs);
+		const openHere = {};
+		for (const dir of homes) {
+			const draft = draftOf(dir);
+			if (draft) openHere[draft.packId] = dir;
+		}
 		if (account) {
-			for (const one of account.collections || []) {
-				targets.push({ kind: 'collection', id: one.id, name: one.name, label: 'Collection: ' + one.name });
-			}
 			for (const one of account.packs || []) {
-				targets.push({ kind: 'pack', id: one.id, name: one.name, label: 'Pack: ' + one.name });
+				if (openHere[one.id]) continue;
+				targets.push({ kind: 'pack', id: one.id, name: one.name, label: 'Pack on the site: ' + one.name, namespace: slugNamespace(one.name) });
 			}
-			targets.push({ kind: 'new', label: '+ New collection...' });
+			for (const one of account.collections || []) {
+				targets.push({ kind: 'collection', id: one.id, name: one.name, label: 'Collection on the site: ' + one.name, namespace: 'mypack' });
+			}
+			targets.push({ kind: 'new', label: '+ New collection on the site...', namespace: 'mypack' });
 		}
-		for (const dir of packs) {
-			targets.push({ kind: 'local', dir: dir, label: 'In this browser: ' + packLabel(dir) });
+		for (const dir of homes) {
+			const draft = draftOf(dir);
+			const where = isApp ? 'Pack here: ' : 'In this browser: ';
+			targets.push({
+				kind: 'local', dir: dir, mod: isModPack(dir), user: hasPath(userPacks(), dir),
+				label: draft
+					? (draft.name || packLabel(dir)) + ' (working copy of your pack on the site)'
+					: where + packLabel(dir) + (isModPack(dir) ? ' (the mod\'s own pack)' : ''),
+				namespace: namespaceOf(dir),
+			});
 		}
+		targets.push({ kind: 'newpack', label: isApp ? '+ New pack...' : '+ New pack in this browser...', namespace: 'mypack' });
 		return targets;
 	}
 
-	function newPieceDialog(packs, account) {
-		const root = repoRoot();
-		const inRepo = root && packs.length && packs[0].startsWith(root);
+	/* Where the dialog starts: the pack asked for, the pack being worked in, a pack of yours on
+	 * the site, a pack the author added, the mod's own pack on the desktop (where it is where the
+	 * mod's pieces are made), any pack here - and a pack not made yet when nothing else is. */
+	function defaultTarget(targets, options) {
+		const at = function (test) { return targets.findIndex(test); };
+		const first = [
+			function (t) { return !!options.dir && t.kind === 'local' && t.dir === options.dir; },
+			function (t) { return t.kind === 'local' && !!packScope() && t.dir === packScope(); },
+			function (t) { return t.kind === 'pack'; },
+			function (t) { return t.kind === 'local' && t.user; },
+			function (t) { return t.kind === 'local' && t.mod && isApp; },
+			function (t) { return t.kind === 'local'; },
+			function (t) { return t.kind === 'newpack'; },
+		];
+		for (const test of first) {
+			const found = at(test);
+			if (found >= 0) return found;
+		}
+		return 0;
+	}
+
+	function newPieceDialog(packs, account, options) {
 		const anchorOptions = {};
 		for (const name of Object.keys(anchors())) {
 			anchorOptions[name] = name + '  (' + anchors()[name].part + ')';
@@ -2555,47 +3129,62 @@
 		const targets = newPieceTargets(packs, account);
 		const whereOptions = {};
 		targets.forEach(function (target, i) { whereOptions[i] = target.label; });
-		// The pack being worked in, when it is one of the local folders: the same default the two
-		// folder pickers had.
-		const localAt = targets.findIndex(function (t) { return t.kind === 'local' && t.dir === packScope(); });
-		const firstLocal = targets.findIndex(function (t) { return t.kind === 'local'; });
-		const chosen = String(account ? 0 : Math.max(localAt, firstLocal, 0));
+		const chosen = String(defaultTarget(targets, options));
+		// The namespace follows the pack until the author types one.
+		let autoNamespace = targets[parseInt(chosen, 10)].namespace;
 
 		new Dialog({
 			id: ID + '_new',
 			title: 'New Armor Piece',
 			form: {
 				name: { label: 'Name', type: 'text', value: '', placeholder: 'gorget' },
-				namespace: { label: 'Namespace', type: 'text', value: inRepo ? 'armorpieces' : 'mypack' },
-				anchor: { label: 'Anchor', type: 'select', options: anchorOptions },
 				where: {
 					label: 'Where', type: 'select', options: whereOptions, value: chosen,
 					description: account
-						? 'A collection or pack of yours on the site, or a pack in this browser. Saving a ' +
-							'piece that belongs to the site sends it back there.'
+						? 'A pack or collection of yours on the site, a pack here, or a new one. A piece ' +
+							'that belongs to the site goes back there when you save.'
 						: isApp
 							? 'The pack it goes in. Sign in to the site to put it in your library.'
-							: 'The pack in this browser it goes in - kept by this browser only, and gone with its site ' +
+							: 'A pack in this browser - kept by this browser only, and gone with its site ' +
 								'data. Sign in to the site to put it in your library instead.',
 				},
+				anchor: { label: 'Anchor', type: 'select', options: anchorOptions },
+				namespace: {
+					label: 'Namespace', type: 'text', value: autoNamespace,
+					description: 'The first half of the piece\'s id, shared by everything in the pack.',
+				},
+			},
+			onFormChange: function (form) {
+				const target = targets[parseInt(form.where, 10)];
+				if (!target || String(form.namespace || '') !== autoNamespace) return;
+				autoNamespace = target.namespace;
+				this.setFormValues({ namespace: autoNamespace }, false);
 			},
 			onConfirm: function (result) {
 				const name = (result.name || '').trim().toLowerCase().replace(/[^a-z0-9_]/g, '_');
 				if (!name) {
 					Blockbench.showQuickMessage('Name a piece first', 2000);
-					return;
+					return false;
 				}
-				const namespace = (result.namespace || '').trim().toLowerCase().replace(/[^a-z0-9_.-]/g, '_') || 'mypack';
 				const target = targets[parseInt(result.where, 10)];
 				if (!target) {
 					Blockbench.showQuickMessage('Say where it goes', 2000);
-					return;
+					return false;
 				}
+				const typed = String(result.namespace || '').trim() !== autoNamespace;
+				const namespace = slugNamespace(result.namespace);
 				this.hide();
 				if (target.kind === 'new') {
 					return void askNewCollection(function (bag) {
 						makeNewPiece(bag, namespace, name, result.anchor);
 					});
+				}
+				if (target.kind === 'newpack') {
+					// Both trees in one folder, the way a checkout and the mod's own pack are: a
+					// piece is two halves, and a pack for pieces holds both.
+					return void newPack(function (dir) {
+						makeNewPiece({ kind: 'local', dir: dir }, typed ? namespace : namespaceOf(dir), name, result.anchor);
+					}, { title: 'New pack for ' + name, both: true });
 				}
 				makeNewPiece(target, namespace, name, result.anchor);
 			},
@@ -2741,41 +3330,97 @@
 		return formats;
 	}
 
+	/*
+	 * The pack cards: one template for the Packs... dialog and for the start page's Packs view,
+	 * which mounts the same component inline (item 2.6 of docs/plans/ux-round-5.md). Two
+	 * sections - your packs on the site, then the packs here - and a site pack whose working copy
+	 * is open here is ONE card, the site's, carrying the folder's verbs. The verbs a visitor
+	 * wants sit in the row; what used to be seven buttons in a line is under More.
+	 */
 	const PACKS_DIALOG_TEMPLATE = [
-		'<div class="armorpieces_packs">',
-		'	<p class="ap_dim">Every folder parts are read from and written to. The repository\'s own',
-		'	and the game\'s are found; the rest are yours to add and forget.',
+		'<div class="armorpieces_packs" :class="{ ap_inline: inline }">',
+		'	<p class="ap_dim" v-if="!inline">Every folder pieces are read from and written to.',
 		'	<template v-if="scope">The piece list shows <b>{{ scopeLabel }}</b> alone -',
 		'		<a href="#" @click.prevent="workIn(null)">show every pack</a>.</template>',
 		'	<template v-else>The piece list shows every pack at once, first found winning by name;',
 		'		<b>Work here</b> narrows it to one.</template></p>',
+		'	<template v-if="siteOrigin && hasAccounts">',
+		'		<h3 class="ap_h">Your packs on the site',
+		'			<span class="ap_dim" v-if="site && site.length"> - {{ site.length }}</span>',
+		'			<span class="ap_dim" v-else-if="site"> - none yet</span>',
+		'			<span class="ap_dim" v-else-if="signedIn === false"> - <a href="#" @click.prevent="signIn">sign in</a> to see them</span>',
+		'			<span class="ap_dim" v-else-if="siteError"> - {{ siteError }}</span>',
+		'			<span class="ap_dim" v-else> - reading...</span>',
+		'		</h3>',
+		'		<ul v-if="site && site.length">',
+		'			<li v-for="pack in site" :key="\'site:\' + pack.id" :class="{ ap_scoped: pack.here && pack.here.dir === scope }">',
+		'				<div class="ap_head">',
+		'					<span class="ap_name" :title="pack.here ? pack.here.dir : pack.id">{{ pack.name }}</span>',
+		'					<span class="ap_tag ap_here" v-if="pack.here && pack.here.dir === scope">working here</span>',
+		'					<span class="ap_tag ap_warn" v-if="pack.standing" :title="pack.standingNote || \'\'">withdrawn</span>',
+		'					<span class="ap_tag" v-else>{{ pack.visibility }}</span>',
+		'					<span class="ap_tag" v-if="pack.here">working copy is here</span>',
+		'					<span class="ap_tag ap_warn" v-if="pack.here && pack.here.draft.pending" :title="pack.here.draft.pending.why">{{ pendingText(pack.here.draft) }}</span>',
+		'				</div>',
+		'				<div class="ap_body"><span class="ap_dim">{{ pack.versions.length }} {{ pack.versions.length === 1 ? \'version\' : \'versions\' }} on the site',
+		'					<template v-if="pack.here"> - {{ pack.here.summary }} here</template>',
+		'					<template v-else> - not opened here</template></span></div>',
+		'				<div class="ap_ops">',
+		'					<button type="button" v-if="!pack.here" @click="open(pack)">Open</button>',
+		'					<button type="button" v-else-if="pack.here.dir !== scope" @click="workIn(pack.here)">Work here</button>',
+		'					<button type="button" v-else @click="workIn(null)">Show all packs</button>',
+		'					<button type="button" v-if="pack.here" @click="newPieceIn(pack.here)">New piece in it</button>',
+		'					<button type="button" v-if="pack.here" @click="saveToSite(pack.here)">Save to site</button>',
+		'					<button type="button" v-if="pack.here" @click="uploadVersion(pack.here)">Upload as a new version...</button>',
+		'					<a href="#" @click.prevent="openPage(pack)" title="Cut a version and offer it to the gallery there">Its page on the site</a>',
+		'					<span class="ap_spacer"></span>',
+		'					<details class="ap_more" v-if="pack.here"><summary>More</summary><div class="ap_menu">',
+		'						<button type="button" @click="open(pack)">Open again from the site</button>',
+		'						<button type="button" v-for="s in publishers" :key="s.id" @click="publish(pack.here, s)">{{ s.publishLabel }}</button>',
+		'						<button type="button" v-for="s in installers" :key="s.id" @click="install(pack.here, s)">{{ s.installLabel }}</button>',
+		'						<button type="button" v-if="pack.here.mine" @click="forget(pack.here)">Forget</button>',
+		'						<button type="button" v-else-if="pack.here.deletable" @click="remove(pack.here)">Delete</button>',
+		'					</div></details>',
+		'				</div>',
+		'			</li>',
+		'		</ul>',
+		'	</template>',
+		'	<h3 class="ap_h">{{ isApp ? \'On this computer\' : \'In this browser\' }}<span class="ap_dim" v-if="local.length"> - {{ local.length }}</span></h3>',
 		'	<ul>',
-		'		<li v-for="pack in packs" :key="pack.dir" :class="{ ap_scoped: pack.dir === scope }">',
+		'		<li v-for="pack in local" :key="pack.dir" :class="{ ap_scoped: pack.dir === scope }">',
 		'			<div class="ap_head">',
 		'				<span class="ap_name" :title="pack.dir">{{ pack.label }}</span>',
 		'				<span class="ap_tag ap_here" v-if="pack.dir === scope">working here</span>',
+		'				<span class="ap_tag" v-if="pack.draft">working copy of {{ pack.draft.name || \'a pack on the site\' }}</span>',
+		'				<span class="ap_tag ap_warn" v-if="pack.bundled" title="Unpacked from the editor bundle on every visit. What you make here is gone with the next build.">resets</span>',
+		'				<span class="ap_tag" v-else-if="pack.mod">the mod\'s own</span>',
 		'				<span class="ap_tag">{{ pack.kind }}</span>',
 		'				<span class="ap_tag" v-if="pack.format">format {{ pack.format }}</span>',
 		'				<span class="ap_tag" :title="\'From armorpieces-credits.json; All rights reserved without one\'">{{ pack.license }}</span>',
-		'				<span class="ap_tag ap_warn" v-else>no pack.mcmeta</span>',
+		'				<span class="ap_tag ap_warn" v-if="!pack.format">no pack.mcmeta</span>',
 		'			</div>',
 		'			<div class="ap_body"><span class="ap_dim">{{ pack.summary }}</span></div>',
 		'			<div class="ap_ops">',
 		'				<button type="button" v-if="pack.dir !== scope" @click="workIn(pack)">Work here</button>',
 		'				<button type="button" v-else @click="workIn(null)">Show all packs</button>',
-		'				<button type="button" v-for="s in installers" :key="s.id"',
-		'					@click="install(pack, s)">{{ s.installLabel }}</button>',
-		'				<button type="button" v-for="s in publishers" :key="s.id"',
-		'					@click="publish(pack, s)">{{ s.publishLabel }}</button>',
+		'				<button type="button" v-if="!pack.bundled" @click="newPieceIn(pack)">New piece in it</button>',
+		'				<button type="button" v-if="pack.draft" @click="saveToSite(pack)">Save to site</button>',
+		'				<button type="button" v-else-if="siteOrigin && !pack.bundled" @click="uploadNew(pack)">Upload to your library...</button>',
+		'				<button type="button" v-if="zip" @click="publish(pack, zip)">{{ zip.publishLabel }}</button>',
 		'				<span class="ap_spacer"></span>',
-		'				<button type="button" v-if="pack.mine" @click="forget(pack)">Forget</button>',
-		'				<button type="button" v-else-if="pack.deletable" @click="remove(pack)">Delete</button>',
+		'				<details class="ap_more"><summary>More</summary><div class="ap_menu">',
+		'					<button type="button" v-if="siteOrigin && !pack.draft && !pack.bundled" @click="uploadVersion(pack)">Upload as a new version of a pack on the site...</button>',
+		'					<button type="button" v-for="s in installers" :key="s.id" @click="install(pack, s)">{{ s.installLabel }}</button>',
+		'					<button type="button" v-for="s in publishers" :key="s.id" @click="publish(pack, s)">{{ s.publishLabel }}</button>',
+		'					<button type="button" v-if="pack.mine" @click="forget(pack)">Forget</button>',
+		'					<button type="button" v-else-if="pack.deletable" @click="remove(pack)">Delete</button>',
+		'				</div></details>',
 		'			</div>',
 		'		</li>',
-		'		<li v-if="!packs.length" class="ap_dim">No packs anywhere. Make one below.</li>',
+		'		<li v-if="!local.length" class="ap_dim">No packs here yet. Make one below.</li>',
 		'	</ul>',
 		'	<div class="ap_add">',
-		'		<button type="button" @click="create">New Pack...</button>',
+		'		<button type="button" @click="create">New pack...</button>',
 		'		<button type="button" v-if="canBrowse" @click="add">Add folder...</button>',
 		'		<button type="button" v-for="s in installers" :key="s.id"',
 		'			@click="installNew(s)">New pack from {{ s.label }}...</button>',
@@ -2784,9 +3429,12 @@
 	].join('\n');
 
 	const PACKS_DIALOG_CSS = [
-		'.armorpieces_packs ul { list-style: none; margin: 6px 0; padding: 0; max-height: 320px; overflow-y: auto; }',
+		'.armorpieces_packs ul { list-style: none; margin: 6px 0 10px; padding: 0; }',
+		'.armorpieces_packs:not(.ap_inline) ul { max-height: 320px; overflow-y: auto; }',
 		'.armorpieces_packs li { padding: 6px 8px; margin-bottom: 4px; background: var(--color-back); border-radius: 4px; }',
-		'.armorpieces_packs .ap_head { display: flex; align-items: center; gap: 6px; min-width: 0; }',
+		'.armorpieces_packs .ap_h { font-size: 0.78em; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; opacity: .6; margin: 10px 0 4px; }',
+		'.armorpieces_packs .ap_h a { text-transform: none; letter-spacing: 0; }',
+		'.armorpieces_packs .ap_head { display: flex; align-items: center; gap: 6px; min-width: 0; flex-wrap: wrap; }',
 		'.armorpieces_packs .ap_name { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--color-light); }',
 		'.armorpieces_packs .ap_tag { flex: none; font-size: 0.78em; padding: 1px 6px; border-radius: 3px; background: var(--color-ui); color: var(--color-subtle_text); }',
 		'.armorpieces_packs .ap_tag.ap_warn { color: var(--color-close); }',
@@ -2797,6 +3445,13 @@
 		'.armorpieces_packs .ap_ops { display: flex; align-items: center; gap: 6px; margin-top: 6px; flex-wrap: wrap; }',
 		'.armorpieces_packs .ap_spacer { flex: 1; }',
 		'.armorpieces_packs .ap_body button, .armorpieces_packs .ap_ops button { flex: none; }',
+		'.armorpieces_packs .ap_more { position: relative; flex: none; }',
+		'.armorpieces_packs .ap_more summary { cursor: pointer; list-style: none; padding: 2px 8px; border-radius: 4px; background: var(--color-button); color: var(--color-text); font-size: 0.9em; }',
+		'.armorpieces_packs .ap_more summary::-webkit-details-marker { display: none; }',
+		'.armorpieces_packs .ap_more summary::after { content: " \\25BE"; }',
+		'.armorpieces_packs .ap_more[open] summary { background: var(--color-accent); color: var(--color-light); }',
+		'.armorpieces_packs .ap_menu { position: absolute; right: 0; top: 100%; z-index: 5; min-width: 14rem; padding: 6px; margin-top: 2px; display: flex; flex-direction: column; gap: 4px; background: var(--color-ui); border: 1px solid var(--color-border); border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,.35); }',
+		'.armorpieces_packs .ap_menu button { text-align: left; }',
 		'.armorpieces_packs .ap_add { display: flex; gap: 6px; flex-wrap: wrap; }',
 		'.armorpieces_packs .ap_dim { color: var(--color-subtle_text); font-size: 0.9em; margin: 4px 0; }',
 	].join('\n');
@@ -2808,126 +3463,221 @@
 		'.armorpieces_library a { color: var(--color-accent); }';
 
 	/*
-	 * Packs...: the pack manager. Every root discovery already looks in, said out loud - what kind
-	 * of pack it is, whether the game will load it, how much of a piece each half has - with the
-	 * operations that used to be scattered across three menu entries attached to the pack they act
-	 * on. Installing and publishing are asked of the sources rather than hard-coded, so the
-	 * library 0.4.0 adds appears here as more buttons and no new dialog.
+	 * The manager as a Vue component, so the dialog and the start page mount the same thing.
+	 * Installing and publishing are asked of the sources rather than hard-coded, so a source
+	 * added later appears here as more buttons and no new dialog; the account's verbs are drawn
+	 * by name because they are three different things (save the working copy, a new pack, a
+	 * new version) and one "Upload..." hid that.
 	 */
+	function packsComponent(options) {
+		options = options || {};
+		return {
+			data: function () {
+				return {
+					inline: !!options.inline,
+					isApp: !!isApp,
+					local: [],
+					site: null,
+					signedIn: null,
+					siteError: '',
+					siteOrigin: siteOrigin(),
+					// False once the site answers 404 to the account API: a build served by no site
+					// with accounts (the standalone editor, the browser test) has no section to draw.
+					hasAccounts: true,
+					scope: packScope(),
+					canBrowse: canBrowseFolders(),
+					zip: packSources.find(function (s) { return s.id === 'zip'; }) || null,
+					// The generic sources: everything but the zip's export (drawn in the row) and
+					// the account's publish (drawn as its three verbs).
+					installers: packSources.filter(function (s) { return !!s.install; }),
+					publishers: packSources.filter(function (s) { return !!s.publish && s.id !== 'zip' && s.id !== 'account'; }),
+				};
+			},
+			computed: {
+				scopeLabel: function () { return this.scope ? packLabel(this.scope) : ''; },
+			},
+			mounted: function () { this.refresh(); },
+			methods: {
+				workIn: function (pack) {
+					setPackScope(pack ? pack.dir : '');
+					this.scope = packScope();
+					Blockbench.showQuickMessage(this.scope
+						? 'Working in ' + packLabel(this.scope) : 'Showing every pack', 2500);
+					if (options.onChange) options.onChange();
+				},
+				refresh: function () {
+					const vue = this;
+					this.scope = packScope();
+					const all = searchRoots().filter(function (dir) { return !checkoutOf(dir); }).map(function (dir) {
+						const info = packInfo(dir);
+						info.kind = packKind(info);
+						info.summary = info.parts
+							? info.parts + (info.parts === 1 ? ' piece' : ' pieces') +
+								' - ' + info.data + ' with a part file, ' + info.assets + ' with a model'
+							: 'no pieces yet';
+						return info;
+					});
+					this.local = all;
+					this.readSite(function () {
+						// A site pack opened here is one card: the site's, with the folder on it.
+						if (!vue.site) return;
+						const byId = {};
+						for (const info of all) if (info.draft) byId[info.draft.packId] = info;
+						for (const pack of vue.site) pack.here = byId[pack.id] || null;
+						vue.local = all.filter(function (info) { return !(info.draft && vue.site.some(function (p) { return p.id === info.draft.packId; })); });
+						vue.$forceUpdate();
+					});
+				},
+				readSite: function (then) {
+					const vue = this;
+					this.siteOrigin = siteOrigin();
+					if (!this.siteOrigin) { this.site = null; return; }
+					siteJson('/api/me/packs', function (data) {
+						vue.site = (data.packs || []).map(function (p) { return Object.assign({ here: null }, p); });
+						vue.signedIn = true;
+						vue.siteError = '';
+						then();
+					}, function (err) {
+						vue.site = null;
+						if (signedOut(err)) { vue.signedIn = false; vue.siteError = ''; }
+						// A 404 is a build served by no site with accounts - the standalone editor,
+						// the browser test - and then there is no section to draw.
+						else if (/answered 404/.test(String((err && err.message) || err))) { vue.hasAccounts = false; }
+						else { vue.signedIn = null; vue.siteError = 'the site did not answer'; }
+					});
+				},
+				pendingText: function (draft) {
+					return draft.pending && draft.pending.why === 'signed out' ? 'edits here, sign in to save them'
+						: draft.pending && draft.pending.why === 'edited here' ? 'edits here, not saved to the site'
+							: 'not saved to the site: ' + String((draft.pending && draft.pending.why) || '');
+				},
+				signIn: function () {
+					const vue = this;
+					signInDialog(function () { vue.refresh(); });
+				},
+				open: function (pack) {
+					const vue = this;
+					Blockbench.showQuickMessage('Opening ' + pack.name + '...', 2000);
+					openDraft(pack.id, pack.name, function () {
+						vue.refresh();
+						Blockbench.showQuickMessage('Working in ' + pack.name, 2500);
+						if (options.onChange) options.onChange();
+					}, function (err) {
+						Blockbench.showMessageBox({ title: 'Could not open the working copy', message: String((err && err.message) || err) });
+					});
+				},
+				openPage: function (pack) {
+					Blockbench.openLink(siteOrigin() + '/library/packs/' + pack.id + '/#publish');
+				},
+				newPieceIn: function (pack) {
+					if (options.beforeDialog) options.beforeDialog();
+					newPiece({ dir: pack.dir });
+				},
+				saveToSite: function (pack) {
+					const vue = this;
+					saveDraftNow(pack.dir, true, function () { vue.refresh(); });
+				},
+				uploadNew: function (pack) {
+					const vue = this;
+					uploadToAccount(pack.dir, 'new', function () { vue.refresh(); });
+				},
+				uploadVersion: function (pack) {
+					const vue = this;
+					uploadToAccount(pack.dir, 'version', function () { vue.refresh(); });
+				},
+				forget: function (pack) {
+					setUserPacks(userPacks().filter(function (dir) { return dir !== pack.dir; }));
+					this.refresh();
+				},
+				/*
+				 * The only destructive thing here, so it says what it is about to lose and counts
+				 * it. Offered only where forgetting would not work - a pack found by where it sits
+				 * rather than by being listed - because otherwise the author would have two
+				 * buttons for one intention and one of them would be the one that cannot be undone.
+				 */
+				remove: function (pack) {
+					const vue = this;
+					Blockbench.showMessageBox({
+						title: 'Delete this pack?',
+						message: pack.label + ' holds ' + pack.summary + '. Deleting it cannot be ' +
+							'undone - export it first if you want to keep a copy.',
+						buttons: ['Delete', 'Cancel'],
+						confirm: 1, cancel: 1,
+					}, function (answer) {
+						if (answer !== 0) return;
+						try {
+							fs.rmSync(pack.dir, { recursive: true, force: true });
+							setUserPacks(userPacks().filter(function (dir) { return dir !== pack.dir; }));
+							Blockbench.showQuickMessage('Deleted ' + pack.label, 3000);
+						} catch (err) {
+							console.error(err);
+							Blockbench.showMessageBox({
+								title: 'Could not delete',
+								message: String((err && err.message) || err),
+							});
+						}
+						vue.refresh();
+						if (options.onChange) options.onChange();
+					});
+				},
+				add: function () {
+					const vue = this;
+					browseForPack(function (dir) {
+						const list = userPacks();
+						if (list.indexOf(dir) === -1) list.push(dir);
+						setUserPacks(list);
+						vue.refresh();
+					});
+				},
+				create: function () {
+					const vue = this;
+					newPack(function () { vue.refresh(); if (options.onChange) options.onChange(); }, { both: true });
+				},
+				install: function (pack, source) {
+					const vue = this;
+					source.install(pack.dir, function (report) {
+						vue.refresh();
+						Blockbench.showQuickMessage(report, 3000);
+					});
+				},
+				/* Install into a folder that does not exist yet, which is how somebody else's
+				 * pack arrives without being merged into one of yours. */
+				installNew: function (source) {
+					const vue = this;
+					newPack(function (dir) {
+						source.install(dir, function (report) {
+							vue.refresh();
+							Blockbench.showQuickMessage(report, 3000);
+						});
+					}, { title: 'New pack from ' + source.label, mcmeta: false });
+				},
+				publish: function (pack, source) {
+					source.publish(pack.dir, function (report) {
+						Blockbench.showQuickMessage(report, 3000);
+					});
+				},
+			},
+			template: PACKS_DIALOG_TEMPLATE,
+		};
+	}
+
+	/* Packs...: the manager, in a dialog. */
 	function packsDialog() {
 		new Dialog({
 			id: ID + '_packs',
 			title: 'Armor Pieces Packs',
-			width: 640,
+			width: 680,
 			singleButton: true,
-			component: {
-				data: function () {
-					return {
-						packs: [],
-						scope: packScope(),
-						canBrowse: canBrowseFolders(),
-						installers: packSources.filter(function (s) { return !!s.install; }),
-						publishers: packSources.filter(function (s) { return !!s.publish; }),
-					};
-				},
-				computed: {
-					scopeLabel: function () { return this.scope ? packLabel(this.scope) : ''; },
-				},
-				mounted: function () { this.refresh(); },
-				methods: {
-					workIn: function (pack) {
-						setPackScope(pack ? pack.dir : '');
-						this.scope = packScope();
-						Blockbench.showQuickMessage(this.scope
-							? 'Working in ' + packLabel(this.scope) : 'Showing every pack', 2500);
-					},
-					refresh: function () {
-						this.scope = packScope();
-						this.packs = searchRoots().map(function (dir) {
-							const info = packInfo(dir);
-							info.kind = packKind(info);
-							info.summary = info.parts
-								? info.parts + (info.parts === 1 ? ' piece' : ' pieces') +
-									' - ' + info.data + ' with a part file, ' + info.assets + ' with a model'
-								: 'no pieces yet';
-							return info;
-						});
-					},
-					forget: function (pack) {
-						setUserPacks(userPacks().filter(function (dir) { return dir !== pack.dir; }));
-						this.refresh();
-					},
-					/*
-					 * The only destructive thing in this dialog, so it says what it is about to
-					 * lose and counts it. Offered only where forgetting would not work - a pack
-					 * found by where it sits rather than by being listed - because otherwise the
-					 * author would have two buttons for one intention and one of them would be
-					 * the one that cannot be undone.
-					 */
-					remove: function (pack) {
-						const vue = this;
-						Blockbench.showMessageBox({
-							title: 'Delete this pack?',
-							message: pack.label + ' holds ' + pack.summary + '. Deleting it cannot be ' +
-								'undone - export it first if you want to keep a copy.',
-							buttons: ['Delete', 'Cancel'],
-							confirm: 1, cancel: 1,
-						}, function (answer) {
-							if (answer !== 0) return;
-							try {
-								fs.rmSync(pack.dir, { recursive: true, force: true });
-								setUserPacks(userPacks().filter(function (dir) { return dir !== pack.dir; }));
-								Blockbench.showQuickMessage('Deleted ' + pack.label, 3000);
-							} catch (err) {
-								console.error(err);
-								Blockbench.showMessageBox({
-									title: 'Could not delete',
-									message: String((err && err.message) || err),
-								});
-							}
-							vue.refresh();
-						});
-					},
-					add: function () {
-						const vue = this;
-						browseForPack(function (dir) {
-							const list = userPacks();
-							if (list.indexOf(dir) === -1) list.push(dir);
-							setUserPacks(list);
-							vue.refresh();
-						});
-					},
-					create: function () {
-						const vue = this;
-						newPack(function () { vue.refresh(); });
-					},
-					install: function (pack, source) {
-						const vue = this;
-						source.install(pack.dir, function (report) {
-							vue.refresh();
-							Blockbench.showQuickMessage(report, 3000);
-						});
-					},
-					/* Install into a folder that does not exist yet, which is how somebody else's
-					 * pack arrives without being merged into one of yours. */
-					installNew: function (source) {
-						const vue = this;
-						newPack(function (dir) {
-							source.install(dir, function (report) {
-								vue.refresh();
-								Blockbench.showQuickMessage(report, 3000);
-							});
-						}, { title: 'New Pack from ' + source.label, mcmeta: false });
-					},
-					publish: function (pack, source) {
-						source.publish(pack.dir, function (report) {
-							Blockbench.showQuickMessage(report, 3000);
-						});
-					},
-				},
-				template: PACKS_DIALOG_TEMPLATE,
-			},
+			component: packsComponent({ inline: false, beforeDialog: function () { if (Dialog.open) Dialog.open.hide(); } }),
 		}).show();
+	}
+
+	/* The same manager, mounted in a page of the host's - the start page's Packs view. Returns
+	 * the instance, whose `refresh()` re-reads both sources. */
+	function mountPacks(host, options) {
+		const el = document.createElement('div');
+		host.appendChild(el);
+		return new Vue(packsComponent(Object.assign({ inline: true }, options || {}))).$mount(el);
 	}
 
 	/*
@@ -2940,11 +3690,14 @@
 		// A pack about to be filled from a zip brings its own pack.mcmeta, so asking what kind it
 		// is and what it says would be asking the author to guess at somebody else's file.
 		const wantMeta = options.mcmeta !== false;
+		// A pack for pieces holds both trees in one folder, the way a checkout does; asking
+		// which half it is would be asking the author to choose half a piece.
+		const both = !!options.both;
 		const formats = packFormats();
 		const form = {
 			name: { label: 'Folder name', type: 'text', value: '', placeholder: 'My Armor Pieces' },
 		};
-		if (wantMeta) {
+		if (wantMeta && !both) {
 			form.kind = {
 				label: 'Kind', type: 'select', value: 'datapack',
 				options: {
@@ -2986,6 +3739,7 @@
 						pack: { description: result.description || name, pack_format: format },
 					});
 					fs.mkdirSync(path.join(dir, result.kind === 'resourcepack' ? 'assets' : 'data'), { recursive: true });
+					if (both) fs.mkdirSync(path.join(dir, 'assets'), { recursive: true });
 				} else {
 					fs.mkdirSync(dir, { recursive: true });
 				}
@@ -5083,6 +5837,7 @@
 	// ---- the panel ----------------------------------------------------------------------------
 
 	let panel = null;
+	let startSection = null;
 
 	function pieceOptions() {
 		const options = {};
@@ -6858,10 +7613,11 @@
 				onChange: function () { libraryCache = null; },
 			}));
 			registered.push(new Setting(ID + '_checkin', {
-				name: 'Check in saves to your library',
-				description: 'A piece checked out of your library on the site goes back to it when you ' +
-					'save, a moment after the save is written here. Turn it off for offline or throwaway ' +
-					'work; Check In to My Library sends it by hand either way.',
+				name: 'Save to the site after saving here',
+				description: 'A piece checked out of your library, or a pack opened from the site as its ' +
+					'working copy, goes back to the site when you save, a moment after the save is written ' +
+					'here. Turn it off for offline or throwaway work; Check In to My Library and Save Working ' +
+					'Copy to Site send it by hand either way.',
 				category: 'edit',
 				type: 'checkbox',
 				value: true,
@@ -6958,11 +7714,18 @@
 					if (piece) checkinNow(piece.dataPack, true);
 				},
 			});
+			const saveDraftAction = new Action(ID + '_save_draft', {
+				name: 'Save Working Copy to Site',
+				description: 'Send this pack folder up as the working copy of the pack on the site it was opened from.',
+				icon: 'cloud_sync',
+				condition: function () { return !!draftOf(draftHere()); },
+				click: function () { saveDraftNow(draftHere(), true); },
+			});
 			const create = new Action(ID + '_new', {
 				name: 'New Armor Piece...',
 				description: 'Create the data, model and texture files for a new piece.',
 				icon: 'add_box',
-				click: newPiece,
+				click: function () { newPiece(); },
 			});
 			const openSkinAction = new Action(ID + '_open_skin', {
 				name: 'Open Armor Skin...',
@@ -7061,15 +7824,17 @@
 				name: 'Armor Pieces',
 				description: 'Browse, edit and preview Armor Pieces.',
 				icon: 'shield',
-				children: [open, create, save, checkin, '_',
+				children: [open, create, save, checkin, saveDraftAction, '_',
 					openSkinAction, newSkinAction, editSkinAction, saveSkinAction, '_',
 					packs, createPack, exportZip, '_', useGame, '_', signIn, signOutAction],
 			});
-			registered.push(open, save, create, checkin, openSkinAction, newSkinAction, editSkinAction,
+			registered.push(open, save, create, checkin, saveDraftAction, openSkinAction, newSkinAction, editSkinAction,
 				saveSkinAction, packs, createPack, exportZip, useGame, signIn, signOutAction, menu);
 			MenuBar.addAction(menu, 'tools');
 			registered.push(Blockbench.addCSS(PACKS_DIALOG_CSS));
 			registered.push(Blockbench.addCSS(LIBRARY_DIALOG_CSS));
+			registered.push(Blockbench.addCSS(PIECE_LIST_CSS));
+			startSection = startScreenSection(open, openSkinAction);
 
 			panel = new Panel(ID + '_panel', {
 				name: 'Armor Piece',
@@ -7313,43 +8078,18 @@
 				 * about why. Idempotent: a second call over the same pack re-imports into the same
 				 * folder, so it is a refresh rather than a second copy.
 				 */
-				openDraft: function (packId, name, done, fail) {
-					const id = String(packId || '').trim();
-					if (!id) return fail && fail(new Error('no pack id'));
-					const dir = path.join(packHome(), 'site-' + id.slice(0, 8));
-					fetchBytes(siteOrigin() + '/api/me/packs/' + id + '/draft', function (bytes) {
-						try {
-							fs.mkdirSync(dir, { recursive: true });
-							const scratch = path.join(tempDir(), 'draft.zip');
-							fs.writeFileSync(scratch, bytes);
-							tool('import_pack.py', [scratch, dir, '--force']);
-							const list = userPacks();
-							if (!list.includes(dir)) { list.push(dir); setUserPacks(list); }
-							setPackScope(dir);
-							if (done) done(dir);
-						} catch (err) {
-							if (fail) fail(err instanceof Error ? err : new Error(String(err)));
-						}
-					}, function (err) {
-						if (fail) fail(err instanceof Error ? err : new Error(String(err)));
-					}, siteOptions());
-				},
-				/* And back: the pack folder as this site pack's working copy. */
-				saveDraft: function (packId, dir, done, fail) {
-					const out = path.join(tempDir(), 'draft-out.zip');
-					try {
-						tool('export_pack.py', [dir, out]);
-					} catch (err) {
-						return fail && fail(err instanceof Error ? err : new Error(String(err)));
-					}
-					sendBytes(siteOrigin() + '/api/me/packs/' + String(packId) + '/draft',
-						fs.readFileSync(out), function (body) {
-							let answer = null;
-							try { answer = JSON.parse(body); } catch (err) { /* text */ }
-							if (done) done(answer || {});
-						}, function (err) { if (fail) fail(err); },
-						siteOptions({ contentType: 'application/zip', method: 'PUT' }));
-				},
+				openDraft: openDraft,
+				saveDraft: saveDraft,
+				draftOf: draftOf,
+				saveDraftNow: saveDraftNow,
+				// The front (docs/plans/ux-round-5.md): the manager and the piece list as components
+				// the start page mounts, the cards of the pieces here, and the New Armor Piece
+				// dialog with a pack preselected.
+				packsView: mountPacks,
+				pieceList: mountPieceList,
+				localCards: localCards,
+				newPiece: function (options) { newPiece(options || {}); },
+				uploadToAccount: uploadToAccount,
 				/*
 				 * Checkouts: one piece of your library, here, by hash. The new tab hands `origin`
 				 * the bag the card came from, so a save knows where to send it back.
@@ -7503,6 +8243,7 @@
 			registered = [];
 			panel = null;
 			skinPanel = null;
+			if (startSection) { startSection.delete(); startSection = null; }
 			anchorCache = null;
 			delete window[ID + '_api'];
 			if (typeof updateInterfacePanels === 'function') updateInterfacePanels();
