@@ -8,16 +8,16 @@
         "name": "The Triumph",
         "slots": {
           "helmet": {
-            "material": "gold"
+            "material": "golden"
           },
           "chestplate": {
-            "material": "gold"
+            "material": "golden"
           },
           "leggings": {
-            "material": "gold"
+            "material": "golden"
           },
           "boots": {
-            "material": "gold"
+            "material": "golden"
           }
         },
         "pieces": {

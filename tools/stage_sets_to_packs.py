@@ -25,7 +25,7 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STAGE = os.path.join(REPO, "src/main/java/com/mattjesmc/armorpieces/command/StageCommand.java")
 LANG = os.path.join(REPO, "src/main/resources/assets/armorpieces/lang/en_us.json")
 FITTINGS = os.path.join(REPO, "src/main/resources/data/armorpieces/armorpieces/fitting")
-TRIM_TAGS = os.path.join(REPO, "src/main/resources/data/minecraft/tags/trim_material")
+DATA = os.path.join(REPO, "src/main/resources/data")
 ARMOR_ITEM = {"gold": "golden"}
 CHECK = "--check" in sys.argv
 
@@ -42,8 +42,11 @@ def load(p):
 
 
 def trim_tag(tag):
-    name = tag.lstrip("#").split(":", 1)[1]
-    p = os.path.join(TRIM_TAGS, name + ".json")
+    # A fitting's materials tag is namespaced (#armorpieces:guard_metals) and lives under that
+    # namespace's tags/trim_material; this used to look only under minecraft's, which has none,
+    # so every metal fitting a set named was silently dropped.
+    ns, _, name = tag.lstrip("#").partition(":")
+    p = os.path.join(DATA, ns, "tags", "trim_material", name + ".json")
     if not os.path.exists(p):
         return []
     return [v["id"] if isinstance(v, dict) else v for v in load(p).get("values", [])]
@@ -142,10 +145,19 @@ for pack, entries in per_pack.items():
     path = os.path.join(REPO, "packs", pack, "datapack", "armorpieces-sets.json")
     doc = load(path) if os.path.exists(path) else {"sets": []}
     have = {s["id"].replace("-", "_"): i for i, s in enumerate(doc["sets"])}
-    # A set the pack already declares is the pack's, with its own curated description: kept as is.
-    # Only a set the file lacks is added, from the Java.
-    entries = [e for e in entries if e["id"] not in have]
+    # A set the pack already declares keeps its own id, title and curated description; what it
+    # WEARS follows the Java, which is the one place a set is typed in - so a piece the split
+    # moved (armorpieces:sash -> armorpieces_court:sash) moves here too. A set the file lacks is
+    # added whole.
+    refreshed = []
+    for e in list(entries):
+        if e["id"] in have:
+            declared = doc["sets"][have[e["id"]]]
+            if declared.get("set") != e["set"]:
+                declared["set"] = {**e["set"], "name": declared.get("title") or e["set"]["name"]}
+                refreshed.append(declared["id"])
+            entries.remove(e)
     doc["sets"].extend(entries)
-    print(f"{pack}: {[e['id'] for e in entries]} -> {os.path.relpath(path, REPO)}")
+    print(f"{pack}: added {[e['id'] for e in entries]}, refreshed {refreshed} -> {os.path.relpath(path, REPO)}")
     if not CHECK:
         io.open(path, "w", encoding="utf-8", newline="\n").write(json.dumps(doc, indent=2, ensure_ascii=False) + "\n")

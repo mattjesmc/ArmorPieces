@@ -30,8 +30,8 @@
             }
           },
           "brow": {
-            "id": "armorpieces_hunt:bone_mask",
-            "pack": "armorpieces-hunt",
+            "id": "armorpieces_hive:compound_eyes",
+            "pack": "armorpieces-hive",
             "material": "netherite",
             "fittings": {
               "armorpieces:gemstone": "minecraft:emerald"
@@ -62,63 +62,63 @@
             }
           },
           "collar": {
-            "id": "armorpieces:ruff",
-            "pack": "armorpieces",
-            "material": "netherite",
-            "fittings": {
-              "armorpieces:inlay": "lime"
-            }
-          },
-          "vambraces": {
-            "id": "armorpieces_hunt:claws",
-            "pack": "armorpieces-hunt",
+            "id": "armorpieces_hive:honeycomb_gorget",
+            "pack": "armorpieces-hive",
             "material": "netherite",
             "fittings": {
               "armorpieces:guard": "minecraft:netherite"
             }
           },
+          "vambraces": {
+            "id": "armorpieces_hive:chitin_bracers",
+            "pack": "armorpieces-hive",
+            "material": "netherite",
+            "fittings": {
+              "armorpieces:inlay": "lime"
+            }
+          },
           "belt": {
-            "id": "armorpieces:chain_belt",
-            "pack": "armorpieces",
+            "id": "armorpieces_hive:spinneret_belt",
+            "pack": "armorpieces-hive",
             "material": "netherite",
             "fittings": {
               "armorpieces:guard": "minecraft:netherite"
             }
           },
           "tassets": {
-            "id": "armorpieces:mail_fringe",
-            "pack": "armorpieces",
+            "id": "armorpieces_hive:abdomen_plates",
+            "pack": "armorpieces-hive",
             "material": "netherite",
             "fittings": {
-              "armorpieces:guard": "minecraft:netherite"
+              "armorpieces:inlay": "lime"
             }
           },
           "knees": {
-            "id": "armorpieces_hunt:fanged_cop",
-            "pack": "armorpieces-hunt",
+            "id": "armorpieces_hive:spider_cops",
+            "pack": "armorpieces-hive",
             "material": "netherite",
             "fittings": {
               "armorpieces:gemstone": "minecraft:emerald"
             }
           },
           "spurs": {
-            "id": "armorpieces_hunt:talons",
-            "pack": "armorpieces-hunt",
+            "id": "armorpieces_hive:stinger_spurs",
+            "pack": "armorpieces-hive",
             "material": "netherite",
             "fittings": {
               "armorpieces:guard": "minecraft:netherite"
             }
           },
           "greaves": {
-            "id": "armorpieces_hunt:shin_spikes",
-            "pack": "armorpieces-hunt",
+            "id": "armorpieces_hive:silverfish_greaves",
+            "pack": "armorpieces-hive",
             "material": "netherite",
             "fittings": {
               "armorpieces:guard": "minecraft:netherite"
             }
           }
         },
-        "skin": "armorpieces:lamellar"
+        "skin": "armorpieces_court:lamellar"
       }
     }
   ]

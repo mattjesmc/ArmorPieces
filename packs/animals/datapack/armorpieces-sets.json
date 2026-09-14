@@ -22,8 +22,8 @@
         },
         "pieces": {
           "crest": {
-            "id": "armorpieces:comb",
-            "pack": "armorpieces",
+            "id": "armorpieces_animals:rooster_comb",
+            "pack": "armorpieces-animals",
             "material": "copper",
             "fittings": {
               "armorpieces:guard": "minecraft:copper"
@@ -67,9 +67,12 @@
             }
           },
           "vambraces": {
-            "id": "armorpieces:mittens",
-            "pack": "armorpieces",
-            "material": "copper"
+            "id": "armorpieces_animals:cat_paws",
+            "pack": "armorpieces-animals",
+            "material": "copper",
+            "fittings": {
+              "armorpieces:guard": "minecraft:copper"
+            }
           },
           "belt": {
             "id": "armorpieces_animals:donkey_tail",
@@ -80,8 +83,8 @@
             }
           },
           "tassets": {
-            "id": "armorpieces_hunt:pelt",
-            "pack": "armorpieces-hunt",
+            "id": "armorpieces_animals:sheep_fleece",
+            "pack": "armorpieces-animals",
             "material": "copper",
             "fittings": {
               "armorpieces:inlay": "brown"
@@ -104,11 +107,11 @@
             }
           },
           "greaves": {
-            "id": "armorpieces:puttees",
-            "pack": "armorpieces",
+            "id": "armorpieces_animals:llama_wraps",
+            "pack": "armorpieces-animals",
             "material": "copper",
             "fittings": {
-              "armorpieces:inlay": "green"
+              "armorpieces:inlay": "red"
             }
           }
         }

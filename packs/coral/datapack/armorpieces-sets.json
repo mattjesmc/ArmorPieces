@@ -8,16 +8,16 @@
         "name": "The Reef",
         "slots": {
           "helmet": {
-            "material": "turtle_scute"
+            "material": "leather"
           },
           "chestplate": {
-            "material": "turtle_scute"
+            "material": "leather"
           },
           "leggings": {
-            "material": "turtle_scute"
+            "material": "leather"
           },
           "boots": {
-            "material": "turtle_scute"
+            "material": "leather"
           }
         },
         "pieces": {
@@ -30,14 +30,17 @@
             }
           },
           "brow": {
-            "id": "armorpieces:spectacle_visor",
-            "pack": "armorpieces",
-            "material": "copper"
+            "id": "armorpieces_coral:coral_visor",
+            "pack": "armorpieces-coral",
+            "material": "copper",
+            "fittings": {
+              "armorpieces:guard": "minecraft:copper"
+            }
           },
           "horns": {
             "id": "armorpieces_coral:axolotl_frills",
             "pack": "armorpieces-coral",
-            "material": "turtle_scute"
+            "material": "copper"
           },
           "pauldrons": {
             "id": "armorpieces_coral:kelp_mantle",
@@ -50,7 +53,7 @@
           "back": {
             "id": "armorpieces_coral:spine_ridge",
             "pack": "armorpieces-coral",
-            "material": "turtle_scute"
+            "material": "copper"
           },
           "collar": {
             "id": "armorpieces_coral:nautilus_gorget",
@@ -61,34 +64,46 @@
             }
           },
           "vambraces": {
-            "id": "armorpieces:wraps",
-            "pack": "armorpieces",
-            "material": "leather"
+            "id": "armorpieces_coral:starfish_bracers",
+            "pack": "armorpieces-coral",
+            "material": "copper",
+            "fittings": {
+              "armorpieces:guard": "minecraft:copper"
+            }
           },
           "belt": {
-            "id": "armorpieces:cord",
-            "pack": "armorpieces",
-            "material": "leather"
+            "id": "armorpieces_coral:sea_pickle_belt",
+            "pack": "armorpieces-coral",
+            "material": "copper",
+            "fittings": {
+              "armorpieces:inlay": "green"
+            }
           },
           "tassets": {
             "id": "armorpieces_coral:scale_skirt",
             "pack": "armorpieces-coral",
-            "material": "turtle_scute"
+            "material": "copper"
           },
           "knees": {
-            "id": "armorpieces:poleyns",
-            "pack": "armorpieces",
-            "material": "turtle_scute"
+            "id": "armorpieces_coral:barnacle_cops",
+            "pack": "armorpieces-coral",
+            "material": "copper",
+            "fittings": {
+              "armorpieces:guard": "minecraft:copper"
+            }
           },
           "spurs": {
-            "id": "armorpieces:streamers",
-            "pack": "armorpieces",
-            "material": "copper"
+            "id": "armorpieces_coral:dolphin_flukes",
+            "pack": "armorpieces-coral",
+            "material": "copper",
+            "fittings": {
+              "armorpieces:guard": "minecraft:copper"
+            }
           },
           "greaves": {
             "id": "armorpieces_coral:swim_fins",
             "pack": "armorpieces-coral",
-            "material": "turtle_scute"
+            "material": "copper"
           }
         }
       }
@@ -123,8 +138,8 @@
             }
           },
           "brow": {
-            "id": "armorpieces:visor",
-            "pack": "armorpieces",
+            "id": "armorpieces_knightly:visor",
+            "pack": "armorpieces-knightly",
             "material": "diamond"
           },
           "horns": {
@@ -136,8 +151,8 @@
             }
           },
           "pauldrons": {
-            "id": "armorpieces:lames",
-            "pack": "armorpieces",
+            "id": "armorpieces_knightly:lames",
+            "pack": "armorpieces-knightly",
             "material": "diamond",
             "fittings": {
               "armorpieces:guard": "minecraft:copper"
@@ -152,21 +167,21 @@
             }
           },
           "collar": {
-            "id": "armorpieces:gorget",
-            "pack": "armorpieces",
+            "id": "armorpieces_knightly:gorget",
+            "pack": "armorpieces-knightly",
             "material": "diamond"
           },
           "vambraces": {
-            "id": "armorpieces:bangles",
-            "pack": "armorpieces",
+            "id": "armorpieces_court:bangles",
+            "pack": "armorpieces-court",
             "material": "diamond",
             "fittings": {
               "armorpieces:gemstone": "minecraft:lapis"
             }
           },
           "belt": {
-            "id": "armorpieces:sash",
-            "pack": "armorpieces",
+            "id": "armorpieces_court:sash",
+            "pack": "armorpieces-court",
             "material": "lapis",
             "fittings": {
               "armorpieces:inlay": "light_blue",
@@ -182,16 +197,16 @@
             }
           },
           "knees": {
-            "id": "armorpieces:garters",
-            "pack": "armorpieces",
+            "id": "armorpieces_court:garters",
+            "pack": "armorpieces-court",
             "material": "diamond",
             "fittings": {
               "armorpieces:inlay": "light_blue"
             }
           },
           "spurs": {
-            "id": "armorpieces:streamers",
-            "pack": "armorpieces",
+            "id": "armorpieces_court:streamers",
+            "pack": "armorpieces-court",
             "material": "diamond",
             "fittings": {
               "armorpieces:inlay": "light_blue"
@@ -206,7 +221,7 @@
             }
           }
         },
-        "skin": "armorpieces:scale"
+        "skin": "armorpieces_court:scale"
       }
     }
   ]

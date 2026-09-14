@@ -51,8 +51,8 @@
             }
           },
           "back": {
-            "id": "armorpieces:pinions",
-            "pack": "armorpieces",
+            "id": "armorpieces_court:pinions",
+            "pack": "armorpieces-court",
             "material": "copper"
           },
           "collar": {
@@ -72,8 +72,8 @@
             }
           },
           "belt": {
-            "id": "armorpieces:cord",
-            "pack": "armorpieces",
+            "id": "armorpieces_court:cord",
+            "pack": "armorpieces-court",
             "material": "copper",
             "fittings": {
               "armorpieces:inlay": "brown"
@@ -112,7 +112,7 @@
             }
           }
         },
-        "skin": "armorpieces:brigandine"
+        "skin": "armorpieces_wayfarer:brigandine"
       }
     }
   ]
