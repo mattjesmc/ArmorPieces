@@ -1,0 +1,138 @@
+# Brief: {name}
+
+A piece of **{title}** (`{ns}`) — {look}.
+
+From the `{socket}` row of the {table} table:
+
+> {line}
+
+Everything you need is in this brief. Do not open other briefs, plans or tables.
+
+## What to create
+
+    name:          {id}
+    anchor:        {socket}
+    namespace:     {ns}
+    datapack:      {packdir}\datapack
+    resourcepack:  {packdir}\resourcepack
+
+Both pack paths are required. Leaving either out writes the piece into the mod itself, which is
+wrong and is not something you can undo from inside Blockbench.
+
+Then, before you paint anything:
+
+    armorpieces_set_part {{ name: "{name}",
+                           fittings: [{fitlist}],
+                           static: true,
+                           recipe: {{ centre: "{centre}", craftable: true }} }}
+
+**Fittings:** {fitdesc}
+**Static layer: yes.** {staticwhy}
+**Effects: none. Loot: none in YOUR call — leave `loot` out entirely.** The piece joins {loot}
+afterwards, in the repo half, by one line in a tag file; a session must not invent a loot row.
+The recipe above is the other way it is had; `{centre}` is confirmed free against every
+template centre in the project.
+
+So this piece has **three sheets**: the greyscale master `part`, the colour layer `part_static`,
+and the greyscale mask `part_{fit0}`.
+
+## The three surfaces, and which cube gets which
+
+A piece is drawn from three sheets and **they stack** — `recolour(master, static, palette)`, then
+one `applyMask` per fitting:
+
+    MATERIAL   `part`            greyscale master, recoloured through the TRIM material's ramp
+    STATIC     `part_static`     real colour, painted OVER the recoloured master
+    FITTING    `part_{fit0}`{fitpad}  greyscale mask over both, filled by the PLAYER
+
+**Static hides material** — a static cube stops answering the trim forever. **An empty fitting costs
+nothing** — its mask is not read until a player fills it, so a masked cube still answers the trim
+until then, and a static layer *under* a mask is the default look with the fitting as an override.
+
+{material}
+
+## The rig, in Blockbench coordinates
+
+{rig}
+    the `{socket}` anchor       {anchor}
+
+Front is **negative z**. {mirror}
+
+**Check the anchor before you build.** The reply to `armorpieces_new` prints it and it should read
+`{anchor}`. **If it prints anything else, stop and tell me** — every coordinate below is measured
+from that point.
+
+**The check only measures your own armor shell.** A `back` piece gets no `past helmet` line at all,
+because the helmet is not its shell. So the check will **not** warn you about running into a shell
+that belongs to a different armor piece. Every coordinate below already clears the ones that
+matter; do not move them toward another shell.
+
+## Shape
+
+{intent}
+
+**This piece has no rotations.** Every bone stays at rotation `0`. If you find yourself computing a
+sine, you have misread the brief — stop and re-read it.
+
+- One bone `base` at the anchor. Rename the starter bone `main` to `base`; never name a bone `root`;
+  remove the starter cube. If a bone and a cube end up sharing a name, call `list_outline` for the
+  uuid rather than addressing by name.
+
+{cubelist}
+
+**{n} cubes in total is the budget**, and there is no {np1}th.
+
+**Envelope budget.** Stay inside `{budget_bb}`.
+
+**The same budget in the check's own frame**, so you never have to convert. The check reports
+**bone-local, +Y down, from the BONE'S PIVOT** — {pivot}. For this socket:
+
+    {conv}
+
+and your budget in that frame is
+
+    {budget_check}
+
+Compare the check's envelope line against **those** numbers.{pairspan}
+
+**Neighbours.** In Blockbench coordinates:
+
+| piece | reaches | what it tells you |
+|---|---|---|
+{neightable}
+
+## Paint
+
+One call per sheet: master first, then static, then the mask.
+
+**Master** — values are positions on the trim ramp, so read them as light and dark, not colour:
+
+{paint}
+
+**Static** — real colour, `#rrggbb`, and it stays that colour:
+
+{statictable}
+
+**Mask `part_{fit0}`** — flat **140**, on {fitwhere}. 140 is the value every mask in this project
+uses.
+
+## Done when
+
+- [ ] The check is clean, or every `!` left standing is one this brief allows.
+- [ ] Envelope inside the budget above, **reported in the check's frame**.{pairdone}
+- [ ] All three sheets painted — master, `part_static`, `part_{fit0}`. `list_textures` is the list;
+      an empty sheet is a defect, not a subtlety.
+- [ ] Saved, and the tab closed.
+
+**If a `!` COPLANAR appears against a piece on a DIFFERENT socket** — one you are worn *with*,
+not one you replace — you do not have to stop. **Nudge your own face by 0.1 away from the shared
+plane, repaint that face, and carry on**, staying inside the budget above. Say in your report which
+face you moved and why. A shared plane z-fights in game, so moving is always right; it is only the
+size of the move that needed permission, and this paragraph is that permission.
+
+**Allowed to force:** nothing else. If any other `!` stands, stop and ask me.
+
+## Lessons
+
+<!-- Filled in after the session, from its report. -->
+

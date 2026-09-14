@@ -1,0 +1,17 @@
+{
+  "asset_id": "armorpieces_wayfarer:gambeson",
+  "description": {
+    "translate": "skin.armorpieces_wayfarer.gambeson"
+  },
+  "loot": [
+    {
+      "table": "minecraft:chests/village/village_armorer",
+      "weight": 1,
+      "chance": 0.08
+    }
+  ],
+  "former_ids": [
+    "armorpieces:gambeson"
+  ],
+  "uid": "ap1kidlp7gzaq25y27f5xxq"
+}

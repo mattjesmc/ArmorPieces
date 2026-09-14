@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_wayfarer:pouch_belt",
+  "description": {
+    "translate": "decoration.armorpieces_wayfarer.pouch_belt"
+  },
+  "anchors": [
+    "belt"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "former_ids": [
+    "armorpieces:pouch_belt"
+  ],
+  "uid": "ap1dvolbw7emaejdt7zuxaa"
+}

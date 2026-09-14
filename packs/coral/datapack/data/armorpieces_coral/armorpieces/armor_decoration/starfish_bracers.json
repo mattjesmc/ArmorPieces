@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_coral:starfish_bracers",
+  "description": {
+    "translate": "decoration.armorpieces_coral.starfish_bracers"
+  },
+  "anchors": [
+    "vambraces"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1pp7c7vg5xnibkykbcyca"
+}

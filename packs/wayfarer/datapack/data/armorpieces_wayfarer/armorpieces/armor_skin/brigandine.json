@@ -1,0 +1,17 @@
+{
+  "asset_id": "armorpieces_wayfarer:brigandine",
+  "description": {
+    "translate": "skin.armorpieces_wayfarer.brigandine"
+  },
+  "loot": [
+    {
+      "table": "minecraft:chests/pillager_outpost",
+      "weight": 1,
+      "chance": 0.06
+    }
+  ],
+  "former_ids": [
+    "armorpieces:brigandine"
+  ],
+  "uid": "ap1j7jumppwa4dhlnfsxc5q"
+}

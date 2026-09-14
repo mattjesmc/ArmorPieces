@@ -1,0 +1,25 @@
+{
+  "asset_id": "armorpieces_knightly:spurs",
+  "description": {
+    "translate": "decoration.armorpieces_knightly.spurs"
+  },
+  "anchors": [
+    "spurs"
+  ],
+  "loot": [
+    {
+      "table": "minecraft:chests/abandoned_mineshaft",
+      "weight": 1,
+      "chance": 0.05
+    },
+    {
+      "table": "minecraft:chests/pillager_outpost",
+      "weight": 1,
+      "chance": 0.05
+    }
+  ],
+  "former_ids": [
+    "armorpieces:spurs"
+  ],
+  "uid": "ap1wory3ukrmdowlpxg4ika"
+}

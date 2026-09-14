@@ -1,10 +1,11 @@
 # Additive packs
 
-> **Status (2026-09-08): steps 1 to 4 are BUILT** — working copy only, committed nowhere. Step 1
-> (the move table) and step 2 (tolerant decode) are `docs/plans/compatibility.md`'s, committed as
-> `3fec698`; step 3 (`packs/legacy`) and step 4 (`tools/check_additive.py`, in the gate's tier 0) are
-> this session's. See [As built](#as-built). Steps 5 (versioned artifacts) and 6 (the config switch)
-> are not.
+> **Status (2026-09-13): ALL SIX STEPS BUILT.** Steps 5 and 6 landed on 2026-09-13 — see
+> [As built, steps 5 and 6](#as-built-steps-5-and-6-2026-09-13) — with step 5 cut down to what the
+> 0.4.0 floor left of it: a pack **says which mod it needs** and everything that lists packs
+> respects it; nothing is ported between versions, because the id that names a piece never changes.
+> Steps 1 to 4 were built on 2026-09-08 (step 1 and 2 are `docs/plans/compatibility.md`'s,
+> committed as `3fec698`; 3 and 4 that session's, see [As built](#as-built)).
 >
 > **Corrected 2026-09-10.** The restore pack is **not** the compatibility answer and this document
 > should never have said it was — `docs/plans/compatibility.md` §1 and §2, built and verified the
@@ -149,6 +150,18 @@ lists resolve, because `varangian` comes back with the pack and `scale` and `lam
 
 ## Versioned packs in the library
 
+> **Superseded 2026-09-13.** Two things this section did not know: the compatibility floor is
+> **0.4.0** — *"backwards support stops at <0.4.0"* (the user, 2026-09-10) — so there is no 0.3
+> target to build an artifact for; and the site grew its own format profiles
+> (`docs/plans/storage.md` §1), which own "one zip per pack format". What remains is the part that
+> does not depend on either: **a pack says which mod version it needs, and everything that lists
+> packs respects it.** Built as `armorpieces.requires` in `pack.mcmeta`; see
+> [As built, steps 5 and 6](#as-built-steps-5-and-6-2026-09-13). The porting half below — rewriting a
+> pack's cross-pack ids through the move table for an older mod — was never the id system's job
+> and is not built: the **uid** is the identity of a piece across every pack and every version, and
+> the namespaced path moved exactly once, at the split, which `former_ids` covers. Nothing in a
+> pack is rewritten for any version, ever.
+
 **The driver is not pack formats. It is cross-pack references.** Animals' Menagerie borrows
 `armorpieces:pelt`, which on 0.4.0 is `armorpieces_hunt:pelt`. A pack's *outfits* are therefore
 version-dependent even when its pieces are not, and the same pack built for 0.3.0 and for 0.4.0
@@ -189,6 +202,10 @@ It is cheap, and it would have caught the full-snapshot hazard on its own. Run i
 ---
 
 ## The switch
+
+> **Built 2026-09-13**, as designed, with the two open questions answered: `parts.disabled` takes
+> all four registries, and the client learns the switch through one packet. See
+> [As built, steps 5 and 6](#as-built-steps-5-and-6-2026-09-13).
 
 Removing content is a setting. The server config already has the right shape:
 `ArmorPiecesServerConfig` (`config/ArmorPiecesServerConfig.java:84`) holds `enabled`,
@@ -297,18 +314,104 @@ merges those rather than letting one win. 787 definitions across 8 sources, none
 
 ---
 
+## As built, steps 5 and 6 (2026-09-13)
+
+**Step 6, the switch — `config/PartsSwitch.java`.** The `parts` section of
+`armorpieces-server.json`: `mod_parts` (the whole `armorpieces` namespace in one line) and
+`disabled` (ids and `#tags`; one list, looked up in the **member's own registry**, so a fitting tag
+switches off fittings and a part sharing the tag's name is untouched). One question,
+`offers(holder, registries)`, asked at every door a member is *offered* through and nowhere on the
+read or render path:
+
+| where | what |
+| --- | --- |
+| `DecorationLootTables.Offers.offer` | the one door every loot route ends in; a refused member does not raise the pool's chance either |
+| `TemplateEntry.candidates`, `SetDecorationFunction.fitting` | the foreign-table entry and the armor-dressing function |
+| the four `Smithing*Recipe.matches` | a template carrying a switched-off member lays in the slot and crafts nothing (the level is only touched when the switch restricts, so the recipe tests keep their `NO_LEVEL`) |
+| `RecipeManagerMixin` → `OfferedRecipes.keep` | a shaped/shapeless recipe whose result carries a switched-off part, skin, cloth or fitting is dropped as the recipes load, so it is not in the recipe book or `/recipe` either |
+| `ModCreativeTabs` | filtered through `PartsSwitch.shown()` |
+
+**The tag trap, and why the predicate takes a provider.** During loot loading and recipe loading the
+holders' own tags are NOT bound yet — vanilla binds them after the listeners run — so `holder.is(tag)`
+would silently miss on a fresh load. The predicate resolves a tag through the caller's
+`HolderGetter.Provider` (the loading provider, which carries the pending tags; the level's at
+runtime) and compares by key, the way `MemberSet` already does.
+
+**The client.** The creative tab is built on the client from its own registries, so the server
+tells each player its `parts` section on join and after every reload
+(`network/PartsSwitchPayload`, the mod's first and only packet); the client keeps it in
+`PartsSwitch.told`, forgets it on disconnect, and clears `CreativeModeTabs.CACHED_PARAMETERS`
+through an accessor so the next look at the creative screen rebuilds the tab. On a `/reload` the
+loot and the recipes move at once; the tab is rebuilt when the screen is next opened.
+
+**Tests** (`PartsSwitchTest`, `ConfigCodecTest`, `LootTablesTest` ×3, `OfferedRecipesTest`): by id,
+by tag, by namespace, across registries, an inline holder always offered, a line that is not an id
+refused as the file is read; the write codec holds the nested section to the same
+every-knob-written rule; the loot fixture's shared member dropped from both groups with the
+table's chance untouched, a tag taking a group's every member and the group out of the sources,
+`mod_parts: false` emptying every table the fixture names; a template recipe dropped and a
+smithing match refused — the last through `Bench.level()`, an allocated `ServerLevel` with only
+`registryAccess` filled in; and `CreativeTabTest` builds the tab the way the client does (the
+bootstrap registers it now) and sees a switched-off part's template gone, every fitting gone under
+`#armorpieces:common`, and the server's word outranking the local file. 571 tests green.
+
+**The trap the JVM could not see: "Components not bound yet".** The first cut of `OfferedRecipes`
+asked a recipe what it makes by `assemble(CraftingInput.EMPTY)`, which builds an `ItemStack` — and
+on a real world load that throws, because an item's default components are bound to the level's
+registries AFTER the reload listeners run. The tests bake the components first and never met it;
+the first `create_world` did, and the world did not open. It reads the result **template** now
+(`ShapedRecipeAccessor`/`ShapelessRecipeAccessor` → `ItemStackTemplate.components()`, the patch
+alone with `DataComponentMap.EMPTY` as the fallback), which is the item and the component patch and
+never a stack. Anything else that runs inside a reload listener must not make a stack either.
+
+**Seen in the game** (26.2 dev client, flat creative world, `parts.disabled: ["armorpieces:visor",
+"#armorpieces:knightly"]`): the world opens; `/armorpieces loot groups` ends with *30 of the 81
+installed parts, skins, cloths and fittings are switched off*; `/recipe give @a
+armorpieces:template_visor` is *Unknown recipe* while `template_chain_of_office` unlocks; the log
+says *14 template recipe(s) dropped*; `loot explain stronghold_corridor` shows knightly offering 9
+members (its five skins and four fittings, no parts) and 3,000 rolls hand out skin and fitting
+templates only. The file rewritten to `["armorpieces:circlet"]` and `/reload`: *1 of the 81*, the
+visor's recipe back, the circlet's unknown, knightly offering 39 again. The payload registered and
+the join raised nothing; the tab itself was not photographed - no bridge tool opens the creative
+screen - which is why the JVM test builds it instead.
+
+**Step 5, the floor — `armorpieces.requires`.** Every pack half's `pack.mcmeta` carries
+`"armorpieces": {"requires": "0.4.0"}` beside the game's `pack` section: a section the game ignores
+(it reads sections by name) and the tools read. `pack_manifest.py` reports it (the higher of two
+halves), `export_pack.py` notes a pack without one and exports it anyway, `check_additive.py`
+fails a pack half in this repository that says nothing, says less than 0.4.0 or disagrees with its
+other half, the plugin writes it into every pack it makes (`newPackMeta`, from `mod_version` in
+`gradle.properties`), and the library build (`make_library.mjs`) reads it out of a submitted zip's
+manifest into the served index as `requires`. The plugin's library dialog shows `needs 0.4.0` and
+greys out *Install* on a toolkit older than that (`modVersion()` against `compareVersions`;
+unknown on either side refuses nothing); the site's pack page and gallery cards say it; the site's
+assembler stamps the section into every zip it builds and says it in the description.
+
+**The mod's own entry is an `archive`.** `library/entries/armorpieces.json` says `archive: true`:
+the site's pack page shows *Ships with the mod* and no download, the gallery card says so, and the
+editor asks before installing a copy — a question rather than a refusal, because installing a copy
+is still the way to fork a piece of the mod's into a pack of your own, and `check_additive` reports
+the duplicate ids as it should.
+
+**What is deliberately not built.** No artifact per version, no `--for`, no id port — see the note
+under [Versioned packs in the library](#versioned-packs-in-the-library). No library entry for
+`packs/legacy` yet: an entry needs a hosted zip, and every pack publishes at the 0.4.0 release, so
+it is a line on that release's checklist (`requires: 0.4.0`, and it is the one pack whose entry
+should say why it exists).
+
 ## Open
 
+- ~~**Whether `parts.disabled` should also take skins, cloths and fittings.**~~ **Yes, built** — one
+  list, the member's own registry.
+- ~~**What `"for": "0.4"` matches.**~~ **Replaced** by `requires`, a mod version floor ("this or
+  later"), compared numerically per part. A range was the more annoying one to get wrong, and
+  with the 0.4.0 floor nothing ever needs an upper bound.
 - **Does the restore pack carry the three retired outfits?** It would duplicate the ones the Wild
   Hunt, Coral and the Hive now declare. Leaving them out is the recommendation, and is what was
   built.
 - **Licence.** ARR like the mod, since the art is the mod's, rather than CC BY like Animals and
   Coral. Same open question as the three packs the split created. Built as ARR, copied from the
   Wild Hunt's credits file.
-- **What "for": "0.4"` matches.** A mod version, a range, or a pack-format number. A range is
-  probably right and is the more annoying one to get wrong.
-- **Whether `parts.disabled` should also take skins, cloths and fittings.** The same predicate would
-  serve all four registries, and "full customizability" reads like it should.
 - ~~**Whether the raw unresolved entries should be visible**~~ — **answered, and then answered
   again.** Built 2026-09-08 as a count line with the ids behind F3+H; corrected 2026-09-10 to put
   the ids and the pack name on the face of the tooltip, because "naming nothing else" leaves a

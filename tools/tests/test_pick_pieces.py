@@ -74,24 +74,30 @@ def make_pack(root: Path, namespace: str = "somebody", credits: dict | None = No
 
 class ManifestTests(unittest.TestCase):
     def test_the_mods_own_pack(self):
+        # The mod itself ships no piece and no skin since the split of 2026-09-14 finished what
+        # 2026-09-07 started (docs/plans/main-pack-split.md): its content is the three built-in
+        # packs the jar carries, checked as packs/court here. The cloths stayed with the engine.
         m = pack_manifest.manifest([MOD])
-        # 66 since the split of 2026-09-07 moved 25 pieces and 5 skins into content packs; see
-        # docs/plans/main-pack-split.md. The moved ones are checked through packs/legacy below.
-        self.assertEqual(m["counts"]["pieces"], 66)
-        self.assertGreaterEqual(m["counts"]["skins"], 9)
+        self.assertEqual(m["counts"]["pieces"], 0)
+        self.assertEqual(m["counts"]["skins"], 0)
         self.assertEqual(m["counts"]["cloths"], 2)
-        circlet = next(p for p in m["pieces"] if p["id"] == "armorpieces:circlet")
+        court = ROOT / "packs" / "court"
+        m = pack_manifest.manifest([court / "datapack", court / "resourcepack"])
+        self.assertEqual(m["counts"]["pieces"], 23)
+        self.assertEqual(m["counts"]["skins"], 2)
+        circlet = next(p for p in m["pieces"] if p["id"] == "armorpieces_court:circlet")
         self.assertEqual(circlet["label"], "Circlet")
         self.assertEqual(circlet["anchor"], "brow")
         self.assertEqual(circlet["fittings"], ["armorpieces:gemstone"])
         self.assertTrue(circlet["craftable"])
         self.assertTrue(circlet["loot"])
         self.assertEqual(circlet["license"], "ARR")  # no credits file: all rights reserved
-        self.assertIn("assets/armorpieces/textures/entity/decoration/circlet_gemstone.png", circlet["files"])
-        self.assertIn("data/armorpieces/recipe/template_circlet.json", circlet["files"])
-        plate = next(s for s in m["skins"] if s["id"] == "armorpieces:plate")
-        self.assertTrue(plate["loot"])
-        self.assertIn("assets/armorpieces/textures/entity/skin/plate/humanoid_leggings.png", plate["files"])
+        self.assertIn("assets/armorpieces_court/textures/entity/decoration/circlet_gemstone.png", circlet["files"])
+        self.assertIn("data/armorpieces_court/recipe/template_circlet.json", circlet["files"])
+        lamellar = next(s for s in m["skins"] if s["id"] == "armorpieces_court:lamellar")
+        self.assertTrue(lamellar["loot"])
+        self.assertIn("assets/armorpieces_court/textures/entity/skin/lamellar/humanoid_leggings.png", lamellar["files"])
+        m = pack_manifest.manifest([MOD])
         tunic = next(c for c in m["cloths"] if c["id"] == "armorpieces:tunic")
         self.assertEqual(tunic["sheet"], "shield")
         self.assertIn("assets/armorpieces/textures/item/cloth_template_tunic.png", tunic["files"])
@@ -102,8 +108,9 @@ class ManifestTests(unittest.TestCase):
         Nothing here may derive a namespace from a folder name."""
         legacy = ROOT / "packs" / "legacy"
         m = pack_manifest.manifest([legacy / "datapack", legacy / "resourcepack"])
-        self.assertEqual(m["counts"]["pieces"], 25)
-        self.assertEqual(m["counts"]["skins"], 5)
+        # The whole of 0.3.0 since 2026-09-14: 91 pieces and 14 skins, every id the mod ever wrote.
+        self.assertEqual(m["counts"]["pieces"], 91)
+        self.assertEqual(m["counts"]["skins"], 14)
         self.assertEqual(m["pack"]["namespaces"], ["armorpieces"])
         tusks = next(p for p in m["pieces"] if p["id"] == "armorpieces:tusks")
         self.assertEqual(tusks["label"], "Tusks")
@@ -393,16 +400,18 @@ class PickTests(unittest.TestCase):
     def test_the_mods_pieces_compose_with_own(self):
         with tempfile.TemporaryDirectory() as tmp:
             dest = Path(tmp) / "mine"
-            written = pick_pieces.pick([[MOD]], ["armorpieces:circlet", "armorpieces:plate", "armorpieces:tunic"],
+            court = ROOT / "packs" / "court"
+            written = pick_pieces.pick([[MOD], [court / "datapack", court / "resourcepack"]],
+                                       ["armorpieces_court:circlet", "armorpieces_court:lamellar", "armorpieces:tunic"],
                                        dest, own=True, name="test")
             self.assertEqual(len(written), 3)
             m = pack_manifest.manifest([dest])
             self.assertEqual(m["counts"], {"pieces": 1, "skins": 1, "cloths": 1, "sets": 0})
             # The circlet is found in the court group; the tag came along with just it in it.
-            tags = list((dest / "data/armorpieces/tags/armorpieces/armor_decoration").glob("*.json"))
+            tags = list((dest / "data/armorpieces_court/tags/armorpieces/armor_decoration").glob("*.json"))
             self.assertTrue(tags)
             for tag in tags:
-                self.assertEqual(json.loads(tag.read_text())["values"], ["armorpieces:circlet"])
+                self.assertEqual(json.loads(tag.read_text())["values"], ["armorpieces_court:circlet"])
 
 
 if __name__ == "__main__":

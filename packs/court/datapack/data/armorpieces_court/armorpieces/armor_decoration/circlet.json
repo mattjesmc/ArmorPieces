@@ -1,0 +1,41 @@
+{
+  "asset_id": "armorpieces_court:circlet",
+  "description": {
+    "translate": "decoration.armorpieces_court.circlet"
+  },
+  "anchors": [
+    "brow"
+  ],
+  "fittings": [
+    "armorpieces:gemstone"
+  ],
+  "effects": [
+    {
+      "type": "armorpieces:if_fitting",
+      "if": {
+        "fitting": "armorpieces:gemstone",
+        "material": "minecraft:emerald"
+      },
+      "then": {
+        "type": "armorpieces:mob_effect",
+        "effect": "minecraft:hero_of_the_village"
+      }
+    }
+  ],
+  "loot": [
+    {
+      "table": "minecraft:chests/ancient_city",
+      "weight": 2,
+      "chance": 0.1
+    },
+    {
+      "table": "minecraft:chests/desert_pyramid",
+      "weight": 1,
+      "chance": 0.1
+    }
+  ],
+  "former_ids": [
+    "armorpieces:circlet"
+  ],
+  "uid": "ap1im7piq6nthsrtvndda2q"
+}

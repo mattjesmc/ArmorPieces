@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_wayfarer:quiver",
+  "description": {
+    "translate": "decoration.armorpieces_wayfarer.quiver"
+  },
+  "anchors": [
+    "back"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "former_ids": [
+    "armorpieces:quiver"
+  ],
+  "uid": "ap15hgiju7b73olvuqme2na"
+}

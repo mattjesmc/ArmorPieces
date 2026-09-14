@@ -1,0 +1,35 @@
+{
+  "asset_id": "armorpieces_court:cloak",
+  "description": {
+    "translate": "decoration.armorpieces_court.cloak"
+  },
+  "anchors": [
+    "back"
+  ],
+  "fittings": [
+    "armorpieces:banner",
+    "armorpieces:guard"
+  ],
+  "effects": [
+    {
+      "type": "armorpieces:blink",
+      "chance": {
+        "default": 0.1,
+        "by_material": [
+          {
+            "material": "minecraft:amethyst",
+            "value": 0.25
+          },
+          {
+            "material": "#armorpieces:gemstones",
+            "value": 0.15
+          }
+        ]
+      }
+    }
+  ],
+  "former_ids": [
+    "armorpieces:cloak"
+  ],
+  "uid": "ap1iefgjnnygyocce5pfaga"
+}

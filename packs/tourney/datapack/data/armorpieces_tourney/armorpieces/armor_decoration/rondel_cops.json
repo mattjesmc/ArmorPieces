@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_tourney:rondel_cops",
+  "description": {
+    "translate": "decoration.armorpieces_tourney.rondel_cops"
+  },
+  "anchors": [
+    "knees"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1gz2duwetztbe2hap6nga"
+}

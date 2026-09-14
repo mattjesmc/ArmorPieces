@@ -205,7 +205,7 @@ final class Wearer {
 
     /** One of the mod's own parts, by path - for the tests that are about shipped content. */
     static Holder<ArmorDecoration> shipped(final String path) {
-        return element(ArmorPiecesRegistries.ARMOR_DECORATION, Identifier.fromNamespaceAndPath(ArmorPieces.MOD_ID, path));
+        return element(ArmorPiecesRegistries.ARMOR_DECORATION, ShippedData.shipped(ArmorPiecesRegistries.ARMOR_DECORATION, path));
     }
 
     /** One of the mod's own fittings, by path. */

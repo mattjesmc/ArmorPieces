@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:stone_axe"
+  },
+  "result": {
+    "id": "armorpieces:tassets_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces_norse:hip_axes"
+    }
+  },
+  "category": "equipment"
+}

@@ -1,0 +1,41 @@
+{
+  "asset_id": "armorpieces_knightly:gorget",
+  "description": {
+    "translate": "decoration.armorpieces_knightly.gorget"
+  },
+  "anchors": [
+    "collar"
+  ],
+  "effects": [
+    {
+      "type": "armorpieces:attribute",
+      "id": "armorpieces:gorget_health",
+      "attribute": "minecraft:max_health",
+      "amount": {
+        "default": 2.0,
+        "by_material": [
+          {
+            "material": "minecraft:netherite",
+            "value": 4.0
+          }
+        ]
+      }
+    }
+  ],
+  "loot": [
+    {
+      "table": "minecraft:chests/stronghold_corridor",
+      "weight": 1,
+      "chance": 0.1
+    },
+    {
+      "table": "minecraft:chests/bastion_other",
+      "weight": 1,
+      "chance": 0.05
+    }
+  ],
+  "former_ids": [
+    "armorpieces:gorget"
+  ],
+  "uid": "ap1i5xlqlhnmvcwfspxncaa"
+}

@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_wayfarer:wraps",
+  "description": {
+    "translate": "decoration.armorpieces_wayfarer.wraps"
+  },
+  "anchors": [
+    "vambraces"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "former_ids": [
+    "armorpieces:wraps"
+  ],
+  "uid": "ap1qnqcb67urcdea2oajyhq"
+}

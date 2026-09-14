@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_tourney:favour",
+  "description": {
+    "translate": "decoration.armorpieces_tourney.favour"
+  },
+  "anchors": [
+    "vambraces"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "uid": "ap1hr6jdjjiuezqujqxcada"
+}

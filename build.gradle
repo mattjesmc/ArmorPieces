@@ -76,6 +76,17 @@ processResources {
     }
 }
 
+// The mod's own content rides in the jar as three built-in packs (BuiltinPacks.java), copied out of
+// packs/ where they live beside every other pack: one tree per theme with data/ and assets/ side by
+// side and no pack.mcmeta of its own, so the loader describes it for whichever side is reading. The
+// pack halves' own mcmeta, LICENSE and credits are for the standalone zips, not the jar.
+['knightly', 'court', 'wayfarer'].each { theme ->
+    processResources {
+        from("packs/${theme}/datapack/data") { into "resourcepacks/${theme}/data" }
+        from("packs/${theme}/resourcepack/assets") { into "resourcepacks/${theme}/assets" }
+    }
+}
+
 jar {
     from('LICENSE') {
         rename { "${it}_${project.archives_base_name}" }

@@ -1,0 +1,20 @@
+{
+  "asset_id": "armorpieces_wayfarer:mittens",
+  "description": {
+    "translate": "decoration.armorpieces_wayfarer.mittens"
+  },
+  "anchors": [
+    "vambraces"
+  ],
+  "loot": [
+    {
+      "table": "minecraft:chests/igloo_chest",
+      "weight": 1,
+      "chance": 0.3
+    }
+  ],
+  "former_ids": [
+    "armorpieces:mittens"
+  ],
+  "uid": "ap1z6du43dlw2vifmba3wfq"
+}

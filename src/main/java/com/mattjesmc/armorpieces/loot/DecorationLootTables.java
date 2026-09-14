@@ -5,6 +5,7 @@ import com.mattjesmc.armorpieces.cloth.Cloth;
 import com.mattjesmc.armorpieces.cloth.ClothValue;
 import com.mattjesmc.armorpieces.config.ArmorPiecesServerConfig;
 import com.mattjesmc.armorpieces.config.ArmorPiecesServerConfig.GroupOverride;
+import com.mattjesmc.armorpieces.config.PartsSwitch;
 import com.mattjesmc.armorpieces.decoration.ArmorDecoration;
 import com.mattjesmc.armorpieces.decoration.ArmorPiecesRegistries;
 import com.mattjesmc.armorpieces.decoration.DecorationLoot;
@@ -82,6 +83,11 @@ import org.jspecify.annotations.Nullable;
  * untouched, because the config only ever moves the numbers this class was going to use: it is
  * still one pool, still one roll, and the chance is still a property of the table.
  *
+ * <p>The config's {@link PartsSwitch} is the one thing that removes a MEMBER rather than moving a
+ * number: a part, skin, cloth or fitting the server does not offer is refused at the door of
+ * {@link Offers}, whichever route brought it, and the pool is built from the rest. A group whose
+ * every member is switched off adds nothing, exactly as a group naming an absent tag does.
+ *
  * <p>Every decision made here is recorded as a {@link LootReport}, which is what
  * {@code /armorpieces loot explain} reads. Nothing reads it back to build anything.
  */
@@ -154,7 +160,7 @@ public final class DecorationLootTables {
         final List<Holder.Reference<ArmorSkin>> skins = all(registries, ArmorPiecesRegistries.ARMOR_SKIN);
         final List<Holder.Reference<Cloth>> cloths = all(registries, ArmorPiecesRegistries.CLOTH);
 
-        final Offers offers = new Offers();
+        final Offers offers = new Offers(config.parts(), registries);
         final List<LootReport.Source> sources = new ArrayList<>();
 
         // 1. The exact route: a table named on the part's, skin's or cloth's own data file. One
@@ -215,20 +221,24 @@ public final class DecorationLootTables {
                 if (part.value().anchors().isEmpty()) {
                     continue;
                 }
-                offers.offer(part, c, weight, partEntry(part));
-                offered++;
+                if (offers.offer(part, c, weight, partEntry(part))) {
+                    offered++;
+                }
             }
             for (final Holder<ArmorSkin> skin : group.skins().resolve(registries)) {
-                offers.offer(skin, c, weight, skinEntry(skin));
-                offered++;
+                if (offers.offer(skin, c, weight, skinEntry(skin))) {
+                    offered++;
+                }
             }
             for (final Holder<Cloth> cloth : group.cloths().resolve(registries)) {
-                offers.offer(cloth, c, weight, clothEntry(cloth));
-                offered++;
+                if (offers.offer(cloth, c, weight, clothEntry(cloth))) {
+                    offered++;
+                }
             }
             for (final Holder<Fitting> fitting : group.fittings().resolve(registries)) {
-                offers.offer(fitting, c, weight, fittingEntry(fitting));
-                offered++;
+                if (offers.offer(fitting, c, weight, fittingEntry(fitting))) {
+                    offered++;
+                }
             }
             if (offered > 0) {
                 sources.add(new LootReport.Source(holder.key().identifier().toString(), c, weight, offered,
@@ -346,22 +356,39 @@ public final class DecorationLootTables {
      * The one pool being built for one table, and the rule for what happens when the same thing is
      * offered twice: the highest chance any source asked for, and one entry per member at the best
      * weight it was offered. Insertion-ordered so the pool is written the same way every load.
+     *
+     * <p>Also the one door a switched-off member is turned away at. Every route - a part's own
+     * {@code loot} row, a group's tag - ends in {@link #offer}, so the server's {@link PartsSwitch}
+     * is asked here and nowhere else in this class. A refused member does not raise the pool's
+     * chance either: what a server does not offer cannot make its chests more generous.
      */
     private static final class Offers {
         private final Map<Holder<?>, Offer> members = new LinkedHashMap<>();
+        private final PartsSwitch offered;
+        private final HolderLookup.Provider registries;
         private float chance;
 
-        void offer(
+        Offers(final PartsSwitch offered, final HolderLookup.Provider registries) {
+            this.offered = offered;
+            this.registries = registries;
+        }
+
+        /** @return whether the member is in the pool now - false only for one the server refuses. */
+        boolean offer(
             final Holder<?> member,
             final float chance,
             final int weight,
             final IntFunction<LootPoolEntryContainer.Builder<?>> entry
         ) {
+            if (!this.offered.offers(member, this.registries)) {
+                return false;
+            }
             this.chance = Math.max(this.chance, chance);
             final Offer existing = this.members.get(member);
             if (existing == null || weight > existing.weight) {
                 this.members.put(member, new Offer(weight, entry));
             }
+            return true;
         }
 
         boolean isEmpty() {

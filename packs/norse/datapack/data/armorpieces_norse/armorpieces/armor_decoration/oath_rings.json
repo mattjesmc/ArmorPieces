@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_norse:oath_rings",
+  "description": {
+    "translate": "decoration.armorpieces_norse.oath_rings"
+  },
+  "anchors": [
+    "vambraces"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1m37qg4xrg4x7cp7opt3a"
+}

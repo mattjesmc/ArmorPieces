@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_wayfarer:scarf",
+  "description": {
+    "translate": "decoration.armorpieces_wayfarer.scarf"
+  },
+  "anchors": [
+    "collar"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "former_ids": [
+    "armorpieces:scarf"
+  ],
+  "uid": "ap1rywzogcughvcilobdhpa"
+}

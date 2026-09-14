@@ -1,0 +1,129 @@
+{
+  "sets": [
+    {
+      "id": "daimyo",
+      "title": "The Daimyo",
+      "description": "Iron under black lacquer, laced in red, gilt where it counts - a maedate and kuwagata on the kabuto, a mempo over the face, sode at the shoulders, the sashimono flying above the head, a nodowa at the throat, kote on the arms, the daisho at the obi, kusazuri over the hips, haidate at the knees, suneate on the shins and waraji at the heels. All twelve sockets are this pack's own.",
+      "set": {
+        "name": "The Daimyo",
+        "slots": {
+          "helmet": {
+            "material": "iron"
+          },
+          "chestplate": {
+            "material": "iron"
+          },
+          "leggings": {
+            "material": "iron"
+          },
+          "boots": {
+            "material": "iron"
+          }
+        },
+        "pieces": {
+          "crest": {
+            "id": "armorpieces_samurai:maedate",
+            "pack": "armorpieces-samurai",
+            "material": "redstone",
+            "fittings": {
+              "armorpieces:guard": "minecraft:gold"
+            }
+          },
+          "brow": {
+            "id": "armorpieces_samurai:mempo",
+            "pack": "armorpieces-samurai",
+            "material": "redstone",
+            "fittings": {
+              "armorpieces:inlay": "red"
+            }
+          },
+          "horns": {
+            "id": "armorpieces_samurai:kuwagata",
+            "pack": "armorpieces-samurai",
+            "material": "redstone",
+            "fittings": {
+              "armorpieces:guard": "minecraft:gold"
+            }
+          },
+          "pauldrons": {
+            "id": "armorpieces_samurai:sode",
+            "pack": "armorpieces-samurai",
+            "material": "redstone",
+            "fittings": {
+              "armorpieces:inlay": "red"
+            }
+          },
+          "back": {
+            "id": "armorpieces_samurai:sashimono",
+            "pack": "armorpieces-samurai",
+            "material": "redstone",
+            "fittings": {
+              "armorpieces:banner": {
+                "base": "red",
+                "patterns": []
+              },
+              "armorpieces:guard": "minecraft:gold"
+            }
+          },
+          "collar": {
+            "id": "armorpieces_samurai:nodowa",
+            "pack": "armorpieces-samurai",
+            "material": "redstone",
+            "fittings": {
+              "armorpieces:inlay": "red"
+            }
+          },
+          "vambraces": {
+            "id": "armorpieces_samurai:kote",
+            "pack": "armorpieces-samurai",
+            "material": "redstone",
+            "fittings": {
+              "armorpieces:guard": "minecraft:gold"
+            }
+          },
+          "belt": {
+            "id": "armorpieces_samurai:daisho",
+            "pack": "armorpieces-samurai",
+            "material": "redstone",
+            "fittings": {
+              "armorpieces:inlay": "red"
+            }
+          },
+          "tassets": {
+            "id": "armorpieces_samurai:kusazuri",
+            "pack": "armorpieces-samurai",
+            "material": "redstone",
+            "fittings": {
+              "armorpieces:inlay": "red"
+            }
+          },
+          "knees": {
+            "id": "armorpieces_samurai:haidate",
+            "pack": "armorpieces-samurai",
+            "material": "redstone",
+            "fittings": {
+              "armorpieces:inlay": "red"
+            }
+          },
+          "spurs": {
+            "id": "armorpieces_samurai:waraji",
+            "pack": "armorpieces-samurai",
+            "material": "redstone",
+            "fittings": {
+              "armorpieces:inlay": "red"
+            }
+          },
+          "greaves": {
+            "id": "armorpieces_samurai:suneate",
+            "pack": "armorpieces-samurai",
+            "material": "redstone",
+            "fittings": {
+              "armorpieces:guard": "minecraft:gold"
+            }
+          }
+        },
+        "skin": "armorpieces_samurai:samurai"
+      }
+    }
+  ]
+}

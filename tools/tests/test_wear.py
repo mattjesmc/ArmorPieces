@@ -69,7 +69,7 @@ class WearTests(unittest.TestCase):
         return bb_rig.build_worn_rig(spec, out_dir=self.out, animate=False)
 
     def test_one_piece_lands_on_its_anchor(self):
-        model, worn = self.build({"name": "one", "pieces": {"brow": {"id": "armorpieces:circlet"}}})
+        model, worn = self.build({"name": "one", "pieces": {"brow": {"id": "armorpieces_court:circlet"}}})
         self.assertEqual([w["socket"] for w in worn], ["brow"])
         anchors = bb_rig.parse_anchors()
         attachment = anchors["brow"]["attachments"][0]
@@ -99,7 +99,7 @@ class WearTests(unittest.TestCase):
         self.assertTrue(holds(tree, group["uuid"]), "the piece hangs off its bone")
 
     def test_a_mirrored_pair_is_a_real_mirror(self):
-        model, _ = self.build({"name": "pair", "pieces": {"greaves": {"id": "armorpieces:greaves"}}})
+        model, _ = self.build({"name": "pair", "pieces": {"greaves": {"id": "armorpieces_knightly:greaves"}}})
         left = next(g for g in model["groups"] if g["name"] == "greaves")
         right = next(g for g in model["groups"] if g["name"] == "greaves_1")
         # The two anchors are mirror images of each other in X.
@@ -140,8 +140,8 @@ class WearTests(unittest.TestCase):
 
     def test_an_unknown_socket_is_skipped_rather_than_fatal(self):
         model, worn = self.build({"name": "odd", "pieces": {
-            "brow": {"id": "armorpieces:circlet"},
-            "elbows": {"id": "armorpieces:circlet"},
+            "brow": {"id": "armorpieces_court:circlet"},
+            "elbows": {"id": "armorpieces_court:circlet"},
         }})
         self.assertEqual([w["socket"] for w in worn], ["brow"])
 
@@ -160,9 +160,10 @@ class WearTests(unittest.TestCase):
             packs=[hunt / "datapack", hunt / "resourcepack"])
         self.assertEqual([w["socket"] for w in worn], ["pauldrons"])
         self.assertTrue(cubes_under(model, "pauldrons"), "the borrowed piece has cubes")
-        # And without the pack it is simply not there, which is the split's break in miniature.
-        with self.assertRaises(SystemExit):
-            self.build(spec)
+        # Every pack under packs/ is searched since 2026-09-14 (the mod's own pieces live in three of
+        # them), so the mantle is found with no pack named too; only an id nobody ships is missing.
+        model, worn = self.build(spec)
+        self.assertEqual([w["socket"] for w in worn], ["pauldrons"])
 
 
 if __name__ == "__main__":

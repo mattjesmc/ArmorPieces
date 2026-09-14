@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_antiquity:corinthian_face",
+  "description": {
+    "translate": "decoration.armorpieces_antiquity.corinthian_face"
+  },
+  "anchors": [
+    "brow"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1vsbog525c2ek27rskora"
+}

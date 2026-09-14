@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_court:epaulettes",
+  "description": {
+    "translate": "decoration.armorpieces_court.epaulettes"
+  },
+  "anchors": [
+    "pauldrons"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "former_ids": [
+    "armorpieces:epaulettes"
+  ],
+  "uid": "ap1wbyogllyie7yowxe4hpq"
+}

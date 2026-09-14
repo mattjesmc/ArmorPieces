@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_antiquity:pteruges",
+  "description": {
+    "translate": "decoration.armorpieces_antiquity.pteruges"
+  },
+  "anchors": [
+    "tassets"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "uid": "ap163miy6yebr6x57f3n23q"
+}

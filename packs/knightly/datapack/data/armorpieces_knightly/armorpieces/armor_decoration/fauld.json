@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_knightly:fauld",
+  "description": {
+    "translate": "decoration.armorpieces_knightly.fauld"
+  },
+  "anchors": [
+    "belt"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "former_ids": [
+    "armorpieces:fauld"
+  ],
+  "uid": "ap1zdvwqi77zylytm4x3j5a"
+}

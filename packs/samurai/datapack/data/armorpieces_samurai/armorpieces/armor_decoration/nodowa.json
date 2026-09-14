@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_samurai:nodowa",
+  "description": {
+    "translate": "decoration.armorpieces_samurai.nodowa"
+  },
+  "anchors": [
+    "collar"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "uid": "ap1enyrer2cf6nquon5y7tq"
+}

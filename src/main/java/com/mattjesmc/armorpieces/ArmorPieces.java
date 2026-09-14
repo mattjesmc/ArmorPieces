@@ -8,6 +8,8 @@ import com.mattjesmc.armorpieces.decoration.effect.DecorationEffects;
 import com.mattjesmc.armorpieces.identity.Compatibility;
 import com.mattjesmc.armorpieces.decoration.fitting.Fittings;
 import com.mattjesmc.armorpieces.loot.DecorationLootTables;
+import com.mattjesmc.armorpieces.network.PartsSwitchPayload;
+import com.mattjesmc.armorpieces.pack.BuiltinPacks;
 import com.mattjesmc.armorpieces.pack.PackAudit;
 import com.mattjesmc.armorpieces.pack.PackOverrides;
 import com.mattjesmc.armorpieces.registry.ModBlocks;
@@ -59,6 +61,9 @@ public class ArmorPieces implements ModInitializer {
     @Override
     public void onInitialize() {
         ArmorPiecesRegistries.register();
+        // The mod's own content, as three built-in packs the jar carries - on by default, switchable
+        // off. Registered first so the loader lists them before anything reads a pack. See BuiltinPacks.
+        BuiltinPacks.register();
         // The index that finds a piece whose id has moved, and the advisory when nothing can. Before
         // the components, because their codecs read it the first time a saved item is decoded.
         Compatibility.register();
@@ -77,6 +82,7 @@ public class ArmorPieces implements ModInitializer {
         // How much of this mod the world hands out, as the SERVER owner has it. Read here and again
         // at the start of every datapack reload, because loot tables are built as the packs load.
         ArmorPiecesServerConfig.register();
+        PartsSwitchPayload.register();  // tells each client which of that content the server offers
         // Parts that name a loot table are added to it as it loads. See DecorationLootTables.
         DecorationLootTables.register();
         // What the installed packs got wrong: the part of the report that needs a whole loaded

@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_samurai:mempo",
+  "description": {
+    "translate": "decoration.armorpieces_samurai.mempo"
+  },
+  "anchors": [
+    "brow"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "uid": "ap1potvqrn2tnse5wgc3i2a"
+}

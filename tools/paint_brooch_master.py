@@ -97,7 +97,12 @@ from pathlib import Path
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
-GEO = ROOT / "src" / "main" / "resources" / "assets" / "armorpieces" / "armorpieces" / "decoration" / "brooch.json"
+# The geometry wherever it ships: the mod's own pieces moved into the built-in packs on
+# 2026-09-14 (tools/decoration_paths.py knows where).
+import sys as _sys
+_sys.path.insert(0, str(ROOT / "tools"))
+import decoration_paths as _paths  # noqa: E402
+GEO = _paths.geometry("brooch")
 OUT = ROOT / "tools" / "decoration_masters" / "brooch.png"
 
 TEX_W, TEX_H = 64, 32

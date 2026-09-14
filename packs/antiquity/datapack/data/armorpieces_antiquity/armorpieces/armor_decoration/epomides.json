@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_antiquity:epomides",
+  "description": {
+    "translate": "decoration.armorpieces_antiquity.epomides"
+  },
+  "anchors": [
+    "pauldrons"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1bcgcx6yz4xj3lrviwkeq"
+}

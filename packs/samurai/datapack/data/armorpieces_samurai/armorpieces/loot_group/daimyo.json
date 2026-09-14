@@ -1,0 +1,11 @@
+{
+  "chance": 0.12,
+  "tables": [
+    "minecraft:chests/jungle_temple",
+    {
+      "table": "minecraft:chests/trial_chambers/reward_rare",
+      "chance": 0.1
+    }
+  ],
+  "parts": "#armorpieces_samurai:daimyo"
+}

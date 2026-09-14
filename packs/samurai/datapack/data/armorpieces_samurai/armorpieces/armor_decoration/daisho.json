@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_samurai:daisho",
+  "description": {
+    "translate": "decoration.armorpieces_samurai.daisho"
+  },
+  "anchors": [
+    "belt"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "uid": "ap1ykgxynsdplwhveq3u43a"
+}

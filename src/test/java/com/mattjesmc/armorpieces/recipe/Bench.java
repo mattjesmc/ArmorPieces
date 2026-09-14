@@ -15,6 +15,7 @@ import com.mattjesmc.armorpieces.decoration.fitting.Fitting;
 import com.mattjesmc.armorpieces.skin.ArmorSkin;
 import com.mojang.serialization.JsonOps;
 import java.io.IOException;
+import java.util.stream.Stream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -27,6 +28,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -78,6 +80,50 @@ final class Bench {
         return loaded;
     }
 
+    /**
+     * A level that answers one question - {@code registryAccess()}, with the registries the content
+     * came from - for the one rule in a recipe that reads the level: the server's
+     * {@link com.mattjesmc.armorpieces.config.PartsSwitch}, which resolves a {@code #tag} through
+     * it. Allocated, never constructed, the way {@code menu/Table} stands its level up; a test
+     * that has switched nothing off keeps passing {@link #NO_LEVEL}.
+     */
+    static net.minecraft.world.level.Level level() {
+        final ServerLevel level = allocate(ServerLevel.class);
+        inject(level, "registryAccess", data().registries());
+        return level;
+    }
+
+    /** An instance with every field null and no constructor run - the serialization trick. */
+    private static <T> T allocate(final Class<T> type) {
+        try {
+            final Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
+            final java.lang.reflect.Field held = unsafeClass.getDeclaredField("theUnsafe");
+            held.setAccessible(true);
+            final Object unsafe = held.get(null);
+            return type.cast(unsafeClass.getMethod("allocateInstance", Class.class).invoke(unsafe, type));
+        } catch (final ReflectiveOperationException failed) {
+            throw new AssertionError("a " + type.getSimpleName() + " could not be allocated", failed);
+        }
+    }
+
+    /** Sets one field, wherever in the hierarchy it is declared. Final instance fields included. */
+    private static void inject(final Object target, final String name, final Object value) {
+        for (Class<?> type = target.getClass(); type != null; type = type.getSuperclass()) {
+            try {
+                final java.lang.reflect.Field field = type.getDeclaredField(name);
+                field.setAccessible(true);
+                field.set(target, value);
+                return;
+            } catch (final NoSuchFieldException notHere) {
+                // Declared further up, or nowhere.
+            } catch (final IllegalAccessException refused) {
+                throw new AssertionError("could not set " + name, refused);
+            }
+        }
+        throw new AssertionError("no field called " + name + " on " + target.getClass().getName()
+            + " - vanilla has renamed what this fixture fills in");
+    }
+
     // ---- the recipes -------------------------------------------------------------------------
 
     /**
@@ -89,11 +135,22 @@ final class Bench {
      */
     static <T extends Recipe<?>> T recipe(final String name, final Class<T> type) {
         final ShippedData.Loaded loaded = data();
-        final Path file = ShippedData.MOD
-            .resolve("data").resolve(ArmorPieces.MOD_ID)
-            .resolve(Registries.elementsDirPath(Registries.RECIPE))
-            .resolve(name + ".json");
-        assertTrue(Files.isRegularFile(file), () -> "this mod no longer ships " + file);
+        // The mod's own recipes, or a built-in pack's: the split moved every template recipe into
+        // the pack that owns its piece, and a test about a visor's template should not know which.
+        final Path file = ShippedData.jarRoots().stream()
+            .flatMap(root -> {
+                final Path data = root.resolve("data");
+                try (Stream<Path> namespaces = Files.isDirectory(data) ? Files.list(data) : Stream.<Path>empty()) {
+                    return namespaces.map(ns -> ns.resolve(Registries.elementsDirPath(Registries.RECIPE))
+                        .resolve(name + ".json")).toList().stream();
+                } catch (final IOException failed) {
+                    throw new UncheckedIOException(failed);
+                }
+            })
+            .filter(Files::isRegularFile)
+            .findFirst()
+            .orElse(null);
+        assertTrue(file != null, () -> "this jar no longer ships a recipe called " + name);
         final JsonElement json;
         try {
             json = JsonParser.parseString(Files.readString(file, StandardCharsets.UTF_8));
@@ -169,7 +226,7 @@ final class Bench {
     }
 
     private static <T> Holder<T> element(final ResourceKey<? extends Registry<T>> key, final String path) {
-        final Identifier id = Identifier.fromNamespaceAndPath(ArmorPieces.MOD_ID, path);
+        final Identifier id = ShippedData.shipped(key, path);
         final Registry<T> registry = data().registry(key);
         return registry.get(id)
             .<Holder<T>>map(holder -> holder)

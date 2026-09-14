@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:red_banner"
+  },
+  "result": {
+    "id": "armorpieces:back_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces_samurai:sashimono"
+    }
+  },
+  "category": "equipment"
+}

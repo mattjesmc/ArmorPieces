@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_tourney:cuisses",
+  "description": {
+    "translate": "decoration.armorpieces_tourney.cuisses"
+  },
+  "anchors": [
+    "tassets"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1hhdljdtdriz34xdufsmq"
+}

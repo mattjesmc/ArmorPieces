@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_knightly:lames",
+  "description": {
+    "translate": "decoration.armorpieces_knightly.lames"
+  },
+  "anchors": [
+    "pauldrons"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "former_ids": [
+    "armorpieces:lames"
+  ],
+  "uid": "ap15npg632grp7xnnddfrjq"
+}

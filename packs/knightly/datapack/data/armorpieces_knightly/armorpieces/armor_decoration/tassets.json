@@ -1,0 +1,25 @@
+{
+  "asset_id": "armorpieces_knightly:tassets",
+  "description": {
+    "translate": "decoration.armorpieces_knightly.tassets"
+  },
+  "anchors": [
+    "tassets"
+  ],
+  "loot": [
+    {
+      "table": "minecraft:chests/jungle_temple",
+      "weight": 1,
+      "chance": 0.1
+    },
+    {
+      "table": "minecraft:chests/ruined_portal",
+      "weight": 1,
+      "chance": 0.05
+    }
+  ],
+  "former_ids": [
+    "armorpieces:tassets"
+  ],
+  "uid": "ap1wtug4i2a2oxd64d6pewa"
+}

@@ -1,0 +1,17 @@
+{
+  "asset_id": "armorpieces_knightly:gothic",
+  "description": {
+    "translate": "skin.armorpieces_knightly.gothic"
+  },
+  "loot": [
+    {
+      "table": "minecraft:chests/woodland_mansion",
+      "weight": 1,
+      "chance": 0.05
+    }
+  ],
+  "former_ids": [
+    "armorpieces:gothic"
+  ],
+  "uid": "ap1wlkugvvepoqz36b23ncq"
+}

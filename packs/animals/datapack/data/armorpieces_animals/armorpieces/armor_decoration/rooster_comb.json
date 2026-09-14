@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_animals:rooster_comb",
+  "description": {
+    "translate": "decoration.armorpieces_animals.rooster_comb"
+  },
+  "anchors": [
+    "crest"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1vga5o4zkrdkc2gxjgevq"
+}

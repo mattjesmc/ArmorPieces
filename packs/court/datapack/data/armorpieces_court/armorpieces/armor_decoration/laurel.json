@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_court:laurel",
+  "description": {
+    "translate": "decoration.armorpieces_court.laurel"
+  },
+  "anchors": [
+    "brow"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "former_ids": [
+    "armorpieces:laurel"
+  ],
+  "uid": "ap1km742hi3wnxbsw4hpceq"
+}

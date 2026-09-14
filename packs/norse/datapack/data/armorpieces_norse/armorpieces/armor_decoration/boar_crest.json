@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_norse:boar_crest",
+  "description": {
+    "translate": "decoration.armorpieces_norse.boar_crest"
+  },
+  "anchors": [
+    "crest"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1hksn3nwytdqtn3n3xzla"
+}

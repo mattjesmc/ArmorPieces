@@ -81,6 +81,9 @@ public class ArmorPiecesClient implements ClientModInitializer {
         // world join - see ClientPackAudit, and docs/plans/pack-mistakes.md.
         ClientPackAudit.register();
 
+        // What the server offers, as told on join and after every reload: the creative tab reads it.
+        ClientPartsSwitch.register();
+
         ArmorPieces.LOGGER.info("[Armor Pieces] Client ready.");
     }
 

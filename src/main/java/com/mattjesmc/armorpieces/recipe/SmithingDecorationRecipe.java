@@ -1,5 +1,6 @@
 package com.mattjesmc.armorpieces.recipe;
 
+import com.mattjesmc.armorpieces.config.PartsSwitch;
 import com.mattjesmc.armorpieces.decoration.ArmorDecoration;
 import com.mattjesmc.armorpieces.decoration.ArmorDecorations;
 import com.mattjesmc.armorpieces.decoration.DecorationAnchor;
@@ -111,7 +112,10 @@ public class SmithingDecorationRecipe extends SimpleSmithingRecipe {
         final Holder<ArmorDecoration> decoration = Tolerant.get(input.template(), ModDataComponents.DECORATION);
         return decoration != null
             && decoration.value().fits(this.anchor)
-            && fitsSlot(input.base(), this.anchor);
+            && fitsSlot(input.base(), this.anchor)
+            // Third: the server offers it. A template for a part the owner switched off - found
+            // before the switch was thrown, or given - lays in the slot and crafts nothing.
+            && PartsSwitch.offeredIn(decoration, level);
     }
 
     @Override

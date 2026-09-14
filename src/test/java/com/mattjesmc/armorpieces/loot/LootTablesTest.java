@@ -92,11 +92,11 @@ class LootTablesTest {
     private static final String ADDED = NS + ":chests/added";
 
     /** In alpha's tag only. */
-    private static final String BROOCH = "armorpieces:brooch";
+    private static final String BROOCH = "armorpieces_court:brooch";
     /** In both fixture tags: the member offered twice. */
-    private static final String CIRCLET = "armorpieces:circlet";
+    private static final String CIRCLET = "armorpieces_court:circlet";
     /** In beta's tag only. */
-    private static final String GORGET = "armorpieces:gorget";
+    private static final String GORGET = "armorpieces_knightly:gorget";
 
     private static ShippedData.Loaded shipped;
     private static ShippedData.Loaded fixture;
@@ -306,11 +306,11 @@ class LootTablesTest {
         final LootReport.Source direct = source(report, LootReport.DIRECT);
         assertEquals(0.15f, direct.chance(), 1.0e-6f, "banner.json names the outpost at 0.15");
         assertEquals(2, direct.weight(), "and at weight 2");
-        assertTrue(sourceNames(report).contains("armorpieces:knightly"),
+        assertTrue(sourceNames(report).contains("armorpieces_knightly:knightly"),
             "the group names it too, and both routes are supposed to be explainable");
         assertEquals(0.15f, chanceOf(onlyPool(built)), 1.0e-6f,
             "the part's row is the more generous of the two, so it is the table's number");
-        assertEquals(2, weight(entry(entries(onlyPool(built)), "armorpieces:banner")),
+        assertEquals(2, weight(entry(entries(onlyPool(built)), "armorpieces_knightly:banner")),
             "the row's weight is what the entry carries");
     }
 
@@ -333,8 +333,8 @@ class LootTablesTest {
             .resolve("armor_decoration");
         Files.createDirectories(parts);
         write(parts.resolve("nowhere.json"), """
-            { "asset_id": "armorpieces:brooch",
-              "description": {"translate": "decoration.armorpieces.brooch"},
+            { "asset_id": "armorpieces_court:brooch",
+              "description": {"translate": "decoration.armorpieces_court.brooch"},
               "anchors": ["nose"],
               "loot": [{"table": "%s", "chance": 1.0}] }
             """.formatted(ALWAYS));
@@ -456,6 +456,58 @@ class LootTablesTest {
         assertEquals(9, weight(entry(entries, CIRCLET)),
             "and the shared one takes the best of the two, which is now alpha's");
         assertEquals(1, weight(entry(entries, GORGET)), "beta's member is not alpha's business");
+    }
+
+    // ---- the parts switch ------------------------------------------------------------------
+
+    /** A member the owner switched off is out of every pool, and the groups that offered it stand. */
+    @Test
+    void aPartSwitchedOffIsNotOfferedByAnyGroup() {
+        ServerConfigFixture.configure("""
+            { "parts": { "disabled": ["%s"] } }
+            """.formatted(CIRCLET));
+        final Built built = modify(fixture, VAULT);
+        final List<JsonObject> entries = entries(onlyPool(built));
+
+        assertEquals(2, entries.size(), "brooch and gorget, and not the circlet both groups offered");
+        assertTrue(entries.stream().noneMatch(e -> holds(e, CIRCLET)), "the circlet was still offered");
+        assertEquals(Set.of(NS + ":alpha", NS + ":beta"), sourceNames(built.report()),
+            "both groups still offer their other member");
+        assertEquals(1, source(built.report(), NS + ":alpha").members(), "alpha's count is what it offered");
+        assertEquals(0.4f, chanceOf(onlyPool(built)), 1.0e-6f, "and the table's chance is untouched");
+    }
+
+    /** A tag switches off what it holds, and a group with nothing left to offer is not a source. */
+    @Test
+    void aTagSwitchedOffTakesItsMembersWithIt() {
+        ServerConfigFixture.configure("""
+            { "parts": { "disabled": ["#%s:beta"] } }
+            """.formatted(NS));
+        final Built built = modify(fixture, VAULT);
+        final List<JsonObject> entries = entries(onlyPool(built));
+
+        assertEquals(1, entries.size(), "only the brooch is left: the circlet is in beta too");
+        assertTrue(holds(entries.get(0), BROOCH));
+        assertEquals(Set.of(NS + ":alpha"), sourceNames(built.report()),
+            "beta offered nothing the server allows, so it is not a source");
+        assertTrue(pools(modify(fixture, ALWAYS).json()).isEmpty(),
+            "and the table only beta named gets no pool at all");
+    }
+
+    /** {@code mod_parts: false} is the whole namespace; every fixture member is the mod's. */
+    @Test
+    void modPartsOffLeavesTheModsOwnContentOutOfEveryTable() {
+        ServerConfigFixture.configure("""
+            { "parts": { "mod_parts": false } }
+            """);
+        assertTrue(pools(modify(fixture, VAULT).json()).isEmpty(), "the vault");
+        assertTrue(pools(modify(fixture, ALWAYS).json()).isEmpty(), "the certain table");
+        // The fixture is the mod plus one pack whose members are all the mod's, so every table it
+        // names goes quiet. (`shipped` would not: the packs in packs/ have content of their own.)
+        for (final String table : tablesNamedBy(fixture)) {
+            assertTrue(pools(modify(fixture, table).json()).isEmpty(),
+                () -> table + " still got a pool with the mod's content switched off");
+        }
     }
 
     /** A table the owner removed is out however the pack named it. */

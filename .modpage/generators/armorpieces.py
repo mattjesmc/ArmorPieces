@@ -30,6 +30,24 @@ from modpage.generators import Context, generator
 RESOURCES = "src/main/resources"
 DATA = f"{RESOURCES}/data/armorpieces/armorpieces"
 LANG = f"{RESOURCES}/assets/armorpieces/lang/en_us.json"
+
+# The jar's content since the split of 2026-09-14: the mod's resources hold the engine (fittings,
+# cloths, tags) and its pieces, skins and loot groups live in three packs the jar carries as
+# built-in packs (BuiltinPacks.java, build.gradle). A page about "the mod" is a page about all
+# four roots; namespace -> the pack folder.
+BUILTIN = {
+    "armorpieces_knightly": "packs/knightly",
+    "armorpieces_court": "packs/court",
+    "armorpieces_wayfarer": "packs/wayfarer",
+}
+
+
+def _roots() -> list[tuple[str, str, str]]:
+    """(namespace, data folder, assets folder) for the mod and its built-in packs."""
+    out = [("armorpieces", f"{RESOURCES}/data/armorpieces", f"{RESOURCES}/assets/armorpieces")]
+    for namespace, folder in BUILTIN.items():
+        out.append((namespace, f"{folder}/datapack/data/{namespace}", f"{folder}/resourcepack/assets/{namespace}"))
+    return out
 ANCHOR_SRC = "src/main/java/com/mattjesmc/armorpieces/decoration/DecorationAnchor.java"
 EFFECTS_SRC = "src/main/java/com/mattjesmc/armorpieces/decoration/effect/DecorationEffects.java"
 
@@ -45,8 +63,19 @@ KINDS = {
 # ---- reading the repository ---------------------------------------------------------------------
 
 def _lang(ctx: Context) -> dict[str, str]:
-    loaded = ctx.load_data(LANG)
-    return {str(k): str(v) for k, v in loaded.items()} if isinstance(loaded, dict) else {}
+    """The mod's language file and the built-in packs', as one table."""
+    lines: dict[str, str] = {}
+    for _, _, assets in _roots():
+        path = ctx.root / assets / "lang" / "en_us.json"
+        if not path.is_file():
+            continue
+        try:
+            loaded = json.loads(path.read_text(encoding="utf-8"))
+        except ValueError:
+            continue
+        if isinstance(loaded, dict):
+            lines.update({str(k): str(v) for k, v in loaded.items()})
+    return lines
 
 
 def _entries(ctx: Context, kind: str) -> list[dict[str, Any]]:
@@ -54,32 +83,36 @@ def _entries(ctx: Context, kind: str) -> list[dict[str, Any]]:
     spec = KINDS[kind]
     lines = _lang(ctx)
     out: list[dict[str, Any]] = []
-    for path in sorted((ctx.root / DATA / spec["dir"]).glob("*.json")):
-        try:
-            body = json.loads(path.read_text(encoding="utf-8"))
-        except ValueError as error:
-            ctx.warn(f"{path.name}: {error}")
-            continue
-        name = path.stem
-        key = f"{spec['lang']}.armorpieces.{name}"
-        description = body.get("description")
-        if isinstance(description, dict) and isinstance(description.get("translate"), str):
-            key = description["translate"]
-        out.append({
-            "id": f"armorpieces:{name}",
-            "name": name,
-            "kind": kind,
-            "title": lines.get(key, name.replace("_", " ").title()),
-            "key": key,
-            "body": body,
-        })
+    for namespace, data, _ in _roots():
+        for path in sorted((ctx.root / data / "armorpieces" / spec["dir"]).glob("*.json")):
+            try:
+                body = json.loads(path.read_text(encoding="utf-8"))
+            except ValueError as error:
+                ctx.warn(f"{path.name}: {error}")
+                continue
+            name = path.stem
+            key = f"{spec['lang']}.{namespace}.{name}"
+            description = body.get("description")
+            if isinstance(description, dict) and isinstance(description.get("translate"), str):
+                key = description["translate"]
+            out.append({
+                "id": f"{namespace}:{name}",
+                "name": name,
+                "namespace": namespace,
+                "kind": kind,
+                "title": lines.get(key, name.replace("_", " ").title()),
+                "key": key,
+                "body": body,
+            })
+    out.sort(key=lambda e: e["name"])
     if not out:
-        ctx.warn(f"nothing under {DATA}/{spec['dir']}")
+        ctx.warn(f"nothing under any content root for {spec['dir']}")
     return out
 
 
-def _recipe_exists(ctx: Context, prefix: str, name: str) -> bool:
-    return (ctx.root / RESOURCES / "data" / "armorpieces" / "recipe" / f"{prefix}{name}.json").is_file()
+def _recipe_exists(ctx: Context, prefix: str, name: str, namespace: str = "armorpieces") -> bool:
+    data = next(d for ns, d, _ in _roots() if ns == namespace)
+    return (ctx.root / data / "recipe" / f"{prefix}{name}.json").is_file()
 
 
 def _anchor_table(ctx: Context) -> list[dict[str, Any]]:
@@ -162,7 +195,7 @@ def pieces(ctx: Context) -> list[dict[str, Any]]:
             "fittings": [f for f in (body.get("fittings") or []) if isinstance(f, str)],
             "effects": len(body.get("effects") or []),
             "loot": bool(body.get("loot")),
-            "craftable": _recipe_exists(ctx, "template_", entry["name"]),
+            "craftable": _recipe_exists(ctx, "template_", entry["name"], entry["namespace"]),
             "description": ", ".join(anchors) or "",
         })
     return out
@@ -175,7 +208,7 @@ def skins(ctx: Context) -> list[dict[str, Any]]:
     for entry in _entries(ctx, "skin"):
         body = entry.pop("body")
         out.append({**entry, "loot": bool(body.get("loot")),
-                    "craftable": _recipe_exists(ctx, "skin_template_", entry["name"]),
+                    "craftable": _recipe_exists(ctx, "skin_template_", entry["name"], entry["namespace"]),
                     "description": ""})
     return out
 
@@ -187,7 +220,7 @@ def cloths(ctx: Context) -> list[dict[str, Any]]:
     for entry in _entries(ctx, "cloth"):
         body = entry.pop("body")
         out.append({**entry, "sheet": body.get("sheet", ""), "loot": bool(body.get("loot")),
-                    "craftable": _recipe_exists(ctx, "cloth_template_", entry["name"]),
+                    "craftable": _recipe_exists(ctx, "cloth_template_", entry["name"], entry["namespace"]),
                     "description": f"drawn on the {body.get('sheet', 'shield')} net"})
     return out
 
@@ -230,7 +263,11 @@ def loot_groups(ctx: Context) -> list[dict[str, Any]]:
     """Every loot group: a theme, the chests it turns up in, and what belongs to it."""
     lines = _lang(ctx)
     out = []
-    for path in sorted((ctx.root / DATA / "loot_group").glob("*.json")):
+    data_of = {ns: d for ns, d, _ in _roots()}
+    found: list[tuple[str, Path]] = []
+    for namespace, data, _ in _roots():
+        found += [(namespace, p) for p in sorted((ctx.root / data / "armorpieces" / "loot_group").glob("*.json"))]
+    for group_ns, path in found:
         try:
             body = json.loads(path.read_text(encoding="utf-8"))
         except ValueError as error:
@@ -242,7 +279,7 @@ def loot_groups(ctx: Context) -> list[dict[str, Any]]:
         tag = body.get("parts")
         if isinstance(tag, str) and tag.startswith("#"):
             namespace, _, tag_name = tag[1:].partition(":")
-            tag_path = (ctx.root / RESOURCES / "data" / namespace / "tags"
+            tag_path = (ctx.root / data_of.get(namespace, f"{RESOURCES}/data/{namespace}") / "tags"
                         / "armorpieces" / "armor_decoration" / f"{tag_name}.json")
             if tag_path.is_file():
                 try:
@@ -252,8 +289,8 @@ def loot_groups(ctx: Context) -> list[dict[str, Any]]:
                     pass
         tables = [str(t) for t in (body.get("tables") or [])]
         out.append({
-            "id": f"armorpieces:{name}", "name": name,
-            "title": lines.get(f"loot_group.armorpieces.{name}", name.replace("_", " ").title()),
+            "id": f"{group_ns}:{name}", "name": name,
+            "title": lines.get(f"loot_group.{group_ns}.{name}", name.replace("_", " ").title()),
             "chance": body.get("chance"),
             "tables": tables,
             "skins": [str(s) for s in (body.get("skins") or [])],
@@ -262,7 +299,7 @@ def loot_groups(ctx: Context) -> list[dict[str, Any]]:
             "description": ", ".join(t.replace("minecraft:chests/", "") for t in tables),
         })
     if not out:
-        ctx.warn(f"nothing under {DATA}/loot_group")
+        ctx.warn("no loot group under any content root")
     return out
 
 
@@ -409,8 +446,9 @@ def sets(ctx: Context) -> list[dict[str, Any]]:
     text = source.read_text(encoding="utf-8")
     lines = _lang(ctx)
     fittings = _fitting_kinds(ctx)
-    parts = {f"armorpieces:{entry['name']}": entry["body"] for entry in _entries(ctx, "piece")}
+    parts = {entry["id"]: entry["body"] for entry in _entries(ctx, "piece")}
     parts.update(_pack_pieces(ctx))
+    own = {"armorpieces", *BUILTIN}
     anchors = {row["id"]: row["slot"] for row in _anchor_table(ctx)}
 
     found = list(_SET.finditer(text))
@@ -465,7 +503,7 @@ def sets(ctx: Context) -> list[dict[str, Any]]:
         # A set wearing another namespace's pieces belongs to that pack, which declares it in
         # its own `armorpieces-sets.json` - the file the site and the wardrobe actually read. The
         # Java copy exists so `/armorpieces stage set` can dress it; it is not a second listing.
-        foreign = sorted({p["pack"] for p in pieces.values()} - {"armorpieces"})
+        foreign = sorted({p["id"].partition(":")[0] for p in pieces.values()} - own)
         if foreign:
             continue
         title = lines.get(f"commands.armorpieces.stage.set.{name}", name.replace("_", " ").title())

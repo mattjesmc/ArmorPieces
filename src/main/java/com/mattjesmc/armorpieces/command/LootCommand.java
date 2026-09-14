@@ -1,6 +1,7 @@
 package com.mattjesmc.armorpieces.command;
 
 import com.mattjesmc.armorpieces.config.ArmorPiecesServerConfig;
+import com.mattjesmc.armorpieces.config.PartsSwitch;
 import com.mattjesmc.armorpieces.decoration.ArmorDecorations;
 import com.mattjesmc.armorpieces.decoration.ArmorPiecesRegistries;
 import com.mattjesmc.armorpieces.loot.DecorationLootTables;
@@ -203,7 +204,36 @@ public final class LootCommand {
             source.sendSuccess(() -> Component.translatable(
                 "commands.armorpieces.loot.multiplier", format(config.chanceMultiplier())), false);
         }
+        switchedOffNotice(source, config.parts());
         return loaded.size();
+    }
+
+    /**
+     * How many of the installed members the {@code parts} switch keeps out, counted over the four
+     * registries it reaches - the one place an operator can see the list in the file and the
+     * content it lands on side by side. Silent when the file switches nothing off.
+     */
+    private static void switchedOffNotice(final CommandSourceStack source, final PartsSwitch parts) {
+        if (!parts.restricts()) {
+            return;
+        }
+        final HolderLookup.Provider registries = source.registryAccess();
+        int off = 0;
+        int all = 0;
+        for (final ResourceKey<? extends net.minecraft.core.Registry<?>> key : List.of(
+            ArmorPiecesRegistries.ARMOR_DECORATION, ArmorPiecesRegistries.ARMOR_SKIN,
+            ArmorPiecesRegistries.CLOTH, ArmorPiecesRegistries.FITTING)) {
+            for (final Holder<?> member : registries.lookupOrThrow(key).listElements().toList()) {
+                all++;
+                if (!parts.offers(member, registries)) {
+                    off++;
+                }
+            }
+        }
+        final int switchedOff = off;
+        final int installed = all;
+        source.sendSuccess(() -> Component.translatable(
+            "commands.armorpieces.loot.switched_off", switchedOff, installed), false);
     }
 
     // ---- roll -----------------------------------------------------------------------------------

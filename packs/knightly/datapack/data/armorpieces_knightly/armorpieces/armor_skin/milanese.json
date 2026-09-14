@@ -1,0 +1,17 @@
+{
+  "asset_id": "armorpieces_knightly:milanese",
+  "description": {
+    "translate": "skin.armorpieces_knightly.milanese"
+  },
+  "loot": [
+    {
+      "table": "minecraft:chests/shipwreck_treasure",
+      "weight": 1,
+      "chance": 0.05
+    }
+  ],
+  "former_ids": [
+    "armorpieces:milanese"
+  ],
+  "uid": "ap1iafnqkx5dv4oa7rtrpka"
+}

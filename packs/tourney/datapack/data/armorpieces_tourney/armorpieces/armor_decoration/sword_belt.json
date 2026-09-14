@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_tourney:sword_belt",
+  "description": {
+    "translate": "decoration.armorpieces_tourney.sword_belt"
+  },
+  "anchors": [
+    "belt"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1ygb5i3trz3tljfucz3ua"
+}

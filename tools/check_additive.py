@@ -29,6 +29,14 @@ What is deliberately NOT a collision:
     pack.mcmeta, LICENSE, armorpieces-credits.json, armorpieces-sets.json
                a pack's own paperwork, one copy per pack half, never loaded as content.
 
+The other half of the rule is the FLOOR. Removing content is a setting, never a pack
+(`parts.disabled` in the server config), and a pack that only adds still has to say which mod it
+adds to: every pack half's pack.mcmeta carries `"armorpieces": {"requires": "<mod version>"}` - a
+section the game ignores and the library, the editor and pack_manifest.py read to say which mod a
+pack needs (`docs/plans/additive-packs.md`, "Versioned packs in the library"). Since 0.4.0 the floor
+is 0.4.0 for everything this repository ships (backwards support stops below it), so a half that
+says nothing, says something older, or disagrees with its other half is reported here.
+
 Usage:
     python tools/check_additive.py            # the mod and every pack under packs/
     python tools/check_additive.py --json     # the same, as JSON
@@ -47,6 +55,52 @@ PACKS = ROOT / "packs"
 
 # Paperwork, not content: it lives at a pack's root and the game never loads it.
 PAPERWORK = {"pack.mcmeta", "armorpieces-credits.json", "armorpieces-sets.json", "LICENSE"}
+
+# The lowest mod version any pack here may claim to run on. Not the current mod version: a pack
+# that needs nothing newer than 0.4.0 should keep saying 0.4.0 when the mod is at 0.5.0.
+FLOOR = "0.4.0"
+
+# Scratch, never shipped, never checked for a floor.
+UNSHIPPED = {"vlm-scratch"}
+
+
+def version_key(version: str) -> tuple[int, ...] | None:
+    parts = version.strip().split(".")
+    if not parts or not all(part.isdigit() for part in parts):
+        return None
+    return tuple(int(part) for part in parts)
+
+
+def floors() -> list[dict]:
+    """Every pack half whose pack.mcmeta does not say, correctly, which mod it needs."""
+    problems: list[dict] = []
+    for name, roots in sources():
+        if name == "the mod" or name in UNSHIPPED:
+            continue
+        said: dict[str, str] = {}
+        for root in roots:
+            mcmeta = root / "pack.mcmeta"
+            half = root.relative_to(ROOT).as_posix()
+            if not mcmeta.is_file():
+                problems.append({"pack": name, "half": half, "problem": "no pack.mcmeta"})
+                continue
+            try:
+                requires = json.loads(mcmeta.read_text(encoding="utf-8")).get("armorpieces", {}).get("requires")
+            except (ValueError, AttributeError):
+                problems.append({"pack": name, "half": half, "problem": "pack.mcmeta is not readable"})
+                continue
+            if not isinstance(requires, str) or version_key(requires) is None:
+                problems.append({"pack": name, "half": half,
+                                 "problem": 'pack.mcmeta has no "armorpieces": {"requires": "x.y.z"} section'})
+                continue
+            if version_key(requires) < version_key(FLOOR):
+                problems.append({"pack": name, "half": half,
+                                 "problem": f"requires {requires}, below the {FLOOR} floor"})
+            said[half] = requires
+        if len(set(said.values())) > 1:
+            problems.append({"pack": name, "half": ", ".join(said),
+                             "problem": "the two halves disagree: " + ", ".join(f"{h} says {v}" for h, v in said.items())})
+    return problems
 
 
 def sources() -> list[tuple[str, list[Path]]]:
@@ -116,9 +170,10 @@ def main() -> int:
     args = parser.parse_args()
 
     collisions, counts = run()
+    unfloored = floors()
     if args.json:
-        print(json.dumps({"collisions": collisions, "counts": counts}, indent=2))
-        return 1 if collisions else 0
+        print(json.dumps({"collisions": collisions, "counts": counts, "floors": unfloored}, indent=2))
+        return 1 if collisions or unfloored else 0
 
     for name, count in counts.items():
         print(f"{name}: {count} definitions")
@@ -126,11 +181,18 @@ def main() -> int:
         print(f"\nCOLLISION {hit['what']}\n"
               f"  {hit['first']}: {hit['first_file']}\n"
               f"  {hit['second']}: {hit['second_file']}", file=sys.stderr)
+    for miss in unfloored:
+        print(f"\nFLOOR {miss['pack']} ({miss['half']}): {miss['problem']}", file=sys.stderr)
     if collisions:
         print(f"\n{len(collisions)} collision(s): a pack may only define what nothing else defines",
               file=sys.stderr)
+    if unfloored:
+        print(f"\n{len(unfloored)} pack half/halves without a correct floor: every pack.mcmeta says "
+              f'"armorpieces": {{"requires": "{FLOOR}"}} or later', file=sys.stderr)
+    if collisions or unfloored:
         return 1
-    print(f"\nadditive: {sum(counts.values())} definitions across {len(counts)} sources, none twice")
+    print(f"\nadditive: {sum(counts.values())} definitions across {len(counts)} sources, none twice; "
+          f"every pack declares the mod it needs ({FLOOR} or later)")
     return 0
 
 

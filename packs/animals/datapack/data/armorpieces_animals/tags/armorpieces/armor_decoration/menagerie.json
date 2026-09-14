@@ -1,12 +1,16 @@
 {
   "values": [
+    "armorpieces_animals:armadillo_shell",
+    "armorpieces_animals:bee_wings",
+    "armorpieces_animals:cat_paws",
+    "armorpieces_animals:donkey_tail",
+    "armorpieces_animals:flower_brooch",
     "armorpieces_animals:fox_ears",
     "armorpieces_animals:frog_mask",
-    "armorpieces_animals:bee_wings",
-    "armorpieces_animals:turtle_shell",
-    "armorpieces_animals:flower_brooch",
-    "armorpieces_animals:donkey_tail",
-    "armorpieces_animals:armadillo_shell",
-    "armorpieces_animals:rabbit_feet"
+    "armorpieces_animals:llama_wraps",
+    "armorpieces_animals:rabbit_feet",
+    "armorpieces_animals:rooster_comb",
+    "armorpieces_animals:sheep_fleece",
+    "armorpieces_animals:turtle_shell"
   ]
 }

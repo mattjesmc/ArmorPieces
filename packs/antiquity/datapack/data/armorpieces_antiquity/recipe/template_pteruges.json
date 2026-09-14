@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:brown_dye"
+  },
+  "result": {
+    "id": "armorpieces:tassets_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces_antiquity:pteruges"
+    }
+  },
+  "category": "equipment"
+}

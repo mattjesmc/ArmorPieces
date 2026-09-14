@@ -49,7 +49,7 @@ class AbsentTagGroupTest {
         write(groups.resolve("present.json"), """
             { "chance": 0.5,
               "tables": ["minecraft:chests/simple_dungeon"],
-              "parts": "#armorpieces:knightly" }
+              "parts": "#armorpieces_knightly:knightly" }
             """);
         return dir;
     }

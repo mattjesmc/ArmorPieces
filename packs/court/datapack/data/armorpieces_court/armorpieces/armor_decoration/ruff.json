@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_court:ruff",
+  "description": {
+    "translate": "decoration.armorpieces_court.ruff"
+  },
+  "anchors": [
+    "collar"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "former_ids": [
+    "armorpieces:ruff"
+  ],
+  "uid": "ap17oeva7jdj23ds6n6yc6a"
+}

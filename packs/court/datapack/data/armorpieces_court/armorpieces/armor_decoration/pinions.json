@@ -1,0 +1,31 @@
+{
+  "asset_id": "armorpieces_court:pinions",
+  "description": {
+    "translate": "decoration.armorpieces_court.pinions"
+  },
+  "anchors": [
+    "back"
+  ],
+  "effects": [
+    {
+      "type": "armorpieces:glide",
+      "sink": 0.03,
+      "wear_interval": 4
+    }
+  ],
+  "loot": [
+    {
+      "table": "minecraft:chests/end_city_treasure",
+      "weight": 1,
+      "chance": 0.05
+    }
+  ],
+  "former_ids": [
+    "armorpieces:pinions"
+  ],
+  "uid": "ap1jfu6s557yyo5ehuue6ua",
+  "fittings": [
+    "armorpieces:inlay",
+    "armorpieces:guard"
+  ]
+}

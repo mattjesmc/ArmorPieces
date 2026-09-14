@@ -230,3 +230,154 @@ is `fanged_cop`'s front face. Two fixes, and you want both. In the brief, pick c
 session standing permission to nudge its own face by 0.1 and repaint it, because a shared plane
 z-fights in game and moving is always right — it is only the size of the move that ever needed
 asking. Without that permission the session burns its whole turn budget and saves nothing.
+
+**23. A weak model sometimes ends its turn on prose instead of a tool call, and a headless run
+then simply stops.** Two of nineteen qwen3.8-flash sessions on 2026-09-12 (`compound_eyes`,
+`honeycomb_gorget`) read the brief, created the piece, set the part data, and then wrote "Now
+removing the starter cube and placing the three cubes" - and stopped, at 1.0 and 0.3 minutes,
+`is_error: false`. Nothing in the brief caused it; both built cleanly on a rerun. So a batch's
+"ok" column is not the verdict: count the cubes on disk (`dump_piece.py` or `check_part.py`) for
+every piece before calling the batch done, and expect roughly one in ten to need a rerun. A rerun
+needs the skeleton `armorpieces_new` left behind deleted first (data, geometry, sheets, recipe) -
+the plugin refuses to create a piece that is already in the pack - and the dead session's tab
+closed in its window.
+
+**24. Bone-mate planes can be avoided BEFORE the session, mechanically.** The seventeen briefs of
+2026-09-12 were generated with every face snapped off every plane a bone-mate's cube puts on the
+bone (`check_part.references` + `trace_geometry.neighbours` give them offline, in both frames)
+and off the outer shell's walls, at 0.012 clearance; the two budgets were then derived from the
+snapped cubes rather than typed. Seventeen sessions, zero COPLANAR stops, zero forced saves. On
+the leg bone the planes sit every few hundredths, so hand-picked coordinates land on one about
+half the time - snap, do not guess.
+
+
+**25. Snap the siblings against each other, and a whole pack line goes through clean.** The 48
+culture briefs of 2026-09-13 were generated with every face snapped off every bone-mate plane on
+disk AND off every sibling designed in the same batch, in build order (a later piece on the same
+bone finds the earlier one on disk by the time it runs), with a buried-cube check (a crest mount
+inside the helmet shell at y 32 is never seen; start at 33.07), same-pack cube intersections
+refused, and every piece given at least one static cube and one masked fitting from the start.
+Result: 48 sessions, zero `!` lines, zero forced saves, zero nudges, every envelope inside its
+budget to the hundredth, and no surface retrofit owed afterwards. The one rerun was not the
+brief's: the agent window closed itself in the gap between two sessions and the next one found no
+bridge - it said so and stopped, which is the right answer, and the driver now asks for a window
+by session id (RUNNING.md). `tools/briefs_cultures/` is the generator, kept.
+
+**26. `check_part.py <name>` reads the master from `tools/decoration_masters/`, and the plugin's
+save writes only the pack's texture folder.** After a clean `armorpieces_save` of a piece that has
+a master in that directory (the built-in packs: knightly, court, wayfarer - the pieces that were
+the mod's own), the by-name check still reports the OLD sheet: dozens of unpainted faces and
+"opaque px outside every face" on a piece the plugin itself passed. It is not a paint problem.
+Run `check_part.py <geometry.json> --name <part> --master <pack png> --mask <fit>=<pack png>` to
+check the sheets the plugin actually wrote, then copy those same files into
+`tools/decoration_masters/` so the by-name check (and the gate's `parts` tier) reads them too.
+`heel_wings` lost a turn to this on 2026-09-14.
+
+**27. When a fan's angles run from steep to flat, shift each plate's chord along its length axis
+rather than centring it on the pivot.** The chord (the unrotated z depth) rotates with the plate,
+so on a 75-degree plate a 1.5 rear offset drops the root corner by `1.5*sin(75)` - straight into
+the floor - while on a 36-degree plate a 0.7 front offset pushes the root corner in front of the
+shell plane. Give the steep plates their chord mostly behind the pivot and the flat ones mostly in
+front (`heel_wings` used front/back 0.5/1.5 -> 1.4/0.6 across four plates at one chord of 2.0),
+and check the closure as `b_i + f_(i+1) >= L*dtheta + step*cos(theta_i)` with the shifted offsets.
+Every root corner then stays inside the budget with no change to the angles.
+
+**28. The `pixels` list of `armorpieces_paint` is applied AFTER its `faces` map.** That is what
+makes a per-texel highlight in the same call work (11a) - and it means a `value: null` sweep to
+clear an old layout's strays has to be its OWN call, before the face paint, or it erases the faces
+it shares a call with. One 400-entry null list over the old sheet's whole rectangle, then one
+faces call: zero strays on a rework.
+
+
+**29. A fan of plates rotated about one axis must STEP along that axis, or every plate shares two
+planes and the whole fan z-fights.** Rotation about X preserves x, so four plates all at
+`x -0.2..0.2` under pivots at one x keep their east and west faces on exactly the same two planes
+however they are angled - and a fan that closes (each chord lapping the next) overlaps in y-z
+everywhere, so every lap fights. `heel_wings` shipped like that on 2026-09-14 and the check said
+`all clear`: a rotated cube contributes NO planes to the coplanar pass (`trace_geometry.py`, the
+`axis_aligned` guard) and a part is never compared with itself, so plate-against-plate is
+examined by nothing. `helm_wings` avoids it by stepping each plate's pivot 0.2 in x
+(5.55 / 5.75 / 5.95 / 6.15); the heel_wings brief copied the fan and dropped the step. The rule
+was already in the qwen template ("taper the axis you rotate about") and it is every session's: when the
+brief gives one x for all plates, take it as the FIRST plate's and step the rest 0.2 outboard.
+The person fixing it staggered the quills and vanes in x by hand; that is the shape to copy.
+
+**30. Box UV puts a `down` face's FIRST sheet row at the cube's SOUTH (+z) edge, and its `up`
+face's first row at north.** Anything front/back-asymmetric painted by `pixels` on a `down` face
+(a paw's toe beans, a sole's tread, a heel stud) lands at the BACK if you assume row 0 is the
+front - `cat_paws` put its three small beans on row 0 and the view from below showed them behind
+the big pad. Row `face_y + h - 1` is the front edge of a `down` face. Left/right-symmetric
+patterns (stripes at columns 1 and 3 of 5) are immune, so plan asymmetric detail on `down`
+faces with this rule and check it with one perspective shot aimed up at the cube
+(`position` below and in front, `target` on the cube) - the 3-view `fit` contact sheet is too
+small to read a piece the size of a hand.
+
+**31. A rework's null sweep is one `texture op:rects` per sheet over the whole 64x32 with
+`c: null`**, three calls in all, not a long `pixels` list: nothing of the old layout survives, so
+there is nothing to subtract, and the `armorpieces_paint` calls that follow paint every current
+face. Expect #14's `part.bbmodel` FileNotFoundError on the replies right after the sweep; one
+`element set {visibility: true}` clears it.
+
+**32. A chain's tip target and its link lengths fix the curl before any angle is chosen.** The
+chord from root to tip over the summed link lengths is the whole story: `dragon_claws` had links
+3.0/2.5/2.0 (7.0 total) and a brief tip at (y 8, z -8) from a root at (11.6, -2.5) - a 6.5 chord -
+so the tip can only reach 64-75 degrees cumulative however the increments are split, and "curl
+harder" would have put the tip under the y floor. Compute `chord / total` first: near 1.0 is a
+nearly straight talon, ~0.8 a hook, ~0.6 a curl. If a brief asks for more curl than the chord
+allows, the fix is longer links (each 0.5 buys ~15 degrees at the same tip), not steeper angles,
+and it is worth a line in the report.
+
+**33. A pack piece's sheets are under `textures/entity/decoration/`, not
+`textures/armorpieces/decoration/`.** The `--master/--static/--mask` paths of a by-file
+`check_part.py` run go there; `find packs/<pack> -name "<part>*"` gives all five files in one
+call. (7b, addendum: when a bone and its cube share a name, the bone's uuid is already in the
+`add_group` reply - no `list_outline` needed. Naming the cube `<bone>_cube` avoids it entirely.)
+
+**34. On a link built upright and then leaned back, the "top" surface is its `north` face, not
+`up`.** A horn, spine or talon segment is modelled vertical and rotated about X; at 40-65 degrees
+its unrotated front (`north`, -z) is what faces up-and-forward, its `south` is the underside, and
+`up` is only the tip end. A brief's "ridge along the top of each link" is a `north` paint,
+"underside" is `south` (`dragon_horns` rework). On a link leaned FORWARD the roles swap. And a
+rework of a whole piece is: `element remove id:<anchor bone>` (takes every cube and child bone
+with it), three `texture op:rects c:null` sweeps (#31), rebuild straight, aim, one paint per sheet
+- 20 calls for a three-cube piece, no `armorpieces_set_part`, the part file's uid untouched.
+
+**35. Bone rotations compose X first, then Y, then Z (Blockbench's `ZYX` order).** An upright bar
+given `[X, 0, Z]` is tilted back by X and THEN swung out by Z in that tilted plane: its direction is
+`(-cosX sinZ, cosX cosZ, sinX)`, and positive X tilts it BACK (+z). A child bone's own Z rotation adds
+to the parent's Z inside the parent's tilted plane. `dragon_wings` predicted its elbow and tips to
+0.01 from this; a brief's rotation signs are a suggestion, the reply's envelope is the arbiter.
+
+**36. A `back` piece rising past `y 23` must clear the helmet CORNER, and the check will not say
+so.** The bite is not the centreline: a bar swung outward from a pivot inside `x +-5` keeps its
+inboard cube corners inside `x +-5.15` for several units of length while already above `y 23` and
+at `z < 5.25`. Push the four corners `(+-w, s, +-w)` through `Rz(Rx(v))`, find the `s` where the
+`+x,-z` corner (left wing) reaches `|x| = 5.15`, and require its `y < 23` there - `dragon_wings`
+moved its pivot from the brief's `x -3.5` to `-4.75` and down 0.5 for that.
+
+**37. Radial plates pivoted at one point make a hub unless each starts out along its radial and
+carries its chord on ONE side.** Start plate k a few units from the pivot and put the whole chord
+toward the leading bar / previous plate (local `+x` of a `+delta`-rotated plate points toward
+smaller delta); its root corner then lands inside the bar or under the previous plate. Test the
+corner's `(t, c)` in the previous plate's frame. The fan is closed to `r = chord / sin(step)` and
+scalloped beyond.
+
+**38. `north` column 0 is the cube's `+x` edge; `south` column 0 is `-x`.** A line along a plate's
+long edge painted with `pixels` goes on `north` column 0 and `south` last column for the `+x` edge,
+the reverse for `-x` - and a mirrored pair swaps them. (Companion to #30's row rule.)
+
+**39. A resize that re-lays the sheet can GROW it (64x32 -> 64x64); a second full sweep needs the
+new size from `list_textures`.** Two sweeps and two full paints per sheet are still cheaper than
+subtracting old rectangles.
+
+**40. `armorpieces_save` that narrates a DIFFERENT piece and refuses on its problems has written
+nothing.** Another tab went active in the window (#20). `armorpieces_open` your own piece, then
+save again.
+
+**41. For a head-sized piece, skip `fit: true` and aim one perspective shot at it.** `fit` frames
+the whole player, and a 2-view contact sheet of that shows a mask as a grey smudge. One
+`capture_screenshot {position: [-14, 26, -22], target: [0, 28, -8]}` read `dragon_mask`'s muzzle,
+nostril, jaw gap and teeth strip in one picture; scale the offset to the socket. The viewport
+renders the master preview (flat grey), not the static colours, so a screenshot judges shape only -
+read the saved PNGs with Pillow for the paint. A mask-only `armorpieces_paint` with `pixels` and no
+`faces` is accepted, which is what an eye-slit fitting wants.

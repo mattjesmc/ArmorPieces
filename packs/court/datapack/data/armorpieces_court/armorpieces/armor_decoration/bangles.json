@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_court:bangles",
+  "description": {
+    "translate": "decoration.armorpieces_court.bangles"
+  },
+  "anchors": [
+    "vambraces"
+  ],
+  "fittings": [
+    "armorpieces:gemstone"
+  ],
+  "former_ids": [
+    "armorpieces:bangles"
+  ],
+  "uid": "ap16nokrwjbju3ah5dywvyq"
+}

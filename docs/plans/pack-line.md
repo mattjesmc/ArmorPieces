@@ -1,6 +1,26 @@
 # The pack line
 
-> **Where this stands (2026-09-09).** **Dragonslayer and Nether are BUILT** — twelve pieces each, in
+> **Where this stands (2026-09-14).** Coral, Animals, the Hive, the Wild Hunt and Dragonslayer
+> (and the three built-in packs) were **walked by the owner in Blockbench and are verified** -
+> `docs/reviews/pack-walk-2026-09-14.md` has the per-piece record. Dragonslayer's claws, horns,
+> mask and wings were reworked that day (Opus/Fable from rework briefs, the wings finished by hand);
+> `dragon_tail` is still owed. Nether and Hero of the Village are built but not yet walked.
+>
+> **Where this stands (2026-09-12).** **Coral, Animals and the Hive are FINISHED** — seventeen
+> pieces built in one evening from generated briefs on qwen3.8-flash (~$11 for 20 sessions, see
+> `briefs/LESSONS.md` #23–24): Coral's five (`coral_visor`, `starfish_bracers`, `sea_pickle_belt`,
+> `barnacle_cops`, `dolphin_flukes`), Animals' four (`rooster_comb`, `cat_paws`, `sheep_fleece`,
+> `llama_wraps`) and **eight for the Hive**, which the split's open question ("a pack or a
+> merger?") had left undesigned: `compound_eyes`, `honeycomb_gorget`, `chitin_bracers`,
+> `spinneret_belt`, `abdomen_plates`, `spider_cops`, `silverfish_greaves`, `stinger_spurs`
+> (centres in `tools/check_pack_line.py`). **The Reef, The Menagerie and Chitin are the first
+> three outfits in the project drawn wholly from their own pack** (`armorpieces-sets.json` and
+> `StageCommand.java` both re-cut). Deep Tide still borrows seven by design. Ocean's `anemone_bloom`,
+> `seagrass_skirt` and `urchin_greaves` from the table below were NOT built — the pack already had
+> a back, tassets and greaves from the split — nor were the four guardian extras. Nothing seen in
+> game yet; `StageCommand.java` not recompiled.
+>
+> **Where this stood (2026-09-09).** **Dragonslayer and Nether are BUILT** — twelve pieces each, in
 > `packs/dragon/` and `packs/nether/`, `check_authoring.py` clean on both and every piece reachable.
 > Nether's first five came from the Qwen pilot and Dragonslayer's first nine from earlier sessions;
 > the remaining ten — Nether's seven and Dragonslayer's last three — were authored on 2026-09-09 from

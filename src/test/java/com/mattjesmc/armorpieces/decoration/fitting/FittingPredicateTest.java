@@ -45,21 +45,21 @@ import org.junit.jupiter.api.Test;
 class FittingPredicateTest {
     /** A circlet with an emerald in its gemstone socket - the mod's own documented example. */
     private static final String EMERALD = """
-        { "material": "minecraft:gold", "decoration": "armorpieces:circlet",
+        { "material": "minecraft:gold", "decoration": "armorpieces_court:circlet",
           "fittings": { "armorpieces:gemstone": "minecraft:emerald" } }
         """;
     /** The same socket holding something else in the gemstone tag. */
     private static final String DIAMOND = """
-        { "material": "minecraft:gold", "decoration": "armorpieces:circlet",
+        { "material": "minecraft:gold", "decoration": "armorpieces_court:circlet",
           "fittings": { "armorpieces:gemstone": "minecraft:diamond" } }
         """;
     /** The gemstone socket empty. */
     private static final String BARE = """
-        { "material": "minecraft:gold", "decoration": "armorpieces:circlet" }
+        { "material": "minecraft:gold", "decoration": "armorpieces_court:circlet" }
         """;
     /** A bandolier with a red inlay and an iron guard: a dye value and a material value at once. */
     private static final String DYED = """
-        { "material": "minecraft:iron", "decoration": "armorpieces:bandolier",
+        { "material": "minecraft:iron", "decoration": "armorpieces_wayfarer:bandolier",
           "fittings": { "armorpieces:inlay": "red", "armorpieces:guard": "minecraft:iron" } }
         """;
 

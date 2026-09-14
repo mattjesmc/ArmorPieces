@@ -87,6 +87,27 @@ def files(kind: str) -> dict[str, dict]:
                     "operation": "add_value",
                 }],
             },
+            # The same number behind a WEARER condition - the mod's own gated parts (claws,
+            # head_fins) ship in packs the gate's world does not install. Tier 1 asserts that
+            # `if_wearer` holds NOTHING without a server; this is the half only a server can answer:
+            # that it holds with one, and lets go again when the wearer picks something up, with the
+            # piece standing still on their back.
+            f"data/{NAMESPACE}/armorpieces/armor_decoration/barehanded.json": {
+                "asset_id": "armorpieces:pinions",
+                "description": {"translate": "decoration.armorpieces.pinions"},
+                "anchors": ["back"],
+                "effects": [{
+                    "type": "armorpieces:if_wearer",
+                    "if": {"equipment": {"mainhand": {"items": "minecraft:air"}}},
+                    "then": {
+                        "type": "armorpieces:attribute",
+                        "id": f"{NAMESPACE}:barehanded",
+                        "attribute": "minecraft:armor",
+                        "amount": ARMOR_BONUS,
+                        "operation": "add_value",
+                    },
+                }],
+            },
         }
     if kind == MISSING_TAG:
         return {

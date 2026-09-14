@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_hive:silverfish_greaves",
+  "description": {
+    "translate": "decoration.armorpieces_hive.silverfish_greaves"
+  },
+  "anchors": [
+    "greaves"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap17ohp22bdm7a4d7r3jzaq"
+}

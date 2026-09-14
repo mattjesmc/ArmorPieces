@@ -1,0 +1,42 @@
+{
+  "_": [
+    "Problems tools/check_part.py reports on a SHIPPED part that a person has looked at and accepted.",
+    "tools/gate/parts.py fails on any problem not listed here, and on any listed problem that no longer",
+    "occurs - a waiver is matched on the check's exact wording, so a repaint or a moved face retires",
+    "it and a person looks again. Add a part only after looking at it on the figure; say when."
+  ],
+  "bandolier": {
+    "why": "Looked at on the figure and accepted as drawn, 2026-09-13.",
+    "problems": [
+      "paint: 4/54 faces have no paint behind them and render as holes unless cut on purpose: over_left[1].south, over_left[2].south, over_left[4].south, over_right[3].south",
+      "paint: 80 opaque px outside every face - the master and the model disagree about the shape",
+      "static: 3 static pixel(s) lie outside the master's silhouette and will not draw",
+      "2 pixel(s) of mask inlay lie outside the master's silhouette and will not draw"
+    ]
+  },
+  "bedroll": {
+    "why": "Looked at on the figure and accepted as drawn, 2026-09-13.",
+    "problems": [
+      "2 pixel(s) of mask inlay lie outside the master's silhouette and will not draw"
+    ]
+  },
+  "feathering": {
+    "why": "Looked at on the figure and accepted as drawn, 2026-09-13.",
+    "problems": [
+      "paint: 3/42 faces have no paint behind them and render as holes unless cut on purpose: crest[0].down, crest[1].south, crest[2].down"
+    ]
+  },
+  "great_helm": {
+    "why": "Looked at on the figure and accepted as drawn, 2026-09-13.",
+    "problems": [
+      "COPLANAR: cross_v's z face at -5 lies on the helmet shell, which is always worn when this part draws - move the face, or say why it cannot fight",
+      "paint: 1/48 faces have no paint behind them and render as holes unless cut on purpose: cross_h[1].south"
+    ]
+  },
+  "mittens": {
+    "why": "Looked at on the figure and accepted as drawn, 2026-09-13.",
+    "problems": [
+      "paint: 1/12 faces have no paint behind them and render as holes unless cut on purpose: main[1].west"
+    ]
+  }
+}

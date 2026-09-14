@@ -373,7 +373,7 @@ final class Table {
     }
 
     static Holder<ArmorSkin> skin(final String path) {
-        return element(ArmorPiecesRegistries.ARMOR_SKIN, Identifier.fromNamespaceAndPath(ArmorPieces.MOD_ID, path));
+        return element(ArmorPiecesRegistries.ARMOR_SKIN, ShippedData.shipped(ArmorPiecesRegistries.ARMOR_SKIN, path));
     }
 
     static Holder<Cloth> cloth(final String path) {

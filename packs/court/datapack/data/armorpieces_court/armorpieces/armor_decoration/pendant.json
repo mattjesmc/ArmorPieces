@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_court:pendant",
+  "description": {
+    "translate": "decoration.armorpieces_court.pendant"
+  },
+  "anchors": [
+    "collar"
+  ],
+  "fittings": [
+    "armorpieces:gemstone"
+  ],
+  "former_ids": [
+    "armorpieces:pendant"
+  ],
+  "uid": "ap1ha6pxuy7d7fuoa2kh4la"
+}

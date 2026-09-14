@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:sea_pickle"
+  },
+  "result": {
+    "id": "armorpieces:belt_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces_coral:sea_pickle_belt"
+    }
+  },
+  "category": "equipment"
+}

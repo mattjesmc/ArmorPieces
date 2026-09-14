@@ -1,6 +1,8 @@
 package com.mattjesmc.armorpieces.loot;
 
 import com.mattjesmc.armorpieces.cloth.Cloth;
+import com.mattjesmc.armorpieces.config.ArmorPiecesServerConfig;
+import com.mattjesmc.armorpieces.config.PartsSwitch;
 import com.mattjesmc.armorpieces.decoration.ArmorDecoration;
 import com.mattjesmc.armorpieces.decoration.ArmorPiecesRegistries;
 import com.mattjesmc.armorpieces.decoration.fitting.Fitting;
@@ -149,22 +151,31 @@ public class TemplateEntry extends LootPoolSingletonContainer {
      * of {@link MemberSet} is that what it holds is decided by the packs, late.
      */
     private List<ItemStack> candidates(final HolderGetter.Provider registries) {
+        // A member the server has switched off is not a candidate, whoever's table this is: the
+        // switch is about what the world offers, and a foreign table is one more place it offers.
+        final PartsSwitch offered = ArmorPiecesServerConfig.get().parts();
         final List<ItemStack> stacks = new ArrayList<>();
         for (final Holder<ArmorDecoration> part : this.parts.resolve(registries)) {
             // A part whose every socket was misspelled has no template to be handed out as. It is
             // reported by PackAudit; here it is simply not a candidate.
-            if (!part.value().anchors().isEmpty()) {
+            if (!part.value().anchors().isEmpty() && offered.offers(part, registries)) {
                 stacks.add(ModItems.templateFor(part.value().primaryAnchor(), part));
             }
         }
         for (final Holder<ArmorSkin> skin : this.skins.resolve(registries)) {
-            stacks.add(ModItems.skinTemplateFor(skin));
+            if (offered.offers(skin, registries)) {
+                stacks.add(ModItems.skinTemplateFor(skin));
+            }
         }
         for (final Holder<Cloth> cloth : this.cloths.resolve(registries)) {
-            stacks.add(ModItems.clothTemplateFor(cloth));
+            if (offered.offers(cloth, registries)) {
+                stacks.add(ModItems.clothTemplateFor(cloth));
+            }
         }
         for (final Holder<Fitting> fitting : this.fittings.resolve(registries)) {
-            stacks.add(ModItems.fittingTemplateFor(fitting));
+            if (offered.offers(fitting, registries)) {
+                stacks.add(ModItems.fittingTemplateFor(fitting));
+            }
         }
         return stacks;
     }

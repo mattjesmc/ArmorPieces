@@ -1,0 +1,25 @@
+{
+  "asset_id": "armorpieces_court:feathering",
+  "description": {
+    "translate": "decoration.armorpieces_court.feathering"
+  },
+  "anchors": [
+    "crest"
+  ],
+  "loot": [
+    {
+      "table": "minecraft:chests/jungle_temple",
+      "weight": 1,
+      "chance": 0.15
+    },
+    {
+      "table": "minecraft:chests/shipwreck_treasure",
+      "weight": 1,
+      "chance": 0.1
+    }
+  ],
+  "former_ids": [
+    "armorpieces:feathering"
+  ],
+  "uid": "ap1af3jinsz6xngw4wvqgua"
+}

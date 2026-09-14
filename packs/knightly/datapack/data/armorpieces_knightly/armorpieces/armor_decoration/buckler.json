@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_knightly:buckler",
+  "description": {
+    "translate": "decoration.armorpieces_knightly.buckler"
+  },
+  "anchors": [
+    "vambraces"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "former_ids": [
+    "armorpieces:buckler"
+  ],
+  "uid": "ap1wwnxxjx6ck7thfk764ya"
+}

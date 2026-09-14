@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_knightly:great_helm",
+  "description": {
+    "translate": "decoration.armorpieces_knightly.great_helm"
+  },
+  "anchors": [
+    "brow"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "former_ids": [
+    "armorpieces:great_helm"
+  ],
+  "uid": "ap1fugfzwq6dku4svec6sva"
+}

@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_samurai:waraji",
+  "description": {
+    "translate": "decoration.armorpieces_samurai.waraji"
+  },
+  "anchors": [
+    "spurs"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "uid": "ap1nzoq73gskq37bozrosda"
+}

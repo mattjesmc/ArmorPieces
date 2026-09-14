@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_tourney:ecranche",
+  "description": {
+    "translate": "decoration.armorpieces_tourney.ecranche"
+  },
+  "anchors": [
+    "back"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "uid": "ap1l7xjn5rsllsdpoo2imsa"
+}

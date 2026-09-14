@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_knightly:spire",
+  "description": {
+    "translate": "decoration.armorpieces_knightly.spire"
+  },
+  "anchors": [
+    "crest"
+  ],
+  "fittings": [
+    "armorpieces:gemstone"
+  ],
+  "former_ids": [
+    "armorpieces:spire"
+  ],
+  "uid": "ap1cu4qldyerxnyocknhnia"
+}

@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_tourney:sabatons",
+  "description": {
+    "translate": "decoration.armorpieces_tourney.sabatons"
+  },
+  "anchors": [
+    "spurs"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1ynssylmk5feuwgx4h6rq"
+}

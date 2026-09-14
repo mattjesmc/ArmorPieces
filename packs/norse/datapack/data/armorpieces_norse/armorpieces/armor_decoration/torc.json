@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_norse:torc",
+  "description": {
+    "translate": "decoration.armorpieces_norse.torc"
+  },
+  "anchors": [
+    "collar"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1r5miinj2c4uxpzv4s5ua"
+}

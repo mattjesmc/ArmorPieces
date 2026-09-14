@@ -1,0 +1,25 @@
+{
+  "asset_id": "armorpieces_wayfarer:puttees",
+  "description": {
+    "translate": "decoration.armorpieces_wayfarer.puttees"
+  },
+  "anchors": [
+    "greaves"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "effects": [
+    {
+      "type": "armorpieces:attribute",
+      "id": "armorpieces:puttees_speed",
+      "attribute": "minecraft:movement_speed",
+      "amount": 0.05,
+      "operation": "add_multiplied_base"
+    }
+  ],
+  "former_ids": [
+    "armorpieces:puttees"
+  ],
+  "uid": "ap1wisoqva2ybz2p7clneya"
+}

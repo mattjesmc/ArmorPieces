@@ -26,8 +26,9 @@ import net.minecraft.world.level.storage.loot.LootTable;
 import org.jspecify.annotations.Nullable;
 
 /**
- * The settings a SERVER OWNER edits - {@code config/armorpieces-server.json}. Today it is one
- * subject: how much of this mod the world hands out.
+ * The settings a SERVER OWNER edits - {@code config/armorpieces-server.json}. Two subjects: how
+ * much of this mod the world hands out, and which of the installed content it offers at all
+ * ({@link PartsSwitch}).
  *
  * <p>This is the file {@link ArmorPiecesConfig} says in its own javadoc a server-side setting would
  * need. The two are deliberately separate rather than one file with a server section: that one is
@@ -56,6 +57,10 @@ import org.jspecify.annotations.Nullable;
  *       "remove": [ "minecraft:chests/desert_pyramid" ]
  *     },
  *     "armorpieces:court": { "enabled": false }
+ *   },
+ *   "parts": {
+ *     "mod_parts": true,
+ *     "disabled": [ "armorpieces:visor", "#armorpieces:knightly" ]
  *   } }
  * }</pre>
  *
@@ -80,13 +85,17 @@ import org.jspecify.annotations.Nullable;
  *                         as {@code enabled} does, and 1 changes nothing.
  * @param enabled          whether the mod adds anything to any loot table at all. The off switch,
  *                         for a server that wants parts crafted and never found.
+ * @param parts            which of the installed parts, skins, cloths and fittings are offered.
+ *                         Removing content is a setting and never a pack; this is that setting.
  */
 public record ArmorPiecesServerConfig(
     boolean enabled,
     float chanceMultiplier,
-    Map<ResourceKey<LootGroup>, ArmorPiecesServerConfig.GroupOverride> groups
+    Map<ResourceKey<LootGroup>, ArmorPiecesServerConfig.GroupOverride> groups,
+    PartsSwitch parts
 ) {
-    public static final ArmorPiecesServerConfig DEFAULT = new ArmorPiecesServerConfig(true, 1.0f, Map.of());
+    public static final ArmorPiecesServerConfig DEFAULT =
+        new ArmorPiecesServerConfig(true, 1.0f, Map.of(), PartsSwitch.DEFAULT);
 
     public static final Codec<ArmorPiecesServerConfig> CODEC = RecordCodecBuilder.create(i ->
         i.group(
@@ -99,7 +108,9 @@ public record ArmorPiecesServerConfig(
                 .forGetter(ArmorPiecesServerConfig::chanceMultiplier),
             Codec.unboundedMap(ResourceKey.codec(ArmorPiecesRegistries.LOOT_GROUP), GroupOverride.CODEC)
                 .optionalFieldOf("groups", Map.of())
-                .forGetter(ArmorPiecesServerConfig::groups)
+                .forGetter(ArmorPiecesServerConfig::groups),
+            PartsSwitch.CODEC.optionalFieldOf("parts", PartsSwitch.DEFAULT)
+                .forGetter(ArmorPiecesServerConfig::parts)
         ).apply(i, ArmorPiecesServerConfig::new));
 
     /**
@@ -117,7 +128,8 @@ public record ArmorPiecesServerConfig(
             Codec.floatRange(0.0f, 100.0f).fieldOf("chance_multiplier")
                 .forGetter(ArmorPiecesServerConfig::chanceMultiplier),
             Codec.unboundedMap(ResourceKey.codec(ArmorPiecesRegistries.LOOT_GROUP), GroupOverride.CODEC)
-                .fieldOf("groups").forGetter(ArmorPiecesServerConfig::groups)
+                .fieldOf("groups").forGetter(ArmorPiecesServerConfig::groups),
+            PartsSwitch.WRITE_CODEC.fieldOf("parts").forGetter(ArmorPiecesServerConfig::parts)
         ).apply(i, ArmorPiecesServerConfig::new));
 
     private static final String FILE_NAME = ArmorPieces.MOD_ID + "-server.json";

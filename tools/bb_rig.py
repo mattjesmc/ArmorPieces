@@ -426,7 +426,20 @@ def pack_dirs(packs=None) -> list[Path]:
     resources last. A set of shipped pieces needs no arguments; an outfit that borrows from two
     packs names them both and still finds the mod's pieces underneath, which is what an outfit
     mixing the two looks like."""
-    return [Path(p) for p in (packs or [])] + [ROOT / "src" / "main" / "resources"]
+    # The mod's own pieces have lived in packs/knightly, court and wayfarer since the split of
+    # 2026-09-14 (the jar carries them as built-in packs), so every pack under packs/ is searched
+    # after the given ones, the mod's own resources last. packs/legacy is skipped: it restores the
+    # old ids and would answer for a piece the split moved.
+    dirs = [Path(p) for p in (packs or [])]
+    packs_dir = ROOT / "packs"
+    if packs_dir.is_dir():
+        for pack in sorted(packs_dir.iterdir()):
+            if pack.name in ("legacy", "vlm-scratch") or not pack.is_dir():
+                continue
+            for half in ("datapack", "resourcepack"):
+                if (pack / half).is_dir() and (pack / half) not in dirs:
+                    dirs.append(pack / half)
+    return dirs + [ROOT / "src" / "main" / "resources"]
 
 
 def _find(dirs: list[Path], relative: str) -> Path | None:

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:white_carpet"
+  },
+  "result": {
+    "id": "armorpieces:greaves_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces_animals:llama_wraps"
+    }
+  },
+  "category": "equipment"
+}

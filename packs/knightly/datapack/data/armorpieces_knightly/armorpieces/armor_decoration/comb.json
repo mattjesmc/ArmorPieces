@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_knightly:comb",
+  "description": {
+    "translate": "decoration.armorpieces_knightly.comb"
+  },
+  "anchors": [
+    "crest"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "former_ids": [
+    "armorpieces:comb"
+  ],
+  "uid": "ap1jqanhdsdq76kg7x6euka"
+}

@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_antiquity:ocreae",
+  "description": {
+    "translate": "decoration.armorpieces_antiquity.ocreae"
+  },
+  "anchors": [
+    "greaves"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap14lksaf4dw72krrrwbl6a"
+}

@@ -1,18 +1,18 @@
-# Authoring parts
+# Authoring pieces
 
-A part is two files and a PNG, plus a line in your language file for the name. None of it is code.
+A piece is two files and a PNG, plus a line in your language file for the name. None of it is code.
 Namespace them however you like; every namespace is scanned. [Skins](#skins) — the armor's own
 texture rather than something worn on it — are authored the same way and are two PNGs and a file.
 
 There are two ways to make them:
 
-- **[In Blockbench](#in-blockbench)** with the mod's plugin, which opens a part on the vanilla player
+- **[In Blockbench](#in-blockbench)** with the mod's plugin, which opens a piece on the vanilla player
   wearing real armor, paints the textures in place, previews any trim material, and writes every file
   on Save.
 - **[By hand](#by-hand)**, writing the three files yourself. This section is also the reference for
   what the plugin writes.
 
-Either way, [giving a part behaviour](#giving-a-part-behaviour) is one more field in the same file.
+Either way, [giving a piece behaviour](#giving-a-part-behaviour) is one more field in the same file.
 
 ## In Blockbench
 
@@ -28,7 +28,13 @@ never has to live inside it. A player's part is two folders — a resource pack 
 `.minecraft/resourcepacks/<name>` for the model, textures and names, and a datapack under
 `.minecraft/saves/<world>/datapacks/<name>` for the part file, its recipe and any fittings — and
 the plugin knows both. *Tools › Armor Pieces › New Pack…* makes either kind, with a `pack.mcmeta`
-at the format the game this mod is built for wants, and adds it to your list; *Packs…* is that
+at the format the game this mod is built for wants — and, beside the game's own `pack` section, an
+`"armorpieces": {"requires": "0.4.0"}` section the game ignores and everything else reads: it is how
+a pack says which mod version it needs, so the library can label it, the editor can grey it out on
+an older toolkit and `pack_manifest.py` can report it. Every pack is additive (it may only define
+ids nothing else defines; removing content is a server setting, never a pack), and a pack that only
+adds still has to say what it adds to. Write the line yourself in a pack made by hand;
+`export_pack.py` notes a pack that has none — and adds it to your list; *Packs…* is that
 list, any folder holding `data/` or `assets/`, added with a folder picker. Pieces are looked for
 in your list, then the repository's own places — `src/main/resources`, then every pack under
 `packs/`, then its `run/` resource packs and worlds' datapacks — then the game's `resourcepacks/`
@@ -963,6 +969,10 @@ start of every datapack reload, so `/reload` picks up an edit and there is no se
       "remove": [ "minecraft:chests/desert_pyramid" ]
     },
     "armorpieces:court": { "enabled": false }
+  },
+  "parts": {
+    "mod_parts": true,
+    "disabled": [ "#armorpieces:knightly", "armorpieces_dragon:dragon_wings" ]
   } }
 ```
 
@@ -976,6 +986,20 @@ group, which is content, which is a datapack.
 
 The invariants survive all of it: still one pool per table, still one roll, and the chance is still
 a property of the table rather than of a part.
+
+`parts` is the other subject of the file: not how much, but *which*. Every pack is additive — a pack
+may only define ids nothing else defines — so a pack can never take content away, and **removing
+content is a setting, never a pack.** `parts.disabled` is a list of ids and `#tags` in any of the
+four content registries (parts, skins, cloths, fittings; one list serves all four, and a tag is
+looked up in the member's own registry), and `parts.mod_parts: false` switches off the whole
+`armorpieces` namespace in one line. Switched off means *not offered*: the member is in no loot pool
+and no `armorpieces:template` entry, `set_decoration` will not draw it, its template recipe is
+dropped as the recipes load (so it is not in the recipe book either), and both smithing tables
+refuse a template carrying it. It does **not** mean uninstalled: the data file still loads, a
+piece already worn is still read and still drawn, and a template already in a chest is still an
+item. The moment disabling stopped a worn piece rendering, the split's break would have been
+rebuilt as a setting. Loot and recipes follow a `/reload`; the creative tab, which is built on the
+client from what the server tells it on join, is rebuilt on the next join.
 
 `/armorpieces table` opens the advanced smithing table wherever you stand, behind the same
 permission level and for the same reason: a piece can be dressed and undressed — Remove is the one

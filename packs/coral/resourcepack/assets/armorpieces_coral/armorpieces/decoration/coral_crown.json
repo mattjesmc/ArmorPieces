@@ -13,7 +13,7 @@
         {
           "origin": [
             -0.5,
-            -2.5,
+            -2,
             -3.5
           ],
           "size": [
@@ -32,7 +32,7 @@
           "name": "horn_coral",
           "pivot": [
             0,
-            -2.5,
+            -2,
             -2.5
           ],
           "rotation": [
@@ -111,7 +111,7 @@
           "name": "fire_coral",
           "pivot": [
             0,
-            -2.5,
+            -2,
             0
           ],
           "rotation": [
@@ -158,7 +158,7 @@
           "name": "tube_coral",
           "pivot": [
             0,
-            -2.5,
+            -2,
             2.5
           ],
           "rotation": [

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:raw_copper"
+  },
+  "result": {
+    "id": "armorpieces:vambraces_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces_norse:oath_rings"
+    }
+  },
+  "category": "equipment"
+}

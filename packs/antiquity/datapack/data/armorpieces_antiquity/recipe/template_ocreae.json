@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:copper_boots"
+  },
+  "result": {
+    "id": "armorpieces:greaves_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces_antiquity:ocreae"
+    }
+  },
+  "category": "equipment"
+}

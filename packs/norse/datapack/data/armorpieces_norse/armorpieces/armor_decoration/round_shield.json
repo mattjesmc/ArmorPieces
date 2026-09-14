@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_norse:round_shield",
+  "description": {
+    "translate": "decoration.armorpieces_norse.round_shield"
+  },
+  "anchors": [
+    "back"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap15u5taoyy74qulw5eaipq"
+}

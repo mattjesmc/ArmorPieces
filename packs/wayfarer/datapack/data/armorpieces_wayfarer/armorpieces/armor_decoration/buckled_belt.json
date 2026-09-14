@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_wayfarer:buckled_belt",
+  "description": {
+    "translate": "decoration.armorpieces_wayfarer.buckled_belt"
+  },
+  "anchors": [
+    "belt"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "former_ids": [
+    "armorpieces:buckled_belt"
+  ],
+  "uid": "ap1k2ymbmotx5djkamundha"
+}

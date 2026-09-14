@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_coral:dolphin_flukes",
+  "description": {
+    "translate": "decoration.armorpieces_coral.dolphin_flukes"
+  },
+  "anchors": [
+    "spurs"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap15copmrniqx63nkzpv7ba"
+}

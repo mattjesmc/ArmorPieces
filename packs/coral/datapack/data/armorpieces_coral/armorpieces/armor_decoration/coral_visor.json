@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_coral:coral_visor",
+  "description": {
+    "translate": "decoration.armorpieces_coral.coral_visor"
+  },
+  "anchors": [
+    "brow"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap15u6qer7ntfphfqyfrwvq"
+}

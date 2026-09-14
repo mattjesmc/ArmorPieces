@@ -68,7 +68,7 @@ class ForeignTableTest {
         final LootTable table = table("""
             { "type": "minecraft:chest",
               "pools": [ { "rolls": 1, "entries": [
-                { "type": "armorpieces:template", "parts": "#armorpieces:knightly" } ] } ] }
+                { "type": "armorpieces:template", "parts": "#armorpieces_knightly:knightly" } ] } ] }
             """);
         assertEquals(List.of(), problems(table));
     }
@@ -81,7 +81,7 @@ class ForeignTableTest {
               "pools": [ { "rolls": 1, "entries": [
                 { "type": "armorpieces:template",
                   "parts": "#armorpieces:court",
-                  "skins": ["armorpieces:plate"],
+                  "skins": ["armorpieces_knightly:plate"],
                   "cloths": ["armorpieces:tunic"],
                   "fittings": "#armorpieces:common",
                   "weight": 3 } ] } ] }
@@ -127,7 +127,7 @@ class ForeignTableTest {
               "pools": [ { "rolls": 1, "entries": [
                 { "type": "minecraft:item", "name": "minecraft:golden_helmet",
                   "functions": [ { "function": "armorpieces:set_decoration",
-                    "socket": "brow", "part": "armorpieces:circlet", "material": "minecraft:gold",
+                    "socket": "brow", "part": "armorpieces_court:circlet", "material": "minecraft:gold",
                     "fittings": { "armorpieces:gemstone": "minecraft:emerald" } } ] } ] } ] }
             """);
         assertEquals(List.of(), problems(table));
@@ -144,7 +144,7 @@ class ForeignTableTest {
               "pools": [ { "rolls": 1, "entries": [
                 { "type": "minecraft:item", "name": "minecraft:iron_chestplate",
                   "functions": [ { "function": "armorpieces:set_decoration",
-                    "socket": "back", "part": "armorpieces:circlet",
+                    "socket": "back", "part": "armorpieces_court:circlet",
                     "material": "minecraft:iron" } ] } ] } ] }
             """);
         assertSaid(table, "fits socket back");
@@ -158,7 +158,7 @@ class ForeignTableTest {
               "pools": [ { "rolls": 1, "entries": [
                 { "type": "minecraft:item", "name": "minecraft:golden_helmet",
                   "functions": [ { "function": "armorpieces:set_decoration",
-                    "socket": "brow", "part": "armorpieces:circlet", "material": "minecraft:gold",
+                    "socket": "brow", "part": "armorpieces_court:circlet", "material": "minecraft:gold",
                     "fittings": { "armorpieces:guard": "minecraft:iron" } } ] } ] } ] }
             """);
         assertSaid(table, "has no fitting armorpieces:guard");
@@ -179,7 +179,7 @@ class ForeignTableTest {
               "pools": [ { "rolls": 1, "entries": [
                 { "type": "minecraft:item", "name": "minecraft:iron_helmet",
                   "functions": [ { "function": "armorpieces:set_decoration",
-                    "socket": "crest", "part": "#armorpieces:knightly",
+                    "socket": "crest", "part": "#armorpieces_knightly:knightly",
                     "material": "minecraft:iron" } ] } ] } ] }
             """);
         assertEquals(List.of(), problems(table));
@@ -197,11 +197,11 @@ class ForeignTableTest {
         final String source = """
             { "type": "minecraft:chest",
               "pools": [ { "rolls": 1, "entries": [
-                { "type": "armorpieces:template", "parts": "#armorpieces:knightly",
+                { "type": "armorpieces:template", "parts": "#armorpieces_knightly:knightly",
                   "fittings": ["armorpieces:gemstone"], "weight": 4 },
                 { "type": "minecraft:item", "name": "minecraft:golden_helmet",
                   "functions": [ { "function": "armorpieces:set_decoration",
-                    "socket": "brow", "part": "armorpieces:circlet", "material": "minecraft:gold",
+                    "socket": "brow", "part": "armorpieces_court:circlet", "material": "minecraft:gold",
                     "fittings": { "armorpieces:gemstone": "minecraft:emerald" } } ] } ] } ] }
             """;
         final JsonElement once = encode(table(source));

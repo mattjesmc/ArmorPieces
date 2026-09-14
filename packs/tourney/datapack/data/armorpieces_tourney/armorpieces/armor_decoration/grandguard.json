@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_tourney:grandguard",
+  "description": {
+    "translate": "decoration.armorpieces_tourney.grandguard"
+  },
+  "anchors": [
+    "pauldrons"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1jrrjqfvt4rfovtnbe2wq"
+}

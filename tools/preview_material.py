@@ -514,8 +514,22 @@ def fitting_choices(pack: Path) -> dict:
 # ---- the reference the game's own bake is held to ---------------------------------------------
 
 REFERENCE = ROOT / "docs" / "plans" / "decoration-bake-reference.json"
-DECORATIONS = RESOURCES / "assets" / "armorpieces" / "textures" / "entity" / "decoration"
-PART_DATA = RESOURCES / "data" / "armorpieces" / "armorpieces" / "armor_decoration"
+# The mod's own art since the split of 2026-09-14: the three built-in packs the jar carries
+# (BuiltinPacks.java), by namespace. Each case records which, and the Java test reads the sheet
+# from that pack's resources.
+BUILTIN = {
+    "armorpieces_knightly": ROOT / "packs" / "knightly",
+    "armorpieces_court": ROOT / "packs" / "court",
+    "armorpieces_wayfarer": ROOT / "packs" / "wayfarer",
+}
+
+
+def _decorations(namespace: str) -> Path:
+    return BUILTIN[namespace] / "resourcepack" / "assets" / namespace / "textures" / "entity" / "decoration"
+
+
+def _part_data(namespace: str) -> Path:
+    return BUILTIN[namespace] / "datapack" / "data" / namespace / "armorpieces" / "armor_decoration"
 
 # What a case fills each of the mod's masked fittings with. A material fitting takes a palette
 # suffix and a dye fitting takes a dye name, which are the two shapes FittingColour has; the banner
@@ -550,40 +564,42 @@ def _ramp_reference(ramp) -> dict:
     }
 
 
-def _parts() -> list[tuple[str, list[str]]]:
-    """Every part the mod itself ships, as (texture name, fitting ids), in a fixed order.
+def _parts() -> list[tuple[str, str, list[str]]]:
+    """Every part the jar itself ships, as (namespace, texture name, fitting ids), in a fixed order.
 
-    The mod's own, not the packs': the arithmetic is the same whoever painted the master, and a
-    reference that named a pack would go stale the day that pack moved."""
+    The jar's own three packs, not the others': the arithmetic is the same whoever painted the
+    master, and a reference that named an outside pack would go stale the day that pack moved."""
     parts = []
-    for path in sorted(PART_DATA.glob("*.json")):
-        data = _read_json(path)
-        namespace, name = _split_id(data.get("asset_id", ""), "minecraft")
-        if namespace != "armorpieces" or not (DECORATIONS / f"{name}.png").is_file():
-            continue
-        parts.append((name, [f for f in data.get("fittings", []) if isinstance(f, str)]))
+    for namespace in BUILTIN:
+        for path in sorted(_part_data(namespace).glob("*.json")):
+            data = _read_json(path)
+            ns, name = _split_id(data.get("asset_id", ""), "minecraft")
+            if ns != namespace or not (_decorations(namespace) / f"{name}.png").is_file():
+                continue
+            parts.append((namespace, name, [f for f in data.get("fittings", []) if isinstance(f, str)]))
     return parts
 
 
-def _sheets(name: str, fittings: list[str]):
+def _sheets(namespace: str, name: str, fittings: list[str]):
     """The files one part is composited from: its master, its static layer if it has one, and one
     mask per fitting that both ships a sheet and has a value this reference knows how to fill."""
-    statics = DECORATIONS / f"{name}{STATIC_SUFFIX}.png"
+    decorations = _decorations(namespace)
+    statics = decorations / f"{name}{STATIC_SUFFIX}.png"
     masks = []
     for fitting in fittings:
         _, path = _split_id(fitting, "armorpieces")
-        sheet = DECORATIONS / f"{name}_{path}.png"
+        sheet = decorations / f"{name}_{path}.png"
         if path in FITTING_VALUES and sheet.is_file():
             masks.append((path, sheet))
-    return DECORATIONS / f"{name}.png", (statics if statics.is_file() else None), masks
+    return decorations / f"{name}.png", (statics if statics.is_file() else None), masks
 
 
-def _case(name: str, fittings: list[str], material: str, fill: bool) -> dict:
+def _case(namespace: str, name: str, fittings: list[str], material: str, fill: bool) -> dict:
     """One composited picture, described so another implementation can produce it and compare.
 
     The master's own digest travels with it: a repainted master changes the answer without anything
     being wrong, and the Java half should say so in those words rather than accusing the arithmetic."""
-    master_path, static_path, masks = _sheets(name, fittings)
+    master_path, static_path, masks = _sheets(namespace, name, fittings)
     master = Image.open(master_path)
     statics = Image.open(static_path) if static_path is not None else None
     out = recolour(master, statics, material_ramp(material))
@@ -595,6 +611,7 @@ def _case(name: str, fittings: list[str], material: str, fill: bool) -> dict:
             filled.append({"mask": sheet.name, "value": value})
     return {
         "part": name,
+        "namespace": namespace,
         "material": material,
         "master": master_path.name,
         "static": static_path.name if static_path is not None else None,
@@ -626,18 +643,20 @@ def reference() -> dict:
     # Every colour a static ramp is ever built around here: the dyes an inlay can be, and the
     # colours the shipped static layers actually use, which is what recolour builds one for.
     colours = {"#%02x%02x%02x" % rgb: rgb for rgb in DYES.values()}
-    for path in sorted(DECORATIONS.glob(f"*{STATIC_SUFFIX}.png")):
-        for pixel in set(Image.open(path).convert("RGBA").getdata()):
-            if pixel[3]:
-                colours["#%02x%02x%02x" % pixel[:3]] = pixel[:3]
+    for namespace in BUILTIN:
+        for path in sorted(_decorations(namespace).glob(f"*{STATIC_SUFFIX}.png")):
+            for pixel in set(Image.open(path).convert("RGBA").getdata()):
+                if pixel[3]:
+                    colours["#%02x%02x%02x" % pixel[:3]] = pixel[:3]
     statics = {key: _ramp_reference(static_ramp(rgb)) for key, rgb in sorted(colours.items())}
 
     parts = _parts()
-    cases = [_case(name, fittings, "iron", False) for name, fittings in parts]
-    cases += [_case(name, fittings, "gold", True)
-              for name, fittings in parts if _sheets(name, fittings)[2]]
-    rich = dict(parts).get(RICH_PART, [])
-    cases += [_case(RICH_PART, rich, material, True) for material in materials]
+    cases = [_case(ns, name, fittings, "iron", False) for ns, name, fittings in parts]
+    cases += [_case(ns, name, fittings, "gold", True)
+              for ns, name, fittings in parts if _sheets(ns, name, fittings)[2]]
+    rich = [(ns, fittings) for ns, name, fittings in parts if name == RICH_PART]
+    if rich:
+        cases += [_case(rich[0][0], RICH_PART, rich[0][1], material, True) for material in materials]
 
     return {
         "note": "generated by python tools/preview_material.py --reference; the Java bake must match",

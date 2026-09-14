@@ -94,11 +94,16 @@ pack needs 12 sockets of its own before it ships one.
 
 | pack | pieces | skins | sockets | still needed | outfit | borrowed |
 |---|---|---|---|---|---|---|
-| Coral | 10 | 0 | 7/12 | brow, vambraces, belt, knees, spurs | The Reef; Deep Tide | 5; 7 |
+| Coral | ~~10~~ **15** | 0 | **12/12** | ~~brow, vambraces, belt, knees, spurs~~ built 2026-09-12 | The Reef; Deep Tide | **0**; 7 |
 | The Wild Hunt | 15 | 0 | 10/12 | back, belt | The Wild Hunt | 2 |
-| Animals | 8 | 0 | 8/12 | crest, vambraces, tassets, greaves | The Menagerie | 4 |
-| The Hive | 4 | 0 | 4/12 | eight sockets | Chitin | 8 |
+| Animals | ~~8~~ **12** | 0 | **12/12** | ~~crest, vambraces, tassets, greaves~~ built 2026-09-12 | The Menagerie | **0** |
+| The Hive | ~~4~~ **12** | 0 | **12/12** | ~~eight sockets~~ built 2026-09-12 (`pack-line.md`) | Chitin | **0** |
 | Legends | 0 | 5 | — | pieces, if it wants an outfit | none | — |
+
+**2026-09-12: three of the five stand on their own.** Coral, Animals and the Hive got their
+missing seventeen in one evening (see `pack-line.md`'s header); the Hive question below is
+answered — it is a pack. The Wild Hunt's two are now the only pieces between the split's packs
+and rule 1.
 
 **The Wild Hunt is two pieces from being the first pack to satisfy rule 1** — a back and a belt.
 That is the cheapest useful content work in the whole line, ahead of Coral's eight, which the
@@ -311,3 +316,59 @@ on all five, `check_lang.py`, `check_pack_line.py`, `./gradlew build` and the te
   and no registry, codec, effect or loot mechanism moved.
 - It is not the pack line. `docs/plans/pack-line.md` still holds the five place-based packs, and
   none of them is built. This split is what those packs are built *on top of*.
+
+---
+
+## Finishing the split — as built, 2026-09-14
+
+**It happened.** `tools/split_mod.py` moved the mod's last 66 pieces and 9 skins into three packs,
+cut along the theme tags, and the mod is the engine: registries, codecs, rendering, effects, loot
+machinery, the identity system, the four fittings and the two cloths, and no piece or skin of its
+own.
+
+| pack | namespace | from the mod | skins |
+|---|---|---|---|
+| `packs/knightly` | `armorpieces_knightly` | the 30 knightly pieces, `#armorpieces:knightly` | plate, gothic, milanese, mail, chainmail |
+| `packs/court` | `armorpieces_court` | the 23 court pieces | lamellar, scale |
+| `packs/wayfarer` | `armorpieces_wayfarer` | the 13 wayfarer pieces | gambeson, brigandine |
+
+**The bundle question, answered the recommended way.** The jar carries the three as **built-in
+packs, on by default, switchable off**: `build.gradle` copies each pack's `data/` and `assets/`
+into `resourcepacks/<theme>/` in the jar (no `pack.mcmeta` of their own — the loader describes a
+built-in pack for whichever side reads it) and `pack/BuiltinPacks.java` registers them through
+Fabric's resource loader (`ResourceLoader.registerBuiltinPack`, `DEFAULT_ENABLED`) before anything
+reads a pack. A fresh install has content; a server that wants none of it turns the packs off, or
+says `parts.mod_parts: false`, which `PartsSwitch` now reads as the `armorpieces` namespace AND the
+three built-in ones (`BuiltinPacks.isModContent`).
+
+**What was decided of the undecided list.**
+
+- *Boundaries:* the three theme tags, as they were. Court has no `horns` and no `greaves` piece of
+  its own and Wayfarer is 8 of 12 sockets, so their outfits (High Court, Far Road) borrow the way
+  they always did; rule 1 of the pack line is a rule for packs that ship an outfit as their own,
+  and these three ship inside the jar.
+- *Fittings, cloths, skins:* fittings and cloths stay with the engine (a fitting's type is code
+  and every pack names it; the cloth template item's icons select on `armorpieces:tabard` /
+  `armorpieces:tunic` in the mod's own item model). Skins moved with their loot groups.
+- *Loot groups and tags:* each theme's group went with it, over the pack's own tag
+  (`#armorpieces_knightly:knightly` …); `fittings: "#armorpieces:common"` still points at the
+  engine's tag.
+- *Stage sets:* `StageCommand.java`'s three are namespaced and stay the mod's — the modpage
+  generator lists a set as the jar's own when every piece is in a jar namespace, so the site keeps
+  seeing them as `armorpieces-knight_errant` and the packs declare no duplicate.
+- *The gate's content counts:* `ShippedData.mod()` is the jar — the engine's resources plus the
+  three built-in datapacks — and every test that named `armorpieces:<piece>` names the new id or
+  asks `ShippedData.shipped(registry, path)`. `test_pick_pieces` expects the mod at 0 pieces and
+  Court at 23; `packs/legacy` at 91 and 14. Gate tiers 0 and 1 are green (15/15), 564 JUnit tests.
+- *The uids:* a move mints anew — `packs/legacy` restores the old id with the old uid, and two
+  files may not share one — so the 75 moved files carry fresh uids and `former_ids`; the lock
+  grew to 330 entries.
+- *The mod page:* `.modpage/generators/armorpieces.py` reads all four roots, so the counts and
+  the piece tables still say 66 pieces and nine skins; the prose says where they live.
+
+**Still owed.** Nothing has been seen in game: the built-in packs' registration, `DEFAULT_ENABLED`
+on an existing world, and the 0.3.0 save rebinding through `former_ids` on a bare jar are all
+tier-3 proofs, and the dev client's port was held by another project's client when this landed.
+The site's `armorpieces` library entry (already `archive: true`) and the plugin's pack list know
+nothing of the three new folders yet; `tools/register_packs.py` adds them to Blockbench on the next
+batch.

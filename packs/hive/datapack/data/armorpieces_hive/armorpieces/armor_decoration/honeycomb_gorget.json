@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_hive:honeycomb_gorget",
+  "description": {
+    "translate": "decoration.armorpieces_hive.honeycomb_gorget"
+  },
+  "anchors": [
+    "collar"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap176tjd45b7kspqbdzx3iq"
+}

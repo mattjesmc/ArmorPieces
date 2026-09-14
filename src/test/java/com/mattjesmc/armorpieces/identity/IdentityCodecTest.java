@@ -54,7 +54,7 @@ import org.junit.jupiter.api.Test;
  * {@code armorpieces:tusks} is the id a 0.3.0 save would have written. No game, no server, no world.
  */
 class IdentityCodecTest {
-    private static final Identifier VISOR = Identifier.fromNamespaceAndPath("armorpieces", "visor");
+    private static final Identifier VISOR = Identifier.fromNamespaceAndPath("armorpieces_knightly", "visor");
     private static final Identifier MOVED = Identifier.fromNamespaceAndPath("armorpieces_hunt", "tusks");
     private static final Identifier OLD = Identifier.fromNamespaceAndPath("armorpieces", "tusks");
     private static final Identifier SKIN_MOVED =
@@ -162,7 +162,7 @@ class IdentityCodecTest {
               "minecraft:custom_name": "'Grandfather'",
               "armorpieces:decorations": {
                 "crest": {"material": "minecraft:gold", "decoration": "armorpieces:nonesuch"},
-                "brow": {"material": "minecraft:iron", "decoration": "armorpieces:visor"}
+                "brow": {"material": "minecraft:iron", "decoration": "armorpieces_knightly:visor"}
               }
             }
             """)).getOrThrow();
@@ -236,7 +236,7 @@ class IdentityCodecTest {
     @Test
     void theIdBeatsAStaleUid() {
         final ArmorDecorations worn = ArmorDecorations.CODEC.parse(ops, json("""
-            {"brow": {"material": "minecraft:iron", "decoration": "armorpieces:visor",
+            {"brow": {"material": "minecraft:iron", "decoration": "armorpieces_knightly:visor",
                       "uid": "ap1testtusks"}}
             """)).getOrThrow();
 
@@ -249,7 +249,7 @@ class IdentityCodecTest {
     void anUnknownSocketIsKept() {
         Rebind.clear();
         final JsonElement written = json("""
-            {"epaulette": {"material": "minecraft:gold", "decoration": "armorpieces:visor"}}
+            {"epaulette": {"material": "minecraft:gold", "decoration": "armorpieces_knightly:visor"}}
             """);
         final ArmorDecorations worn = ArmorDecorations.CODEC.parse(ops, written).getOrThrow();
         assertEquals(0, worn.entries().size(), "this version has no such socket");

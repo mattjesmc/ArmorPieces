@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_court:coronet",
+  "description": {
+    "translate": "decoration.armorpieces_court.coronet"
+  },
+  "anchors": [
+    "brow"
+  ],
+  "fittings": [
+    "armorpieces:gemstone"
+  ],
+  "former_ids": [
+    "armorpieces:coronet"
+  ],
+  "uid": "ap1xj675nc3idl2l25lwzza"
+}

@@ -1,0 +1,125 @@
+{
+  "sets": [
+    {
+      "id": "triumph",
+      "title": "The Triumph",
+      "description": "Bronze and red leather, Greece and Rome together - a transverse crest, the Corinthian face, the horns of Ammon, epomides at the shoulders, a scutum on the back, phalerae on the chest, a manica on each arm, the cingulum with its apron, pteruges over the thighs, gorgon cops, muscled ocreae and caligae at the heels. All twelve sockets are this pack's own.",
+      "set": {
+        "name": "The Triumph",
+        "slots": {
+          "helmet": {
+            "material": "gold"
+          },
+          "chestplate": {
+            "material": "gold"
+          },
+          "leggings": {
+            "material": "gold"
+          },
+          "boots": {
+            "material": "gold"
+          }
+        },
+        "pieces": {
+          "crest": {
+            "id": "armorpieces_antiquity:transverse_crest",
+            "pack": "armorpieces-antiquity",
+            "material": "copper",
+            "fittings": {
+              "armorpieces:guard": "minecraft:copper"
+            }
+          },
+          "brow": {
+            "id": "armorpieces_antiquity:corinthian_face",
+            "pack": "armorpieces-antiquity",
+            "material": "copper",
+            "fittings": {
+              "armorpieces:guard": "minecraft:copper"
+            }
+          },
+          "horns": {
+            "id": "armorpieces_antiquity:ammon_horns",
+            "pack": "armorpieces-antiquity",
+            "material": "copper",
+            "fittings": {
+              "armorpieces:guard": "minecraft:copper"
+            }
+          },
+          "pauldrons": {
+            "id": "armorpieces_antiquity:epomides",
+            "pack": "armorpieces-antiquity",
+            "material": "copper",
+            "fittings": {
+              "armorpieces:guard": "minecraft:copper"
+            }
+          },
+          "back": {
+            "id": "armorpieces_antiquity:scutum",
+            "pack": "armorpieces-antiquity",
+            "material": "copper",
+            "fittings": {
+              "armorpieces:guard": "minecraft:copper"
+            }
+          },
+          "collar": {
+            "id": "armorpieces_antiquity:phalerae",
+            "pack": "armorpieces-antiquity",
+            "material": "copper",
+            "fittings": {
+              "armorpieces:guard": "minecraft:copper"
+            }
+          },
+          "vambraces": {
+            "id": "armorpieces_antiquity:manica",
+            "pack": "armorpieces-antiquity",
+            "material": "copper",
+            "fittings": {
+              "armorpieces:guard": "minecraft:copper"
+            }
+          },
+          "belt": {
+            "id": "armorpieces_antiquity:cingulum",
+            "pack": "armorpieces-antiquity",
+            "material": "copper",
+            "fittings": {
+              "armorpieces:guard": "minecraft:copper"
+            }
+          },
+          "tassets": {
+            "id": "armorpieces_antiquity:pteruges",
+            "pack": "armorpieces-antiquity",
+            "material": "copper",
+            "fittings": {
+              "armorpieces:inlay": "red"
+            }
+          },
+          "knees": {
+            "id": "armorpieces_antiquity:gorgon_cops",
+            "pack": "armorpieces-antiquity",
+            "material": "copper",
+            "fittings": {
+              "armorpieces:guard": "minecraft:copper"
+            }
+          },
+          "spurs": {
+            "id": "armorpieces_antiquity:caligae",
+            "pack": "armorpieces-antiquity",
+            "material": "copper",
+            "fittings": {
+              "armorpieces:inlay": "red"
+            }
+          },
+          "greaves": {
+            "id": "armorpieces_antiquity:ocreae",
+            "pack": "armorpieces-antiquity",
+            "material": "copper",
+            "fittings": {
+              "armorpieces:guard": "minecraft:copper"
+            }
+          }
+        },
+        "skin": "armorpieces_antiquity:lorica"
+      }
+    }
+  ]
+}

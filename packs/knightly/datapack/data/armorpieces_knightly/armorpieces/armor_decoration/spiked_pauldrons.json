@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_knightly:spiked_pauldrons",
+  "description": {
+    "translate": "decoration.armorpieces_knightly.spiked_pauldrons"
+  },
+  "anchors": [
+    "pauldrons"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "former_ids": [
+    "armorpieces:spiked_pauldrons"
+  ],
+  "uid": "ap1g4vrophwuipjk277w2ga"
+}

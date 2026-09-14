@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_wayfarer:boot_cuffs",
+  "description": {
+    "translate": "decoration.armorpieces_wayfarer.boot_cuffs"
+  },
+  "anchors": [
+    "greaves"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "former_ids": [
+    "armorpieces:boot_cuffs"
+  ],
+  "uid": "ap15o3ahrw47klxbkl2sg4a"
+}

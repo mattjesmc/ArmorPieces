@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_tourney:schynbalds",
+  "description": {
+    "translate": "decoration.armorpieces_tourney.schynbalds"
+  },
+  "anchors": [
+    "greaves"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1j5wnpq64yedqkriafcxa"
+}

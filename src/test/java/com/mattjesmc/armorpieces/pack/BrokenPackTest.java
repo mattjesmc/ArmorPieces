@@ -57,8 +57,8 @@ class BrokenPackTest {
 
     /** A part with nothing wrong with it, in the same pack as each mistake. */
     private static final String GOOD = """
-        { "asset_id": "armorpieces:brooch",
-          "description": {"translate": "decoration.armorpieces.brooch"},
+        { "asset_id": "armorpieces_court:brooch",
+          "description": {"translate": "decoration.armorpieces_court.brooch"},
           "anchors": ["crest"] }
         """;
 
@@ -90,8 +90,8 @@ class BrokenPackTest {
             "the good part in the same pack was lost, which is the failure this whole plan is about");
         final ArmorDecoration mod = loaded.registry(ArmorPiecesRegistries.ARMOR_DECORATION)
             .getValue(ResourceKey.create(ArmorPiecesRegistries.ARMOR_DECORATION,
-                Identifier.fromNamespaceAndPath("armorpieces", "brooch")));
-        assertNotNull(mod, "the MOD's own parts were lost along with the pack's");
+                ShippedData.shipped(ArmorPiecesRegistries.ARMOR_DECORATION, "brooch")));
+        assertNotNull(mod, "the jar's own parts were lost along with the pack's");
         return part(loaded, "broken");
     }
 
@@ -113,8 +113,8 @@ class BrokenPackTest {
     @Test
     void aSocketThatDoesNotExistCostsThatSocket(@TempDir final Path dir) throws IOException {
         final ArmorDecoration broken = loadBeside(dir, """
-            { "asset_id": "armorpieces:brooch",
-              "description": {"translate": "decoration.armorpieces.brooch"},
+            { "asset_id": "armorpieces_court:brooch",
+              "description": {"translate": "decoration.armorpieces_court.brooch"},
               "anchors": ["crest", "nose"] }
             """);
         assertNotNull(broken, "a part naming one socket that does not exist did not load at all");
@@ -126,8 +126,8 @@ class BrokenPackTest {
     @Test
     void everySocketWrongIsAPartWithNone(@TempDir final Path dir) throws IOException {
         final ArmorDecoration broken = loadBeside(dir, """
-            { "asset_id": "armorpieces:brooch",
-              "description": {"translate": "decoration.armorpieces.brooch"},
+            { "asset_id": "armorpieces_court:brooch",
+              "description": {"translate": "decoration.armorpieces_court.brooch"},
               "anchors": ["nose"] }
             """);
         // Loaded rather than skipped on purpose: the id resolves, so an item wearing it keeps
@@ -163,8 +163,8 @@ class BrokenPackTest {
         // The read is what writes the id down; it fails here, because the mod's own registry is long
         // frozen and has no such fitting - which is exactly the state fill() is for.
         read(ops, """
-            { "asset_id": "armorpieces:brooch",
-              "description": {"translate": "decoration.armorpieces.brooch"},
+            { "asset_id": "armorpieces_court:brooch",
+              "description": {"translate": "decoration.armorpieces_court.brooch"},
               "anchors": ["collar"],
               "fittings": ["%s:no_such_fitting"] }
             """.formatted(NAMESPACE));
@@ -193,8 +193,8 @@ class BrokenPackTest {
     @Test
     void anEffectThatCannotBeReadCostsThatEffect(@TempDir final Path dir) throws IOException {
         final ArmorDecoration broken = loadBeside(dir, """
-            { "asset_id": "armorpieces:brooch",
-              "description": {"translate": "decoration.armorpieces.brooch"},
+            { "asset_id": "armorpieces_court:brooch",
+              "description": {"translate": "decoration.armorpieces_court.brooch"},
               "anchors": ["crest"],
               "effects": [{"type": "%s:no_such_effect"}] }
             """.formatted(NAMESPACE));
@@ -206,8 +206,8 @@ class BrokenPackTest {
     @Test
     void aLootRowThatCannotBeReadCostsThatRow(@TempDir final Path dir) throws IOException {
         final ArmorDecoration broken = loadBeside(dir, """
-            { "asset_id": "armorpieces:brooch",
-              "description": {"translate": "decoration.armorpieces.brooch"},
+            { "asset_id": "armorpieces_court:brooch",
+              "description": {"translate": "decoration.armorpieces_court.brooch"},
               "anchors": ["crest"],
               "loot": [{"table": "minecraft:chests/simple_dungeon", "chance": 0.2},
                        {"table": "minecraft:chests/stronghold_corridor", "chance": 12.0}] }
@@ -220,7 +220,7 @@ class BrokenPackTest {
     @Test
     void aPartWithNoNameIsNamedByItsId(@TempDir final Path dir) throws IOException {
         final ArmorDecoration broken = loadBeside(dir, """
-            { "asset_id": "armorpieces:brooch", "anchors": ["crest"] }
+            { "asset_id": "armorpieces_court:brooch", "anchors": ["crest"] }
             """);
         assertNotNull(broken, "a part with no description did not load");
         assertFalse(broken.description().getString().isBlank(),
@@ -245,12 +245,12 @@ class BrokenPackTest {
     void whatHasNoSalvageFailsTheElement() {
         final RegistryOps<JsonElement> ops = RegistryOps.create(JsonOps.INSTANCE, ShippedData.mod().full());
         assertTrue(read(ops, """
-            { "asset_id": "armorpieces:brooch",
-              "description": {"translate": "decoration.armorpieces.brooch"},
+            { "asset_id": "armorpieces_court:brooch",
+              "description": {"translate": "decoration.armorpieces_court.brooch"},
               "anchors": "crest" }
             """).error().isPresent(), "`anchors` given a string decoded to something; it has no salvage");
         assertTrue(read(ops, """
-            { "description": {"translate": "decoration.armorpieces.brooch"}, "anchors": ["crest"] }
+            { "description": {"translate": "decoration.armorpieces_court.brooch"}, "anchors": ["crest"] }
             """).error().isPresent(), "a part with no asset_id decoded; it has nothing to draw");
     }
 
@@ -269,8 +269,8 @@ class BrokenPackTest {
             Identifier.fromNamespaceAndPath(NAMESPACE, "coral_crown")), "coral");
         try {
             read(ops, """
-                { "asset_id": "armorpieces:brooch",
-                  "description": {"translate": "decoration.armorpieces.brooch"},
+                { "asset_id": "armorpieces_court:brooch",
+                  "description": {"translate": "decoration.armorpieces_court.brooch"},
                   "anchors": ["crest", "nose"] }
                 """);
         } finally {

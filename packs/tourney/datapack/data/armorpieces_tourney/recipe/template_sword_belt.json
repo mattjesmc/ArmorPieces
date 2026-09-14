@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:wooden_sword"
+  },
+  "result": {
+    "id": "armorpieces:belt_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces_tourney:sword_belt"
+    }
+  },
+  "category": "equipment"
+}

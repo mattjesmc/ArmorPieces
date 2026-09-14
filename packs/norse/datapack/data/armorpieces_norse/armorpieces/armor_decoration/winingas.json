@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_norse:winingas",
+  "description": {
+    "translate": "decoration.armorpieces_norse.winingas"
+  },
+  "anchors": [
+    "greaves"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "uid": "ap1t4pegfyb5voe53mmfkya"
+}

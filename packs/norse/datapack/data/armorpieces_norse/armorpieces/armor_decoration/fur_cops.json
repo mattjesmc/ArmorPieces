@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_norse:fur_cops",
+  "description": {
+    "translate": "decoration.armorpieces_norse.fur_cops"
+  },
+  "anchors": [
+    "knees"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1lvmxbnrte7uku6l2moiq"
+}

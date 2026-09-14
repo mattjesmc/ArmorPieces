@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_hive:compound_eyes",
+  "description": {
+    "translate": "decoration.armorpieces_hive.compound_eyes"
+  },
+  "anchors": [
+    "brow"
+  ],
+  "fittings": [
+    "armorpieces:gemstone"
+  ],
+  "uid": "ap16nvjyrvrgjrlsngawbkq"
+}

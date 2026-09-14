@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_norse:war_braids",
+  "description": {
+    "translate": "decoration.armorpieces_norse.war_braids"
+  },
+  "anchors": [
+    "horns"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1puvsgye2py6djahvrtpa"
+}

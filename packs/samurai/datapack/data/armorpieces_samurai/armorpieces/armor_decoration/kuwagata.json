@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_samurai:kuwagata",
+  "description": {
+    "translate": "decoration.armorpieces_samurai.kuwagata"
+  },
+  "anchors": [
+    "horns"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1rnasphd3ua2g6vwedjva"
+}

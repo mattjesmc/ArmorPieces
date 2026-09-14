@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_court:cuffs",
+  "description": {
+    "translate": "decoration.armorpieces_court.cuffs"
+  },
+  "anchors": [
+    "vambraces"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "former_ids": [
+    "armorpieces:cuffs"
+  ],
+  "uid": "ap1zpvyim7bino7t6n3crsa"
+}

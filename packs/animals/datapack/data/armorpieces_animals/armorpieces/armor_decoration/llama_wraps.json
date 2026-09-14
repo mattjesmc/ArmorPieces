@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_animals:llama_wraps",
+  "description": {
+    "translate": "decoration.armorpieces_animals.llama_wraps"
+  },
+  "anchors": [
+    "greaves"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "uid": "ap1k45lwmzw42ghorshdqmq"
+}

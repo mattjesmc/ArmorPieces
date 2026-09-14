@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_antiquity:cingulum",
+  "description": {
+    "translate": "decoration.armorpieces_antiquity.cingulum"
+  },
+  "anchors": [
+    "belt"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap14vhdcrc5oc3jku3ni3ha"
+}

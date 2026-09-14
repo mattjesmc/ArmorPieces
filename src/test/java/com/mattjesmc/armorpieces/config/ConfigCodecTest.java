@@ -73,6 +73,17 @@ class ConfigCodecTest {
             ArmorPiecesServerConfig.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow());
     }
 
+    /** The nested section is held to the same rule; it has its own write codec and can fall behind alone. */
+    @Test
+    void partsSectionWritesEveryKnobAtItsDefaults() {
+        final JsonObject json = written(PartsSwitch.WRITE_CODEC, PartsSwitch.DEFAULT);
+        writesEveryComponent(PartsSwitch.class, json);
+        assertEquals(PartsSwitch.DEFAULT, PartsSwitch.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow());
+        final JsonObject whole = written(ArmorPiecesServerConfig.WRITE_CODEC, ArmorPiecesServerConfig.DEFAULT);
+        assertTrue(whole.getAsJsonObject("parts").has("disabled"),
+            "the server file has to show the parts section's knobs too, not an empty object");
+    }
+
     /**
      * The second trap, met where it actually bites: an override that adds a table with a chance of
      * its own is written back by the same file, and a table entry that encodes as a bare id loses
@@ -88,7 +99,8 @@ class ConfigCodecTest {
             new ArmorPiecesServerConfig.GroupOverride(
                 true, Optional.of(0.25f), Optional.of(2),
                 List.of(new LootGroup.TableEntry(table, Optional.of(0.3f))),
-                List.of())));
+                List.of())),
+            PartsSwitch.DEFAULT);
 
         final JsonObject json = written(ArmorPiecesServerConfig.WRITE_CODEC, config);
         assertTrue(json.toString().contains("0.3"),

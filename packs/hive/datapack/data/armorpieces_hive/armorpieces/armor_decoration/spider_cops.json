@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_hive:spider_cops",
+  "description": {
+    "translate": "decoration.armorpieces_hive.spider_cops"
+  },
+  "anchors": [
+    "knees"
+  ],
+  "fittings": [
+    "armorpieces:gemstone"
+  ],
+  "uid": "ap1q674tsyr3h7v76rf3pwa"
+}

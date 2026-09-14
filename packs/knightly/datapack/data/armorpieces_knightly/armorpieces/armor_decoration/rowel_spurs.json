@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_knightly:rowel_spurs",
+  "description": {
+    "translate": "decoration.armorpieces_knightly.rowel_spurs"
+  },
+  "anchors": [
+    "spurs"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "former_ids": [
+    "armorpieces:rowel_spurs"
+  ],
+  "uid": "ap1mqkzzvhfij2yavp75mua"
+}

@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_tourney:lance_rest",
+  "description": {
+    "translate": "decoration.armorpieces_tourney.lance_rest"
+  },
+  "anchors": [
+    "collar"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1de4agbfjdmhenedgs3jq"
+}

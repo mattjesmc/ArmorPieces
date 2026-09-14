@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_court:bells",
+  "description": {
+    "translate": "decoration.armorpieces_court.bells"
+  },
+  "anchors": [
+    "spurs"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "former_ids": [
+    "armorpieces:bells"
+  ],
+  "uid": "ap1rm26w7mzuxqmf75v7dpa"
+}

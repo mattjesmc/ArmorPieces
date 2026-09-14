@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.mattjesmc.armorpieces.GameBootstrap;
 import com.mattjesmc.armorpieces.cloth.Cloth;
 import com.mattjesmc.armorpieces.cloth.ClothValue;
+import com.mattjesmc.armorpieces.config.PartsSwitch;
 import com.mattjesmc.armorpieces.decoration.ArmorDecoration;
 import com.mattjesmc.armorpieces.decoration.ArmorDecorations;
 import com.mattjesmc.armorpieces.decoration.ArmorPiecesRegistries;
@@ -20,6 +21,7 @@ import com.mattjesmc.armorpieces.decoration.fitting.builtin.BannerFitting;
 import com.mattjesmc.armorpieces.decoration.fitting.builtin.DyeFitting;
 import com.mattjesmc.armorpieces.decoration.fitting.builtin.MaterialFitting;
 import com.mattjesmc.armorpieces.identity.Tolerant;
+import com.mattjesmc.armorpieces.network.PartsSwitchPayload;
 import com.mattjesmc.armorpieces.registry.ModDataComponents;
 import com.mattjesmc.armorpieces.registry.ModItems;
 import com.mattjesmc.armorpieces.skin.ArmorSkin;
@@ -38,6 +40,7 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.Identifier;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.DyeColor;
@@ -327,6 +330,41 @@ class ShippedWireTest {
         strandedHelmet.set(ModDataComponents.DECORATIONS,
             new ArmorDecorations(Map.of(), Map.of(UNKNOWN_SOCKET, raw(Map.of("decoration", ABSENT)))));
         stack(strandedHelmet, "a helmet wearing a part this version cannot name");
+    }
+
+    // ---- the packet ----------------------------------------------------------------------------
+
+    /**
+     * The one packet this mod sends, through the codec it was registered with.
+     *
+     * <p>{@link PartsSwitchPayload} tells a joining client which pieces the server has switched off,
+     * so the creative tab can leave them out; it is the only thing of ours on the wire that is not a
+     * component, and until 2026-09-14 nothing had run its codec. The three shapes are the default
+     * (nothing off), a server that switched off the mod's own pieces plus an id and a tag, and a rule
+     * naming a pack the CLIENT does not have installed - a member is a string on the wire, so it must
+     * arrive as written rather than be dropped or fail the packet, exactly as an absent piece in a
+     * component does.
+     */
+    @Test
+    void theOnePacketTravels() {
+        final StreamCodec<RegistryFriendlyByteBuf, PartsSwitchPayload> codec = PartsSwitchPayload.STREAM_CODEC;
+
+        assertEquals(PartsSwitch.DEFAULT,
+            wire(codec, new PartsSwitchPayload(PartsSwitch.DEFAULT), "the default switch").parts());
+
+        final PartsSwitch strict = new PartsSwitch(false, List.of(
+            new PartsSwitch.Member(Identifier.fromNamespaceAndPath("armorpieces", "circlet"), false),
+            new PartsSwitch.Member(Identifier.fromNamespaceAndPath("armorpieces", "knightly"), true)));
+        final PartsSwitch back = wire(codec, new PartsSwitchPayload(strict), "mod parts off, an id and a tag").parts();
+        assertEquals(strict, back);
+        assertFalse(back.modParts(), "the mod-parts flag was lost on the wire");
+        assertTrue(back.disabled().get(1).tag(), "the tag lost its hash on the wire");
+
+        final PartsSwitch.Member absent = new PartsSwitch.Member(Identifier.parse(ABSENT), false);
+        final PartsSwitch foreign = new PartsSwitch(true, List.of(absent));
+        assertEquals(foreign, wire(codec, new PartsSwitchPayload(foreign),
+            "a rule naming a pack the client does not have").parts(),
+            "a rule about a piece the client cannot resolve must still arrive as written");
     }
 
     // ---- the machinery -------------------------------------------------------------------------

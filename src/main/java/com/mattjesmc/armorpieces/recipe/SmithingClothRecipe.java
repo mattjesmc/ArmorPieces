@@ -2,6 +2,7 @@ package com.mattjesmc.armorpieces.recipe;
 
 import com.mattjesmc.armorpieces.ArmorPieces;
 import com.mattjesmc.armorpieces.cloth.ClothValue;
+import com.mattjesmc.armorpieces.config.PartsSwitch;
 import com.mattjesmc.armorpieces.registry.ModDataComponents;
 import com.mattjesmc.armorpieces.identity.Tolerant;
 import com.mojang.serialization.MapCodec;
@@ -121,7 +122,16 @@ public class SmithingClothRecipe extends SimpleSmithingRecipe {
      */
     @Override
     public boolean matches(final SmithingRecipeInput input, final Level level) {
-        return super.matches(input, level) && !assemble(input).isEmpty();
+        return super.matches(input, level) && !assemble(input).isEmpty() && offered(input, level);
+    }
+
+    /**
+     * Whether the server offers what the template carries. A template with nothing on it names
+     * nothing to refuse; one for a cloth the owner switched off lays in the slot and crafts nothing.
+     */
+    private static boolean offered(final SmithingRecipeInput input, final Level level) {
+        final ClothValue named = Tolerant.get(input.template(), ModDataComponents.CLOTH);
+        return named == null || PartsSwitch.offeredIn(named.cloth(), level);
     }
 
     @Override

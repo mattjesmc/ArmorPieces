@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_samurai:maedate",
+  "description": {
+    "translate": "decoration.armorpieces_samurai.maedate"
+  },
+  "anchors": [
+    "crest"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1wigelhnp2qlf2fny5opa"
+}

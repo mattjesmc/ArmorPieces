@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_knightly:spectacle_visor",
+  "description": {
+    "translate": "decoration.armorpieces_knightly.spectacle_visor"
+  },
+  "anchors": [
+    "brow"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "former_ids": [
+    "armorpieces:spectacle_visor"
+  ],
+  "uid": "ap1eff2nmx6tuzbw5ij26sa"
+}

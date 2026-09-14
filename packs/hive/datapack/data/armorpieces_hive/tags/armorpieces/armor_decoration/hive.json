@@ -1,8 +1,16 @@
 {
   "values": [
+    "armorpieces_hive:abdomen_plates",
     "armorpieces_hive:aerials",
     "armorpieces_hive:antennae",
     "armorpieces_hive:carapace",
+    "armorpieces_hive:chitin_bracers",
+    "armorpieces_hive:compound_eyes",
+    "armorpieces_hive:honeycomb_gorget",
+    "armorpieces_hive:silverfish_greaves",
+    "armorpieces_hive:spider_cops",
+    "armorpieces_hive:spinneret_belt",
+    "armorpieces_hive:stinger_spurs",
     "armorpieces_hive:wing_cases"
   ]
 }

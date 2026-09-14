@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_animals:cat_paws",
+  "description": {
+    "translate": "decoration.armorpieces_animals.cat_paws"
+  },
+  "anchors": [
+    "vambraces"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1avcg5xc7yfa2xkdomopq"
+}

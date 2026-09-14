@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_norse:ravens",
+  "description": {
+    "translate": "decoration.armorpieces_norse.ravens"
+  },
+  "anchors": [
+    "pauldrons"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1dpd2vkuvmcx2h4j4zkpa"
+}

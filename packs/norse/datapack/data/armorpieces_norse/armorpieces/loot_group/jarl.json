@@ -1,0 +1,12 @@
+{
+  "chance": 0.12,
+  "tables": [
+    "minecraft:chests/igloo_chest",
+    "minecraft:chests/shipwreck_treasure",
+    {
+      "table": "minecraft:chests/village/village_taiga_house",
+      "chance": 0.05
+    }
+  ],
+  "parts": "#armorpieces_norse:jarl"
+}

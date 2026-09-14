@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_wayfarer:bedroll",
+  "description": {
+    "translate": "decoration.armorpieces_wayfarer.bedroll"
+  },
+  "anchors": [
+    "back"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "former_ids": [
+    "armorpieces:bedroll"
+  ],
+  "uid": "ap1ohmv4mix6qgt2oa4x75a"
+}

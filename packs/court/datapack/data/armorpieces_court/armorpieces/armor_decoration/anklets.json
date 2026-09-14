@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_court:anklets",
+  "description": {
+    "translate": "decoration.armorpieces_court.anklets"
+  },
+  "anchors": [
+    "spurs"
+  ],
+  "fittings": [
+    "armorpieces:gemstone"
+  ],
+  "former_ids": [
+    "armorpieces:anklets"
+  ],
+  "uid": "ap1b45h77r253efqehihfba"
+}

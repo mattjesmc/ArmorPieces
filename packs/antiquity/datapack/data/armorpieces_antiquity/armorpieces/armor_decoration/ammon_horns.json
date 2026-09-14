@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_antiquity:ammon_horns",
+  "description": {
+    "translate": "decoration.armorpieces_antiquity.ammon_horns"
+  },
+  "anchors": [
+    "horns"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1jnpdr4zehyc4barwucqa"
+}

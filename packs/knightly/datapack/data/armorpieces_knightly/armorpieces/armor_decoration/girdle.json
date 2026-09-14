@@ -1,0 +1,17 @@
+{
+  "asset_id": "armorpieces_knightly:girdle",
+  "description": {
+    "translate": "decoration.armorpieces_knightly.girdle"
+  },
+  "anchors": [
+    "belt"
+  ],
+  "fittings": [
+    "armorpieces:guard",
+    "armorpieces:gemstone"
+  ],
+  "former_ids": [
+    "armorpieces:girdle"
+  ],
+  "uid": "ap1jzitrlw7tldyq7p3ec2a"
+}

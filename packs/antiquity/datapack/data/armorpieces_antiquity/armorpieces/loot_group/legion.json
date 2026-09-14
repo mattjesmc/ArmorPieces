@@ -1,0 +1,12 @@
+{
+  "chance": 0.12,
+  "tables": [
+    "minecraft:chests/desert_pyramid",
+    "minecraft:chests/stronghold_library",
+    {
+      "table": "minecraft:chests/underwater_ruin_big",
+      "chance": 0.1
+    }
+  ],
+  "parts": "#armorpieces_antiquity:legion"
+}

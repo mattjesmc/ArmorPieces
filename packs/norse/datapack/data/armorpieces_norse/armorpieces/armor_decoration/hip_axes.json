@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_norse:hip_axes",
+  "description": {
+    "translate": "decoration.armorpieces_norse.hip_axes"
+  },
+  "anchors": [
+    "tassets"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1l7zps45thddap7ab2fxa"
+}

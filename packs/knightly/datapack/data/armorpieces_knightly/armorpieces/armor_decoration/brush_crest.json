@@ -1,0 +1,25 @@
+{
+  "asset_id": "armorpieces_knightly:brush_crest",
+  "description": {
+    "translate": "decoration.armorpieces_knightly.brush_crest"
+  },
+  "anchors": [
+    "crest"
+  ],
+  "loot": [
+    {
+      "table": "minecraft:chests/nether_bridge",
+      "weight": 1,
+      "chance": 0.1
+    },
+    {
+      "table": "minecraft:chests/pillager_outpost",
+      "weight": 1,
+      "chance": 0.05
+    }
+  ],
+  "former_ids": [
+    "armorpieces:brush_crest"
+  ],
+  "uid": "ap1huckk62fkabrsvq4mzsa"
+}

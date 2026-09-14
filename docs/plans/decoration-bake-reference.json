@@ -1111,40 +1111,8 @@
   },
   "cases": [
     {
-      "part": "anklets",
-      "material": "iron",
-      "master": "anklets.png",
-      "static": null,
-      "masks": [],
-      "master_sha1": "1d2e1b583f807d61937705302fb0809ea9386533",
-      "width": 64,
-      "height": 32,
-      "sha1": "26ca2e396b47721be4671221d24f3650187f73fb"
-    },
-    {
-      "part": "bandolier",
-      "material": "iron",
-      "master": "bandolier.png",
-      "static": "bandolier_static.png",
-      "masks": [],
-      "master_sha1": "4fb9bf96102ff8c363452bdd96073f87a9ab20be",
-      "width": 64,
-      "height": 32,
-      "sha1": "0ba100e69521ce7a44232aeba97c369125d1bbec"
-    },
-    {
-      "part": "bangles",
-      "material": "iron",
-      "master": "bangles.png",
-      "static": null,
-      "masks": [],
-      "master_sha1": "3789ebe99327f3185f6b0c571c305cd531316bcc",
-      "width": 64,
-      "height": 32,
-      "sha1": "be3ddf9defc1f93cf4396c589b170374c1cb644d"
-    },
-    {
       "part": "banner",
+      "namespace": "armorpieces_knightly",
       "material": "iron",
       "master": "banner.png",
       "static": null,
@@ -1156,6 +1124,7 @@
     },
     {
       "part": "barbute",
+      "namespace": "armorpieces_knightly",
       "material": "iron",
       "master": "barbute.png",
       "static": null,
@@ -1166,18 +1135,8 @@
       "sha1": "ff37506bc496db0b9210d773adca6c0d88861f6f"
     },
     {
-      "part": "bedroll",
-      "material": "iron",
-      "master": "bedroll.png",
-      "static": "bedroll_static.png",
-      "masks": [],
-      "master_sha1": "4f7e53f4e24df2d4e62159458d41e8d8268d2626",
-      "width": 64,
-      "height": 32,
-      "sha1": "54fb0abe2cc89ff3e81398b8c8ce8f5adfa1ce3c"
-    },
-    {
       "part": "bellows_visor",
+      "namespace": "armorpieces_knightly",
       "material": "iron",
       "master": "bellows_visor.png",
       "static": null,
@@ -1188,51 +1147,8 @@
       "sha1": "06397fb2407d32c636c29c0ac76e6712566627b7"
     },
     {
-      "part": "bells",
-      "material": "iron",
-      "master": "bells.png",
-      "static": null,
-      "masks": [],
-      "master_sha1": "379c929bd5785645f43a350c03e407d343331935",
-      "width": 64,
-      "height": 32,
-      "sha1": "26d67271d5035eecc0ceeb58c1c99f428d9af2b3"
-    },
-    {
-      "part": "boot_cuffs",
-      "material": "iron",
-      "master": "boot_cuffs.png",
-      "static": null,
-      "masks": [],
-      "master_sha1": "bfbc56681f15bc2f350262e50909c3bec0806bb9",
-      "width": 64,
-      "height": 32,
-      "sha1": "e4de471daeb989d9265e5f3c05132818f22756ee"
-    },
-    {
-      "part": "brooch",
-      "material": "iron",
-      "master": "brooch.png",
-      "static": null,
-      "masks": [],
-      "master_sha1": "035e396652969966ee1be6e0a5fef012f824eb16",
-      "width": 64,
-      "height": 32,
-      "sha1": "d3cd3e9ac98865d7395e522466e74915df2b06db"
-    },
-    {
-      "part": "browband",
-      "material": "iron",
-      "master": "browband.png",
-      "static": null,
-      "masks": [],
-      "master_sha1": "2666826a85d371e32a4e1b7f2f7f34713eb92452",
-      "width": 64,
-      "height": 32,
-      "sha1": "e3a2115e674abe73bf72a2751810c3cff72bffff"
-    },
-    {
       "part": "brush_crest",
+      "namespace": "armorpieces_knightly",
       "material": "iron",
       "master": "brush_crest.png",
       "static": null,
@@ -1243,18 +1159,8 @@
       "sha1": "792d32de49306e044a2824969f63ce880fe5aa58"
     },
     {
-      "part": "buckled_belt",
-      "material": "iron",
-      "master": "buckled_belt.png",
-      "static": "buckled_belt_static.png",
-      "masks": [],
-      "master_sha1": "82a06525e53bf6908870e00cc266e2a9418307f7",
-      "width": 64,
-      "height": 32,
-      "sha1": "0f070798ca6ad4b9c2618450408faeecb65e49eb"
-    },
-    {
       "part": "buckler",
+      "namespace": "armorpieces_knightly",
       "material": "iron",
       "master": "buckler.png",
       "static": null,
@@ -1265,29 +1171,8 @@
       "sha1": "44335ced614b55e1e0b067ccdf3eb1cd496e4423"
     },
     {
-      "part": "chain_belt",
-      "material": "iron",
-      "master": "chain_belt.png",
-      "static": null,
-      "masks": [],
-      "master_sha1": "a276ebab7264ebc59761cbb5504e0c13bb732ef6",
-      "width": 64,
-      "height": 32,
-      "sha1": "a1ef5c57af37bd4695e440b23c69731eb317fc56"
-    },
-    {
-      "part": "chain_of_office",
-      "material": "iron",
-      "master": "chain_of_office.png",
-      "static": null,
-      "masks": [],
-      "master_sha1": "c8f4f73703373f75c322971505e4e7e2851cd106",
-      "width": 64,
-      "height": 32,
-      "sha1": "73b6ce24988169e47488e47fdada2c51fdb7566a"
-    },
-    {
       "part": "cheek_guards",
+      "namespace": "armorpieces_knightly",
       "material": "iron",
       "master": "cheek_guards.png",
       "static": null,
@@ -1298,29 +1183,8 @@
       "sha1": "932410fe64430296428b9a439a557a2d3828d401"
     },
     {
-      "part": "circlet",
-      "material": "iron",
-      "master": "circlet.png",
-      "static": null,
-      "masks": [],
-      "master_sha1": "94af835a679cfa1ccd3db8c710dcbf1506928f80",
-      "width": 64,
-      "height": 32,
-      "sha1": "6f9af4694022bdb1e74e70b927a4e1160263c920"
-    },
-    {
-      "part": "cloak",
-      "material": "iron",
-      "master": "cloak.png",
-      "static": null,
-      "masks": [],
-      "master_sha1": "e41791ff8d1997a709f73f19a24d1253afc91069",
-      "width": 64,
-      "height": 32,
-      "sha1": "49cc29f17fb8051a15702356789054516981962e"
-    },
-    {
       "part": "comb",
+      "namespace": "armorpieces_knightly",
       "material": "iron",
       "master": "comb.png",
       "static": null,
@@ -1331,51 +1195,8 @@
       "sha1": "3423dc9e9242a1576f175df1945a4e2967c4e49c"
     },
     {
-      "part": "cord",
-      "material": "iron",
-      "master": "cord.png",
-      "static": null,
-      "masks": [],
-      "master_sha1": "31c16bba9d322c10a9e4aa753c7db24264b678ca",
-      "width": 64,
-      "height": 32,
-      "sha1": "c06cba6cb9f3e2f323fe1214be76230623de3fd0"
-    },
-    {
-      "part": "coronet",
-      "material": "iron",
-      "master": "coronet.png",
-      "static": null,
-      "masks": [],
-      "master_sha1": "6edbebcd5555c09907a4a52db493c4dd5b50e6c3",
-      "width": 64,
-      "height": 32,
-      "sha1": "d56704c31aba5e3bb0e3af58247b097dbb568717"
-    },
-    {
-      "part": "cuffs",
-      "material": "iron",
-      "master": "cuffs.png",
-      "static": null,
-      "masks": [],
-      "master_sha1": "432a8068bf1e426a77ca3f89774108d1e131bb20",
-      "width": 64,
-      "height": 32,
-      "sha1": "a258366b68b65173074d4190c9f1a16897e1d858"
-    },
-    {
-      "part": "epaulettes",
-      "material": "iron",
-      "master": "epaulettes.png",
-      "static": null,
-      "masks": [],
-      "master_sha1": "081463bda5cb4b1b4342ee7ceb479b3b2f0d8277",
-      "width": 64,
-      "height": 32,
-      "sha1": "d6c7cd71823cc989bf357c17c5c51498f16d9ab9"
-    },
-    {
       "part": "fauld",
+      "namespace": "armorpieces_knightly",
       "material": "iron",
       "master": "fauld.png",
       "static": null,
@@ -1386,18 +1207,8 @@
       "sha1": "cbe4fc571af6739d33e97e5bdc30063b8bd9876e"
     },
     {
-      "part": "feathering",
-      "material": "iron",
-      "master": "feathering.png",
-      "static": null,
-      "masks": [],
-      "master_sha1": "589e0e7c46943ccec810d8b5b61c5f124b33cf54",
-      "width": 64,
-      "height": 32,
-      "sha1": "16eee40f760a3bfd224945aa9fd587ed415b566b"
-    },
-    {
       "part": "frog_mouth",
+      "namespace": "armorpieces_knightly",
       "material": "iron",
       "master": "frog_mouth.png",
       "static": null,
@@ -1408,18 +1219,8 @@
       "sha1": "97de3cb7edc0ae10d4f73bd20ff8dd0e98e0739c"
     },
     {
-      "part": "garters",
-      "material": "iron",
-      "master": "garters.png",
-      "static": null,
-      "masks": [],
-      "master_sha1": "b8185a45661347e408062ba1c5074d85e1def632",
-      "width": 64,
-      "height": 32,
-      "sha1": "fa10d64a7962e730c42d4dd16ca4f2724c391d33"
-    },
-    {
       "part": "girdle",
+      "namespace": "armorpieces_knightly",
       "material": "iron",
       "master": "girdle.png",
       "static": null,
@@ -1431,6 +1232,7 @@
     },
     {
       "part": "gorget",
+      "namespace": "armorpieces_knightly",
       "material": "iron",
       "master": "gorget.png",
       "static": null,
@@ -1442,6 +1244,7 @@
     },
     {
       "part": "great_helm",
+      "namespace": "armorpieces_knightly",
       "material": "iron",
       "master": "great_helm.png",
       "static": "great_helm_static.png",
@@ -1453,6 +1256,7 @@
     },
     {
       "part": "greaves",
+      "namespace": "armorpieces_knightly",
       "material": "iron",
       "master": "greaves.png",
       "static": null,
@@ -1463,18 +1267,8 @@
       "sha1": "d04e75a128ca0bdb303973fc65c29518f88ec70f"
     },
     {
-      "part": "heel_wings",
-      "material": "iron",
-      "master": "heel_wings.png",
-      "static": null,
-      "masks": [],
-      "master_sha1": "dc9f487b7a88950d3e44d911d1bf199b2d7687e7",
-      "width": 64,
-      "height": 32,
-      "sha1": "4da86b3dcca8bd7408a381eb5d847891e63414b9"
-    },
-    {
       "part": "helm_wings",
+      "namespace": "armorpieces_knightly",
       "material": "iron",
       "master": "helm_wings.png",
       "static": null,
@@ -1486,6 +1280,7 @@
     },
     {
       "part": "knee_studs",
+      "namespace": "armorpieces_knightly",
       "material": "iron",
       "master": "knee_studs.png",
       "static": null,
@@ -1497,6 +1292,7 @@
     },
     {
       "part": "lames",
+      "namespace": "armorpieces_knightly",
       "material": "iron",
       "master": "lames.png",
       "static": null,
@@ -1507,29 +1303,8 @@
       "sha1": "bf5f55cf8eea7df928cbf0cfc8abf255c72293a4"
     },
     {
-      "part": "laurel",
-      "material": "iron",
-      "master": "laurel.png",
-      "static": null,
-      "masks": [],
-      "master_sha1": "b5aada407b399804796215aa8dbbd40a0daf62a1",
-      "width": 64,
-      "height": 32,
-      "sha1": "b21b37f4ebf67d1cd1e0c130ecfab4ed4ec9c974"
-    },
-    {
-      "part": "loin_panels",
-      "material": "iron",
-      "master": "loin_panels.png",
-      "static": null,
-      "masks": [],
-      "master_sha1": "8b9ea86b1c1ba801ee8e7f452b48a244e074e980",
-      "width": 64,
-      "height": 32,
-      "sha1": "e5701a628ef736b25aec0dbc7803da8a56385f1c"
-    },
-    {
       "part": "mail_fringe",
+      "namespace": "armorpieces_knightly",
       "material": "iron",
       "master": "mail_fringe.png",
       "static": null,
@@ -1540,18 +1315,8 @@
       "sha1": "1734e6a50c472b9eefea192241782312c7c4438f"
     },
     {
-      "part": "mittens",
-      "material": "iron",
-      "master": "mittens.png",
-      "static": null,
-      "masks": [],
-      "master_sha1": "4a608c3e976e32d9119cd258b1c330a07b5c5f74",
-      "width": 64,
-      "height": 32,
-      "sha1": "95c1fee0356d45d1157419329039512d3b719784"
-    },
-    {
       "part": "nasal",
+      "namespace": "armorpieces_knightly",
       "material": "iron",
       "master": "nasal.png",
       "static": null,
@@ -1562,40 +1327,8 @@
       "sha1": "dd8d8d779f934b1b8c89ca0716bf6103c0c6853d"
     },
     {
-      "part": "padding",
-      "material": "iron",
-      "master": "padding.png",
-      "static": null,
-      "masks": [],
-      "master_sha1": "e4430d63ef312b1d8249d6b645e48199ca613f99",
-      "width": 64,
-      "height": 32,
-      "sha1": "2c9bc02a4b4a03cdc3e0f1878adb82cb132eb436"
-    },
-    {
-      "part": "pendant",
-      "material": "iron",
-      "master": "pendant.png",
-      "static": null,
-      "masks": [],
-      "master_sha1": "3c2ce9488d9f389a0a85647376deba0a56ff4022",
-      "width": 64,
-      "height": 32,
-      "sha1": "29f98cd0436740aec7274f1ef34775c8e5fb9468"
-    },
-    {
-      "part": "pinions",
-      "material": "iron",
-      "master": "pinions.png",
-      "static": "pinions_static.png",
-      "masks": [],
-      "master_sha1": "fd821522d19cb2f5b22619589ae62562f717d64c",
-      "width": 64,
-      "height": 32,
-      "sha1": "3925128a0e593c9c2d6c80c55a716b3accd43eb0"
-    },
-    {
       "part": "poleyns",
+      "namespace": "armorpieces_knightly",
       "material": "iron",
       "master": "poleyns.png",
       "static": null,
@@ -1606,40 +1339,8 @@
       "sha1": "5512e19d5ae8e2d2ea9226cbdde20c10a09c4647"
     },
     {
-      "part": "pouch_belt",
-      "material": "iron",
-      "master": "pouch_belt.png",
-      "static": null,
-      "masks": [],
-      "master_sha1": "14169c28fc72481d60302aa27d5ad16b3eacfc69",
-      "width": 64,
-      "height": 32,
-      "sha1": "250726e50fdfab2a7f76f9bf4c13fbfaca7df064"
-    },
-    {
-      "part": "puttees",
-      "material": "iron",
-      "master": "puttees.png",
-      "static": null,
-      "masks": [],
-      "master_sha1": "3f443acf85afd75b5082da9b6cb129e93fcc6563",
-      "width": 64,
-      "height": 32,
-      "sha1": "6db93fae183c73321c66571b7f89260076d934d1"
-    },
-    {
-      "part": "quiver",
-      "material": "iron",
-      "master": "quiver.png",
-      "static": "quiver_static.png",
-      "masks": [],
-      "master_sha1": "bee53bf8d22c22ab18bd9504a836336ef1597580",
-      "width": 64,
-      "height": 32,
-      "sha1": "bf888b3bfcc6fb9a550ae88c965a66622473ad1b"
-    },
-    {
       "part": "rowel_spurs",
+      "namespace": "armorpieces_knightly",
       "material": "iron",
       "master": "rowel_spurs.png",
       "static": null,
@@ -1650,18 +1351,8 @@
       "sha1": "7f2fd3bc913eb44b8ad1d1555c96709d24c71a4c"
     },
     {
-      "part": "ruff",
-      "material": "iron",
-      "master": "ruff.png",
-      "static": null,
-      "masks": [],
-      "master_sha1": "9529f10e232993f68a08731b162e47b3807bf3d1",
-      "width": 64,
-      "height": 32,
-      "sha1": "441ebeb2b3a692b787a7bd4a3a2cce4686c9047e"
-    },
-    {
       "part": "sallet_slit",
+      "namespace": "armorpieces_knightly",
       "material": "iron",
       "master": "sallet_slit.png",
       "static": null,
@@ -1672,29 +1363,8 @@
       "sha1": "ecd820f7568f4463a01efd0d881348f32efff9b2"
     },
     {
-      "part": "sash",
-      "material": "iron",
-      "master": "sash.png",
-      "static": null,
-      "masks": [],
-      "master_sha1": "54c13ebabee61c2b306b724481f9032a85c7f4e4",
-      "width": 64,
-      "height": 32,
-      "sha1": "40750173d68c20ba09267e7207d8149589e25194"
-    },
-    {
-      "part": "scarf",
-      "material": "iron",
-      "master": "scarf.png",
-      "static": null,
-      "masks": [],
-      "master_sha1": "449e325e4ff9f2cae96a4f7ae0594bddd03e84ef",
-      "width": 64,
-      "height": 32,
-      "sha1": "39fb1bc475d8162352a96fa31bd48af258dc7893"
-    },
-    {
       "part": "spaulders",
+      "namespace": "armorpieces_knightly",
       "material": "iron",
       "master": "spaulders.png",
       "static": null,
@@ -1706,6 +1376,7 @@
     },
     {
       "part": "spectacle_visor",
+      "namespace": "armorpieces_knightly",
       "material": "iron",
       "master": "spectacle_visor.png",
       "static": null,
@@ -1717,6 +1388,7 @@
     },
     {
       "part": "spiked_pauldrons",
+      "namespace": "armorpieces_knightly",
       "material": "iron",
       "master": "spiked_pauldrons.png",
       "static": null,
@@ -1728,6 +1400,7 @@
     },
     {
       "part": "spire",
+      "namespace": "armorpieces_knightly",
       "material": "iron",
       "master": "spire.png",
       "static": null,
@@ -1739,6 +1412,7 @@
     },
     {
       "part": "spurs",
+      "namespace": "armorpieces_knightly",
       "material": "iron",
       "master": "spurs.png",
       "static": null,
@@ -1749,18 +1423,8 @@
       "sha1": "b9fbb6af40e2517e6d877af8aad032eeb242d95e"
     },
     {
-      "part": "streamers",
-      "material": "iron",
-      "master": "streamers.png",
-      "static": null,
-      "masks": [],
-      "master_sha1": "71251cfeceea9bd092d1442c5248fbd78e38e98e",
-      "width": 64,
-      "height": 32,
-      "sha1": "22aabe48f6660f28a47517e0bac21262d926a896"
-    },
-    {
       "part": "tassets",
+      "namespace": "armorpieces_knightly",
       "material": "iron",
       "master": "tassets.png",
       "static": null,
@@ -1771,18 +1435,8 @@
       "sha1": "126cff5fcf58491035445c4136ae44fb5b388a9a"
     },
     {
-      "part": "thigh_sheath",
-      "material": "iron",
-      "master": "thigh_sheath.png",
-      "static": null,
-      "masks": [],
-      "master_sha1": "ebfdc38e67ac771bb4f5033e6952e18690c6d400",
-      "width": 64,
-      "height": 32,
-      "sha1": "bf41e20047fc752f3a95220a8fd921086358e598"
-    },
-    {
       "part": "vambraces",
+      "namespace": "armorpieces_knightly",
       "material": "iron",
       "master": "vambraces.png",
       "static": null,
@@ -1794,6 +1448,7 @@
     },
     {
       "part": "visor",
+      "namespace": "armorpieces_knightly",
       "material": "iron",
       "master": "visor.png",
       "static": null,
@@ -1804,18 +1459,8 @@
       "sha1": "dd5c8f78c0d812b4bde52f82a17eeefa0e0ec17a"
     },
     {
-      "part": "wing_roots",
-      "material": "iron",
-      "master": "wing_roots.png",
-      "static": null,
-      "masks": [],
-      "master_sha1": "6623335f83d23c76867106abe723785626ae0457",
-      "width": 64,
-      "height": 32,
-      "sha1": "378c486c1e1e37cf8848cdf6213b3105c5d4d54c"
-    },
-    {
       "part": "winged_cops",
+      "namespace": "armorpieces_knightly",
       "material": "iron",
       "master": "winged_cops.png",
       "static": null,
@@ -1826,7 +1471,428 @@
       "sha1": "1b4619b1aecbade5c7858ef674b92a528cff8f51"
     },
     {
+      "part": "anklets",
+      "namespace": "armorpieces_court",
+      "material": "iron",
+      "master": "anklets.png",
+      "static": null,
+      "masks": [],
+      "master_sha1": "1d2e1b583f807d61937705302fb0809ea9386533",
+      "width": 64,
+      "height": 32,
+      "sha1": "26ca2e396b47721be4671221d24f3650187f73fb"
+    },
+    {
+      "part": "bangles",
+      "namespace": "armorpieces_court",
+      "material": "iron",
+      "master": "bangles.png",
+      "static": null,
+      "masks": [],
+      "master_sha1": "3789ebe99327f3185f6b0c571c305cd531316bcc",
+      "width": 64,
+      "height": 32,
+      "sha1": "be3ddf9defc1f93cf4396c589b170374c1cb644d"
+    },
+    {
+      "part": "bells",
+      "namespace": "armorpieces_court",
+      "material": "iron",
+      "master": "bells.png",
+      "static": null,
+      "masks": [],
+      "master_sha1": "379c929bd5785645f43a350c03e407d343331935",
+      "width": 64,
+      "height": 32,
+      "sha1": "26d67271d5035eecc0ceeb58c1c99f428d9af2b3"
+    },
+    {
+      "part": "brooch",
+      "namespace": "armorpieces_court",
+      "material": "iron",
+      "master": "brooch.png",
+      "static": null,
+      "masks": [],
+      "master_sha1": "035e396652969966ee1be6e0a5fef012f824eb16",
+      "width": 64,
+      "height": 32,
+      "sha1": "d3cd3e9ac98865d7395e522466e74915df2b06db"
+    },
+    {
+      "part": "chain_belt",
+      "namespace": "armorpieces_court",
+      "material": "iron",
+      "master": "chain_belt.png",
+      "static": null,
+      "masks": [],
+      "master_sha1": "a276ebab7264ebc59761cbb5504e0c13bb732ef6",
+      "width": 64,
+      "height": 32,
+      "sha1": "a1ef5c57af37bd4695e440b23c69731eb317fc56"
+    },
+    {
+      "part": "chain_of_office",
+      "namespace": "armorpieces_court",
+      "material": "iron",
+      "master": "chain_of_office.png",
+      "static": null,
+      "masks": [],
+      "master_sha1": "c8f4f73703373f75c322971505e4e7e2851cd106",
+      "width": 64,
+      "height": 32,
+      "sha1": "73b6ce24988169e47488e47fdada2c51fdb7566a"
+    },
+    {
+      "part": "circlet",
+      "namespace": "armorpieces_court",
+      "material": "iron",
+      "master": "circlet.png",
+      "static": null,
+      "masks": [],
+      "master_sha1": "94af835a679cfa1ccd3db8c710dcbf1506928f80",
+      "width": 64,
+      "height": 32,
+      "sha1": "6f9af4694022bdb1e74e70b927a4e1160263c920"
+    },
+    {
+      "part": "cloak",
+      "namespace": "armorpieces_court",
+      "material": "iron",
+      "master": "cloak.png",
+      "static": null,
+      "masks": [],
+      "master_sha1": "e41791ff8d1997a709f73f19a24d1253afc91069",
+      "width": 64,
+      "height": 32,
+      "sha1": "49cc29f17fb8051a15702356789054516981962e"
+    },
+    {
+      "part": "cord",
+      "namespace": "armorpieces_court",
+      "material": "iron",
+      "master": "cord.png",
+      "static": null,
+      "masks": [],
+      "master_sha1": "31c16bba9d322c10a9e4aa753c7db24264b678ca",
+      "width": 64,
+      "height": 32,
+      "sha1": "c06cba6cb9f3e2f323fe1214be76230623de3fd0"
+    },
+    {
+      "part": "coronet",
+      "namespace": "armorpieces_court",
+      "material": "iron",
+      "master": "coronet.png",
+      "static": null,
+      "masks": [],
+      "master_sha1": "6edbebcd5555c09907a4a52db493c4dd5b50e6c3",
+      "width": 64,
+      "height": 32,
+      "sha1": "d56704c31aba5e3bb0e3af58247b097dbb568717"
+    },
+    {
+      "part": "cuffs",
+      "namespace": "armorpieces_court",
+      "material": "iron",
+      "master": "cuffs.png",
+      "static": null,
+      "masks": [],
+      "master_sha1": "432a8068bf1e426a77ca3f89774108d1e131bb20",
+      "width": 64,
+      "height": 32,
+      "sha1": "a258366b68b65173074d4190c9f1a16897e1d858"
+    },
+    {
+      "part": "epaulettes",
+      "namespace": "armorpieces_court",
+      "material": "iron",
+      "master": "epaulettes.png",
+      "static": null,
+      "masks": [],
+      "master_sha1": "081463bda5cb4b1b4342ee7ceb479b3b2f0d8277",
+      "width": 64,
+      "height": 32,
+      "sha1": "d6c7cd71823cc989bf357c17c5c51498f16d9ab9"
+    },
+    {
+      "part": "feathering",
+      "namespace": "armorpieces_court",
+      "material": "iron",
+      "master": "feathering.png",
+      "static": null,
+      "masks": [],
+      "master_sha1": "589e0e7c46943ccec810d8b5b61c5f124b33cf54",
+      "width": 64,
+      "height": 32,
+      "sha1": "16eee40f760a3bfd224945aa9fd587ed415b566b"
+    },
+    {
+      "part": "garters",
+      "namespace": "armorpieces_court",
+      "material": "iron",
+      "master": "garters.png",
+      "static": null,
+      "masks": [],
+      "master_sha1": "b8185a45661347e408062ba1c5074d85e1def632",
+      "width": 64,
+      "height": 32,
+      "sha1": "fa10d64a7962e730c42d4dd16ca4f2724c391d33"
+    },
+    {
+      "part": "heel_wings",
+      "namespace": "armorpieces_court",
+      "material": "iron",
+      "master": "heel_wings.png",
+      "static": null,
+      "masks": [],
+      "master_sha1": "dc9f487b7a88950d3e44d911d1bf199b2d7687e7",
+      "width": 64,
+      "height": 32,
+      "sha1": "4da86b3dcca8bd7408a381eb5d847891e63414b9"
+    },
+    {
+      "part": "laurel",
+      "namespace": "armorpieces_court",
+      "material": "iron",
+      "master": "laurel.png",
+      "static": null,
+      "masks": [],
+      "master_sha1": "b5aada407b399804796215aa8dbbd40a0daf62a1",
+      "width": 64,
+      "height": 32,
+      "sha1": "b21b37f4ebf67d1cd1e0c130ecfab4ed4ec9c974"
+    },
+    {
+      "part": "loin_panels",
+      "namespace": "armorpieces_court",
+      "material": "iron",
+      "master": "loin_panels.png",
+      "static": null,
+      "masks": [],
+      "master_sha1": "8b9ea86b1c1ba801ee8e7f452b48a244e074e980",
+      "width": 64,
+      "height": 32,
+      "sha1": "e5701a628ef736b25aec0dbc7803da8a56385f1c"
+    },
+    {
+      "part": "pendant",
+      "namespace": "armorpieces_court",
+      "material": "iron",
+      "master": "pendant.png",
+      "static": null,
+      "masks": [],
+      "master_sha1": "3c2ce9488d9f389a0a85647376deba0a56ff4022",
+      "width": 64,
+      "height": 32,
+      "sha1": "29f98cd0436740aec7274f1ef34775c8e5fb9468"
+    },
+    {
+      "part": "pinions",
+      "namespace": "armorpieces_court",
+      "material": "iron",
+      "master": "pinions.png",
+      "static": "pinions_static.png",
+      "masks": [],
+      "master_sha1": "fd821522d19cb2f5b22619589ae62562f717d64c",
+      "width": 64,
+      "height": 32,
+      "sha1": "3925128a0e593c9c2d6c80c55a716b3accd43eb0"
+    },
+    {
+      "part": "ruff",
+      "namespace": "armorpieces_court",
+      "material": "iron",
+      "master": "ruff.png",
+      "static": null,
+      "masks": [],
+      "master_sha1": "9529f10e232993f68a08731b162e47b3807bf3d1",
+      "width": 64,
+      "height": 32,
+      "sha1": "441ebeb2b3a692b787a7bd4a3a2cce4686c9047e"
+    },
+    {
+      "part": "sash",
+      "namespace": "armorpieces_court",
+      "material": "iron",
+      "master": "sash.png",
+      "static": null,
+      "masks": [],
+      "master_sha1": "54c13ebabee61c2b306b724481f9032a85c7f4e4",
+      "width": 64,
+      "height": 32,
+      "sha1": "40750173d68c20ba09267e7207d8149589e25194"
+    },
+    {
+      "part": "streamers",
+      "namespace": "armorpieces_court",
+      "material": "iron",
+      "master": "streamers.png",
+      "static": null,
+      "masks": [],
+      "master_sha1": "71251cfeceea9bd092d1442c5248fbd78e38e98e",
+      "width": 64,
+      "height": 32,
+      "sha1": "22aabe48f6660f28a47517e0bac21262d926a896"
+    },
+    {
+      "part": "wing_roots",
+      "namespace": "armorpieces_court",
+      "material": "iron",
+      "master": "wing_roots.png",
+      "static": null,
+      "masks": [],
+      "master_sha1": "6623335f83d23c76867106abe723785626ae0457",
+      "width": 64,
+      "height": 32,
+      "sha1": "378c486c1e1e37cf8848cdf6213b3105c5d4d54c"
+    },
+    {
+      "part": "bandolier",
+      "namespace": "armorpieces_wayfarer",
+      "material": "iron",
+      "master": "bandolier.png",
+      "static": "bandolier_static.png",
+      "masks": [],
+      "master_sha1": "4fb9bf96102ff8c363452bdd96073f87a9ab20be",
+      "width": 64,
+      "height": 32,
+      "sha1": "0ba100e69521ce7a44232aeba97c369125d1bbec"
+    },
+    {
+      "part": "bedroll",
+      "namespace": "armorpieces_wayfarer",
+      "material": "iron",
+      "master": "bedroll.png",
+      "static": "bedroll_static.png",
+      "masks": [],
+      "master_sha1": "4f7e53f4e24df2d4e62159458d41e8d8268d2626",
+      "width": 64,
+      "height": 32,
+      "sha1": "54fb0abe2cc89ff3e81398b8c8ce8f5adfa1ce3c"
+    },
+    {
+      "part": "boot_cuffs",
+      "namespace": "armorpieces_wayfarer",
+      "material": "iron",
+      "master": "boot_cuffs.png",
+      "static": null,
+      "masks": [],
+      "master_sha1": "bfbc56681f15bc2f350262e50909c3bec0806bb9",
+      "width": 64,
+      "height": 32,
+      "sha1": "e4de471daeb989d9265e5f3c05132818f22756ee"
+    },
+    {
+      "part": "browband",
+      "namespace": "armorpieces_wayfarer",
+      "material": "iron",
+      "master": "browband.png",
+      "static": null,
+      "masks": [],
+      "master_sha1": "2666826a85d371e32a4e1b7f2f7f34713eb92452",
+      "width": 64,
+      "height": 32,
+      "sha1": "e3a2115e674abe73bf72a2751810c3cff72bffff"
+    },
+    {
+      "part": "buckled_belt",
+      "namespace": "armorpieces_wayfarer",
+      "material": "iron",
+      "master": "buckled_belt.png",
+      "static": "buckled_belt_static.png",
+      "masks": [],
+      "master_sha1": "82a06525e53bf6908870e00cc266e2a9418307f7",
+      "width": 64,
+      "height": 32,
+      "sha1": "0f070798ca6ad4b9c2618450408faeecb65e49eb"
+    },
+    {
+      "part": "mittens",
+      "namespace": "armorpieces_wayfarer",
+      "material": "iron",
+      "master": "mittens.png",
+      "static": null,
+      "masks": [],
+      "master_sha1": "4a608c3e976e32d9119cd258b1c330a07b5c5f74",
+      "width": 64,
+      "height": 32,
+      "sha1": "95c1fee0356d45d1157419329039512d3b719784"
+    },
+    {
+      "part": "padding",
+      "namespace": "armorpieces_wayfarer",
+      "material": "iron",
+      "master": "padding.png",
+      "static": null,
+      "masks": [],
+      "master_sha1": "e4430d63ef312b1d8249d6b645e48199ca613f99",
+      "width": 64,
+      "height": 32,
+      "sha1": "2c9bc02a4b4a03cdc3e0f1878adb82cb132eb436"
+    },
+    {
+      "part": "pouch_belt",
+      "namespace": "armorpieces_wayfarer",
+      "material": "iron",
+      "master": "pouch_belt.png",
+      "static": null,
+      "masks": [],
+      "master_sha1": "14169c28fc72481d60302aa27d5ad16b3eacfc69",
+      "width": 64,
+      "height": 32,
+      "sha1": "250726e50fdfab2a7f76f9bf4c13fbfaca7df064"
+    },
+    {
+      "part": "puttees",
+      "namespace": "armorpieces_wayfarer",
+      "material": "iron",
+      "master": "puttees.png",
+      "static": null,
+      "masks": [],
+      "master_sha1": "3f443acf85afd75b5082da9b6cb129e93fcc6563",
+      "width": 64,
+      "height": 32,
+      "sha1": "6db93fae183c73321c66571b7f89260076d934d1"
+    },
+    {
+      "part": "quiver",
+      "namespace": "armorpieces_wayfarer",
+      "material": "iron",
+      "master": "quiver.png",
+      "static": "quiver_static.png",
+      "masks": [],
+      "master_sha1": "bee53bf8d22c22ab18bd9504a836336ef1597580",
+      "width": 64,
+      "height": 32,
+      "sha1": "bf888b3bfcc6fb9a550ae88c965a66622473ad1b"
+    },
+    {
+      "part": "scarf",
+      "namespace": "armorpieces_wayfarer",
+      "material": "iron",
+      "master": "scarf.png",
+      "static": null,
+      "masks": [],
+      "master_sha1": "449e325e4ff9f2cae96a4f7ae0594bddd03e84ef",
+      "width": 64,
+      "height": 32,
+      "sha1": "39fb1bc475d8162352a96fa31bd48af258dc7893"
+    },
+    {
+      "part": "thigh_sheath",
+      "namespace": "armorpieces_wayfarer",
+      "material": "iron",
+      "master": "thigh_sheath.png",
+      "static": null,
+      "masks": [],
+      "master_sha1": "ebfdc38e67ac771bb4f5033e6952e18690c6d400",
+      "width": 64,
+      "height": 32,
+      "sha1": "bf41e20047fc752f3a95220a8fd921086358e598"
+    },
+    {
       "part": "wraps",
+      "namespace": "armorpieces_wayfarer",
       "material": "iron",
       "master": "wraps.png",
       "static": null,
@@ -1837,59 +1903,8 @@
       "sha1": "e722112c20500067a09369c9b58bf62c0a89d918"
     },
     {
-      "part": "anklets",
-      "material": "gold",
-      "master": "anklets.png",
-      "static": null,
-      "masks": [
-        {
-          "mask": "anklets_gemstone.png",
-          "value": "emerald"
-        }
-      ],
-      "master_sha1": "1d2e1b583f807d61937705302fb0809ea9386533",
-      "width": 64,
-      "height": 32,
-      "sha1": "5c06bca3dd8b6780668b0af38b3d04804dce72c0"
-    },
-    {
-      "part": "bandolier",
-      "material": "gold",
-      "master": "bandolier.png",
-      "static": "bandolier_static.png",
-      "masks": [
-        {
-          "mask": "bandolier_guard.png",
-          "value": "gold"
-        },
-        {
-          "mask": "bandolier_inlay.png",
-          "value": "red"
-        }
-      ],
-      "master_sha1": "4fb9bf96102ff8c363452bdd96073f87a9ab20be",
-      "width": 64,
-      "height": 32,
-      "sha1": "f193bf58af7ced0e59962a3bb7953bd5d0dbf93d"
-    },
-    {
-      "part": "bangles",
-      "material": "gold",
-      "master": "bangles.png",
-      "static": null,
-      "masks": [
-        {
-          "mask": "bangles_gemstone.png",
-          "value": "emerald"
-        }
-      ],
-      "master_sha1": "3789ebe99327f3185f6b0c571c305cd531316bcc",
-      "width": 64,
-      "height": 32,
-      "sha1": "b0e4c8823aa32647c270aa2e446877e881666f2d"
-    },
-    {
       "part": "barbute",
+      "namespace": "armorpieces_knightly",
       "material": "gold",
       "master": "barbute.png",
       "static": null,
@@ -1905,23 +1920,8 @@
       "sha1": "94e7262c8d0610d338004ca49489ea64bc054e49"
     },
     {
-      "part": "bedroll",
-      "material": "gold",
-      "master": "bedroll.png",
-      "static": "bedroll_static.png",
-      "masks": [
-        {
-          "mask": "bedroll_inlay.png",
-          "value": "red"
-        }
-      ],
-      "master_sha1": "4f7e53f4e24df2d4e62159458d41e8d8268d2626",
-      "width": 64,
-      "height": 32,
-      "sha1": "cf9d537e19309d7b91996de8a9eac4ae059510ba"
-    },
-    {
       "part": "bellows_visor",
+      "namespace": "armorpieces_knightly",
       "material": "gold",
       "master": "bellows_visor.png",
       "static": null,
@@ -1937,71 +1937,8 @@
       "sha1": "1e20254b57230f0360cc01576be0ee86dc045f60"
     },
     {
-      "part": "bells",
-      "material": "gold",
-      "master": "bells.png",
-      "static": null,
-      "masks": [
-        {
-          "mask": "bells_guard.png",
-          "value": "gold"
-        }
-      ],
-      "master_sha1": "379c929bd5785645f43a350c03e407d343331935",
-      "width": 64,
-      "height": 32,
-      "sha1": "5ee34207e3ab50e71290339f14145734d6542816"
-    },
-    {
-      "part": "boot_cuffs",
-      "material": "gold",
-      "master": "boot_cuffs.png",
-      "static": null,
-      "masks": [
-        {
-          "mask": "boot_cuffs_inlay.png",
-          "value": "red"
-        }
-      ],
-      "master_sha1": "bfbc56681f15bc2f350262e50909c3bec0806bb9",
-      "width": 64,
-      "height": 32,
-      "sha1": "48419025e6d1f1b68539ddd67f29f06e2d486fc6"
-    },
-    {
-      "part": "browband",
-      "material": "gold",
-      "master": "browband.png",
-      "static": null,
-      "masks": [
-        {
-          "mask": "browband_inlay.png",
-          "value": "red"
-        }
-      ],
-      "master_sha1": "2666826a85d371e32a4e1b7f2f7f34713eb92452",
-      "width": 64,
-      "height": 32,
-      "sha1": "c9a591552a05a3f29e3ef5628b4bc145ba25be2a"
-    },
-    {
-      "part": "buckled_belt",
-      "material": "gold",
-      "master": "buckled_belt.png",
-      "static": "buckled_belt_static.png",
-      "masks": [
-        {
-          "mask": "buckled_belt_guard.png",
-          "value": "gold"
-        }
-      ],
-      "master_sha1": "82a06525e53bf6908870e00cc266e2a9418307f7",
-      "width": 64,
-      "height": 32,
-      "sha1": "aeab39a968f3603e7213cf53bfd7eda64f567a52"
-    },
-    {
       "part": "buckler",
+      "namespace": "armorpieces_knightly",
       "material": "gold",
       "master": "buckler.png",
       "static": null,
@@ -2017,43 +1954,8 @@
       "sha1": "7abb0849c3745ee2d0bd254a2208b34adc583cc2"
     },
     {
-      "part": "chain_belt",
-      "material": "gold",
-      "master": "chain_belt.png",
-      "static": null,
-      "masks": [
-        {
-          "mask": "chain_belt_guard.png",
-          "value": "gold"
-        }
-      ],
-      "master_sha1": "a276ebab7264ebc59761cbb5504e0c13bb732ef6",
-      "width": 64,
-      "height": 32,
-      "sha1": "fe85b2429c3a214ae8df72a34e3bc361ee127289"
-    },
-    {
-      "part": "chain_of_office",
-      "material": "gold",
-      "master": "chain_of_office.png",
-      "static": null,
-      "masks": [
-        {
-          "mask": "chain_of_office_guard.png",
-          "value": "gold"
-        },
-        {
-          "mask": "chain_of_office_gemstone.png",
-          "value": "emerald"
-        }
-      ],
-      "master_sha1": "c8f4f73703373f75c322971505e4e7e2851cd106",
-      "width": 64,
-      "height": 32,
-      "sha1": "7ca60b1177d0444211cbce5bcab2367ce338fb04"
-    },
-    {
       "part": "cheek_guards",
+      "namespace": "armorpieces_knightly",
       "material": "gold",
       "master": "cheek_guards.png",
       "static": null,
@@ -2069,39 +1971,8 @@
       "sha1": "94c9c36ebcaacb1a476a684f494a96c4299ccf8c"
     },
     {
-      "part": "circlet",
-      "material": "gold",
-      "master": "circlet.png",
-      "static": null,
-      "masks": [
-        {
-          "mask": "circlet_gemstone.png",
-          "value": "emerald"
-        }
-      ],
-      "master_sha1": "94af835a679cfa1ccd3db8c710dcbf1506928f80",
-      "width": 64,
-      "height": 32,
-      "sha1": "4d5ee706aa9ef4cc64dbd26f800bf897bc585f89"
-    },
-    {
-      "part": "cloak",
-      "material": "gold",
-      "master": "cloak.png",
-      "static": null,
-      "masks": [
-        {
-          "mask": "cloak_guard.png",
-          "value": "gold"
-        }
-      ],
-      "master_sha1": "e41791ff8d1997a709f73f19a24d1253afc91069",
-      "width": 64,
-      "height": 32,
-      "sha1": "e1a29a0228076b8bc6d6706ffc486ffad37f0e44"
-    },
-    {
       "part": "comb",
+      "namespace": "armorpieces_knightly",
       "material": "gold",
       "master": "comb.png",
       "static": null,
@@ -2117,71 +1988,8 @@
       "sha1": "2b0f9dc60c309f0173c9c62b45f25cebcd96d2f9"
     },
     {
-      "part": "cord",
-      "material": "gold",
-      "master": "cord.png",
-      "static": null,
-      "masks": [
-        {
-          "mask": "cord_inlay.png",
-          "value": "red"
-        }
-      ],
-      "master_sha1": "31c16bba9d322c10a9e4aa753c7db24264b678ca",
-      "width": 64,
-      "height": 32,
-      "sha1": "321103895b5309cb7a29bc93d2297b588c12875e"
-    },
-    {
-      "part": "coronet",
-      "material": "gold",
-      "master": "coronet.png",
-      "static": null,
-      "masks": [
-        {
-          "mask": "coronet_gemstone.png",
-          "value": "emerald"
-        }
-      ],
-      "master_sha1": "6edbebcd5555c09907a4a52db493c4dd5b50e6c3",
-      "width": 64,
-      "height": 32,
-      "sha1": "9c2295d925904cdefa581a2b016d379be510d7fc"
-    },
-    {
-      "part": "cuffs",
-      "material": "gold",
-      "master": "cuffs.png",
-      "static": null,
-      "masks": [
-        {
-          "mask": "cuffs_inlay.png",
-          "value": "red"
-        }
-      ],
-      "master_sha1": "432a8068bf1e426a77ca3f89774108d1e131bb20",
-      "width": 64,
-      "height": 32,
-      "sha1": "2709e78b1897eb94d7e393e0c9e3286882730db9"
-    },
-    {
-      "part": "epaulettes",
-      "material": "gold",
-      "master": "epaulettes.png",
-      "static": null,
-      "masks": [
-        {
-          "mask": "epaulettes_inlay.png",
-          "value": "red"
-        }
-      ],
-      "master_sha1": "081463bda5cb4b1b4342ee7ceb479b3b2f0d8277",
-      "width": 64,
-      "height": 32,
-      "sha1": "6c61381f140ee260cb1cdf9569389f30c870e6e0"
-    },
-    {
       "part": "fauld",
+      "namespace": "armorpieces_knightly",
       "material": "gold",
       "master": "fauld.png",
       "static": null,
@@ -2198,6 +2006,7 @@
     },
     {
       "part": "frog_mouth",
+      "namespace": "armorpieces_knightly",
       "material": "gold",
       "master": "frog_mouth.png",
       "static": null,
@@ -2213,23 +2022,8 @@
       "sha1": "cb204970d3dee5e3cf873c3e4e1cbf719bd6f811"
     },
     {
-      "part": "garters",
-      "material": "gold",
-      "master": "garters.png",
-      "static": null,
-      "masks": [
-        {
-          "mask": "garters_inlay.png",
-          "value": "red"
-        }
-      ],
-      "master_sha1": "b8185a45661347e408062ba1c5074d85e1def632",
-      "width": 64,
-      "height": 32,
-      "sha1": "e07d946a96b948ebf5838ac517a26ff5bf59e0ac"
-    },
-    {
       "part": "girdle",
+      "namespace": "armorpieces_knightly",
       "material": "gold",
       "master": "girdle.png",
       "static": null,
@@ -2250,6 +2044,7 @@
     },
     {
       "part": "great_helm",
+      "namespace": "armorpieces_knightly",
       "material": "gold",
       "master": "great_helm.png",
       "static": "great_helm_static.png",
@@ -2266,6 +2061,7 @@
     },
     {
       "part": "greaves",
+      "namespace": "armorpieces_knightly",
       "material": "gold",
       "master": "greaves.png",
       "static": null,
@@ -2282,6 +2078,7 @@
     },
     {
       "part": "knee_studs",
+      "namespace": "armorpieces_knightly",
       "material": "gold",
       "master": "knee_studs.png",
       "static": null,
@@ -2298,6 +2095,7 @@
     },
     {
       "part": "lames",
+      "namespace": "armorpieces_knightly",
       "material": "gold",
       "master": "lames.png",
       "static": null,
@@ -2313,39 +2111,8 @@
       "sha1": "e38916d92cd15ee6dbb6ffed088b4e808e977986"
     },
     {
-      "part": "laurel",
-      "material": "gold",
-      "master": "laurel.png",
-      "static": null,
-      "masks": [
-        {
-          "mask": "laurel_inlay.png",
-          "value": "red"
-        }
-      ],
-      "master_sha1": "b5aada407b399804796215aa8dbbd40a0daf62a1",
-      "width": 64,
-      "height": 32,
-      "sha1": "41cb36a8d3e358c0cdbcd110e1a33875daa5cd46"
-    },
-    {
-      "part": "loin_panels",
-      "material": "gold",
-      "master": "loin_panels.png",
-      "static": null,
-      "masks": [
-        {
-          "mask": "loin_panels_inlay.png",
-          "value": "red"
-        }
-      ],
-      "master_sha1": "8b9ea86b1c1ba801ee8e7f452b48a244e074e980",
-      "width": 64,
-      "height": 32,
-      "sha1": "48fc576b1af8a6f96a4224dce8fa9844efda4cf3"
-    },
-    {
       "part": "mail_fringe",
+      "namespace": "armorpieces_knightly",
       "material": "gold",
       "master": "mail_fringe.png",
       "static": null,
@@ -2362,6 +2129,7 @@
     },
     {
       "part": "nasal",
+      "namespace": "armorpieces_knightly",
       "material": "gold",
       "master": "nasal.png",
       "static": null,
@@ -2377,87 +2145,8 @@
       "sha1": "a6a236e9cd74f208746ea9517d8d0708f7bccbe4"
     },
     {
-      "part": "padding",
-      "material": "gold",
-      "master": "padding.png",
-      "static": null,
-      "masks": [
-        {
-          "mask": "padding_inlay.png",
-          "value": "red"
-        }
-      ],
-      "master_sha1": "e4430d63ef312b1d8249d6b645e48199ca613f99",
-      "width": 64,
-      "height": 32,
-      "sha1": "a712342d400572761ca8ca2b916d81bae2027e74"
-    },
-    {
-      "part": "pendant",
-      "material": "gold",
-      "master": "pendant.png",
-      "static": null,
-      "masks": [
-        {
-          "mask": "pendant_gemstone.png",
-          "value": "emerald"
-        }
-      ],
-      "master_sha1": "3c2ce9488d9f389a0a85647376deba0a56ff4022",
-      "width": 64,
-      "height": 32,
-      "sha1": "2b9ed9039eabb0ba3155e85bca0839f83be920dd"
-    },
-    {
-      "part": "pouch_belt",
-      "material": "gold",
-      "master": "pouch_belt.png",
-      "static": null,
-      "masks": [
-        {
-          "mask": "pouch_belt_inlay.png",
-          "value": "red"
-        }
-      ],
-      "master_sha1": "14169c28fc72481d60302aa27d5ad16b3eacfc69",
-      "width": 64,
-      "height": 32,
-      "sha1": "72c3396c358a32207186d59411c857951a91ca94"
-    },
-    {
-      "part": "puttees",
-      "material": "gold",
-      "master": "puttees.png",
-      "static": null,
-      "masks": [
-        {
-          "mask": "puttees_inlay.png",
-          "value": "red"
-        }
-      ],
-      "master_sha1": "3f443acf85afd75b5082da9b6cb129e93fcc6563",
-      "width": 64,
-      "height": 32,
-      "sha1": "763004b9e9e5a2690fb5d98debc914f9e56bf42f"
-    },
-    {
-      "part": "quiver",
-      "material": "gold",
-      "master": "quiver.png",
-      "static": "quiver_static.png",
-      "masks": [
-        {
-          "mask": "quiver_guard.png",
-          "value": "gold"
-        }
-      ],
-      "master_sha1": "bee53bf8d22c22ab18bd9504a836336ef1597580",
-      "width": 64,
-      "height": 32,
-      "sha1": "adc6dc3bcd476c418dcf0c1640b3610453a26651"
-    },
-    {
       "part": "rowel_spurs",
+      "namespace": "armorpieces_knightly",
       "material": "gold",
       "master": "rowel_spurs.png",
       "static": null,
@@ -2473,23 +2162,8 @@
       "sha1": "c4e6feacfc3e28cd6d8f7a9e11d7ed7dded905be"
     },
     {
-      "part": "ruff",
-      "material": "gold",
-      "master": "ruff.png",
-      "static": null,
-      "masks": [
-        {
-          "mask": "ruff_inlay.png",
-          "value": "red"
-        }
-      ],
-      "master_sha1": "9529f10e232993f68a08731b162e47b3807bf3d1",
-      "width": 64,
-      "height": 32,
-      "sha1": "8d7a0bfd03ac4a74ee257302d9a17d3576eb45ef"
-    },
-    {
       "part": "sallet_slit",
+      "namespace": "armorpieces_knightly",
       "material": "gold",
       "master": "sallet_slit.png",
       "static": null,
@@ -2505,7 +2179,352 @@
       "sha1": "4800d0f7ef9e8af802fe910269ca564ce5fd71a8"
     },
     {
+      "part": "spectacle_visor",
+      "namespace": "armorpieces_knightly",
+      "material": "gold",
+      "master": "spectacle_visor.png",
+      "static": null,
+      "masks": [
+        {
+          "mask": "spectacle_visor_guard.png",
+          "value": "gold"
+        }
+      ],
+      "master_sha1": "5ffdea3aaae7037d485d53e3720fe46f748d02e0",
+      "width": 64,
+      "height": 32,
+      "sha1": "95218295df30b3fde034a415517e6868d88202c1"
+    },
+    {
+      "part": "spiked_pauldrons",
+      "namespace": "armorpieces_knightly",
+      "material": "gold",
+      "master": "spiked_pauldrons.png",
+      "static": null,
+      "masks": [
+        {
+          "mask": "spiked_pauldrons_guard.png",
+          "value": "gold"
+        }
+      ],
+      "master_sha1": "8a4517d8dccfac0821dde3130502d29e6a96a982",
+      "width": 64,
+      "height": 32,
+      "sha1": "f4f31938a4ea0624f019a46763f7eee56eb34aa8"
+    },
+    {
+      "part": "spire",
+      "namespace": "armorpieces_knightly",
+      "material": "gold",
+      "master": "spire.png",
+      "static": null,
+      "masks": [
+        {
+          "mask": "spire_gemstone.png",
+          "value": "emerald"
+        }
+      ],
+      "master_sha1": "c5ff3bfcb8e4006e9bfbdc4866378dde2234b48c",
+      "width": 64,
+      "height": 32,
+      "sha1": "af2fb880ce37d7a532fd62022384300474c0a194"
+    },
+    {
+      "part": "winged_cops",
+      "namespace": "armorpieces_knightly",
+      "material": "gold",
+      "master": "winged_cops.png",
+      "static": null,
+      "masks": [
+        {
+          "mask": "winged_cops_guard.png",
+          "value": "gold"
+        }
+      ],
+      "master_sha1": "74b1b79003479c0d34f6f9dab5b1e2d592787641",
+      "width": 64,
+      "height": 32,
+      "sha1": "caa3820343ad93f75ed3f6109c041d2e76f58187"
+    },
+    {
+      "part": "anklets",
+      "namespace": "armorpieces_court",
+      "material": "gold",
+      "master": "anklets.png",
+      "static": null,
+      "masks": [
+        {
+          "mask": "anklets_gemstone.png",
+          "value": "emerald"
+        }
+      ],
+      "master_sha1": "1d2e1b583f807d61937705302fb0809ea9386533",
+      "width": 64,
+      "height": 32,
+      "sha1": "5c06bca3dd8b6780668b0af38b3d04804dce72c0"
+    },
+    {
+      "part": "bangles",
+      "namespace": "armorpieces_court",
+      "material": "gold",
+      "master": "bangles.png",
+      "static": null,
+      "masks": [
+        {
+          "mask": "bangles_gemstone.png",
+          "value": "emerald"
+        }
+      ],
+      "master_sha1": "3789ebe99327f3185f6b0c571c305cd531316bcc",
+      "width": 64,
+      "height": 32,
+      "sha1": "b0e4c8823aa32647c270aa2e446877e881666f2d"
+    },
+    {
+      "part": "bells",
+      "namespace": "armorpieces_court",
+      "material": "gold",
+      "master": "bells.png",
+      "static": null,
+      "masks": [
+        {
+          "mask": "bells_guard.png",
+          "value": "gold"
+        }
+      ],
+      "master_sha1": "379c929bd5785645f43a350c03e407d343331935",
+      "width": 64,
+      "height": 32,
+      "sha1": "5ee34207e3ab50e71290339f14145734d6542816"
+    },
+    {
+      "part": "chain_belt",
+      "namespace": "armorpieces_court",
+      "material": "gold",
+      "master": "chain_belt.png",
+      "static": null,
+      "masks": [
+        {
+          "mask": "chain_belt_guard.png",
+          "value": "gold"
+        }
+      ],
+      "master_sha1": "a276ebab7264ebc59761cbb5504e0c13bb732ef6",
+      "width": 64,
+      "height": 32,
+      "sha1": "fe85b2429c3a214ae8df72a34e3bc361ee127289"
+    },
+    {
+      "part": "chain_of_office",
+      "namespace": "armorpieces_court",
+      "material": "gold",
+      "master": "chain_of_office.png",
+      "static": null,
+      "masks": [
+        {
+          "mask": "chain_of_office_guard.png",
+          "value": "gold"
+        },
+        {
+          "mask": "chain_of_office_gemstone.png",
+          "value": "emerald"
+        }
+      ],
+      "master_sha1": "c8f4f73703373f75c322971505e4e7e2851cd106",
+      "width": 64,
+      "height": 32,
+      "sha1": "7ca60b1177d0444211cbce5bcab2367ce338fb04"
+    },
+    {
+      "part": "circlet",
+      "namespace": "armorpieces_court",
+      "material": "gold",
+      "master": "circlet.png",
+      "static": null,
+      "masks": [
+        {
+          "mask": "circlet_gemstone.png",
+          "value": "emerald"
+        }
+      ],
+      "master_sha1": "94af835a679cfa1ccd3db8c710dcbf1506928f80",
+      "width": 64,
+      "height": 32,
+      "sha1": "4d5ee706aa9ef4cc64dbd26f800bf897bc585f89"
+    },
+    {
+      "part": "cloak",
+      "namespace": "armorpieces_court",
+      "material": "gold",
+      "master": "cloak.png",
+      "static": null,
+      "masks": [
+        {
+          "mask": "cloak_guard.png",
+          "value": "gold"
+        }
+      ],
+      "master_sha1": "e41791ff8d1997a709f73f19a24d1253afc91069",
+      "width": 64,
+      "height": 32,
+      "sha1": "e1a29a0228076b8bc6d6706ffc486ffad37f0e44"
+    },
+    {
+      "part": "cord",
+      "namespace": "armorpieces_court",
+      "material": "gold",
+      "master": "cord.png",
+      "static": null,
+      "masks": [
+        {
+          "mask": "cord_inlay.png",
+          "value": "red"
+        }
+      ],
+      "master_sha1": "31c16bba9d322c10a9e4aa753c7db24264b678ca",
+      "width": 64,
+      "height": 32,
+      "sha1": "321103895b5309cb7a29bc93d2297b588c12875e"
+    },
+    {
+      "part": "coronet",
+      "namespace": "armorpieces_court",
+      "material": "gold",
+      "master": "coronet.png",
+      "static": null,
+      "masks": [
+        {
+          "mask": "coronet_gemstone.png",
+          "value": "emerald"
+        }
+      ],
+      "master_sha1": "6edbebcd5555c09907a4a52db493c4dd5b50e6c3",
+      "width": 64,
+      "height": 32,
+      "sha1": "9c2295d925904cdefa581a2b016d379be510d7fc"
+    },
+    {
+      "part": "cuffs",
+      "namespace": "armorpieces_court",
+      "material": "gold",
+      "master": "cuffs.png",
+      "static": null,
+      "masks": [
+        {
+          "mask": "cuffs_inlay.png",
+          "value": "red"
+        }
+      ],
+      "master_sha1": "432a8068bf1e426a77ca3f89774108d1e131bb20",
+      "width": 64,
+      "height": 32,
+      "sha1": "2709e78b1897eb94d7e393e0c9e3286882730db9"
+    },
+    {
+      "part": "epaulettes",
+      "namespace": "armorpieces_court",
+      "material": "gold",
+      "master": "epaulettes.png",
+      "static": null,
+      "masks": [
+        {
+          "mask": "epaulettes_inlay.png",
+          "value": "red"
+        }
+      ],
+      "master_sha1": "081463bda5cb4b1b4342ee7ceb479b3b2f0d8277",
+      "width": 64,
+      "height": 32,
+      "sha1": "6c61381f140ee260cb1cdf9569389f30c870e6e0"
+    },
+    {
+      "part": "garters",
+      "namespace": "armorpieces_court",
+      "material": "gold",
+      "master": "garters.png",
+      "static": null,
+      "masks": [
+        {
+          "mask": "garters_inlay.png",
+          "value": "red"
+        }
+      ],
+      "master_sha1": "b8185a45661347e408062ba1c5074d85e1def632",
+      "width": 64,
+      "height": 32,
+      "sha1": "e07d946a96b948ebf5838ac517a26ff5bf59e0ac"
+    },
+    {
+      "part": "laurel",
+      "namespace": "armorpieces_court",
+      "material": "gold",
+      "master": "laurel.png",
+      "static": null,
+      "masks": [
+        {
+          "mask": "laurel_inlay.png",
+          "value": "red"
+        }
+      ],
+      "master_sha1": "b5aada407b399804796215aa8dbbd40a0daf62a1",
+      "width": 64,
+      "height": 32,
+      "sha1": "41cb36a8d3e358c0cdbcd110e1a33875daa5cd46"
+    },
+    {
+      "part": "loin_panels",
+      "namespace": "armorpieces_court",
+      "material": "gold",
+      "master": "loin_panels.png",
+      "static": null,
+      "masks": [
+        {
+          "mask": "loin_panels_inlay.png",
+          "value": "red"
+        }
+      ],
+      "master_sha1": "8b9ea86b1c1ba801ee8e7f452b48a244e074e980",
+      "width": 64,
+      "height": 32,
+      "sha1": "48fc576b1af8a6f96a4224dce8fa9844efda4cf3"
+    },
+    {
+      "part": "pendant",
+      "namespace": "armorpieces_court",
+      "material": "gold",
+      "master": "pendant.png",
+      "static": null,
+      "masks": [
+        {
+          "mask": "pendant_gemstone.png",
+          "value": "emerald"
+        }
+      ],
+      "master_sha1": "3c2ce9488d9f389a0a85647376deba0a56ff4022",
+      "width": 64,
+      "height": 32,
+      "sha1": "2b9ed9039eabb0ba3155e85bca0839f83be920dd"
+    },
+    {
+      "part": "ruff",
+      "namespace": "armorpieces_court",
+      "material": "gold",
+      "master": "ruff.png",
+      "static": null,
+      "masks": [
+        {
+          "mask": "ruff_inlay.png",
+          "value": "red"
+        }
+      ],
+      "master_sha1": "9529f10e232993f68a08731b162e47b3807bf3d1",
+      "width": 64,
+      "height": 32,
+      "sha1": "8d7a0bfd03ac4a74ee257302d9a17d3576eb45ef"
+    },
+    {
       "part": "sash",
+      "namespace": "armorpieces_court",
       "material": "gold",
       "master": "sash.png",
       "static": null,
@@ -2525,71 +2544,8 @@
       "sha1": "1b9b343ae52a1461b3413bee4a17a1a2bc758771"
     },
     {
-      "part": "scarf",
-      "material": "gold",
-      "master": "scarf.png",
-      "static": null,
-      "masks": [
-        {
-          "mask": "scarf_inlay.png",
-          "value": "red"
-        }
-      ],
-      "master_sha1": "449e325e4ff9f2cae96a4f7ae0594bddd03e84ef",
-      "width": 64,
-      "height": 32,
-      "sha1": "91679a8c50c6e16aac993ac6a9b01fef394b43c8"
-    },
-    {
-      "part": "spectacle_visor",
-      "material": "gold",
-      "master": "spectacle_visor.png",
-      "static": null,
-      "masks": [
-        {
-          "mask": "spectacle_visor_guard.png",
-          "value": "gold"
-        }
-      ],
-      "master_sha1": "5ffdea3aaae7037d485d53e3720fe46f748d02e0",
-      "width": 64,
-      "height": 32,
-      "sha1": "95218295df30b3fde034a415517e6868d88202c1"
-    },
-    {
-      "part": "spiked_pauldrons",
-      "material": "gold",
-      "master": "spiked_pauldrons.png",
-      "static": null,
-      "masks": [
-        {
-          "mask": "spiked_pauldrons_guard.png",
-          "value": "gold"
-        }
-      ],
-      "master_sha1": "8a4517d8dccfac0821dde3130502d29e6a96a982",
-      "width": 64,
-      "height": 32,
-      "sha1": "f4f31938a4ea0624f019a46763f7eee56eb34aa8"
-    },
-    {
-      "part": "spire",
-      "material": "gold",
-      "master": "spire.png",
-      "static": null,
-      "masks": [
-        {
-          "mask": "spire_gemstone.png",
-          "value": "emerald"
-        }
-      ],
-      "master_sha1": "c5ff3bfcb8e4006e9bfbdc4866378dde2234b48c",
-      "width": 64,
-      "height": 32,
-      "sha1": "af2fb880ce37d7a532fd62022384300474c0a194"
-    },
-    {
       "part": "streamers",
+      "namespace": "armorpieces_court",
       "material": "gold",
       "master": "streamers.png",
       "static": null,
@@ -2605,7 +2561,182 @@
       "sha1": "7f00e3b616292b2e7ed05a1355cb1828ab4e8ba2"
     },
     {
+      "part": "bandolier",
+      "namespace": "armorpieces_wayfarer",
+      "material": "gold",
+      "master": "bandolier.png",
+      "static": "bandolier_static.png",
+      "masks": [
+        {
+          "mask": "bandolier_guard.png",
+          "value": "gold"
+        },
+        {
+          "mask": "bandolier_inlay.png",
+          "value": "red"
+        }
+      ],
+      "master_sha1": "4fb9bf96102ff8c363452bdd96073f87a9ab20be",
+      "width": 64,
+      "height": 32,
+      "sha1": "f193bf58af7ced0e59962a3bb7953bd5d0dbf93d"
+    },
+    {
+      "part": "bedroll",
+      "namespace": "armorpieces_wayfarer",
+      "material": "gold",
+      "master": "bedroll.png",
+      "static": "bedroll_static.png",
+      "masks": [
+        {
+          "mask": "bedroll_inlay.png",
+          "value": "red"
+        }
+      ],
+      "master_sha1": "4f7e53f4e24df2d4e62159458d41e8d8268d2626",
+      "width": 64,
+      "height": 32,
+      "sha1": "cf9d537e19309d7b91996de8a9eac4ae059510ba"
+    },
+    {
+      "part": "boot_cuffs",
+      "namespace": "armorpieces_wayfarer",
+      "material": "gold",
+      "master": "boot_cuffs.png",
+      "static": null,
+      "masks": [
+        {
+          "mask": "boot_cuffs_inlay.png",
+          "value": "red"
+        }
+      ],
+      "master_sha1": "bfbc56681f15bc2f350262e50909c3bec0806bb9",
+      "width": 64,
+      "height": 32,
+      "sha1": "48419025e6d1f1b68539ddd67f29f06e2d486fc6"
+    },
+    {
+      "part": "browband",
+      "namespace": "armorpieces_wayfarer",
+      "material": "gold",
+      "master": "browband.png",
+      "static": null,
+      "masks": [
+        {
+          "mask": "browband_inlay.png",
+          "value": "red"
+        }
+      ],
+      "master_sha1": "2666826a85d371e32a4e1b7f2f7f34713eb92452",
+      "width": 64,
+      "height": 32,
+      "sha1": "c9a591552a05a3f29e3ef5628b4bc145ba25be2a"
+    },
+    {
+      "part": "buckled_belt",
+      "namespace": "armorpieces_wayfarer",
+      "material": "gold",
+      "master": "buckled_belt.png",
+      "static": "buckled_belt_static.png",
+      "masks": [
+        {
+          "mask": "buckled_belt_guard.png",
+          "value": "gold"
+        }
+      ],
+      "master_sha1": "82a06525e53bf6908870e00cc266e2a9418307f7",
+      "width": 64,
+      "height": 32,
+      "sha1": "aeab39a968f3603e7213cf53bfd7eda64f567a52"
+    },
+    {
+      "part": "padding",
+      "namespace": "armorpieces_wayfarer",
+      "material": "gold",
+      "master": "padding.png",
+      "static": null,
+      "masks": [
+        {
+          "mask": "padding_inlay.png",
+          "value": "red"
+        }
+      ],
+      "master_sha1": "e4430d63ef312b1d8249d6b645e48199ca613f99",
+      "width": 64,
+      "height": 32,
+      "sha1": "a712342d400572761ca8ca2b916d81bae2027e74"
+    },
+    {
+      "part": "pouch_belt",
+      "namespace": "armorpieces_wayfarer",
+      "material": "gold",
+      "master": "pouch_belt.png",
+      "static": null,
+      "masks": [
+        {
+          "mask": "pouch_belt_inlay.png",
+          "value": "red"
+        }
+      ],
+      "master_sha1": "14169c28fc72481d60302aa27d5ad16b3eacfc69",
+      "width": 64,
+      "height": 32,
+      "sha1": "72c3396c358a32207186d59411c857951a91ca94"
+    },
+    {
+      "part": "puttees",
+      "namespace": "armorpieces_wayfarer",
+      "material": "gold",
+      "master": "puttees.png",
+      "static": null,
+      "masks": [
+        {
+          "mask": "puttees_inlay.png",
+          "value": "red"
+        }
+      ],
+      "master_sha1": "3f443acf85afd75b5082da9b6cb129e93fcc6563",
+      "width": 64,
+      "height": 32,
+      "sha1": "763004b9e9e5a2690fb5d98debc914f9e56bf42f"
+    },
+    {
+      "part": "quiver",
+      "namespace": "armorpieces_wayfarer",
+      "material": "gold",
+      "master": "quiver.png",
+      "static": "quiver_static.png",
+      "masks": [
+        {
+          "mask": "quiver_guard.png",
+          "value": "gold"
+        }
+      ],
+      "master_sha1": "bee53bf8d22c22ab18bd9504a836336ef1597580",
+      "width": 64,
+      "height": 32,
+      "sha1": "adc6dc3bcd476c418dcf0c1640b3610453a26651"
+    },
+    {
+      "part": "scarf",
+      "namespace": "armorpieces_wayfarer",
+      "material": "gold",
+      "master": "scarf.png",
+      "static": null,
+      "masks": [
+        {
+          "mask": "scarf_inlay.png",
+          "value": "red"
+        }
+      ],
+      "master_sha1": "449e325e4ff9f2cae96a4f7ae0594bddd03e84ef",
+      "width": 64,
+      "height": 32,
+      "sha1": "91679a8c50c6e16aac993ac6a9b01fef394b43c8"
+    },
+    {
       "part": "thigh_sheath",
+      "namespace": "armorpieces_wayfarer",
       "material": "gold",
       "master": "thigh_sheath.png",
       "static": null,
@@ -2621,23 +2752,8 @@
       "sha1": "29f7a853473fe8ce9c7d743cb6f88c7d623a7bb8"
     },
     {
-      "part": "winged_cops",
-      "material": "gold",
-      "master": "winged_cops.png",
-      "static": null,
-      "masks": [
-        {
-          "mask": "winged_cops_guard.png",
-          "value": "gold"
-        }
-      ],
-      "master_sha1": "74b1b79003479c0d34f6f9dab5b1e2d592787641",
-      "width": 64,
-      "height": 32,
-      "sha1": "caa3820343ad93f75ed3f6109c041d2e76f58187"
-    },
-    {
       "part": "wraps",
+      "namespace": "armorpieces_wayfarer",
       "material": "gold",
       "master": "wraps.png",
       "static": null,
@@ -2654,6 +2770,7 @@
     },
     {
       "part": "bandolier",
+      "namespace": "armorpieces_wayfarer",
       "material": "amethyst",
       "master": "bandolier.png",
       "static": "bandolier_static.png",
@@ -2674,6 +2791,7 @@
     },
     {
       "part": "bandolier",
+      "namespace": "armorpieces_wayfarer",
       "material": "copper",
       "master": "bandolier.png",
       "static": "bandolier_static.png",
@@ -2694,6 +2812,7 @@
     },
     {
       "part": "bandolier",
+      "namespace": "armorpieces_wayfarer",
       "material": "diamond",
       "master": "bandolier.png",
       "static": "bandolier_static.png",
@@ -2714,6 +2833,7 @@
     },
     {
       "part": "bandolier",
+      "namespace": "armorpieces_wayfarer",
       "material": "emerald",
       "master": "bandolier.png",
       "static": "bandolier_static.png",
@@ -2734,6 +2854,7 @@
     },
     {
       "part": "bandolier",
+      "namespace": "armorpieces_wayfarer",
       "material": "gold",
       "master": "bandolier.png",
       "static": "bandolier_static.png",
@@ -2754,6 +2875,7 @@
     },
     {
       "part": "bandolier",
+      "namespace": "armorpieces_wayfarer",
       "material": "iron",
       "master": "bandolier.png",
       "static": "bandolier_static.png",
@@ -2774,6 +2896,7 @@
     },
     {
       "part": "bandolier",
+      "namespace": "armorpieces_wayfarer",
       "material": "lapis",
       "master": "bandolier.png",
       "static": "bandolier_static.png",
@@ -2794,6 +2917,7 @@
     },
     {
       "part": "bandolier",
+      "namespace": "armorpieces_wayfarer",
       "material": "netherite",
       "master": "bandolier.png",
       "static": "bandolier_static.png",
@@ -2814,6 +2938,7 @@
     },
     {
       "part": "bandolier",
+      "namespace": "armorpieces_wayfarer",
       "material": "quartz",
       "master": "bandolier.png",
       "static": "bandolier_static.png",
@@ -2834,6 +2959,7 @@
     },
     {
       "part": "bandolier",
+      "namespace": "armorpieces_wayfarer",
       "material": "redstone",
       "master": "bandolier.png",
       "static": "bandolier_static.png",
@@ -2854,6 +2980,7 @@
     },
     {
       "part": "bandolier",
+      "namespace": "armorpieces_wayfarer",
       "material": "resin",
       "master": "bandolier.png",
       "static": "bandolier_static.png",
@@ -2874,6 +3001,7 @@
     },
     {
       "part": "bandolier",
+      "namespace": "armorpieces_wayfarer",
       "material": "copper_darker",
       "master": "bandolier.png",
       "static": "bandolier_static.png",
@@ -2894,6 +3022,7 @@
     },
     {
       "part": "bandolier",
+      "namespace": "armorpieces_wayfarer",
       "material": "diamond_darker",
       "master": "bandolier.png",
       "static": "bandolier_static.png",
@@ -2914,6 +3043,7 @@
     },
     {
       "part": "bandolier",
+      "namespace": "armorpieces_wayfarer",
       "material": "gold_darker",
       "master": "bandolier.png",
       "static": "bandolier_static.png",
@@ -2934,6 +3064,7 @@
     },
     {
       "part": "bandolier",
+      "namespace": "armorpieces_wayfarer",
       "material": "iron_darker",
       "master": "bandolier.png",
       "static": "bandolier_static.png",
@@ -2954,6 +3085,7 @@
     },
     {
       "part": "bandolier",
+      "namespace": "armorpieces_wayfarer",
       "material": "netherite_darker",
       "master": "bandolier.png",
       "static": "bandolier_static.png",

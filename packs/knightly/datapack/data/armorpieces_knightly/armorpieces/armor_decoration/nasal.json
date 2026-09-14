@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_knightly:nasal",
+  "description": {
+    "translate": "decoration.armorpieces_knightly.nasal"
+  },
+  "anchors": [
+    "brow"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "former_ids": [
+    "armorpieces:nasal"
+  ],
+  "uid": "ap1eiiykdmekaxv3zw4wwwq"
+}

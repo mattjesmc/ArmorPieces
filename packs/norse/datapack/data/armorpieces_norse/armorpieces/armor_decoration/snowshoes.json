@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_norse:snowshoes",
+  "description": {
+    "translate": "decoration.armorpieces_norse.snowshoes"
+  },
+  "anchors": [
+    "spurs"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "uid": "ap1thm5m2c7kt4wdmr5c5xa"
+}

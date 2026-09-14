@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_antiquity:phalerae",
+  "description": {
+    "translate": "decoration.armorpieces_antiquity.phalerae"
+  },
+  "anchors": [
+    "collar"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap12ozwkda6nukenv4zzndq"
+}

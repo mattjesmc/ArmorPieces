@@ -19,6 +19,11 @@ and nothing may check against it, which would report every moved part's failure 
 
 A part's name is unique across the mod and the packs - `tools/check_additive.py` is what keeps it
 so - which is why one bare name is enough to find it.
+
+`packs/vlm-scratch` is skipped for a different reason: it is a scratch pack from the local-VLM
+trial and ships nowhere, so its pieces must not appear in a shipped part's cross-part pass (a
+scratch horn sharing a plane with `browband` is not a problem anyone will meet). The same set
+`check_additive.py` and `mint_uids.py` keep as unshipped.
 """
 
 from __future__ import annotations
@@ -29,12 +34,14 @@ ROOT = Path(__file__).resolve().parent.parent
 MOD = ROOT / "src" / "main" / "resources"
 PACKS = ROOT / "packs"
 GENERATED = {"legacy"}
+UNSHIPPED = {"vlm-scratch"}
 
 
 def _packs() -> list[Path]:
     if not PACKS.is_dir():
         return []
-    return [p for p in sorted(PACKS.iterdir()) if p.is_dir() and p.name not in GENERATED]
+    return [p for p in sorted(PACKS.iterdir())
+            if p.is_dir() and p.name not in GENERATED and p.name not in UNSHIPPED]
 
 
 def asset_roots() -> list[Path]:

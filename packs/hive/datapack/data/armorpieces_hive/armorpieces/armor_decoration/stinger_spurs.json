@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_hive:stinger_spurs",
+  "description": {
+    "translate": "decoration.armorpieces_hive.stinger_spurs"
+  },
+  "anchors": [
+    "spurs"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1oqkr3rtbucgi24nieqvq"
+}

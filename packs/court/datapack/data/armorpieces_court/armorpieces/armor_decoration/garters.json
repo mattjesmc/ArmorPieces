@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_court:garters",
+  "description": {
+    "translate": "decoration.armorpieces_court.garters"
+  },
+  "anchors": [
+    "knees"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "former_ids": [
+    "armorpieces:garters"
+  ],
+  "uid": "ap1cbhvde2bakiqyhvhrxwq"
+}

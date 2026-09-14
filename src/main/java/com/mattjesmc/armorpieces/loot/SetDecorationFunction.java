@@ -1,5 +1,7 @@
 package com.mattjesmc.armorpieces.loot;
 
+import com.mattjesmc.armorpieces.config.ArmorPiecesServerConfig;
+import com.mattjesmc.armorpieces.config.PartsSwitch;
 import com.mattjesmc.armorpieces.decoration.ArmorDecoration;
 import com.mattjesmc.armorpieces.decoration.ArmorDecorations;
 import com.mattjesmc.armorpieces.decoration.ArmorPiecesRegistries;
@@ -124,9 +126,12 @@ public final class SetDecorationFunction extends LootItemConditionalFunction {
     }
 
     private List<Holder<ArmorDecoration>> fitting(final HolderGetter.Provider registries) {
+        final PartsSwitch offered = ArmorPiecesServerConfig.get().parts();
         final List<Holder<ArmorDecoration>> fits = new ArrayList<>();
         for (final Holder<ArmorDecoration> candidate : this.parts.resolve(registries)) {
-            if (candidate.value().fits(this.socket)) {
+            // Fits the socket, and is offered on this server: armor found already wearing a part
+            // the owner switched off would be the one route left to it, so it is closed here too.
+            if (candidate.value().fits(this.socket) && offered.offers(candidate, registries)) {
                 fits.add(candidate);
             }
         }

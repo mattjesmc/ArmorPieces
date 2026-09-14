@@ -1,0 +1,25 @@
+{
+  "asset_id": "armorpieces_knightly:poleyns",
+  "description": {
+    "translate": "decoration.armorpieces_knightly.poleyns"
+  },
+  "anchors": [
+    "knees"
+  ],
+  "loot": [
+    {
+      "table": "minecraft:chests/stronghold_corridor",
+      "weight": 1,
+      "chance": 0.1
+    },
+    {
+      "table": "minecraft:chests/simple_dungeon",
+      "weight": 1,
+      "chance": 0.05
+    }
+  ],
+  "former_ids": [
+    "armorpieces:poleyns"
+  ],
+  "uid": "ap13l77fszrw42ii2migrxq"
+}

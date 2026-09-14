@@ -1,5 +1,6 @@
 package com.mattjesmc.armorpieces.recipe;
 
+import com.mattjesmc.armorpieces.config.PartsSwitch;
 import com.mattjesmc.armorpieces.decoration.ArmorDecorations;
 import com.mattjesmc.armorpieces.decoration.DecorationAnchor;
 import com.mattjesmc.armorpieces.decoration.DecorationEntry;
@@ -111,7 +112,16 @@ public class SmithingFittingRecipe extends SimpleSmithingRecipe {
      */
     @Override
     public boolean matches(final SmithingRecipeInput input, final Level level) {
-        return super.matches(input, level) && !assemble(input).isEmpty();
+        return super.matches(input, level) && !assemble(input).isEmpty() && offered(input, level);
+    }
+
+    /**
+     * Whether the server offers what the template carries. A template with nothing on it names
+     * nothing to refuse; one for a fitting the owner switched off lays in the slot and crafts nothing.
+     */
+    private static boolean offered(final SmithingRecipeInput input, final Level level) {
+        final Holder<Fitting> named = Tolerant.get(input.template(), ModDataComponents.FITTING);
+        return named == null || PartsSwitch.offeredIn(named, level);
     }
 
     @Override

@@ -86,6 +86,11 @@ rest. Predicted `y 38.30 z 3.05` and the reply gave `y+5.37 z+1.58` off the 33/5
 the same numbers. The whole nine-cube fan was then placed blind from one Python table and needed no
 nudging.
 
+**Step the plates along the rotation axis.** The four pivots sit at x 5.55 / 5.75 / 5.95 / 6.15 - 0.2 apart - and that is not
+decoration: rotation about X keeps every plate's x faces where they are, so plates at ONE x share two planes and z-fight
+wherever the fan laps. `heel_wings` copied this fan without the step on 2026-09-14 and fought on every plate; the check
+cannot see it (LESSONS #29). Any brief that copies this fan must copy the step.
+
 **A fan is set by the chord, not the angle.** The first attempt (22/42/62/82, chord 1.9 tapering to
 1.1) rendered as four spread fingers: the transverse gap between neighbours is `L * dtheta`, which
 at L=6 and 20 degrees is 2.09 units — wider than the plates. Halving the spread to 12-14 degrees and

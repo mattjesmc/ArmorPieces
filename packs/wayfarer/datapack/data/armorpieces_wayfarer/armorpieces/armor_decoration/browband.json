@@ -1,0 +1,17 @@
+{
+  "asset_id": "armorpieces_wayfarer:browband",
+  "description": {
+    "translate": "decoration.armorpieces_wayfarer.browband"
+  },
+  "anchors": [
+    "brow"
+  ],
+  "fittings": [
+    "armorpieces:inlay",
+    "armorpieces:gemstone"
+  ],
+  "former_ids": [
+    "armorpieces:browband"
+  ],
+  "uid": "ap1eouo6qgzoyokewm7cq7a"
+}

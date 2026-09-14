@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_norse:braided_beard",
+  "description": {
+    "translate": "decoration.armorpieces_norse.braided_beard"
+  },
+  "anchors": [
+    "brow"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1nacy45plz3spspyfdgsa"
+}

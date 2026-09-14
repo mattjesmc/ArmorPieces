@@ -10,7 +10,7 @@ for f in glob.glob('src/main/resources/data/armorpieces/recipe/*.json') + \
          glob.glob('packs/*/datapack/data/*/recipe/*.json'):
     j = json.load(open(f, encoding='utf-8'))
     if j.get('pattern') == [' # ', '#F#', ' # ']:
-        used[j['key']['F']] = f.split('/')[-1][:-5]
+        used[j['key']['F']] = f.replace('\\', '/').split('/')[-1][:-5]
 
 mod = {}
 for f in glob.glob('src/main/resources/data/armorpieces/armorpieces/armor_decoration/*.json'):
@@ -62,6 +62,16 @@ PLAN = {
    'vambraces':('starfish_bracers','minecraft:bubble_coral_block'), 'belt':('sea_pickle_belt','minecraft:sea_pickle'),
    'tassets':('seagrass_skirt','minecraft:seagrass'), 'knees':('barnacle_cops','minecraft:prismarine_shard'),
    'greaves':('urchin_greaves','minecraft:prismarine_crystals'), 'spurs':('dolphin_flukes','minecraft:salmon')},
+ # The Hive's eight, designed 2026-09-12 to finish the pack the split created (main-pack-split.md
+ # "Is armorpieces_hive a pack or a merger?" - answered: a pack). `honeycomb` is bee_wings' and
+ # `string` is garters', which is why the gorget takes the block and the belt takes the cobweb.
+ 'hive': {
+   'crest':('antennae','BUILT'), 'brow':('compound_eyes','minecraft:spider_eye'),
+   'horns':('aerials','BUILT'), 'pauldrons':('wing_cases','BUILT'),
+   'back':('carapace','BUILT'), 'collar':('honeycomb_gorget','minecraft:honeycomb_block'),
+   'vambraces':('chitin_bracers','minecraft:beehive'), 'belt':('spinneret_belt','minecraft:cobweb'),
+   'tassets':('abdomen_plates','minecraft:honey_bottle'), 'knees':('spider_cops','minecraft:fermented_spider_eye'),
+   'greaves':('silverfish_greaves','minecraft:stone_bricks'), 'spurs':('stinger_spurs','minecraft:bee_nest')},
  'animals': {
    'crest':('rooster_comb','minecraft:egg'), 'brow':('frog_mask','BUILT'),
    'horns':('fox_ears','BUILT'), 'pauldrons':('bee_wings','BUILT'),
@@ -69,6 +79,36 @@ PLAN = {
    'vambraces':('cat_paws','minecraft:cod'), 'belt':('donkey_tail','BUILT'),
    'tassets':('sheep_fleece','minecraft:white_wool'), 'knees':('armadillo_shell','BUILT'),
    'greaves':('llama_wraps','minecraft:white_carpet'), 'spurs':('rabbit_feet','BUILT')},
+ # The four culture packs, designed 2026-09-13 (docs/plans/cultures.md): Samurai, Norse, Antiquity,
+ # Tournament. Every piece has a centre; the plan and the briefs come from one generator.
+ 'samurai': {
+   'crest':('maedate','minecraft:sunflower'), 'brow':('mempo','minecraft:red_dye'),
+   'horns':('kuwagata','minecraft:golden_hoe'), 'pauldrons':('sode','minecraft:black_dye'),
+   'back':('sashimono','minecraft:red_banner'), 'collar':('nodowa','minecraft:iron_chestplate'),
+   'vambraces':('kote','minecraft:cyan_dye'), 'belt':('daisho','minecraft:golden_sword'),
+   'tassets':('kusazuri','minecraft:red_wool'), 'knees':('haidate','minecraft:leather_leggings'),
+   'greaves':('suneate','minecraft:bamboo'), 'spurs':('waraji','minecraft:wheat')},
+ 'norse': {
+   'crest':('boar_crest','minecraft:cooked_porkchop'), 'brow':('braided_beard','minecraft:shears'),
+   'horns':('war_braids','minecraft:bone'), 'pauldrons':('ravens','minecraft:ink_sac'),
+   'back':('round_shield','minecraft:oak_boat'), 'collar':('torc','minecraft:raw_gold'),
+   'vambraces':('oath_rings','minecraft:raw_copper'), 'belt':('seax_belt','minecraft:stone_sword'),
+   'tassets':('hip_axes','minecraft:stone_axe'), 'knees':('fur_cops','minecraft:mutton'),
+   'greaves':('winingas','minecraft:brown_wool'), 'spurs':('snowshoes','minecraft:stick')},
+ 'antiquity': {
+   'crest':('transverse_crest','minecraft:leather_horse_armor'), 'brow':('corinthian_face','minecraft:copper_helmet'),
+   'horns':('ammon_horns','minecraft:cooked_mutton'), 'pauldrons':('epomides','minecraft:leather_helmet'),
+   'back':('scutum','minecraft:painting'), 'collar':('phalerae','minecraft:golden_apple'),
+   'vambraces':('manica','minecraft:chainmail_chestplate'), 'belt':('cingulum','minecraft:copper_nugget'),
+   'tassets':('pteruges','minecraft:brown_dye'), 'knees':('gorgon_cops','minecraft:ender_eye'),
+   'greaves':('ocreae','minecraft:copper_boots'), 'spurs':('caligae','minecraft:leather_boots')},
+ 'tourney': {
+   'crest':('lion_crest','minecraft:yellow_dye'), 'brow':('tilting_grille','minecraft:iron_trapdoor'),
+   'horns':('mantling','minecraft:blue_dye'), 'pauldrons':('grandguard','minecraft:copper_chestplate'),
+   'back':('ecranche','minecraft:blue_banner'), 'collar':('lance_rest','minecraft:tripwire_hook'),
+   'vambraces':('favour','minecraft:rose_bush'), 'belt':('sword_belt','minecraft:wooden_sword'),
+   'tassets':('cuisses','minecraft:iron_leggings'), 'knees':('rondel_cops','minecraft:iron_horse_armor'),
+   'greaves':('schynbalds','minecraft:chainmail_leggings'), 'spurs':('sabatons','minecraft:golden_boots')},
 }
 
 SOCKETS = {'crest','brow','horns','pauldrons','back','collar','vambraces','belt','tassets','knees','greaves','spurs'}
@@ -80,10 +120,18 @@ for pack, o in PLAN.items():
 
 print('\n=== recipe centres: free and unique ===')
 seen = collections.defaultdict(list)
+built_now = 0
 for pack, o in PLAN.items():
     for sock, (piece, centre) in o.items():
+        # A planned piece whose own template recipe is on disk has been built: its centre is in
+        # `used` under its own name, and that is not a collision (2026-09-12, the seventeen).
+        if centre and centre != 'BUILT' and used.get(centre) == f'template_{piece}':
+            built_now += 1
+            continue
         if centre and centre != 'BUILT':
             seen[centre].append(f'{pack}:{piece}')
+if built_now:
+    print(f'  {built_now} planned piece(s) already built (own recipe on disk), not counted as new')
 bad = 0
 for centre, who in sorted(seen.items()):
     if centre in used:

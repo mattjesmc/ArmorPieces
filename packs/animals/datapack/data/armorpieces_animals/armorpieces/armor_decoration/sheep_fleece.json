@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_animals:sheep_fleece",
+  "description": {
+    "translate": "decoration.armorpieces_animals.sheep_fleece"
+  },
+  "anchors": [
+    "tassets"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "uid": "ap1yf6jwqwqwu6mgtec447q"
+}

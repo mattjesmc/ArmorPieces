@@ -76,7 +76,8 @@ class ShippedDataTest {
     void everyFileInTheTreeIsAnEntryInARegistry() {
         final ShippedData.Loaded loaded = ShippedData.mod();
         directories().forEach((key, directory) -> {
-            final List<Identifier> onDisk = files(ShippedData.MOD, directory);
+            final List<Identifier> onDisk = new ArrayList<>();
+            ShippedData.jarRoots().forEach(root -> onDisk.addAll(files(root, directory)));
             final Registry<?> registry = loaded.registry(key);
             assertEquals(Set.copyOf(onDisk), registry.keySet(),
                 () -> directory + ": the files under src/main/resources and the registry the loader "
@@ -89,7 +90,7 @@ class ShippedDataTest {
     void theModShipsItsContent() {
         final ShippedData.Loaded loaded = ShippedData.mod();
         assertTrue(loaded.registry(ArmorPiecesRegistries.ARMOR_DECORATION).size() >= 60,
-            "the mod ships sixty-six parts; a load this small means the loader missed a directory");
+            "the jar ships sixty-six parts in its built-in packs; a load this small means the loader missed a directory");
         assertFalse(loaded.registry(ArmorPiecesRegistries.ARMOR_SKIN).keySet().isEmpty(), "no skins loaded");
         assertFalse(loaded.registry(ArmorPiecesRegistries.CLOTH).keySet().isEmpty(), "no cloths loaded");
         assertFalse(loaded.registry(ArmorPiecesRegistries.FITTING).keySet().isEmpty(), "no fittings loaded");

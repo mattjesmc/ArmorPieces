@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_wayfarer:thigh_sheath",
+  "description": {
+    "translate": "decoration.armorpieces_wayfarer.thigh_sheath"
+  },
+  "anchors": [
+    "tassets"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "former_ids": [
+    "armorpieces:thigh_sheath"
+  ],
+  "uid": "ap1ko3rxdq74gqgzgw2lcfa"
+}

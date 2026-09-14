@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_tourney:tilting_grille",
+  "description": {
+    "translate": "decoration.armorpieces_tourney.tilting_grille"
+  },
+  "anchors": [
+    "brow"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap13tx2zktmpposxqw4amhq"
+}

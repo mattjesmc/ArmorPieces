@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_wayfarer:padding",
+  "description": {
+    "translate": "decoration.armorpieces_wayfarer.padding"
+  },
+  "anchors": [
+    "knees"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "former_ids": [
+    "armorpieces:padding"
+  ],
+  "uid": "ap16lh6c466a3hc5gftpf5q"
+}

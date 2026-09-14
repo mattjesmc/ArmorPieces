@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_knightly:cheek_guards",
+  "description": {
+    "translate": "decoration.armorpieces_knightly.cheek_guards"
+  },
+  "anchors": [
+    "horns"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "former_ids": [
+    "armorpieces:cheek_guards"
+  ],
+  "uid": "ap1wemz5hkl4zsurpu4jgma"
+}

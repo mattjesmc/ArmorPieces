@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.mattjesmc.armorpieces.data.ShippedData;
 import com.google.gson.JsonParser;
 import com.mattjesmc.armorpieces.decoration.fitting.FittingColour;
 import com.mojang.blaze3d.platform.NativeImage;
@@ -24,6 +25,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
@@ -73,10 +75,30 @@ import org.junit.jupiter.params.provider.MethodSource;
  */
 class DecorationBakeTest {
     private static final Path REFERENCE = Path.of("docs", "plans", "decoration-bake-reference.json");
-    private static final Path DECORATIONS = Path.of(
-        "src", "main", "resources", "assets", "armorpieces", "textures", "entity", "decoration");
-    private static final Path PART_DATA = Path.of(
-        "src", "main", "resources", "data", "armorpieces", "armorpieces", "armor_decoration");
+    /**
+     * The mod's own art since the split of 2026-09-14 lives in the three built-in packs the jar
+     * carries, one namespace each; a case in the reference says which, and its sheets are read from
+     * that pack's resources.
+     */
+    private static Path decorations(final String namespace) {
+        return ShippedData.assetsOf(namespace).resolve("textures").resolve("entity").resolve("decoration");
+    }
+
+    /** The data files of every part the jar ships, across its built-in packs. */
+    private static List<Path> partData() throws IOException {
+        final List<Path> files = new ArrayList<>();
+        for (final Map.Entry<String, Path> pack : ShippedData.BUILTIN.entrySet()) {
+            final Path dir = pack.getValue().resolve("data").resolve(pack.getKey())
+                .resolve("armorpieces").resolve("armor_decoration");
+            if (!Files.isDirectory(dir)) {
+                continue;
+            }
+            try (Stream<Path> list = Files.list(dir)) {
+                files.addAll(list.filter(path -> path.toString().endsWith(".json")).sorted().toList());
+            }
+        }
+        return files;
+    }
     private static final String PALETTES = "/assets/minecraft/textures/trims/color_palettes/";
     private static final String KEY = PALETTES + "trim_palette.png";
 
@@ -171,7 +193,9 @@ class DecorationBakeTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource("cases")
     void everyPartComesOutTheSamePicture(final String label, final JsonObject expected) throws IOException {
-        try (NativeImage master = read(DECORATIONS.resolve(expected.get("master").getAsString()))) {
+        final Path decorations = decorations(expected.has("namespace")
+            ? expected.get("namespace").getAsString() : "armorpieces");
+        try (NativeImage master = read(decorations.resolve(expected.get("master").getAsString()))) {
             // The master first and by name: a repainted master changes the answer with nothing being
             // wrong, and that should not read as the arithmetic having drifted.
             assertEquals(expected.get("master_sha1").getAsString(), digest(master),
@@ -182,14 +206,14 @@ class DecorationBakeTest {
             NativeImage staticLayer = null;
             try {
                 if (!statics.isJsonNull()) {
-                    staticLayer = read(DECORATIONS.resolve(statics.getAsString()));
+                    staticLayer = read(decorations.resolve(statics.getAsString()));
                 }
                 final String material = expected.get("material").getAsString();
                 try (NativeImage out = DecorationTextureManager.recolour(
                     master, staticLayer, materialRamp(material))) {
                     for (final JsonElement element : expected.getAsJsonArray("masks")) {
                         final JsonObject mask = element.getAsJsonObject();
-                        try (NativeImage sheet = read(DECORATIONS.resolve(mask.get("mask").getAsString()))) {
+                        try (NativeImage sheet = read(decorations.resolve(mask.get("mask").getAsString()))) {
                             DecorationTextureManager.applyMask(
                                 out, master, sheet, ramp(mask.get("value").getAsString()));
                         }
@@ -218,14 +242,12 @@ class DecorationBakeTest {
             .forEach(element -> covered.add(element.getAsJsonObject().get("part").getAsString()));
 
         final Set<String> shipped = new TreeSet<>();
-        try (Stream<Path> files = Files.list(PART_DATA)) {
-            for (final Path file : files.filter(path -> path.toString().endsWith(".json")).toList()) {
-                try (Reader reader = new InputStreamReader(Files.newInputStream(file), StandardCharsets.UTF_8)) {
-                    final JsonObject part = JsonParser.parseReader(reader).getAsJsonObject();
-                    final Identifier asset = Identifier.parse(part.get("asset_id").getAsString());
-                    if (asset.getNamespace().equals("armorpieces")) {
-                        shipped.add(asset.getPath());
-                    }
+        for (final Path file : partData()) {
+            try (Reader reader = new InputStreamReader(Files.newInputStream(file), StandardCharsets.UTF_8)) {
+                final JsonObject part = JsonParser.parseReader(reader).getAsJsonObject();
+                final Identifier asset = Identifier.parse(part.get("asset_id").getAsString());
+                if (ShippedData.BUILTIN.containsKey(asset.getNamespace())) {
+                    shipped.add(asset.getPath());
                 }
             }
         }
@@ -411,8 +433,7 @@ class DecorationBakeTest {
 
         final Set<Identifier> seen = new HashSet<>();
         final List<String> collisions = new ArrayList<>();
-        for (final String part : parts()) {
-            final Identifier assetId = Identifier.fromNamespaceAndPath("armorpieces", part);
+        for (final Identifier assetId : parts()) {
             for (final String material : List.of("iron", "gold", "iron_darker")) {
                 for (final List<DecorationTextureManager.Mask> masks : combinations) {
                     // Illegal punctuation would throw out of here rather than assert.
@@ -537,14 +558,12 @@ class DecorationBakeTest {
     }
 
     /** Every part the mod's own datapack declares, by the path its texture lives at. */
-    private static List<String> parts() throws IOException {
-        final List<String> parts = new ArrayList<>();
-        try (Stream<Path> files = Files.list(PART_DATA)) {
-            for (final Path file : files.filter(path -> path.toString().endsWith(".json")).toList()) {
-                try (Reader reader = new InputStreamReader(Files.newInputStream(file), StandardCharsets.UTF_8)) {
-                    parts.add(Identifier.parse(JsonParser.parseReader(reader).getAsJsonObject()
-                        .get("asset_id").getAsString()).getPath());
-                }
+    private static List<Identifier> parts() throws IOException {
+        final List<Identifier> parts = new ArrayList<>();
+        for (final Path file : partData()) {
+            try (Reader reader = new InputStreamReader(Files.newInputStream(file), StandardCharsets.UTF_8)) {
+                parts.add(Identifier.parse(JsonParser.parseReader(reader).getAsJsonObject()
+                    .get("asset_id").getAsString()));
             }
         }
         return parts;

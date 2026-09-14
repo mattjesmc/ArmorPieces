@@ -1,0 +1,12 @@
+{
+  "chance": 0.1,
+  "tables": [
+    "minecraft:chests/village/village_weaponsmith",
+    "minecraft:chests/village/village_armorer",
+    {
+      "table": "minecraft:chests/woodland_mansion",
+      "chance": 0.12
+    }
+  ],
+  "parts": "#armorpieces_tourney:tilt"
+}

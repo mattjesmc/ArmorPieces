@@ -2,6 +2,32 @@
 
 ## Unreleased
 
+**Removing content is a setting, never a pack.** Every pack is additive — it may only define ids that
+nothing else defines — which is what makes a library of them safe to browse and mix, and it leaves
+one thing a pack can never do: take content away. So that is a setting now. `parts.disabled` in
+`config/armorpieces-server.json` is a list of ids and `#tags` in any of the four content registries —
+parts, skins, cloths and fittings, one list for all of them, a tag looked up in the member's own
+registry — and `parts.mod_parts: false` switches off everything the mod ships itself in one line, for
+a server that runs on packs alone. Switched off means **not offered**: not in any loot pool or
+`armorpieces:template` entry, never drawn by `set_decoration`, not on the creative tab, its template
+recipe dropped as the recipes load (so not in the recipe book or `/recipe` either), and refused at
+both smithing tables. It does not mean uninstalled: the file still loads, a piece already worn is
+still read and still drawn, and nothing about a save changes — the moment a setting could stop a
+worn piece rendering, the break the id system exists to prevent would have been rebuilt as a
+config line. Loot and recipes follow a `/reload`; the creative tab is built on the client from what
+the server tells it on join and after each reload, and is rebuilt on the next join.
+
+**A pack says which mod it needs, where a tool can read it.** Beside the game's own `pack` section,
+every pack's `pack.mcmeta` now carries `"armorpieces": {"requires": "0.4.0"}` — a section the game
+ignores. `pack_manifest.py` reports it, `export_pack.py` notes a pack without one, the editor writes
+it into every pack it makes, and the library reads it out of a submitted zip so the editor can grey
+out a pack that needs a newer mod than the toolkit is and the site can say so on the pack's page.
+`check_additive.py` holds every pack in this repository to the 0.4.0 floor: backwards support stops
+below it, and no pack claims otherwise. The mod's own library entry is an *archive* now — what the
+mod ships, listed to be browsed and borrowed, with no download and a question before the editor
+installs a copy — because installing the mod's own content as a pack beside the mod is exactly the
+one thing an additive pack must not be.
+
 **A mistake in a pack costs that mistake, not the world.** Until now nearly any error in a pack's
 `armor_decoration` file — a truncated file, a missing `description`, `anchors: []`, a misspelled
 socket, a fitting id nothing defines, an effect type nobody installed — stopped the world from
@@ -34,9 +60,14 @@ empty air. Enchantments, name and all. That was true of every version this mod h
 had removed a part before.
 
 Now nothing this mod writes can fail to be read. A piece an installation cannot name is kept exactly
-as it was saved, renders nothing, does nothing, says *"not installed"* in the item's tooltip, and
-comes back the moment its pack is installed — no migration, no command, no deadline. Nothing is ever
-deleted automatically.
+as it was saved, renders nothing, does nothing, and comes back the moment its pack is installed — no
+migration, no command, no deadline. Nothing is ever deleted automatically. The tooltip says **which**
+id it is holding, with the pack's name beside it where the mod can know one — a count says something
+is wrong where an id says what, and a piece is three JSON files and a PNG, so a player who cannot get
+the pack can define the id themselves and their armor comes back. Four are shown on the face of the
+tooltip and the rest under F3+H. The pack names come from `assets/armorpieces/compat/moved.json`,
+which `tools/build_moved_index.py` writes from the `former_ids` the packs already declare, so there
+is no second table to keep in step with the first.
 
 On top of that floor, two optional fields make a move a non-event:
 
@@ -54,6 +85,13 @@ report on it and none is needed: `/armorpieces missing` lists what a world is wa
 `/armorpieces prune` deliberately drops what a server owner does not want back, and
 `/armorpieces upgrade` writes loaded chunks out now instead of whenever they are next saved.
 
+None of that needs a pack to be *survivable*; a pack is what makes a missing piece *visible* again.
+For a player who wants everything back at once under the old names, `packs/legacy` is a download
+rather than an upgrade step: `tools/build_legacy_pack.py` generates it from the same thirty
+`former_ids`, rewriting each piece's `asset_id` and language key back to the mod's namespace — 133
+files, 25 pieces, 5 skins — and its art tracks the packs rather than 0.3.0's bytes, so a piece the
+Wild Hunt has since redrawn comes back redrawn.
+
 **The mod is three themes, not six, and 66 pieces rather than 91.** Twenty-five pieces and five
 armor skins left the mod for content packs. Armor wearing one of them keeps it and stops showing
 it until the pack it went to is installed — see the entry above; it is a gap, not a loss, and it
@@ -64,14 +102,46 @@ closes by itself. What moved, and where:
 | Armor Pieces: Coral | `armorpieces_coral` | the six **tidal** pieces |
 | Armor Pieces: The Wild Hunt | `armorpieces_hunt` | the fifteen **beast** pieces |
 | Armor Pieces: The Hive | `armorpieces_hive` | the four **carapace** pieces |
-| Armor Pieces: Legends | `armorpieces_legends` | `lorica`, `hoplite`, `samurai`, `varangian`, `runic` |
+| Armor Pieces: Samurai / Norse / Antiquity | `armorpieces_samurai`, `_norse`, `_antiquity` | `samurai`; `varangian`, `runic`; `lorica`, `hoplite` (by way of a Legends pack that never shipped) |
 
-What stays is what the mod could always dress on its own: **knightly** (30 pieces, and the banner
-joins it), **court** (23) and **wayfarer** (13), with the nine skins that say how armor is *made*
-rather than who wore it. The three loot groups that went with the themes went with them; the nine
-kept skins redistribute over the three that remain. The reason is the content site: a player picks
-the looks they want rather than installing ninety-one pieces to wear twelve, and the mod stops
-growing sideways.
+**And then the rest went too (2026-09-14): the mod is the engine, and its own content is three
+built-in packs.** What the mod could always dress on its own — **knightly** (30 pieces, and the
+banner joins it), **court** (23) and **wayfarer** (13), with the nine skins that say how armor is
+*made* rather than who wore it — now lives in `packs/knightly`, `packs/court` and `packs/wayfarer`
+under the namespaces `armorpieces_knightly`, `armorpieces_court` and `armorpieces_wayfarer`, and
+the jar carries the three as built-in packs, **on by default and switchable off** like any other
+(`parts.mod_parts: false` switches all three off at once). Every old `armorpieces:<id>` is in the
+new file's `former_ids`, so a 0.3.0 save rebinds on a fresh install with nothing downloaded, and
+`packs/legacy` is now the whole of 0.3.0 — 91 pieces and 14 skins under their original ids. The
+four fittings and the two cloths stay with the engine. The reason is the content site: a player
+picks the looks they want rather than installing ninety-one pieces to wear twelve, and the mod
+stops growing sideways.
+
+**Four culture packs (2026-09-13), 48 pieces, one per socket each, every outfit the pack's own:**
+**Samurai** (`armorpieces_samurai`: maedate, mempo, kuwagata, sode, sashimono, nodowa, kote,
+daisho, kusazuri, haidate, suneate, waraji — The Daimyo), **Norse** (`armorpieces_norse`: boar
+crest, braided beard, war braids, ravens, round shield, torc, oath rings, seax belt, hip axes,
+fur cops, winingas, snowshoes — The Jarl), **Antiquity** (`armorpieces_antiquity`: transverse
+crest, Corinthian face, Ammon horns, epomides, scutum, phalerae, manica, cingulum, pteruges,
+gorgon cops, ocreae, caligae — The Triumph) and **Tournament** (`armorpieces_tourney`: lion
+crest, tilting grille, mantling, grandguard, ecranche, lance rest, favour, sword belt, cuisses,
+rondel cops, schynbalds, sabatons — The Tilt). The `sashimono` is the second banner piece after
+the Village's. See `docs/plans/cultures.md`.
+
+**The packs live in this repository, and every one of them needs this release.** `packs/` holds the
+four packs above and four more built since 0.3.0: **Animals** (eight pieces and the Menagerie set),
+**Dragonslayer**, **Nether** and **Hero of the Village** (twelve pieces each, every socket filled).
+Dragonslayer's `dragon_wings` carries `armorpieces:glide`, the first effect any pack has shipped;
+the Nether's nine non-wither pieces are found in bastions and fortresses as well as crafted, and its
+three wither pieces drop from the wither alone. Every `pack.mcmeta` declares a floor of **0.4.0**,
+Animals and Coral included, because they use loot groups, fittings and `former_ids` as this release
+shaped them — so none of them publishes before it. Their pieces are their own changelog's business;
+what is the mod's is that the tools stopped assuming a part lives in the mod. `tools/check_additive.py`,
+the gate's `additive` check, walks the mod and every pack and fails when two of them define one
+registry id, recipe id or asset path — 787 definitions across 8 sources, none twice — and
+`tools/decoration_paths.py` is the one place that answers where a part's geometry and sheets are,
+so `trace_geometry`, `check_part`, `sync_decoration_masters` and the painters all see a bone-mate
+that left for a pack as the neighbour it still is.
 
 **The stage sets say who owns them.** `knight_errant`, `high_court` and `far_road` are dressed
 from the mod alone. `wild_hunt`, `deep_tide` and `chitin` are now their packs' sets and are declared
@@ -81,6 +151,22 @@ or a skin that had left: `far_road` wears `epaulettes` on the shoulders instead 
 `high_court` wears the lamellar skin instead of runic, and `wild_hunt` wears brigandine instead of
 varangian. The Reef stopped borrowing the mod's `carapace` for its back and wears its own
 `spine_ridge`, which took it from eight borrowed sockets to five.
+
+**A pack says what its pieces are for.** A pack's pieces are meant to be worn *together*, and
+nothing in a datapack could say so; the mod's own sets are written in Java, which is fine for the
+mod and impossible for everybody else. A pack may now carry **`armorpieces-sets.json`** at its root
+beside the credits — the other file the game ignores and the tools read. The inner `set` is the
+shape everything else already speaks (`docs/examples/set.json`, `bb_rig.py --wear`, the website's
+wardrobe), so a pack's outfit reaches the wardrobe beside the mod's without a second format. A set
+may name a piece from *any* pack — that is borrowing, and it is how a themed set fills the sockets
+it cannot fill alone — but a piece in the pack's own namespace that the pack does not contain is an
+authoring slip and is dropped with a warning, because it would render as a hole and nothing
+downstream could say why. The mod's own three sets reach the site the same way from the other side:
+a `sets` generator reads them out of `StageCommand.java` into `dist/site.json`, in the shape the
+wardrobe saves a set in, with the items each set hands to a part turned into fitting values the way
+the game does it — so a set changed in Java changes there too. `bb_rig.py --wear` builds one
+Blockbench project wearing a whole set, twelve sockets each painted for its own trim material and
+the mirrored pairs genuinely mirrored, which is the figure the site's wardrobe shows.
 
 **A stage set dressed without a skin was never parsed, and the set before it swallowed the rest.**
 The site generator matched only `new GallerySet(..., skin("x"), ...)`, so `menagerie` and `reef`
@@ -108,24 +194,53 @@ Measured while diagnosing: three concurrent sessions, one session `armorpieces`,
 An explicit `MCPTK_SESSION` still wins, for deliberate sharing. (mcp-toolkit 0.136.0 / shim 0.66.0;
 `docs/models/BLOCKBENCH_ISOLATION_DESIGN.md` there is the record. The toolkit dependency and the
 `run/mcptoolkit` extract both moved to 0.136.0, so this is a released shim and not a patch: a dev
-boot re-extracts from the jar every time, and the jar now carries it.)
-
-**The six stage sets are on the site.** A `sets` generator reads the sets `/armorpieces stage set`
-dresses out of `StageCommand.java` into `dist/site.json`, in the shape the website's wardrobe saves
-a set in - the items each set hands to a part are turned into fitting values the way the game does
-it - so armorpieces.com's wardrobe opens with Knight Errant, High Court, Wild Hunt, Far Road, Deep
-Tide and Chitin, each with its commands and its pack, and a set changed in Java changes there too.
+boot re-extracts from the jar every time, and the jar now carries it. The pin has since moved to
+0.147.0, whose changelog names this repository's old pin as the cause of eight idle Blockbench
+windows on this machine — an old pin here is a defect over there, so the pin follows the release.)
 
 **One command before a release.** `python tools/gate.py` runs everything in the repository that can
 fail - the authoring round trip, the skin masters, the painters and their traces, the language
 lines, the effect schema, the plugin's syntax, the unit tests and the Gradle build - prints a line
 per check and exits nonzero if any of them failed. It exists because nothing in the build ran
 `tools/`, so the authoring tools rotted in silence: on its first run it found three painters stale.
-Checks are grouped by what they need, so a machine with no game still runs most of them, and the two
-tiers that drive the game itself are designed in `docs/plans/testing.md`. Two checks are new:
-`check_lang.py` derives every language key the mod needs and fails on a missing line, and
-`check_effect_schema.py` asserts the Blockbench dialog's schema still names every registered effect
-type with every field classified.
+Checks are grouped by what they need, so a machine with no game still runs most of them: **tier 0**
+is the tree (thirteen checks, python and node), **tier 1** the JVM (`gradlew build` and the unit
+tests), **tier 2** a dedicated server and **tier 3** a client, both driven through the mcp-toolkit
+bridge. All four run, and the gate is green at 16/16. Among tier 0's checks, `check_lang.py` derives
+every language key the mod needs and fails on a missing line, `check_effect_schema.py` asserts the
+Blockbench dialog's schema still names every registered effect type with every field classified, and
+`check_painters` retired the last two stale painters rather than repairing them — a painter orphaned
+by a Blockbench rework describes art that already exists and will never be regenerated, so the rule
+for the class is that it is deleted, and tier 3's goldens are the art check from here on.
+
+**Tier 2 asks a dedicated server everything; tier 3 looks at the pictures.** `tools/gate/tier2.py`
+starts a server, runs nine scenarios against it and stops it: the packs load, every command answers,
+staging builds and clears its cross product, a group's share is what four thousand seeded rolls pay
+out, a foreign pack's table hands out one of our templates, the settings file switches the mod off
+and back through `/reload`, a worn part's effect is reported and an attribute one granted and taken
+away again, and a piece nothing defines is kept rather than destroying the helmet it was on. Two
+more checks boot a server each, because what they are about happens while a world loads: a group
+naming a tag nobody installed is an empty set and not a dead world, and a five-mistake fixture pack
+— one file that is not even JSON — is named in full by a server that then opens its world. Tier 3 starts a client with the bridge, renders the scenes in `tools/gate/scenes3.py`
+and diffs each frame byte-for-byte against one of forty goldens covering what a part is drawn *as*,
+what colour it is drawn *in*, the cloth over it and the fittings on it; a golden is only ever written
+by `--bless`, which is a person looking at the frame, and every frame is judged twice, against its
+golden and against what the scene says should be true of it. Tier 1 grew to forty test classes on the way,
+most of them one extracted method each rather than new code: every shipped part, skin, cloth,
+fitting and loot group — the mod's and every pack's — is decoded through a real
+`RegistryDataLoader.load` and encoded back, every geometry is baked through vanilla's own
+`LayerDefinition`, and a piece can be put on and taken off a real `LivingEntity` with no world at all.
+
+**Building the tiers found three defects, and each is fixed.** A loot group naming a tag no
+installed pack defines did not load as an empty set — it took the whole world down, because
+`RegistryCodecs.homogeneousList` resolves a tag when the file is read; all four member fields are
+`MemberSet` now, resolved at the moment they are used, which is the case every pack in the line
+meets the day a player installs one pack and not another. `DecorationLootTables` dropped its reports
+on a datapack reload but not on a server stop, so a single-player client that opened one world, quit
+to the menu and opened another explained the second world's tables with the first world's groups. And
+the Python port of the material bake was a unit out on any channel landing exactly on a half, because
+Python's `round()` goes to even where Java's goes up — nothing in a picture, everything in a port, and
+`docs/plans/decoration-bake-reference.json` is now the answer both sides are checked against.
 
 **The four traps that cost 0.4.0 three game cycles are now four tests.** `gradlew test` boots under
 `fabric-loader-junit`, so a codec that names a registry can be built and read outside a game at all,
@@ -189,6 +304,25 @@ mixin into the damage path, which every hook here avoids so that one part cannot
 mod by winning a race for an injection point. Hitting harder is `attack_damage` through
 `armorpieces:attribute`, with vanilla's formula doing the arithmetic.
 
+**`Packs...` is a manager, on the desktop and in a browser alike.** It used to be a list of paths.
+The five functions that ask which platform the plugin is on — `packHome`, `canBrowseFolders`,
+`browseForPack`, `takeZip`, `giveZip` — are joined by `fetchBytes` (node's https on the desktop,
+`fetch` in a browser, and plain http on `localhost` so the library can be a dev server while the
+site is worked on), and everything above them is one implementation over one filesystem. Bringing a
+pack in and sending one out are asked of a list of *sources*, and two ship: a **zip**, through the
+new `tools/import_pack.py` — `export_pack.py` in reverse, finding the pack inside a wrapped zip,
+refusing members that would escape the destination, and refusing a zip that unpacks to more than a
+pack: the central directory's declared sizes and member count are checked before anything is opened
+and each member is written in chunks against a running total, because a central directory can lie —
+and the **library**, a hosted `index.json` of packs their authors host, browsed and installed from
+under *From the library...* and offered to under *Submit...*, which opens the library's submission
+issue with the form filled in and writes the zip beside the pack. The index URL is a setting, and the
+web build points it at itself. The pack manager shows each pack's license, and **Work here** on a
+pack scopes the piece list, the skin halves and the open dialogs to that pack alone until *Show all
+packs* — because the piece list was every pack at once with the first pack found winning, which is
+the game's own rule and one that made a pack redefining the mod's pieces invisible beside the mod's
+own. The choice is a setting, so it survives a restart, and clears itself if the folder has gone.
+
 **Your library, from the editor.** `Packs...` gains a third source beside a zip and the public
 library: *From your library...* and *Upload to your library...* talk to an account on the site
 that serves the library index - by the page's own session on the web, and on the desktop by a
@@ -196,6 +330,27 @@ device token minted through *Sign in to the site...*, an eight-character code ap
 browser and kept in a setting. `sendBytes` is the platform function a POST needs, beside
 `fetchBytes`. `tools/sanitize_pack.py` re-encodes every PNG and JSON of an unpacked pack and
 throws out anything else, which is what an upload goes through before it is stored.
+
+**The editor checks a piece out of your library, and saves it back.** The plugin had been left
+behind by everything built under it: only it still spoke whole-pack zips. A **checkout** is one
+piece of your library on this machine, being worked on — the site hands it out as a pack of one and
+takes one back, so repainting a 64×32 sheet sends that sheet rather than ten megabytes. It is
+deliberately not a pack source, since a pack source installs a whole pack, which is the thing this
+moves away from; files still exist locally, because Blockbench edits in memory and the mod's Python
+reads a pack *folder*, and `.armorpieces-checkout.json` is what says a folder is a checkout rather
+than a working tree. Save checks in by itself — signed in, with the new checkbox on, a Save of a
+checkout sends it a moment later, debounced and never in the way of the local write; a failed
+check-in leaves a saved folder and a sentence, never lost work — and *Check In to My Library* does
+it by hand either way. **New Armor Piece...** asks where the piece goes rather than which folder,
+and the two folder pickers are gone: a collection or a pack of yours on the site, a new collection
+made on the spot, or a pack in this browser. Signed out, it lands in a local pack exactly as before.
+A checkout is addressed by its folder, not its id, so checking out your own `armorpieces:circlet`
+beside a pack that also defines one edits yours. Two smaller things the site needed from the plugin:
+`armorpieces_api.preview({material, fittings})` turns the material preview on from outside, so the
+site's thumbnails are the piece in gold with its fittings filled through the one compositor, and
+`wear()` and `viewMode()` make the wardrobe's figure the real editor with its chrome off — `wear()`
+takes URLs as well as folders, installing each zip into one wardrobe pack first, so the live figure
+can be handed everything an outfit borrows.
 
 **Pieces as the unit.** `tools/pack_manifest.py` lists what a pack holds - every piece, skin and
 cloth with its socket, fittings, license, author and the files it is made of - and
@@ -205,8 +360,18 @@ different entries under one id, and an id the destination already holds with oth
 license lives in `armorpieces-credits.json` at the pack root, a file the game ignores, with a
 pack-level default and a per-piece override; the plugin's Part and Skin dialogs have an author and
 a license field that write it, the pack manager shows it, and the mod's own pack now carries one.
-`export_pack.py --reproducible` writes the same bytes for the same files. Tests under
-`tools/tests`.
+`pick_pieces.py --as` copies a piece under a new name and `--drop` is the other half of a move; a
+piece's `fitting_files` are part of the manifest's definition of it, so nothing that moves a piece
+has to re-derive the definition/recipe/material-tag rule. `export_pack.py --reproducible` writes the
+same bytes for the same files. Tests under `tools/tests`.
+
+**The pages count instead of remembering.** Every number the README, the store pages and the site
+state about the mod's own contents is read out of the mod's own files at build time by the
+generators in `.modpage/generators/` — the anchor enum, the datapack folders and the language file —
+so the four pages say the same thing because they are the same thing. The first run found the prose
+had already drifted: it said thirty recipes where the datapack has 31. `modpage build -t site`
+writes `dist/site.json` and `dist/wiki/`, which armorpieces.com reads instead of parsing YAML and
+counting for itself.
 
 **The editor without the game.** The Blockbench toolchain no longer needs Mojang's textures on
 the machine: `vanilla_assets.py --bake` writes the numbers the tools derive from them - the sixteen

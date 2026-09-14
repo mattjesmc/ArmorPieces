@@ -10,7 +10,7 @@
   paste dist/curseforge.md and ignore this file.
 -->
 <p align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/banners/header.png" alt="Armor Pieces"></p>
-<p align="center"><em>Parts, skins and cloth for armor — because someone else at spawn is wearing your diamond set.</em></p>
+<p align="center"><em>Pieces, skins and cloth for armor — because someone else at spawn is wearing your diamond set.</em></p>
 <p align="center">
 <a href="https://github.com/mattjesmc/ArmorPieces/releases/latest"><img src="https://img.shields.io/github/v/release/mattjesmc/ArmorPieces?style=for-the-badge&logo=github&logoColor=white&label=Release&color=5b21b6" alt="GitHub release"></a>&nbsp;
 <img src="https://img.shields.io/badge/Loader-Fabric-5b21b6?style=for-the-badge" alt="Loaders">&nbsp;
@@ -32,8 +32,8 @@ can build 1,568,239,201 armor sets, which sounds like plenty right up until it h
 twice in a week.</p>
 <p>Armor Pieces takes that number to <strong>1.3 × 10⁶³</strong> — about a million times the number of atoms in
 the Sun, and that is diamond alone, one of seven armor materials.</p>
-<p>It gives one piece of armor <strong>four layers of decoration, each an independent choice</strong>:
-a <strong>part</strong> hung on a socket, a <strong>skin</strong> that changes what the plate itself is made of, a <strong>cloth</strong>
+<p>It gives each item of armor <strong>four layers of decoration, each an independent choice</strong>:
+a <strong>piece</strong> hung on a socket, a <strong>skin</strong> that changes what the plate itself is made of, a <strong>cloth</strong>
 worn over the chest, and vanilla&rsquo;s own <strong>trim</strong> underneath them all. Every one of them is applied
 at a smithing table, and none of them replaces another - a helmet can carry a skin, a trim, a
 crest, a browband and a pair of horns at once.</p>
@@ -43,67 +43,83 @@ choose from. Pieces are real geometry hung on the body, not paint on the texture
 one piece, so the choice is the expressive act. Each is applied with a trim material and takes
 that material&rsquo;s colour.</p>
 <p><strong>Armor skins.</strong> A skin is the armor&rsquo;s <em>own</em> texture - what the plate is, rather than what is
-bolted to it: plate, gothic, milanese, mail, lorica, runic, hoplite, samurai, gambeson and the
-rest. Each is recoloured through the armor material&rsquo;s own palette, so a skinned iron helmet
+bolted to it: plate, gothic, milanese, mail, chainmail, gambeson, brigandine, scale and
+lamellar. Each is recoloured through the armor material&rsquo;s own palette, so a skinned iron helmet
 still reads as iron and a modded armor material is skinned for free from the texture it already
-ships. A skin is paid for in the metal the piece is made of: re-skinning is re-forging.</p>
+ships. A skin is paid for in the metal the armor is made of: re-skinning is re-forging.</p>
 <p><strong>Cloth.</strong> A tunic or a tabard over a chestplate, carrying the design of any banner you make
 at a loom - so the heraldry is yours rather than a list the mod maintains. It is baked into the
 armor&rsquo;s texture rather than hung off it, so it clips nothing and the plate&rsquo;s own rivets and edges
 read through it.</p>
-<p><strong>Fittings.</strong> Some parts have a second colour, set separately: a gem in the circlet, a metal
+<p><strong>Fittings.</strong> Some pieces have a second colour, set separately: a gem in the circlet, a metal
 buckle and a dyed strap on the sash, a dyed inlay on the greaves, a banner on the back banner.
 One more smithing step, one template per fitting, and the item decides where it goes.</p>
 <p>Most of it is <strong>found rather than made</strong>. A minority of pieces have a crafting recipe - the ones
 where the item is plainly the piece or what it is made of; the rest turn up in the chests that
 suit them, each theme in its own kind of structure, with the skins and the fitting templates
 alongside. An
-<strong>advanced smithing table</strong> shows a whole set worn by a stand and takes a part, a fitting, a
+<strong>advanced smithing table</strong> shows a whole set worn by a stand and takes a piece, a fitting, a
 trim, a skin or a cloth off again, which the smithing table cannot.</p>
-<p>Every part, skin and cloth is a datapack entry, a model and a texture, no code - and a pack adds
-its own the same way, from Blockbench, in folders of its own.</p>
+<p>Every piece, skin and cloth is a datapack entry, a model and a texture, no code - and a pack adds
+its own the same way, from Blockbench, in folders of its own. Packs are how the mod grows: the
+mod itself is three themes, and the rest - the Wild Hunt, the Coral, the Hive, the Legends and
+the packs after them - is content you install because you want that look. Armor wearing a piece
+from a pack you do not have keeps it, says so, and shows it again the moment the pack is
+installed.</p>
 
 <hr>
-<h2 id="whats-new">New in 0.3.0</h2>
+<h2 id="whats-new">New in 0.4.0</h2>
 
-<p>The release that turned a set of parts into a wardrobe.</p>
+<p>The release that made the mod safe to grow around: packs beside it, servers over it, and
+nothing you saved ever lost.</p>
 <ul>
-<li><strong>Seventy-one new parts — ninety-one in total.</strong> Every one of the twelve sockets now has at
-  least six answers, and the six themes reach across the whole suit. Among them a family of
-  seven flat <strong>visor styles</strong> on the <code>brow</code> socket, whose sights are real openings with your
-  own face behind them rather than paint.</li>
-<li><strong>Armor skins.</strong> A third template family, and the first thing in the mod that changes the
-  armor itself instead of adding to it. Fourteen ship, each recoloured through the armor
-  material&rsquo;s own vanilla palette, so a skin costs no per-material art and a modded material
-  gets one free.</li>
-<li><strong>Cloth.</strong> A fourth layer: a <strong>Tunic</strong> or a <strong>Tabard</strong> over a chestplate, wearing the design
-  of any banner you make at a loom, painted into the armor&rsquo;s texture rather than hung off it.</li>
-<li><strong>Most parts are now found rather than crafted.</strong> A <strong>loot group</strong> is one file naming a
-  category of vanilla tables and a tag of parts found in them; six ship, one per theme —
-  knightly gear in strongholds and trial chambers, beast trophies in bastions, court jewellery
-  in mansions and ancient cities, tidal parts in shipwrecks and ocean ruins, and so on. Skins
-  are divided over the same six, and a fitting template turns up in all of them.</li>
-<li><strong>The chance belongs to the table, not to the part.</strong> One pool per table, rolled once: a
-  chest&rsquo;s odds of holding something of ours stay put however many parts are added. Another part
-  changes <em>which</em> one you find, never how often.</li>
-<li><strong>The advanced smithing table.</strong> Crafted from a smithing table, an armor stand and two iron
-  ingots. It holds a whole set worn by a stand and lists each piece&rsquo;s sockets and fittings as
-  rows of icons, with its trim, its skin and its cloth on a row of its own — and Remove is the
-  one way any of them ever comes off.</li>
-<li><strong>Thirty recipes, not ninety-one.</strong> A template recipe now ships only where the centre
-  item is plainly the part or what it is made of — a bell for the bells, a goat horn for the
-  horns. The rest are found.</li>
-<li><strong>One template per fitting.</strong> <em>Gemstone</em>, <em>Guard</em>, <em>Inlay</em> and <em>Banner</em>, each with its own
-  look, name and recipe, instead of one template that guessed.</li>
-<li><strong>Any recipe the mod ships can be switched off</strong> by overriding its file with
-  <code>{"type": "armorpieces:disabled"}</code>.</li>
-<li><strong>Parts on the first-person hand.</strong> Vanilla shows a bare sleeve there and no armor at all;
-  pauldrons and vambraces now ride the hand you actually spend the game looking at.
-  <code>first_person_parts</code> in <code>config/armorpieces.json</code> turns it off — the mod&rsquo;s first setting.</li>
-<li><strong>Blockbench, for your pack.</strong> The plugin no longer assumes content lives in this repository:
-  it opens a part on the vanilla player wearing real armor, paints master, static layer and
-  fitting masks in place, previews any trim material live, and on Save writes every file into
-  <em>your</em> datapack and resource pack — which it makes, finds and zips for you.</li>
+<li><strong>Three themes, 66 pieces, and the rest in packs.</strong> Twenty-five pieces and five skins left
+  the mod for content packs — the tidal pieces to <strong>Coral</strong>, the beast pieces to <strong>The Wild
+  Hunt</strong>, the carapace to <strong>The Hive</strong>, the cultural skins to <strong>Legends</strong> — and four more packs
+  were built beside them: <strong>Animals</strong>, <strong>Dragonslayer</strong>, <strong>Nether</strong> and <strong>Hero of the Village</strong>.
+  What stays is what the mod could always dress on its own: knightly, court and wayfarer, with
+  the nine skins that say how armor is <em>made</em> rather than who wore it. You install the looks you
+  want instead of ninety-one pieces to wear twelve.</li>
+<li><strong>Nothing you saved is ever lost.</strong> Armor wearing a piece from a pack that is not installed
+  keeps it exactly as saved, shows nothing in that socket, names the id and the pack in its
+  tooltip, and shows it again the moment the pack is installed — no migration, no command, no
+  deadline. Every piece that moved declares the ids it used to answer to, so a 0.3.0 save opens
+  on 0.4.0 with nothing installed and keeps every item. <code>/armorpieces missing</code> lists what a
+  world is waiting for; <code>packs/legacy</code> brings all thirty back under their old names at once.</li>
+<li><strong>A mistake in a pack costs that mistake, not the world.</strong> A misplaced comma in one of a pack&rsquo;s
+  files used to stop the world from opening and take every other pack&rsquo;s content with it. Now the
+  bad file is left out, a bad socket or effect is dropped from its piece, the rest loads, and
+  <code>/armorpieces packs</code> names the pack, the file and what was wrong.</li>
+<li><strong>Loot answers to the server.</strong> <code>config/armorpieces-server.json</code> overrides the loot groups by
+  id — a theme off, a chance or weight replaced, a modded chest added — with one
+  <code>chance_multiplier</code> over everything, and <code>/reload</code> picks it up. <code>/armorpieces loot</code> lists the
+  tables the mod touched, explains what it added to one and why, and rolls a table to check the
+  theory against a measurement. A loot table of any other mod can hand out a random piece of
+  ours from a tag, and a pack you did not install costs it an entry rather than the table.</li>
+<li><strong>Cloth past the waist.</strong> A tunic or a tabard reaches the legs now: the tunic closes five rows
+  round each leg, the tabard hangs three, and the belt behind the chestplate&rsquo;s scalloped bottom
+  is clothed too, so it reads as one garment. Still one template and one smithing operation.</li>
+<li><strong>Effects an author can shape.</strong> Every number can be one per material, so a netherite claw
+  bites harder than an iron one from one line. <code>if_wearer</code> gates an effect on vanilla&rsquo;s own
+  entity predicate — what is in the hands, what else is worn, where the wearer is — beside
+  <code>if_fitting</code>, which asks about the piece. The tooltip lists what each piece gives, and
+  <code>/armorpieces effects</code> says which of them are contributing right now. Six pieces carry an
+  effect, one per mechanism: <code>heel_wings</code> jump, <code>puttees</code> walk faster, <code>gorget</code> is worth a
+  heart, <code>circlet</code> set with an emerald makes a hero of the village, <code>cloak</code> blinks out of an
+  arrow&rsquo;s path, <code>pinions</code> fly.</li>
+<li><strong>A pack says what its pieces are for.</strong> <code>armorpieces-sets.json</code> at a pack&rsquo;s root declares the
+  outfits its pieces are meant to be worn in, borrowing from any other pack to fill the sockets
+  it cannot, and they reach the wardrobe on armorpieces.com beside the mod&rsquo;s own three.</li>
+<li><strong>Blockbench, for your library.</strong> <code>Packs...</code> is a manager: install a pack from a zip or from
+  the public library, offer yours to it, work in one pack at a time, and — signed in to the
+  site — check a piece out of your library and save it straight back. <code>New Armor Piece...</code> asks
+  where the piece goes, not which folder. The plugin runs on the desktop and in a browser, and
+  needs nothing from the game: the figure wears a studio set drawn by us, and <em>Use my game&hellip;</em>
+  extracts the real textures onto your machine and nowhere else.</li>
+<li><strong>One command before a release.</strong> <code>python tools/gate.py</code> runs everything in the repository that
+  can fail, from the authoring round trip to a dedicated server asked every question and a client
+  whose frames are diffed against blessed goldens. It is why this release could move thirty
+  pieces and break no save.</li>
 </ul>
 
 <hr>
@@ -145,17 +161,18 @@ its own the same way, from Blockbench, in folders of its own.</p>
 <h2 id="features">Features</h2>
 
 <ul>
-<li><strong>Twelve sockets, one part at a time</strong> &mdash; <code>crest</code>, <code>brow</code>, <code>horns</code>, <code>pauldrons</code>, <code>back</code>, <code>collar</code>, <code>vambraces</code>, <code>belt</code>, <code>tassets</code>, <code>knees</code>, <code>spurs</code>, <code>greaves</code>. A socket holds one part, so a new crest replaces the crest — and every socket has several to choose from. Seven of the sockets are mirrored pairs, so spaulders means both shoulders.</li>
-<li><strong>Coloured by vanilla trim materials</strong> &mdash; One grayscale master per part is mapped onto each material&rsquo;s own palette at load time. A new trim material costs a part no new art at all.</li>
+<li><strong>Twelve sockets, one piece at a time</strong> &mdash; <code>crest</code>, <code>brow</code>, <code>horns</code>, <code>pauldrons</code>, <code>back</code>, <code>collar</code>, <code>vambraces</code>, <code>belt</code>, <code>tassets</code>, <code>knees</code>, <code>spurs</code>, <code>greaves</code>. A socket holds one piece, so a new crest replaces the crest — and every socket has several to choose from. Seven of the sockets are mirrored pairs, so spaulders means both shoulders.</li>
+<li><strong>Coloured by vanilla trim materials</strong> &mdash; One grayscale master per piece is mapped onto each material&rsquo;s own palette at load time. A new trim material costs a piece no new art at all.</li>
 <li><strong>On your own hands, in first person</strong> &mdash; Vanilla draws a bare sleeve on the first-person hand and nothing else — not armor, not a trim — so the one view you spend the whole game in is the one that never showed what you were wearing. Pauldrons and vambraces show there now, on the same player model the world sees, swinging with the arm through every animation the hand already has. They are close to the camera and they are meant to be — and there is a setting to turn them off, if you would rather keep the view clear.</li>
-<li><strong>Armor skins</strong> &mdash; The one thing here that changes the armor itself rather than adding to it — plate, gothic, milanese, mail, chainmail, lorica, runic, hoplite, samurai, gambeson, brigandine, varangian, scale, lamellar. One greyscale master pair on vanilla&rsquo;s own armor grid, recoloured at load through eight shades taken from <em>that armor material&rsquo;s</em> vanilla texture, with vanilla&rsquo;s own panel edges and shadows mixed back over it. A skinned iron helmet still reads as iron, gold still reads as gold, and a modded armor material is skinned for free from the texture it already ships. Applied at the advanced smithing table with the piece&rsquo;s own reforging material — re-skinning is re-forging, and it costs the metal the piece is made of.</li>
-<li><strong>Cloth over the chest</strong> &mdash; A <strong>Tunic</strong> or a <strong>Tabard</strong>, applied with a cloth template and a banner, and the design is the banner&rsquo;s — sixteen dyes crossed with every pattern layer, made at a loom, so the heraldry is a player&rsquo;s choice rather than a list the mod keeps. It is painted into the armor&rsquo;s own texture rather than hung off it, so it moves with the armor, clips nothing, and the plate&rsquo;s rivets and edges read <em>through</em> it. It sits over the skin, under every part and under the trim. One greyscale cut mask ships the whole feature; there is no per-material art and no per-banner art.</li>
-<li><strong>Fittings</strong> &mdash; A part can declare places for a second material — <code>gemstone</code>, <code>guard</code>, <code>inlay</code>, <code>banner</code> — and a fitting template sets one: gems and metals by trim material, inlays by dye, banners from a banner made at a loom. There is a template per fitting, each with its own look and recipe, and the template with the third slot empty takes its fitting out again. Fittings are data too — a pack&rsquo;s new fitting gets its template from a recipe — and an effect can be gated on one.</li>
-<li><strong>Found in the world</strong> &mdash; Most parts are found rather than crafted, each theme in the structures that suit it — knightly gear in strongholds and trial chambers, court jewellery in mansions and ancient cities, a wayfarer&rsquo;s kit on the roads and in the villages. A <strong>loot group</strong> is one file naming a category of tables and the tag of parts found in them, so a pack adds a whole look to the world at once, or drops one part into one chest from its own data file — the one thing a datapack cannot do for itself, since it can only replace a vanilla table whole. Armor <strong>skins</strong> are found the same way, divided over the same groups, and a <strong>fitting template</strong> turns up in every one of them. The odds belong to the table, so a chest&rsquo;s chance of holding something stays put however many parts are added. A loot function puts a part on a piece of armor a table drops, gem and all.</li>
-<li><strong>Taking parts off</strong> &mdash; The advanced smithing table, crafted from a smithing table, an armor stand and two iron ingots, holds a whole set worn by a stand at once and lists each piece&rsquo;s sockets and their fittings as rows of icons, with the piece&rsquo;s own row under them — its trim, its skin and, on a chestplate, its cloth. Pick one and Remove empties it — the one way a part, a fitting, a trim, a skin or a cloth ever comes off. An empty place shows a hint of the template that would fill it. Its own template and material slots run the smithing table&rsquo;s recipes, with the result on the stand before it is paid for, and a fitting goes into the socket that is picked rather than into every part that takes one.</li>
-<li><strong>One smithing recipe per socket, forever</strong> &mdash; The part rides on the template item as a component, so a pack hands out a template and needs no recipe of its own. And any recipe the mod ships can be switched off by overriding its file with <code>{"type": "armorpieces:disabled"}</code> — a part that is found rather than made, a server without fittings.</li>
-<li><strong>Optional behaviour</strong> &mdash; A part may carry effects — attributes, mob effects, a projectile dodge, gliding — configured in the same JSON file. <code>pinions</code> is a cut-down elytra that actually flies.</li>
-<li><strong>A Blockbench plugin for making parts</strong> &mdash; Opens a part on the vanilla player wearing real armor, walk cycle and all. Master, static layer and fitting masks are painted in place, any trim material previews live with its fittings filled or empty, the name, sockets, fittings, effects and loot are a dialog, and Save writes every file the pack needs — into your own datapack and resource pack, which it makes, finds and zips for you.</li>
+<li><strong>Armor skins</strong> &mdash; The one thing here that changes the armor itself rather than adding to it — plate, gothic, milanese, mail, chainmail, gambeson, brigandine, scale, lamellar: the nine that say how armor is <em>made</em>, with the ones that say who wore it in the Legends pack. One greyscale master pair on vanilla&rsquo;s own armor grid, recoloured at load through eight shades taken from <em>that armor material&rsquo;s</em> vanilla texture, with vanilla&rsquo;s own panel edges and shadows mixed back over it. A skinned iron helmet still reads as iron, gold still reads as gold, and a modded armor material is skinned for free from the texture it already ships. Applied at the advanced smithing table with the armor&rsquo;s own reforging material — re-skinning is re-forging, and it costs the metal the armor is made of.</li>
+<li><strong>Cloth over the chest</strong> &mdash; A <strong>Tunic</strong> or a <strong>Tabard</strong>, applied with a cloth template and a banner, and the design is the banner&rsquo;s — sixteen dyes crossed with every pattern layer, made at a loom, so the heraldry is a player&rsquo;s choice rather than a list the mod keeps. It is painted into the armor&rsquo;s own texture rather than hung off it, so it moves with the armor, clips nothing, and the plate&rsquo;s rivets and edges read <em>through</em> it. It sits over the skin, under every piece and under the trim. One greyscale cut mask ships the whole feature; there is no per-material art and no per-banner art.</li>
+<li><strong>Fittings</strong> &mdash; A piece can declare places for a second material — <code>gemstone</code>, <code>guard</code>, <code>inlay</code>, <code>banner</code> — and a fitting template sets one: gems and metals by trim material, inlays by dye, banners from a banner made at a loom. There is a template per fitting, each with its own look and recipe, and the template with the third slot empty takes its fitting out again. Fittings are data too — a pack&rsquo;s new fitting gets its template from a recipe — and an effect can be gated on one.</li>
+<li><strong>Found in the world</strong> &mdash; Most pieces are found rather than crafted, each theme in the structures that suit it — knightly gear in strongholds and trial chambers, court jewellery in mansions and ancient cities, a wayfarer&rsquo;s kit on the roads and in the villages. A <strong>loot group</strong> is one file naming a category of tables and the tag of pieces found in them, so a pack adds a whole look to the world at once, or drops one piece into one chest from its own data file — the one thing a datapack cannot do for itself, since it can only replace a vanilla table whole. Armor <strong>skins</strong> are found the same way, divided over the same groups, and a <strong>fitting template</strong> turns up in every one of them. The odds belong to the table, so a chest&rsquo;s chance of holding something stays put however many pieces are added. A loot function puts a piece on the armor a table drops, gem and all. A server owner tunes all of it from one file — a theme off, a chance halved, a modded chest added — and <code>/armorpieces loot</code> says which tables the mod touched and why; a loot table of any other mod can hand out a random piece of ours from a tag, and an absent pack costs it an entry rather than the table.</li>
+<li><strong>Taking pieces off</strong> &mdash; The advanced smithing table, crafted from a smithing table, an armor stand and two iron ingots, holds a whole set worn by a stand at once and lists each piece&rsquo;s sockets and their fittings as rows of icons, with the armor&rsquo;s own row under them — its trim, its skin and, on a chestplate, its cloth. Pick one and Remove empties it — the one way a piece, a fitting, a trim, a skin or a cloth ever comes off. An empty place shows a hint of the template that would fill it. Its own template and material slots run the smithing table&rsquo;s recipes, with the result on the stand before it is paid for, and a fitting goes into the socket that is picked rather than into every piece that takes one.</li>
+<li><strong>One smithing recipe per socket, forever</strong> &mdash; The piece rides on the template item as a component, so a pack hands out a template and needs no recipe of its own. And any recipe the mod ships can be switched off by overriding its file with <code>{"type": "armorpieces:disabled"}</code> — a piece that is found rather than made, a server without fittings.</li>
+<li><strong>Optional behaviour</strong> &mdash; A piece may carry effects — attributes, mob effects, a projectile dodge, gliding — configured in the same JSON file, and every number can be one per material, so a netherite claw bites harder than an iron one from one line. An effect can ask about the piece (which fitting is set) or about the wearer, with vanilla&rsquo;s own entity predicate — what is in the hands, what else is worn, where they are. The tooltip lists what each piece gives in that material, and <code>/armorpieces effects</code> says which of them are contributing right now. <code>pinions</code> is a cut-down elytra that actually flies; six pieces carry an effect, one per mechanism, as worked examples for a pack to copy.</li>
+<li><strong>Nothing you saved is ever lost</strong> &mdash; A piece from a pack that is not installed stays on the armor exactly as it was saved, renders nothing, and comes back the moment the pack is — the tooltip names the id and the pack it went to. A piece that moves between packs declares the ids it used to answer to, so a save written before the move finds it with no migration and no command. A mistake in a pack&rsquo;s file costs that file, never the world: the game opens, the rest of the pack loads, and <code>/armorpieces packs</code> names the pack, the file and what was wrong.</li>
+<li><strong>A Blockbench plugin for making pieces</strong> &mdash; Opens a piece on the vanilla player wearing real armor, walk cycle and all. Master, static layer and fitting masks are painted in place, any trim material previews live with its fittings filled or empty, the name, sockets, fittings, effects and loot are a dialog, and Save writes every file the pack needs — into your own datapack and resource pack, which it makes, finds and zips for you. <code>Packs...</code> installs a pack from a zip or from the public library, offers yours to it, and — signed in to armorpieces.com — checks a piece out of your library and saves it back. It runs on the desktop and in a browser, and it needs nothing from the game to do any of it.</li>
 </ul>
 
 <hr>
@@ -167,8 +184,8 @@ its own the same way, from Blockbench, in folders of its own.</p>
 <p align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/gallery/skins.png" alt="Every armor skin on one diamond suit — the plate itself changed, not something hung on it">
 <br><sub><em>Every armor skin on one diamond suit — the plate itself changed, not something hung on it</em></sub>
 </p>
-<p align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/gallery/wardrobe.png" alt="Sixty sets with nothing about them chosen — armor, skin, cloth, part, material and every fitting rolled">
-<br><sub><em>Sixty sets with nothing about them chosen — armor, skin, cloth, part, material and every fitting rolled</em></sub>
+<p align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/gallery/wardrobe.png" alt="Sixty sets with nothing about them chosen — armor, skin, cloth, piece, material and every fitting rolled">
+<br><sub><em>Sixty sets with nothing about them chosen — armor, skin, cloth, piece, material and every fitting rolled</em></sub>
 </p>
 <p align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/gallery/fittings.png" alt="One circlet, seven gems — the fitting takes a second material">
 <br><sub><em>One circlet, seven gems — the fitting takes a second material</em></sub>
@@ -184,8 +201,8 @@ its own the same way, from Blockbench, in folders of its own.</p>
 plus untrimmed, is <strong>199</strong> states per piece — and <strong>1,568,239,201</strong> for a set of four.</p>
 <p>Now count that same diamond set with this mod installed. Each piece keeps all 199 of its trims
 and gains a skin
-(nine, or bare), a part in each of its sockets, each part in one of eleven materials, each
-part&rsquo;s fittings filled or left empty — a gem from seven, a metal from four, an inlay from
+(nine, or bare), a piece in each of its sockets, each piece in one of eleven materials, each
+piece&rsquo;s fittings filled or left empty — a gem from seven, a metal from four, an inlay from
 sixteen dyes — and the chestplate a tunic or a tabard on top.</p>
 <table>
 <thead>
@@ -229,7 +246,7 @@ it:</p>
 <li><strong>The boots alone</strong> come to 456,299,040 arrangements: more than a quarter of every trimmed
   diamond set vanilla can build, on your feet.</li>
 <li><strong>The helmet alone</strong> is 17 times vanilla&rsquo;s entire four-piece space.</li>
-<li><strong>Shape alone</strong>, before a single colour is chosen — which part sits in which socket, empty
+<li><strong>Shape alone</strong>, before a single colour is chosen — which piece sits in which socket, empty
   included, and nothing else — is 2,568,384,000 distinct silhouettes. Still more than vanilla&rsquo;s
   fully trimmed space, in pure geometry.</li>
 <li>Pick a set a second and you exhaust vanilla in fifty years. You exhaust this one in
@@ -379,22 +396,24 @@ multiplies the whole table by about thirteen hundred again, before leather has b
 <ol>
 <li>Install <a href="https://fabricmc.net/use/">Fabric Loader</a> 0.19.3+ on Minecraft 26.2 (Java 25).</li>
 <li>Drop this mod and Fabric API into <code>mods/</code>.</li>
-<li>Install it on both sides — the client draws the parts, the server owns their behaviour.</li>
+<li>Install it on both sides — the client draws the pieces, the server owns their behaviour.</li>
 </ol>
 
 <hr>
-<h2 id="adding-a-part">Adding a part</h2>
+<h2 id="adding-a-piece">Adding a piece</h2>
 
-<p>A part is two files and a PNG, plus a line in your language file for the name — none of it
+<p>A piece is two files and a PNG, plus a line in your language file for the name — none of it
 code, and any namespace will do. Two ways to make them:</p>
 <ul>
-<li><strong>In Blockbench</strong>, with the <a href="https://github.com/mattjesmc/ArmorPieces/blob/main/tools/blockbench_plugin/armorpieces.js">Armor Pieces plugin</a>. It opens a part on the vanilla
+<li><strong>In Blockbench</strong>, with the <a href="https://github.com/mattjesmc/ArmorPieces/blob/main/tools/blockbench_plugin/armorpieces.js">Armor Pieces plugin</a>. It opens a piece on the vanilla
   player wearing real armor, paints the textures in place, previews any trim material, and
-  writes every file on Save.</li>
+  writes every file on Save — into a pack of your own, or into your library on
+  <a href="https://armorpieces.com">armorpieces.com</a>, where it is checked out and checked back in.</li>
 <li><strong>By hand</strong>, writing the datapack entry, the geometry and the grayscale master yourself.</li>
 </ul>
-<p>The <a href="https://github.com/mattjesmc/ArmorPieces/blob/main/docs/authoring.md">authoring guide</a> covers both, along with fittings, handing a part out, and giving
-it behaviour — attributes, mob effects, a dodge, gliding — from the same JSON file.</p>
+<p>The <a href="https://github.com/mattjesmc/ArmorPieces/blob/main/docs/authoring.md">authoring guide</a> covers both, along with fittings, handing a piece out, giving
+it behaviour — attributes, mob effects, a dodge, gliding — from the same JSON file, declaring
+the sets a pack&rsquo;s pieces are meant to be worn in, and what happens when a pack is wrong.</p>
 
 <hr>
 <h2 id="working-on-it">Working on it</h2>
@@ -413,6 +432,18 @@ it behaviour — attributes, mob effects, a dodge, gliding — from the same JSO
 <td>anchors, the datapack registry entry, the item component, the effect hooks</td>
 </tr>
 <tr>
+<td><code>identity/</code></td>
+<td>the tolerant decode, <code>former_ids</code> and the uid rebind, the missing-piece report and <code>/armorpieces missing</code>, <code>prune</code> and <code>upgrade</code></td>
+</tr>
+<tr>
+<td><code>pack/</code></td>
+<td>what happens when a pack is wrong: the lenient list codec, the skipped-file rule, the stand-in fittings, the audit and <code>/armorpieces packs</code></td>
+</tr>
+<tr>
+<td><code>config/</code></td>
+<td>the client file and the server file</td>
+</tr>
+<tr>
 <td><code>client/</code></td>
 <td>the render layer, the geometry loader and bake cache, the per-material palette, the skin and cloth bakes, the advanced table&rsquo;s screen</td>
 </tr>
@@ -426,11 +457,11 @@ it behaviour — attributes, mob effects, a dodge, gliding — from the same JSO
 </tr>
 <tr>
 <td><code>loot/</code>, <code>block/</code>, <code>menu/</code></td>
-<td>parts in loot tables and the <code>set_decoration</code> function; the advanced smithing table and its menu</td>
+<td>pieces in loot tables, the loot groups and the server&rsquo;s overrides, the <code>armorpieces:template</code> entry and the <code>set_decoration</code> function, <code>/armorpieces loot</code>; the advanced smithing table and its menu</td>
 </tr>
 <tr>
 <td><code>tools/</code></td>
-<td>Blockbench rigs (<code>bb_rig.py</code>, with the vanilla figure and walk cycle from <code>mc_humanoid.py</code>), <code>.bbmodel</code> ↔ geometry (<code>bb_geo.py</code>), master and mask painting and install (<code>paint_&lt;part&gt;_master.py</code>, <code>fitting_mask.py</code>, <code>sync_decoration_masters.py</code>), a material and fitting preview outside the game (<code>preview_material.py</code>), template and recipe icons, <code>export_pack.py</code> for zipping a pack, <code>trace_geometry.py</code> for measuring a part against the body, the skin masters and their bake, check and install (<code>skin_sheets.py</code>, <code>bake_skin.py</code>, <code>check_skin.py</code>, <code>sync_skin_masters.py</code>), and the checks a shipped part and skin pass (<code>check_part.py</code>, <code>check_authoring.py</code>)</td>
+<td>Blockbench rigs (<code>bb_rig.py</code>, with the vanilla figure and walk cycle from <code>mc_humanoid.py</code>), <code>.bbmodel</code> ↔ geometry (<code>bb_geo.py</code>), master and mask painting and install (<code>paint_&lt;part&gt;_master.py</code>, <code>fitting_mask.py</code>, <code>sync_decoration_masters.py</code>), a material and fitting preview outside the game (<code>preview_material.py</code>), template and recipe icons, <code>export_pack.py</code> for zipping a pack, <code>trace_geometry.py</code> for measuring a piece against the body, the skin masters and their bake, check and install (<code>skin_sheets.py</code>, <code>bake_skin.py</code>, <code>check_skin.py</code>, <code>sync_skin_masters.py</code>), the checks a shipped piece and skin pass (<code>check_part.py</code>, <code>check_authoring.py</code>), <code>pack_manifest.py</code>, <code>pick_pieces.py</code>, <code>import_pack.py</code> and <code>sanitize_pack.py</code> for what a pack holds and moving pieces between packs, and <code>gate.py</code>, the one command that has to pass before a release</td>
 </tr>
 <tr>
 <td><code>tools/blockbench_plugin/</code></td>
@@ -438,20 +469,30 @@ it behaviour — attributes, mob effects, a dodge, gliding — from the same JSO
 </tr>
 <tr>
 <td><code>tools/decoration_masters/</code></td>
-<td>the grayscale masters — the source of truth for every part&rsquo;s art</td>
+<td>the grayscale masters — the source of truth for every piece&rsquo;s art</td>
+</tr>
+<tr>
+<td><code>packs/</code></td>
+<td>the content packs built beside the mod — the four the split made and the four after them — and <code>legacy</code>, generated from their <code>former_ids</code></td>
+</tr>
+<tr>
+<td><code>src/test/</code></td>
+<td>the unit tests: every shipped file decoded and encoded back, a piece worn by an entity with no world, the four traps of 0.4.0</td>
 </tr>
 </tbody>
 </table>
 <p>The rigs, the <code>/armorpieces stage</code> command and the plugin&rsquo;s Save path are described in the
 <a href="https://github.com/mattjesmc/ArmorPieces/blob/main/docs/authoring.md">authoring guide</a>; <code>tools/check_authoring.py</code> runs the plugin&rsquo;s round trip over every
-shipped part.</p>
+shipped piece. <code>python tools/gate.py</code> runs every check in the repository that can fail — the
+tree, the JVM, a dedicated server and a client — and is what a release waits on; the tiers
+are in <code>docs/plans/testing.md</code>.</p>
 
 <hr>
 <h2 id="configuration">Configuration</h2>
 
-<p>One file, written for you on first launch: <code>config/armorpieces.json</code>. It is read on the client
-and by the client alone — every setting in it moves pixels and nothing else, so it never has to
-match the server&rsquo;s.</p>
+<p>Two files, each written for you on first launch, and each read by one side only.</p>
+<p><strong><code>config/armorpieces.json</code></strong> is read on the client and by the client alone — every setting in it
+moves pixels and nothing else, so it never has to match the server&rsquo;s.</p>
 <table>
 <thead>
 <tr>
@@ -464,36 +505,83 @@ match the server&rsquo;s.</p>
 <tr>
 <td><code>first_person_parts</code></td>
 <td><code>true</code></td>
-<td>Draws the parts on your arms — pauldrons and vambraces — on the first-person hand as well as on your body. Vanilla shows a bare sleeve there and no armor at all. They sit close to the camera; <code>false</code> keeps the view clear.</td>
+<td>Draws the pieces on your arms — pauldrons and vambraces — on the first-person hand as well as on your body. Vanilla shows a bare sleeve there and no armor at all. They sit close to the camera; <code>false</code> keeps the view clear.</td>
 </tr>
 </tbody>
 </table>
-<p>A change takes effect on the next launch. A key you leave out takes its default and is written
-back, so a setting added by a later version turns up in the file you already have — and a file
-that does not parse is left alone and the defaults used, so a typo costs a log line and nothing
-else.</p>
+<p>A change takes effect on the next launch.</p>
+<p><strong><code>config/armorpieces-server.json</code></strong> is the server&rsquo;s, and it is about loot. Loot content is pack
+data, but <em>how much of it</em> is not, and a server owner should not have to write a datapack to say
+so. The file overrides the loot groups rather than replacing them, keyed by group id, and is
+re-read at the start of every datapack reload, so <code>/reload</code> picks up an edit.</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>enabled</code></td>
+<td><code>true</code></td>
+<td>The off switch: <code>false</code> and the mod adds nothing to any loot table.</td>
+</tr>
+<tr>
+<td><code>chance_multiplier</code></td>
+<td><code>1.0</code></td>
+<td>Scales every chance the mod puts on a table — groups and a piece&rsquo;s own <code>loot</code> rows alike. <code>0.5</code> is &ldquo;half as much of this mod&rdquo; without naming a group.</td>
+</tr>
+<tr>
+<td><code>groups.&lt;id&gt;.enabled</code></td>
+<td><code>true</code></td>
+<td>Drops one theme from the world.</td>
+</tr>
+<tr>
+<td><code>groups.&lt;id&gt;.chance</code>, <code>.weight</code></td>
+<td>the group&rsquo;s own</td>
+<td>Replace the group&rsquo;s chance per table and the weight of its members.</td>
+</tr>
+<tr>
+<td><code>groups.&lt;id&gt;.add</code>, <code>.remove</code></td>
+<td><code>[]</code></td>
+<td>Tables to join — a modded container needs no datapack at all — and tables to leave.</td>
+</tr>
+</tbody>
+</table>
+<p>What a group <em>contains</em> is deliberately not overridable: different members are a different group,
+which is content, which is a datapack. <code>/armorpieces loot groups</code> shows the groups with the file
+applied, and <code>/armorpieces loot explain &lt;table&gt;</code> says what ended up on a table and why.</p>
+<p>In both files a key you leave out takes its default and is written back, so a setting added by a
+later version turns up in the file you already have — and a file that does not parse is left
+alone and the defaults used, so a typo costs a log line and nothing else.</p>
 
 <hr>
 <h2 id="faq">FAQ</h2>
 
-<p><strong>Does a part replace the armor trim?</strong><br>No. A piece carries its trim and its parts at once.</p>
-<p><strong>How do I put a gem in the circlet?</strong><br>Craft a gemstone fitting template (an amethyst block in a ring of paper), then smithing table: template, the decorated helmet, and the gem. Every part on the piece is offered the item, so one gem fills the stone of each part that has one — or of the one socket picked, at the advanced smithing table. The same template with the third slot empty takes the gem out again. A guard template does the same for metals, an inlay template for dyes, a banner template for banners. Re-applying a part at its own socket template keeps what is set in it, so changing a circlet&rsquo;s metal does not cost the gem.</p>
-<p><strong>How do I take a part off?</strong><br>At the advanced smithing table. Put the piece in one of its four slots, pick the socket&rsquo;s row and click Remove. What was in the part&rsquo;s fittings goes with it. Picking one of the fitting icons beside the part takes just that fitting out, and the piece&rsquo;s own row under the sockets holds its trim, its skin and — on a chestplate — its cloth, each taken off the same way.</p>
-<p><strong>Can two parts share a socket?</strong><br>No — applying a new crest replaces the crest. Several parts may be <em>available</em> for one socket (<code>horns</code> and <code>helm_wings</code> both fit <code>horns</code>); the choice is the expressive act.</p>
-<p><strong>The parts on my hands are in the way. Can I turn them off?</strong><br>Yes. Set <code>"first_person_parts": false</code> in <code>config/armorpieces.json</code> and restart the game — the file writes itself on first launch. Only the first-person hand is affected; your parts are still on your body, and still on everyone else&rsquo;s. It is the mod&rsquo;s only setting, and deliberately so: everything else about a part is pack data rather than a preference, and nothing in that file changes what an item <em>does</em>, so it never has to match the server&rsquo;s.</p>
-<p><strong>Do I need the mod to add parts?</strong><br>You need the mod installed, but adding a part takes no Java — a datapack and a resource pack. Only a brand-new <em>effect</em> type needs code. The <a href="https://github.com/mattjesmc/ArmorPieces/blob/main/docs/authoring.md">authoring guide</a> walks through it.</p>
+<p><strong>Does a piece replace the armor trim?</strong><br>No. Armor carries its trim and its pieces at once.</p>
+<p><strong>How do I put a gem in the circlet?</strong><br>Craft a gemstone fitting template (an amethyst block in a ring of paper), then smithing table: template, the decorated helmet, and the gem. Every piece on the armor is offered the item, so one gem fills the stone of each piece that has one — or of the one socket picked, at the advanced smithing table. The same template with the third slot empty takes the gem out again. A guard template does the same for metals, an inlay template for dyes, a banner template for banners. Re-applying a piece at its own socket template keeps what is set in it, so changing a circlet&rsquo;s metal does not cost the gem.</p>
+<p><strong>How do I take a piece off?</strong><br>At the advanced smithing table. Put the armor in one of its four slots, pick the socket&rsquo;s row and click Remove. What was in the piece&rsquo;s fittings goes with it. Picking one of the fitting icons beside the piece takes just that fitting out, and the armor&rsquo;s own row under the sockets holds its trim, its skin and — on a chestplate — its cloth, each taken off the same way.</p>
+<p><strong>Can two pieces share a socket?</strong><br>No — applying a new crest replaces the crest. Several pieces may be <em>available</em> for one socket (<code>horns</code> and <code>helm_wings</code> both fit <code>horns</code>); the choice is the expressive act.</p>
+<p><strong>The pieces on my hands are in the way. Can I turn them off?</strong><br>Yes. Set <code>"first_person_parts": false</code> in <code>config/armorpieces.json</code> and restart the game — the file writes itself on first launch. Only the first-person hand is affected; your pieces are still on your body, and still on everyone else&rsquo;s. It is the client file&rsquo;s only setting, and deliberately so: everything else about a piece is pack data rather than a preference, and nothing in that file changes what an item <em>does</em>, so it never has to match the server&rsquo;s.</p>
+<p><strong>Do I need the mod to add pieces?</strong><br>You need the mod installed, but adding a piece takes no Java — a datapack and a resource pack. Only a brand-new <em>effect</em> type needs code. The <a href="https://github.com/mattjesmc/ArmorPieces/blob/main/docs/authoring.md">authoring guide</a> walks through it.</p>
+<p><strong>I uninstalled a pack. What happens to the armor that was wearing its pieces?</strong><br>Nothing is lost. The armor keeps the piece exactly as it was saved, shows nothing in that socket, and names the missing id and its pack in the tooltip; install the pack again and it is back. <code>/armorpieces missing</code> lists what a world is waiting for, and <code>/armorpieces prune</code> is the one way a missing piece is ever dropped — on purpose, by an operator.</p>
+<p><strong>A pack I installed has a mistake in it. Will the world still open?</strong><br>Yes. A mistake costs that mistake: a piece with an unknown socket loses the socket, a file that cannot be read is left out, and everything else in the pack and every other pack loads. <code>/armorpieces packs</code> names the pack, the file and what was wrong, and operators see a line on join while the report is not empty.</p>
+<p><strong>Pieces are too common on my server. Can I change that without a datapack?</strong><br>Yes — <code>config/armorpieces-server.json</code>. <code>chance_multiplier</code> scales everything the mod puts in a table, a group can be turned off or re-tuned by id, and a table can be added to or taken from a group; <code>/reload</code> picks up the edit. See Configuration.</p>
 
 <hr>
 <h2 id="bugs">Bugs and issues</h2>
 
-<p>Something broken, something clipping, a part that sits wrong on a body it should fit — the
+<p>Something broken, something clipping, a piece that sits wrong on a body it should fit — the
 <a href="https://github.com/mattjesmc/ArmorPieces/issues">issue tracker</a> is the place for it. So is a
-request: a socket, a part, a skin or a fitting that is not there yet.</p>
+request: a socket, a piece, a skin or a fitting that is not there yet.</p>
 <p>No GitHub account, and would rather not make one? The comment section on the CurseForge or
 Modrinth page reaches me just as well.</p>
 <p>For a bug, the three things that make it fixable are your Minecraft and mod versions, the
 other mods you are running, and <code>logs/latest.log</code> from the run it happened in. A screenshot
-settles most questions about how something <em>looks</em> on its own.</p>
+settles most questions about how something <em>looks</em> on its own. If a pack is involved, the
+output of <code>/armorpieces packs</code> says what the mod made of it.</p>
 
 <hr>
 <h2 id="license">License</h2>
@@ -508,4 +596,4 @@ publishing a fork. Linking to an official download page never needs permission.<
 in writing and covers the distribution it describes.</p>
 
 <hr>
-<p>Every part in this mod is the same two files and a PNG a pack of your own would write.</p>
+<p>Every piece in this mod is the same two files and a PNG a pack of your own would write.</p>

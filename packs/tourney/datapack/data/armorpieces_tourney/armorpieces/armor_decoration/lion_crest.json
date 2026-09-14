@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_tourney:lion_crest",
+  "description": {
+    "translate": "decoration.armorpieces_tourney.lion_crest"
+  },
+  "anchors": [
+    "crest"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "uid": "ap1grv62jnjm5bl5myamx2a"
+}

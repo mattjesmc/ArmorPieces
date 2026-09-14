@@ -1,0 +1,17 @@
+{
+  "asset_id": "armorpieces_knightly:plate",
+  "description": {
+    "translate": "skin.armorpieces_knightly.plate"
+  },
+  "loot": [
+    {
+      "table": "minecraft:chests/stronghold_crossing",
+      "weight": 1,
+      "chance": 0.06
+    }
+  ],
+  "former_ids": [
+    "armorpieces:plate"
+  ],
+  "uid": "ap1mmfvum4gksf7lqvxw7qq"
+}

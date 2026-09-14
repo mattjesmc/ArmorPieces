@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_samurai:suneate",
+  "description": {
+    "translate": "decoration.armorpieces_samurai.suneate"
+  },
+  "anchors": [
+    "greaves"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap12j6i4rfpfdh3bgamkhzq"
+}

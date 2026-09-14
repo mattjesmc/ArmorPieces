@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_hive:spinneret_belt",
+  "description": {
+    "translate": "decoration.armorpieces_hive.spinneret_belt"
+  },
+  "anchors": [
+    "belt"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1hqvn7mwg6c6cq445ktpa"
+}

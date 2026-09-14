@@ -1,0 +1,28 @@
+{
+  "asset_id": "armorpieces_knightly:helm_wings",
+  "description": {
+    "translate": "decoration.armorpieces_knightly.helm_wings"
+  },
+  "anchors": [
+    "horns"
+  ],
+  "loot": [
+    {
+      "table": "minecraft:chests/end_city_treasure",
+      "weight": 2,
+      "chance": 0.1
+    },
+    {
+      "table": "minecraft:chests/ancient_city",
+      "weight": 1,
+      "chance": 0.05
+    }
+  ],
+  "former_ids": [
+    "armorpieces:helm_wings"
+  ],
+  "uid": "ap1br3jcogevve4a2wa6lqa",
+  "fittings": [
+    "armorpieces:inlay"
+  ]
+}

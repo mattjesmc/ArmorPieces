@@ -3,6 +3,7 @@ package com.mattjesmc.armorpieces.data;
 import com.mattjesmc.armorpieces.GameBootstrap;
 import com.mattjesmc.armorpieces.cloth.Cloth;
 import com.mattjesmc.armorpieces.decoration.ArmorDecoration;
+import com.mattjesmc.armorpieces.ArmorPieces;
 import com.mattjesmc.armorpieces.decoration.ArmorPiecesRegistries;
 import com.mattjesmc.armorpieces.decoration.fitting.Fitting;
 import com.mattjesmc.armorpieces.loot.LootGroup;
@@ -29,6 +30,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.RegistryDataLoader;
 import net.minecraft.resources.RegistryValidator;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackResources;
@@ -69,10 +71,58 @@ public final class ShippedData {
     /** Gradle runs a test with the project directory as its working directory. */
     public static final Path ROOT = Path.of("").toAbsolutePath();
 
-    /** The mod's own datapack, as it sits in the jar. */
+    /** The mod's own resources, as they sit in the jar: the engine's data - fittings, cloths, tags. */
     public static final Path MOD = ROOT.resolve("src").resolve("main").resolve("resources");
 
     private static final Path PACKS = ROOT.resolve("packs");
+
+    /**
+     * The three packs the jar CARRIES - the mod's own content since the split of 2026-09-14, built
+     * in as {@code resourcepacks/<theme>} by build.gradle and registered by {@code BuiltinPacks}.
+     * Their datapack halves, by namespace; {@link #mod()} is these plus {@link #MOD}, which is what
+     * a player who installs the jar and nothing else has.
+     */
+    public static final Map<String, Path> BUILTIN = Map.of(
+        "armorpieces_knightly", PACKS.resolve("knightly").resolve("datapack"),
+        "armorpieces_court", PACKS.resolve("court").resolve("datapack"),
+        "armorpieces_wayfarer", PACKS.resolve("wayfarer").resolve("datapack"));
+
+    /** {@link #MOD} and the three built-in packs' datapacks: every data root the jar ships. */
+    public static List<Path> jarRoots() {
+        final List<Path> roots = new ArrayList<>();
+        roots.add(MOD);
+        BUILTIN.keySet().stream().sorted().forEach(ns -> roots.add(BUILTIN.get(ns)));
+        return roots;
+    }
+
+    /** The assets root a namespace's art lives under: the mod's for {@code armorpieces}, else its pack's. */
+    public static Path assetsOf(final String namespace) {
+        if (namespace.equals(ArmorPieces.MOD_ID)) {
+            return MOD.resolve("assets").resolve(namespace);
+        }
+        final Path datapack = BUILTIN.containsKey(namespace) ? BUILTIN.get(namespace)
+            : packs().values().stream()
+                .filter(pack -> Files.isDirectory(pack.resolve("data").resolve(namespace)))
+                .findFirst().orElseThrow(() -> new AssertionError("no pack in packs/ declares " + namespace));
+        return datapack.getParent().resolve("resourcepack").resolve("assets").resolve(namespace);
+    }
+
+    /**
+     * The id of a shipped element by its bare path, whichever built-in pack it moved to: the split
+     * renamed {@code armorpieces:visor} to {@code armorpieces_knightly:visor}, and a test about a
+     * visor should not have to know which theme it went to.
+     */
+    public static <T> Identifier shipped(final ResourceKey<? extends Registry<T>> key, final String path) {
+        final Identifier own = Identifier.fromNamespaceAndPath(ArmorPieces.MOD_ID, path);
+        final Registry<T> registry = mod().registry(key);
+        if (registry.containsKey(own)) {
+            return own;
+        }
+        return registry.keySet().stream()
+            .filter(id -> id.getPath().equals(path) && BUILTIN.containsKey(id.getNamespace()))
+            .findFirst()
+            .orElseThrow(() -> new AssertionError("nothing this jar ships is called " + path));
+    }
 
     /**
      * The vanilla datapack registries that have to be loaded in the same pass.
@@ -147,10 +197,10 @@ public final class ShippedData {
         }
     }
 
-    /** The mod's own data, alone - the content of the jar this repository builds. */
+    /** The jar's own data, alone - the engine's files and the three built-in packs it carries. */
     public static synchronized Loaded mod() {
         if (mod == null) {
-            mod = load(List.of(MOD));
+            mod = load(jarRoots());
         }
         return mod;
     }
@@ -180,7 +230,9 @@ public final class ShippedData {
      * @param datapack a directory holding {@code pack.mcmeta} and {@code data/}.
      */
     public static Loaded withPack(final Path datapack) {
-        return load(List.of(MOD, datapack));
+        final List<Path> roots = jarRoots();
+        roots.add(datapack);
+        return load(roots);
     }
 
     /**

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:red_dye"
+  },
+  "result": {
+    "id": "armorpieces:brow_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces_samurai:mempo"
+    }
+  },
+  "category": "equipment"
+}

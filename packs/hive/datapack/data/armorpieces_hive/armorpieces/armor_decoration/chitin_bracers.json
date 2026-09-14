@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_hive:chitin_bracers",
+  "description": {
+    "translate": "decoration.armorpieces_hive.chitin_bracers"
+  },
+  "anchors": [
+    "vambraces"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "uid": "ap1jlpfe73e66kxgvys7llq"
+}

@@ -1,0 +1,17 @@
+{
+  "asset_id": "armorpieces_court:scale",
+  "description": {
+    "translate": "skin.armorpieces_court.scale"
+  },
+  "loot": [
+    {
+      "table": "minecraft:chests/underwater_ruin_big",
+      "weight": 1,
+      "chance": 0.05
+    }
+  ],
+  "former_ids": [
+    "armorpieces:scale"
+  ],
+  "uid": "ap1txp7awmiiex2u4mwwtva"
+}

@@ -4,6 +4,7 @@
   "package": "com.mattjesmc.armorpieces.client.mixin",
   "client": [
     "AvatarRendererMixin",
+    "CreativeModeTabsAccessor",
     "EquipmentLayerRendererMixin"
   ],
   "injectors": {

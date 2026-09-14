@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_samurai:kote",
+  "description": {
+    "translate": "decoration.armorpieces_samurai.kote"
+  },
+  "anchors": [
+    "vambraces"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap16x2yhp4carn72rpyo65q"
+}

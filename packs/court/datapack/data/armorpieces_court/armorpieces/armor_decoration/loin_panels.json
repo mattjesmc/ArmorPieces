@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_court:loin_panels",
+  "description": {
+    "translate": "decoration.armorpieces_court.loin_panels"
+  },
+  "anchors": [
+    "tassets"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "former_ids": [
+    "armorpieces:loin_panels"
+  ],
+  "uid": "ap1csxsiyfk66qjulnj6uga"
+}

@@ -1,0 +1,25 @@
+{
+  "asset_id": "armorpieces_court:wing_roots",
+  "description": {
+    "translate": "decoration.armorpieces_court.wing_roots"
+  },
+  "anchors": [
+    "back"
+  ],
+  "loot": [
+    {
+      "table": "minecraft:chests/end_city_treasure",
+      "weight": 1,
+      "chance": 0.05
+    },
+    {
+      "table": "minecraft:chests/ancient_city",
+      "weight": 1,
+      "chance": 0.05
+    }
+  ],
+  "former_ids": [
+    "armorpieces:wing_roots"
+  ],
+  "uid": "ap1lo4qugjfx565muvywmiq"
+}

@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_coral:sea_pickle_belt",
+  "description": {
+    "translate": "decoration.armorpieces_coral.sea_pickle_belt"
+  },
+  "anchors": [
+    "belt"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "uid": "ap1brp73nduerwtpkyzreia"
+}

@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_knightly:bellows_visor",
+  "description": {
+    "translate": "decoration.armorpieces_knightly.bellows_visor"
+  },
+  "anchors": [
+    "brow"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "former_ids": [
+    "armorpieces:bellows_visor"
+  ],
+  "uid": "ap1b3cg7fmtobhbd5q4sbtq"
+}

@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_court:streamers",
+  "description": {
+    "translate": "decoration.armorpieces_court.streamers"
+  },
+  "anchors": [
+    "spurs"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "former_ids": [
+    "armorpieces:streamers"
+  ],
+  "uid": "ap1dcpl6ptrexcnsoklsy2q"
+}

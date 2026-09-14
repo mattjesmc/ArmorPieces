@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:spider_eye"
+  },
+  "result": {
+    "id": "armorpieces:brow_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces_hive:compound_eyes"
+    }
+  },
+  "category": "equipment"
+}

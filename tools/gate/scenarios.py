@@ -80,11 +80,13 @@ class Game:
             self.player = self.spawn_player()
         return self.player
 
-    def wear(self, wearer: str, slot: str, item: str, anchor: str, part: str) -> None:
+    def wear(self, wearer: str, slot: str, item: str, anchor: str, part: str,
+             material: str = "minecraft:gold", fittings: str = "") -> None:
         """Put one decorated piece of armor on a wearer, in the item syntax a player would type."""
+        socket = f'{anchor}:{{material:"{material}",decoration:"{part}"'
+        socket += f",fittings:{{{fittings}}}}}" if fittings else "}"
         self.out(f"item replace entity {wearer} armor.{slot} with {item}"
-                 "[armorpieces:decorations={" + anchor + ':{material:"minecraft:gold",'
-                 f'decoration:"{part}"}}}}]')
+                 f"[armorpieces:decorations={{{socket}}}]")
 
     def needs_fixtures(self) -> None:
         """Refuse to pass a scenario whose fixture pack was never installed - see fixtures.py."""
@@ -409,6 +411,135 @@ def attribute(game: Game, player: str, attribute_id: str) -> float:
     found = re.search(r"is ([0-9.]+)", line)
     expect(found is not None, f"could not read an attribute out of: {line}")
     return float(found.group(1))
+
+
+@scenario("effect-types",
+          "one worn part per effect type, measured on the server: the material's number, a gate on "
+          "a gem, a gate on the wearer, a potion actually applied, a dodge that actually happens")
+def effect_types(game: Game) -> None:
+    # Tier 1 holds the dispatcher and every codec; the `effects` scenario above holds one attribute
+    # end to end. This is the rest of the table's promise - every effect TYPE the mod ships, worn
+    # on a real server and observed by what it does to the wearer rather than by what it reports.
+    # The parts are the mod's own, because the gate's world installs the mod and its fixture pack
+    # and nothing else; `if_wearer` rides the fixture part `gate:barehanded` for that reason.
+    player = game.needs_player()
+    game.needs_fixtures()
+    bare = {"head": "minecraft:diamond_helmet", "chest": "minecraft:diamond_chestplate",
+            "feet": "minecraft:diamond_boots"}
+
+    def undress() -> None:
+        for slot in bare:
+            game.out(f"item replace entity {player} armor.{slot} with minecraft:air")
+        game.out(f"item replace entity {player} weapon.mainhand with minecraft:air")
+
+    def reported() -> tuple[str, list[str]]:
+        """The effects report: its header, and the one line per effect."""
+        worn = game.out(f"armorpieces effects {player}")
+        return line_with(worn, "contributing"), [l for l in worn if l.strip().startswith(("+", "-"))]
+
+    def passed(selector: str) -> bool:
+        """Whether `execute if entity` found somebody - the game says "Test passed" or "Test failed"."""
+        return any("passed" in line.lower() for line in game.out(f"execute if entity {selector}"))
+
+    undress()
+    try:
+        # ---- attribute, and the MATERIAL's number: heel_wings on the boots -------------------
+        # add_multiplied_base 0.1 by default, 0.15 in netherite - the wearer's jump strength has to
+        # move by the fraction the part file says for the material the part is made of.
+        game.out(f"item replace entity {player} armor.feet with {bare['feet']}")
+        base = attribute(game, player, "minecraft:jump_strength")
+        expect(base > 0, f"a player's jump strength read as {base}")
+        for material, factor in (("minecraft:gold", 1.10), ("minecraft:netherite", 1.15)):
+            game.wear(player, "feet", bare["feet"], "spurs", "armorpieces:heel_wings", material)
+            got = attribute(game, player, "minecraft:jump_strength")
+            expect(abs(got - base * factor) < 0.002,
+                   f"heel_wings in {material} should multiply jump strength {base} by {factor} "
+                   f"(= {base * factor:.3f}); the wearer has {got}")
+        game.out(f"item replace entity {player} armor.feet with minecraft:air")
+        expect(abs(attribute(game, player, "minecraft:jump_strength") - base) < 0.002,
+               "taking heel_wings off did not take the jump modifier with it")
+
+        # ---- if_fitting -> mob_effect: circlet, gated on the gem in its socket ---------------
+        # Hero of the Village while an EMERALD is set, nothing while a diamond is; and the potion
+        # has to be on the entity, not merely in the report.
+        def circlet(gem: str) -> None:
+            game.wear(player, "head", bare["head"], "brow", "armorpieces:circlet",
+                      fittings=f'"armorpieces:gemstone":"{gem}"')
+
+        potion = f'{player}[nbt={{active_effects:[{{id:"minecraft:hero_of_the_village"}}]}}]'
+        circlet("minecraft:emerald")
+        header, lines = reported()
+        expect("1 of them contributing" in header,
+               f"a circlet with an emerald set should be contributing its one effect: {header}")
+        line_with(lines, "+ Hero of the Village")
+        time.sleep(1.5)  # StatusEffect refreshes every 20 ticks
+        expect(passed(potion),
+               "the circlet reports Hero of the Village and the wearer does not have it")
+
+        circlet("minecraft:diamond")
+        header, lines = reported()
+        expect("0 of them contributing" in header,
+               f"a circlet with a diamond set is not an emerald and should hold nothing: {header}")
+        line_with(lines, "(not right now)")
+        time.sleep(3.5)  # the last 60-tick instance has to run out on its own
+        expect(not passed(potion),
+               "the gem was swapped for a diamond and Hero of the Village is still on the wearer "
+               "four seconds later")
+        game.out(f"item replace entity {player} armor.head with minecraft:air")
+
+        # ---- if_wearer -> attribute: the fixture part, gated on an empty hand ----------------
+        # The half tier 1 cannot ask. With nothing in hand the number is granted; pick up a sword,
+        # with the piece standing still on the back, and it is taken away again - the second
+        # reconcile pass, on a real server, with a real entity predicate.
+        game.out(f"item replace entity {player} armor.chest with {bare['chest']}")
+        armor = attribute(game, player, "minecraft:armor")
+        game.wear(player, "chest", bare["chest"], "back", "gate:barehanded")
+        granted = attribute(game, player, "minecraft:armor")
+        expect(abs(granted - armor - fixtures.ARMOR_BONUS) < 0.001,
+               f"an empty-handed wearer should get +{fixtures.ARMOR_BONUS} armor from "
+               f"gate:barehanded; went from {armor} to {granted}")
+        game.out(f"item replace entity {player} weapon.mainhand with minecraft:iron_sword")
+        held = attribute(game, player, "minecraft:armor")
+        expect(abs(held - armor) < 0.001,
+               f"the wearer picked up a sword and the empty-hand bonus stayed: {held} against a "
+               f"base of {armor}")
+        header, _ = reported()
+        expect("0 of them contributing" in header,
+               f"holding a sword, the wearer condition should not hold: {header}")
+        game.out(f"item replace entity {player} weapon.mainhand with minecraft:air")
+        expect(abs(attribute(game, player, "minecraft:armor") - granted) < 0.001,
+               "the sword was put down and the empty-hand bonus did not come back")
+        game.out(f"item replace entity {player} armor.chest with minecraft:air")
+
+        # ---- blink: the cloak, and a dodge that really moves the wearer ----------------------
+        # 25% in amethyst against 10% by default: the report says the material's number, and
+        # twenty-four arrows at one in four leave a 0.1% chance of standing still. The wearer is
+        # put on a known block first, so "moved" is a selector and not a coordinate read.
+        game.wear(player, "chest", bare["chest"], "back", "armorpieces:cloak")
+        line_with(reported()[1], "10% chance to blink")
+        game.wear(player, "chest", bare["chest"], "back", "armorpieces:cloak", "minecraft:amethyst")
+        line_with(reported()[1], "25% chance to blink")
+
+        here = f"{SPAWN['x']} {SPAWN['y']} {SPAWN['z']}"
+        still = f"{player}[x={SPAWN['x']},y={SPAWN['y']},z={SPAWN['z']},distance=..0.5]"
+        game.out(f"tp {player} {here}")
+        game.out(f"gamemode survival {player}")  # creative cannot be shot at all
+        try:
+            expect(passed(still), "the wearer was teleported to the mark and is not standing on it")
+            moved = False
+            for _ in range(24):
+                game.out(f"damage {player} 1 minecraft:arrow")
+                time.sleep(0.6)  # past the 10-tick invulnerability, or the next hit is ignored
+                if not passed(still):
+                    moved = True
+                    break
+            expect(moved, "twenty-four arrows at a one-in-four dodge and the wearer never blinked "
+                          "away from the mark")
+        finally:
+            game.out(f"gamemode creative {player}")
+            game.out(f"tp {player} {here}")
+    finally:
+        undress()
 
 
 @scenario("identity", "a piece nothing defines is kept and reported, not thrown away")

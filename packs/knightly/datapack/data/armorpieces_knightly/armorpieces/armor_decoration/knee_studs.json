@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_knightly:knee_studs",
+  "description": {
+    "translate": "decoration.armorpieces_knightly.knee_studs"
+  },
+  "anchors": [
+    "knees"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "former_ids": [
+    "armorpieces:knee_studs"
+  ],
+  "uid": "ap1almk3icuqcpftlljhjia"
+}

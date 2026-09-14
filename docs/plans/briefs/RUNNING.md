@@ -138,3 +138,46 @@ neighbours, and knows nothing about the brief. So, per piece:
    generalises into `LESSONS.md` — that file is the channel; 78 separate briefs are not.
 5. Only then commit. `packs/` pieces are not on the mod's page: do **not** run `python -m modpage
    build` for them.
+
+## The qwen driver, since 2026-09-12
+
+`tools/run_surface_pass.ps1` (one qwen3.8-flash `claude -p` per brief, sequential) now asks
+**the dock** for its window - `POST /dock/window` on whichever port answers `/hello` with
+`role: dock` - under ONE session id for the whole batch, so every ask is a rejoin of the same
+window and no window piles up per piece. Since plugin 0.7.0 a window is the person's unless it
+was opened FOR an agent, so the old scan (`Get-FreeWindow`, kept as the fallback) could no longer
+take an empty one: 25803 is the dock and 25804 the person's window, and both refuse a claim.
+
+Three things the seventeen-piece run taught, beyond `LESSONS.md` #23-24:
+
+- **Launch the driver detached, not as a harness background task.** Claude Code's own memory
+  guard killed a running batch driver mid-piece (the session it had launched kept going, unseen,
+  and died with the window's next claim). `Start-Process powershell -ArgumentList @(...,
+  '-Command', "& '<script>' -Pieces @(...) *> '<log>'")` survives it; the log it writes is
+  **UTF-16**, so read it with `iconv -f UTF-16` (or PowerShell), never a bare `grep`.
+- **Pass `-Pieces` as a PowerShell array.** `powershell -File script.ps1 -Pieces a,b,c` hands the
+  script ONE string "a,b,c" and every piece is "no brief"; `& script.ps1 -Pieces @('a','b')`
+  from inside PowerShell is right.
+- **The plugin's pack list is per Blockbench install and does not follow the repo.** All six paths
+  of Coral, Animals and the Hive were missing from `armorpieces_packs` on 2026-09-12 despite two
+  of the packs having been authored in it before; check it with `Settings.get('armorpieces_packs')`
+  over `risky_eval` before a batch, because nothing fails loudly without them.
+
+
+Two more from the 48-piece culture batch of 2026-09-13:
+
+- **No dock open, no window: ask for one through `POST /window`.** The dock is a window a person
+  opens from the menu (Tools > MCP Toolkit Bridge > Open the MCP Dock) and there was none; the two
+  agent windows were held by live sessions (a hold dies with its socket, so a window a finished
+  session used frees itself, but a window an OPEN Claude session's proxy touched stays held for as
+  long as that session lives). `Get-AskedWindow` in the driver posts the batch's own session id to
+  any bridge window's `/window`: a rejoin of a window it already holds, else an empty unheld agent
+  window handed over, else a new one opened pre-claimed for it - found afterwards by scanning for
+  the window whose `claimed_by.session` is the batch's. **Only a `reused` answer names another
+  window's port**; an `opened` answer carries the ASKING window's own block, and reading its `port`
+  pinned the person's window once and the batch died on it.
+- **The plugin's pack list is registered by the driver, on its own window, under its own id**
+  (`tools/register_packs.py`), because a window held by a live session refuses every other session
+  id, so the list cannot be fixed from outside before the batch. A native command's stderr under
+  `$ErrorActionPreference = 'Stop'` kills the batch (the `2>&1` trap again), so that call runs
+  under `Continue` inside a `try`.

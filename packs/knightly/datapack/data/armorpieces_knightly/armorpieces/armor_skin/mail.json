@@ -1,0 +1,17 @@
+{
+  "asset_id": "armorpieces_knightly:mail",
+  "description": {
+    "translate": "skin.armorpieces_knightly.mail"
+  },
+  "loot": [
+    {
+      "table": "minecraft:chests/simple_dungeon",
+      "weight": 1,
+      "chance": 0.05
+    }
+  ],
+  "former_ids": [
+    "armorpieces:mail"
+  ],
+  "uid": "ap175lcc64c2q2q3r3getza"
+}

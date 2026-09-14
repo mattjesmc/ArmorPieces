@@ -43,29 +43,35 @@ def _skins_under(assets: Path, namespace: str) -> Path:
 
 
 MOD = _skins_under(ROOT / "src" / "main" / "resources" / "assets", "armorpieces")
-LEGENDS = _skins_under(ROOT / "packs" / "legends" / "resourcepack" / "assets", "armorpieces_legends")
+KNIGHTLY = _skins_under(ROOT / "packs" / "knightly" / "resourcepack" / "assets", "armorpieces_knightly")
+COURT = _skins_under(ROOT / "packs" / "court" / "resourcepack" / "assets", "armorpieces_court")
+WAYFARER = _skins_under(ROOT / "packs" / "wayfarer" / "resourcepack" / "assets", "armorpieces_wayfarer")
+SAMURAI = _skins_under(ROOT / "packs" / "samurai" / "resourcepack" / "assets", "armorpieces_samurai")
+NORSE = _skins_under(ROOT / "packs" / "norse" / "resourcepack" / "assets", "armorpieces_norse")
+ANTIQUITY = _skins_under(ROOT / "packs" / "antiquity" / "resourcepack" / "assets", "armorpieces_antiquity")
 
 # What ships, under what name, and into whose resources: the authoring directory on the left, the
 # skin's id and the assets root it installs into on the right. `gothic` is drawn twice - once
 # freehand and once pinned to vanilla's own silhouette - and only the later one ships.
 #
 # The mod keeps the nine that say how armor is MADE. The five that say who WORE it went to
-# Armor Pieces: Legends, and install into that pack instead.
+# Armor Pieces: Legends on 2026-09-07 and on to the culture packs (Samurai, Norse, Antiquity) on
+# 2026-09-13; each installs into its own pack.
 SHIPPED = {
-    "plate": ("plate", MOD),
-    "chainmail": ("chainmail", MOD),
-    "mail": ("mail", MOD),
-    "gambeson": ("gambeson", MOD),
-    "gothic": ("gothic", MOD),
-    "milanese": ("milanese", MOD),
-    "brigandine": ("brigandine", MOD),
-    "scale": ("scale", MOD),
-    "lamellar": ("lamellar", MOD),
-    "lorica": ("lorica", LEGENDS),
-    "varangian": ("varangian", LEGENDS),
-    "hoplite": ("hoplite", LEGENDS),
-    "samurai": ("samurai", LEGENDS),
-    "runic": ("runic", LEGENDS),
+    "plate": ("plate", KNIGHTLY),
+    "chainmail": ("chainmail", KNIGHTLY),
+    "mail": ("mail", KNIGHTLY),
+    "gambeson": ("gambeson", WAYFARER),
+    "gothic": ("gothic", KNIGHTLY),
+    "milanese": ("milanese", KNIGHTLY),
+    "brigandine": ("brigandine", WAYFARER),
+    "scale": ("scale", COURT),
+    "lamellar": ("lamellar", COURT),
+    "lorica": ("lorica", ANTIQUITY),
+    "varangian": ("varangian", NORSE),
+    "hoplite": ("hoplite", ANTIQUITY),
+    "samurai": ("samurai", SAMURAI),
+    "runic": ("runic", NORSE),
 }
 
 

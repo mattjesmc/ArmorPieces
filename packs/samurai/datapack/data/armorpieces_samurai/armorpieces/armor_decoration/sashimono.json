@@ -1,0 +1,14 @@
+{
+  "asset_id": "armorpieces_samurai:sashimono",
+  "description": {
+    "translate": "decoration.armorpieces_samurai.sashimono"
+  },
+  "anchors": [
+    "back"
+  ],
+  "fittings": [
+    "armorpieces:banner",
+    "armorpieces:guard"
+  ],
+  "uid": "ap1e7exfk4kbtqvbnqdrtpa"
+}

@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_knightly:barbute",
+  "description": {
+    "translate": "decoration.armorpieces_knightly.barbute"
+  },
+  "anchors": [
+    "brow"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "former_ids": [
+    "armorpieces:barbute"
+  ],
+  "uid": "ap1acjq7mjeyxb7qwio37la"
+}

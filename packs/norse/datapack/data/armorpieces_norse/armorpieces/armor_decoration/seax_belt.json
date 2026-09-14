@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_norse:seax_belt",
+  "description": {
+    "translate": "decoration.armorpieces_norse.seax_belt"
+  },
+  "anchors": [
+    "belt"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1ops5qtzibgt5yc266xpa"
+}

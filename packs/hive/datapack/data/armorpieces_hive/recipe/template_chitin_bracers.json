@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:beehive"
+  },
+  "result": {
+    "id": "armorpieces:vambraces_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces_hive:chitin_bracers"
+    }
+  },
+  "category": "equipment"
+}

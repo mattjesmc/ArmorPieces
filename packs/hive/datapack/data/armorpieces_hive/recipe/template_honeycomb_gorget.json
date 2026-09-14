@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " # ",
+    "#F#",
+    " # "
+  ],
+  "key": {
+    "#": "minecraft:paper",
+    "F": "minecraft:honeycomb_block"
+  },
+  "result": {
+    "id": "armorpieces:collar_template",
+    "components": {
+      "armorpieces:decoration": "armorpieces_hive:honeycomb_gorget"
+    }
+  },
+  "category": "equipment"
+}

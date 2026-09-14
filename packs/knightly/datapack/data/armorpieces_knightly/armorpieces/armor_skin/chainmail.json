@@ -1,0 +1,17 @@
+{
+  "asset_id": "armorpieces_knightly:chainmail",
+  "description": {
+    "translate": "skin.armorpieces_knightly.chainmail"
+  },
+  "loot": [
+    {
+      "table": "minecraft:chests/abandoned_mineshaft",
+      "weight": 1,
+      "chance": 0.07
+    }
+  ],
+  "former_ids": [
+    "armorpieces:chainmail"
+  ],
+  "uid": "ap1tbuecz6ibuscd2c7ibta"
+}

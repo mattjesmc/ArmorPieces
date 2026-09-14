@@ -65,7 +65,7 @@ public final class GameBootstrap {
 
     /**
      * Everything this mod puts into a BUILT-IN registry: its components, its block and items, its
-     * recipe serializers, its menu, and the two loot pieces. The order is
+     * creative tab, its recipe serializers, its menu, and the two loot pieces. The order is
      * {@link com.mattjesmc.armorpieces.ArmorPieces#onInitialize()}'s own, and for its reasons -
      * a template item reads the decoration component, so components come first.
      *
@@ -85,6 +85,7 @@ public final class GameBootstrap {
         components();
         com.mattjesmc.armorpieces.registry.ModBlocks.register();
         com.mattjesmc.armorpieces.registry.ModItems.register();
+        com.mattjesmc.armorpieces.registry.ModCreativeTabs.register();   // the tab builds stacks of those items
         com.mattjesmc.armorpieces.registry.ModRecipeSerializers.register();
         com.mattjesmc.armorpieces.registry.ModMenus.register();
         com.mattjesmc.armorpieces.registry.ModLootFunctions.register();

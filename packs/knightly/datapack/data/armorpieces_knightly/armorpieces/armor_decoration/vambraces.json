@@ -1,0 +1,25 @@
+{
+  "asset_id": "armorpieces_knightly:vambraces",
+  "description": {
+    "translate": "decoration.armorpieces_knightly.vambraces"
+  },
+  "anchors": [
+    "vambraces"
+  ],
+  "loot": [
+    {
+      "table": "minecraft:chests/simple_dungeon",
+      "weight": 1,
+      "chance": 0.05
+    },
+    {
+      "table": "minecraft:chests/trial_chambers/reward",
+      "weight": 1,
+      "chance": 0.15
+    }
+  ],
+  "former_ids": [
+    "armorpieces:vambraces"
+  ],
+  "uid": "ap1xpwfujsmicvkbkse6vkq"
+}

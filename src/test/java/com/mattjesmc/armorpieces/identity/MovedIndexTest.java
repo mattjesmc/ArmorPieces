@@ -67,11 +67,14 @@ class MovedIndexTest {
             "the id is the whole instruction to a player who has to write the piece themselves");
     }
 
-    /** An id under the mod's own namespace that never moved: there is no pack to point at. */
+    /**
+     * An id under the mod's own namespace that never moved: there is no pack to point at. Since the
+     * split of 2026-09-14 every piece has moved, so the unmoved id is a fitting's - the engine's own.
+     */
     @Test
     void anUnmovedModIdNamesNoPack() {
-        assertTrue(Moved.pack("armorpieces:visor").isEmpty());
-        assertEquals("armorpieces:visor", Moved.describe("armorpieces:visor").getString());
+        assertTrue(Moved.pack("armorpieces:guard").isEmpty());
+        assertEquals("armorpieces:guard", Moved.describe("armorpieces:guard").getString());
     }
 
     /** What {@code ArmorDecorations} passes in when a socket held no readable id at all. */

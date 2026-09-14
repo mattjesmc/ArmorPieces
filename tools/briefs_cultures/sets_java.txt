@@ -1,0 +1,67 @@
+        // The Daimyo, from Armor Pieces: Samurai - all twelve of the pack's pieces (2026-09-13).
+        // Transcribed from the pack's own `armorpieces-sets.json`, which is the file the site and the
+        // wardrobe read; this copy exists so the set can be staged in game.
+        new GallerySet("daimyo", EquipmentAssets.IRON, skin("armorpieces_samurai:samurai"), null, List.of(
+            on(DecorationAnchor.CREST, "armorpieces_samurai:maedate", TrimMaterials.REDSTONE, metal(TrimMaterials.GOLD)),
+            on(DecorationAnchor.BROW, "armorpieces_samurai:mempo", TrimMaterials.REDSTONE, dyed(DyeColor.RED)),
+            on(DecorationAnchor.HORNS, "armorpieces_samurai:kuwagata", TrimMaterials.REDSTONE, metal(TrimMaterials.GOLD)),
+            on(DecorationAnchor.PAULDRONS, "armorpieces_samurai:sode", TrimMaterials.REDSTONE, dyed(DyeColor.RED)),
+            on(DecorationAnchor.BACK, "armorpieces_samurai:sashimono", TrimMaterials.REDSTONE, flag(DyeColor.RED), metal(TrimMaterials.GOLD)),
+            on(DecorationAnchor.COLLAR, "armorpieces_samurai:nodowa", TrimMaterials.REDSTONE, dyed(DyeColor.RED)),
+            on(DecorationAnchor.VAMBRACES, "armorpieces_samurai:kote", TrimMaterials.REDSTONE, metal(TrimMaterials.GOLD)),
+            on(DecorationAnchor.BELT, "armorpieces_samurai:daisho", TrimMaterials.REDSTONE, dyed(DyeColor.RED)),
+            on(DecorationAnchor.TASSETS, "armorpieces_samurai:kusazuri", TrimMaterials.REDSTONE, dyed(DyeColor.RED)),
+            on(DecorationAnchor.KNEES, "armorpieces_samurai:haidate", TrimMaterials.REDSTONE, dyed(DyeColor.RED)),
+            on(DecorationAnchor.SPURS, "armorpieces_samurai:waraji", TrimMaterials.REDSTONE, dyed(DyeColor.RED)),
+            on(DecorationAnchor.GREAVES, "armorpieces_samurai:suneate", TrimMaterials.REDSTONE, metal(TrimMaterials.GOLD)))),
+
+        // The Jarl, from Armor Pieces: Norse - all twelve of the pack's pieces (2026-09-13).
+        // Transcribed from the pack's own `armorpieces-sets.json`, which is the file the site and the
+        // wardrobe read; this copy exists so the set can be staged in game.
+        new GallerySet("jarl", EquipmentAssets.IRON, skin("armorpieces_norse:varangian"), null, List.of(
+            on(DecorationAnchor.CREST, "armorpieces_norse:boar_crest", TrimMaterials.IRON, metal(TrimMaterials.GOLD)),
+            on(DecorationAnchor.BROW, "armorpieces_norse:braided_beard", TrimMaterials.IRON, metal(TrimMaterials.GOLD)),
+            on(DecorationAnchor.HORNS, "armorpieces_norse:war_braids", TrimMaterials.IRON, metal(TrimMaterials.GOLD)),
+            on(DecorationAnchor.PAULDRONS, "armorpieces_norse:ravens", TrimMaterials.IRON, metal(TrimMaterials.GOLD)),
+            on(DecorationAnchor.BACK, "armorpieces_norse:round_shield", TrimMaterials.IRON, metal(TrimMaterials.GOLD)),
+            on(DecorationAnchor.COLLAR, "armorpieces_norse:torc", TrimMaterials.IRON, metal(TrimMaterials.GOLD)),
+            on(DecorationAnchor.VAMBRACES, "armorpieces_norse:oath_rings", TrimMaterials.IRON, metal(TrimMaterials.GOLD)),
+            on(DecorationAnchor.BELT, "armorpieces_norse:seax_belt", TrimMaterials.IRON, metal(TrimMaterials.GOLD)),
+            on(DecorationAnchor.TASSETS, "armorpieces_norse:hip_axes", TrimMaterials.IRON, metal(TrimMaterials.GOLD)),
+            on(DecorationAnchor.KNEES, "armorpieces_norse:fur_cops", TrimMaterials.IRON, metal(TrimMaterials.GOLD)),
+            on(DecorationAnchor.SPURS, "armorpieces_norse:snowshoes", TrimMaterials.IRON, dyed(DyeColor.WHITE)),
+            on(DecorationAnchor.GREAVES, "armorpieces_norse:winingas", TrimMaterials.IRON, dyed(DyeColor.WHITE)))),
+
+        // The Triumph, from Armor Pieces: Antiquity - all twelve of the pack's pieces (2026-09-13).
+        // Transcribed from the pack's own `armorpieces-sets.json`, which is the file the site and the
+        // wardrobe read; this copy exists so the set can be staged in game.
+        new GallerySet("triumph", EquipmentAssets.GOLD, skin("armorpieces_antiquity:lorica"), null, List.of(
+            on(DecorationAnchor.CREST, "armorpieces_antiquity:transverse_crest", TrimMaterials.COPPER, metal(TrimMaterials.COPPER)),
+            on(DecorationAnchor.BROW, "armorpieces_antiquity:corinthian_face", TrimMaterials.COPPER, metal(TrimMaterials.COPPER)),
+            on(DecorationAnchor.HORNS, "armorpieces_antiquity:ammon_horns", TrimMaterials.COPPER, metal(TrimMaterials.COPPER)),
+            on(DecorationAnchor.PAULDRONS, "armorpieces_antiquity:epomides", TrimMaterials.COPPER, metal(TrimMaterials.COPPER)),
+            on(DecorationAnchor.BACK, "armorpieces_antiquity:scutum", TrimMaterials.COPPER, metal(TrimMaterials.COPPER)),
+            on(DecorationAnchor.COLLAR, "armorpieces_antiquity:phalerae", TrimMaterials.COPPER, metal(TrimMaterials.COPPER)),
+            on(DecorationAnchor.VAMBRACES, "armorpieces_antiquity:manica", TrimMaterials.COPPER, metal(TrimMaterials.COPPER)),
+            on(DecorationAnchor.BELT, "armorpieces_antiquity:cingulum", TrimMaterials.COPPER, metal(TrimMaterials.COPPER)),
+            on(DecorationAnchor.TASSETS, "armorpieces_antiquity:pteruges", TrimMaterials.COPPER, dyed(DyeColor.RED)),
+            on(DecorationAnchor.KNEES, "armorpieces_antiquity:gorgon_cops", TrimMaterials.COPPER, metal(TrimMaterials.COPPER)),
+            on(DecorationAnchor.SPURS, "armorpieces_antiquity:caligae", TrimMaterials.COPPER, dyed(DyeColor.RED)),
+            on(DecorationAnchor.GREAVES, "armorpieces_antiquity:ocreae", TrimMaterials.COPPER, metal(TrimMaterials.COPPER)))),
+
+        // The Tilt, from Armor Pieces: Tournament - all twelve of the pack's pieces (2026-09-13).
+        // Transcribed from the pack's own `armorpieces-sets.json`, which is the file the site and the
+        // wardrobe read; this copy exists so the set can be staged in game.
+        new GallerySet("tilt", EquipmentAssets.IRON, skin("armorpieces_knightly:milanese"), null, List.of(
+            on(DecorationAnchor.CREST, "armorpieces_tourney:lion_crest", TrimMaterials.IRON, dyed(DyeColor.BLUE)),
+            on(DecorationAnchor.BROW, "armorpieces_tourney:tilting_grille", TrimMaterials.IRON, metal(TrimMaterials.GOLD)),
+            on(DecorationAnchor.HORNS, "armorpieces_tourney:mantling", TrimMaterials.IRON, dyed(DyeColor.BLUE)),
+            on(DecorationAnchor.PAULDRONS, "armorpieces_tourney:grandguard", TrimMaterials.IRON, metal(TrimMaterials.GOLD)),
+            on(DecorationAnchor.BACK, "armorpieces_tourney:ecranche", TrimMaterials.IRON, dyed(DyeColor.BLUE)),
+            on(DecorationAnchor.COLLAR, "armorpieces_tourney:lance_rest", TrimMaterials.IRON, metal(TrimMaterials.GOLD)),
+            on(DecorationAnchor.VAMBRACES, "armorpieces_tourney:favour", TrimMaterials.IRON, dyed(DyeColor.BLUE)),
+            on(DecorationAnchor.BELT, "armorpieces_tourney:sword_belt", TrimMaterials.IRON, metal(TrimMaterials.GOLD)),
+            on(DecorationAnchor.TASSETS, "armorpieces_tourney:cuisses", TrimMaterials.IRON, metal(TrimMaterials.GOLD)),
+            on(DecorationAnchor.KNEES, "armorpieces_tourney:rondel_cops", TrimMaterials.IRON, metal(TrimMaterials.GOLD)),
+            on(DecorationAnchor.SPURS, "armorpieces_tourney:sabatons", TrimMaterials.IRON, metal(TrimMaterials.GOLD)),
+            on(DecorationAnchor.GREAVES, "armorpieces_tourney:schynbalds", TrimMaterials.IRON, metal(TrimMaterials.GOLD))))

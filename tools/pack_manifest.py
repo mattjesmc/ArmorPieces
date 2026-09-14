@@ -392,12 +392,20 @@ def entries(dirs: list[Path], kind: str) -> list[dict]:
     return out
 
 
+def version_key(version: str) -> tuple[int, ...] | None:
+    """`"0.4.0"` as `(0, 4, 0)`, or None for anything that is not dotted numbers."""
+    parts = version.strip().split(".")
+    if not parts or not all(part.isdigit() for part in parts):
+        return None
+    return tuple(int(part) for part in parts)
+
+
 def pack_meta(dirs: list[Path]) -> dict:
     credits = credits_of(dirs)
     meta = {"name": dirs[0].name, "description": "", "author": credits["pack"].get("author", ""),
             "license": credits["pack"].get("license", DEFAULT_LICENSE),
             "homepage": credits["pack"].get("homepage", ""), "dirs": [str(d) for d in dirs],
-            "namespaces": [], "format": {}}
+            "namespaces": [], "format": {}, "requires": None}
     if meta["license"] not in LICENSES:
         meta["license"] = DEFAULT_LICENSE
     for d in dirs:
@@ -412,6 +420,14 @@ def pack_meta(dirs: list[Path]) -> dict:
                 for key in ("pack_format", "min_format", "max_format"):
                     if key in pack:
                         meta["format"][key] = pack[key]
+                # The mod version this half needs, from the pack's own `armorpieces` section -
+                # the one place a pack can say so that a tool can read (the game ignores the
+                # section; the description says it again in prose for a player). Two halves
+                # that disagree need the higher one.
+                requires = read_json(mcmeta).get("armorpieces", {}).get("requires")
+                if isinstance(requires, str) and version_key(requires) is not None:
+                    if meta["requires"] is None or version_key(requires) > version_key(meta["requires"]):
+                        meta["requires"] = requires
             except ValueError:
                 pass
         for half in ("data", "assets"):
@@ -444,7 +460,8 @@ def manifest(dirs: list[Path]) -> dict:
 
 def brief(m: dict) -> str:
     lines = [f"{m['pack']['name']}: {m['counts']['pieces']} pieces, {m['counts']['skins']} skins, "
-             f"{m['counts']['cloths']} cloths; pack license {m['pack']['license']}"]
+             f"{m['counts']['cloths']} cloths; pack license {m['pack']['license']}"
+             + (f"; requires Armor Pieces {m['pack']['requires']}" if m['pack'].get('requires') else "")]
     for entry in m["pieces"] + m["skins"] + m["cloths"]:
         where = f" on {entry['anchor']}" if entry.get("anchor") else ""
         how = ", ".join(w for w, on in (("crafted", entry["craftable"]), ("found", entry["loot"])) if on) or "pack's own"

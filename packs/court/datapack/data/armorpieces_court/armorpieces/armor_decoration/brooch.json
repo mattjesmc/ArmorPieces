@@ -1,0 +1,25 @@
+{
+  "asset_id": "armorpieces_court:brooch",
+  "description": {
+    "translate": "decoration.armorpieces_court.brooch"
+  },
+  "anchors": [
+    "collar"
+  ],
+  "loot": [
+    {
+      "table": "minecraft:chests/stronghold_library",
+      "weight": 1,
+      "chance": 0.15
+    },
+    {
+      "table": "minecraft:chests/underwater_ruin_big",
+      "weight": 1,
+      "chance": 0.15
+    }
+  ],
+  "former_ids": [
+    "armorpieces:brooch"
+  ],
+  "uid": "ap1hctieu4qlwznyfsymwka"
+}

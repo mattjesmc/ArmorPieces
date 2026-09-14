@@ -1,0 +1,17 @@
+{
+  "asset_id": "armorpieces_wayfarer:bandolier",
+  "description": {
+    "translate": "decoration.armorpieces_wayfarer.bandolier"
+  },
+  "anchors": [
+    "collar"
+  ],
+  "fittings": [
+    "armorpieces:guard",
+    "armorpieces:inlay"
+  ],
+  "former_ids": [
+    "armorpieces:bandolier"
+  ],
+  "uid": "ap1qwwk7i42r6sxou2azeeq"
+}

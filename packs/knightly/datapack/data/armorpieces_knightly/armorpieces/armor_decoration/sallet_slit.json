@@ -1,0 +1,16 @@
+{
+  "asset_id": "armorpieces_knightly:sallet_slit",
+  "description": {
+    "translate": "decoration.armorpieces_knightly.sallet_slit"
+  },
+  "anchors": [
+    "brow"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "former_ids": [
+    "armorpieces:sallet_slit"
+  ],
+  "uid": "ap1nupasyotkazj4nlbyrha"
+}

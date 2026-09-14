@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_coral:barnacle_cops",
+  "description": {
+    "translate": "decoration.armorpieces_coral.barnacle_cops"
+  },
+  "anchors": [
+    "knees"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1cto2o3pjt3bxtipxbcoq"
+}

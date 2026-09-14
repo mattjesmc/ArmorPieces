@@ -1,14 +1,19 @@
 {
   "values": [
     "armorpieces_coral:axolotl_frills",
+    "armorpieces_coral:barnacle_cops",
     "armorpieces_coral:coral_crown",
+    "armorpieces_coral:coral_visor",
+    "armorpieces_coral:dolphin_flukes",
     "armorpieces_coral:dorsal_fin",
     "armorpieces_coral:head_fins",
     "armorpieces_coral:kelp_mantle",
     "armorpieces_coral:nautilus_gorget",
     "armorpieces_coral:scale_shins",
     "armorpieces_coral:scale_skirt",
+    "armorpieces_coral:sea_pickle_belt",
     "armorpieces_coral:spine_ridge",
+    "armorpieces_coral:starfish_bracers",
     "armorpieces_coral:swim_fins"
   ]
 }

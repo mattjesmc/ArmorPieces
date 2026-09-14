@@ -1,0 +1,29 @@
+{
+  "asset_id": "armorpieces_court:sash",
+  "description": {
+    "translate": "decoration.armorpieces_court.sash"
+  },
+  "anchors": [
+    "belt"
+  ],
+  "fittings": [
+    "armorpieces:inlay",
+    "armorpieces:guard"
+  ],
+  "loot": [
+    {
+      "table": "minecraft:chests/woodland_mansion",
+      "weight": 1,
+      "chance": 0.1
+    },
+    {
+      "table": "minecraft:chests/shipwreck_treasure",
+      "weight": 1,
+      "chance": 0.1
+    }
+  ],
+  "former_ids": [
+    "armorpieces:sash"
+  ],
+  "uid": "ap1srcxodzfl55pwo7p6wga"
+}

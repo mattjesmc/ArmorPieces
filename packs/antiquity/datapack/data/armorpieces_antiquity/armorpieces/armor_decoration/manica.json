@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_antiquity:manica",
+  "description": {
+    "translate": "decoration.armorpieces_antiquity.manica"
+  },
+  "anchors": [
+    "vambraces"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap133iza4v2puhsvpvpb5uq"
+}

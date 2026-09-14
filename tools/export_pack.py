@@ -14,10 +14,18 @@ Usage:
 `--reproducible` fixes every member's timestamp, so that two packs holding the same files zip to
 the same bytes - which is what lets a site keep one file for one selection, however often it is
 asked for.
+
+A pack says which mod version it needs in its own pack.mcmeta, in a section the game ignores and
+the library, the editor and pack_manifest.py read:
+
+    { "pack": { ... }, "armorpieces": { "requires": "0.4.0" } }
+
+The export notes a pack that does not say so, and exports it anyway.
 """
 
 from __future__ import annotations
 
+import json
 import sys
 import zipfile
 from pathlib import Path
@@ -33,12 +41,27 @@ SKIP_FILES = {".DS_Store", "Thumbs.db", "desktop.ini", ".armorpieces-checkout.js
 FIXED_TIME = (1980, 1, 1, 0, 0, 0)
 
 
+def requires_of(mcmeta: Path) -> str | None:
+    """The mod version a pack.mcmeta says its pack needs (`armorpieces.requires`), or None."""
+    try:
+        with mcmeta.open(encoding="utf-8") as handle:
+            requires = json.load(handle).get("armorpieces", {}).get("requires")
+    except (OSError, ValueError, AttributeError):
+        return None
+    return requires if isinstance(requires, str) and requires.strip() else None
+
+
 def export(pack: Path, out: Path, reproducible: bool = False) -> int:
     pack = pack.resolve()
     if not pack.is_dir():
         sys.exit(f"error: no pack folder at {pack}")
     if not (pack / "pack.mcmeta").is_file():
         print(f"note: {pack.name} has no pack.mcmeta; the game will not list it as a pack", file=sys.stderr)
+    elif requires_of(pack / "pack.mcmeta") is None:
+        # Not refused: a zip handed round still works. But the library and the editor read this
+        # to say which mod a pack needs, and a pack that does not say is offered to everyone.
+        print(f"note: {pack.name}/pack.mcmeta declares no \"armorpieces\": {{\"requires\": ...}} - "
+              "the library cannot say which mod version it needs", file=sys.stderr)
     written = 0
     out.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as zf:

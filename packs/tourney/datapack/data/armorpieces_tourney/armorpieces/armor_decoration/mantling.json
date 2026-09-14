@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_tourney:mantling",
+  "description": {
+    "translate": "decoration.armorpieces_tourney.mantling"
+  },
+  "anchors": [
+    "horns"
+  ],
+  "fittings": [
+    "armorpieces:inlay"
+  ],
+  "uid": "ap1zih2karozepfo25ngb5q"
+}

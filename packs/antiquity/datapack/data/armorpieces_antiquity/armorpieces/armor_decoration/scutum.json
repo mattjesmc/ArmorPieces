@@ -1,0 +1,13 @@
+{
+  "asset_id": "armorpieces_antiquity:scutum",
+  "description": {
+    "translate": "decoration.armorpieces_antiquity.scutum"
+  },
+  "anchors": [
+    "back"
+  ],
+  "fittings": [
+    "armorpieces:guard"
+  ],
+  "uid": "ap1pgup2yrna3ujysea2qga"
+}

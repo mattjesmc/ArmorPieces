@@ -1,0 +1,28 @@
+{
+  "asset_id": "armorpieces_knightly:banner",
+  "description": {
+    "translate": "decoration.armorpieces_knightly.banner"
+  },
+  "anchors": [
+    "back"
+  ],
+  "fittings": [
+    "armorpieces:banner"
+  ],
+  "loot": [
+    {
+      "table": "minecraft:chests/pillager_outpost",
+      "weight": 2,
+      "chance": 0.15
+    },
+    {
+      "table": "minecraft:chests/woodland_mansion",
+      "weight": 1,
+      "chance": 0.15
+    }
+  ],
+  "former_ids": [
+    "armorpieces:banner"
+  ],
+  "uid": "ap142l62ph4qlrxa7s35daq"
+}

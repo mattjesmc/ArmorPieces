@@ -1,0 +1,125 @@
+{
+  "sets": [
+    {
+      "id": "jarl",
+      "title": "The Jarl",
+      "description": "Riveted iron and the sagas' own trimmings - a boar on the crest, a braided beard and war braids, Huginn and Muninn on the shoulders, a painted round shield on the back, a gold torc, oath rings, a seax at the belt, an axe at each hip, fur-trimmed knees, winingas up the shins and snowshoes trailing from the heels. All twelve sockets are this pack's own.",
+      "set": {
+        "name": "The Jarl",
+        "slots": {
+          "helmet": {
+            "material": "iron"
+          },
+          "chestplate": {
+            "material": "iron"
+          },
+          "leggings": {
+            "material": "iron"
+          },
+          "boots": {
+            "material": "iron"
+          }
+        },
+        "pieces": {
+          "crest": {
+            "id": "armorpieces_norse:boar_crest",
+            "pack": "armorpieces-norse",
+            "material": "iron",
+            "fittings": {
+              "armorpieces:guard": "minecraft:gold"
+            }
+          },
+          "brow": {
+            "id": "armorpieces_norse:braided_beard",
+            "pack": "armorpieces-norse",
+            "material": "iron",
+            "fittings": {
+              "armorpieces:guard": "minecraft:gold"
+            }
+          },
+          "horns": {
+            "id": "armorpieces_norse:war_braids",
+            "pack": "armorpieces-norse",
+            "material": "iron",
+            "fittings": {
+              "armorpieces:guard": "minecraft:gold"
+            }
+          },
+          "pauldrons": {
+            "id": "armorpieces_norse:ravens",
+            "pack": "armorpieces-norse",
+            "material": "iron",
+            "fittings": {
+              "armorpieces:guard": "minecraft:gold"
+            }
+          },
+          "back": {
+            "id": "armorpieces_norse:round_shield",
+            "pack": "armorpieces-norse",
+            "material": "iron",
+            "fittings": {
+              "armorpieces:guard": "minecraft:gold"
+            }
+          },
+          "collar": {
+            "id": "armorpieces_norse:torc",
+            "pack": "armorpieces-norse",
+            "material": "iron",
+            "fittings": {
+              "armorpieces:guard": "minecraft:gold"
+            }
+          },
+          "vambraces": {
+            "id": "armorpieces_norse:oath_rings",
+            "pack": "armorpieces-norse",
+            "material": "iron",
+            "fittings": {
+              "armorpieces:guard": "minecraft:gold"
+            }
+          },
+          "belt": {
+            "id": "armorpieces_norse:seax_belt",
+            "pack": "armorpieces-norse",
+            "material": "iron",
+            "fittings": {
+              "armorpieces:guard": "minecraft:gold"
+            }
+          },
+          "tassets": {
+            "id": "armorpieces_norse:hip_axes",
+            "pack": "armorpieces-norse",
+            "material": "iron",
+            "fittings": {
+              "armorpieces:guard": "minecraft:gold"
+            }
+          },
+          "knees": {
+            "id": "armorpieces_norse:fur_cops",
+            "pack": "armorpieces-norse",
+            "material": "iron",
+            "fittings": {
+              "armorpieces:guard": "minecraft:gold"
+            }
+          },
+          "spurs": {
+            "id": "armorpieces_norse:snowshoes",
+            "pack": "armorpieces-norse",
+            "material": "iron",
+            "fittings": {
+              "armorpieces:inlay": "white"
+            }
+          },
+          "greaves": {
+            "id": "armorpieces_norse:winingas",
+            "pack": "armorpieces-norse",
+            "material": "iron",
+            "fittings": {
+              "armorpieces:inlay": "white"
+            }
+          }
+        },
+        "skin": "armorpieces_norse:varangian"
+      }
+    }
+  ]
+}

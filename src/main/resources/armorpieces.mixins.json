@@ -4,7 +4,10 @@
   "package": "com.mattjesmc.armorpieces.mixin",
   "mixins": [
     "PendingRegistrationMixin",
-    "RegistryLoadTaskMixin"
+    "RecipeManagerMixin",
+    "RegistryLoadTaskMixin",
+    "ShapedRecipeAccessor",
+    "ShapelessRecipeAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

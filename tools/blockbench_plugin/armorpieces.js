@@ -985,6 +985,8 @@
 		'				<div class="ap_head">',
 		'					<span class="ap_name">{{ e.name }}</span>',
 		'					<span class="ap_tag" v-if="e.version">{{ e.version }}</span>',
+		'					<span class="ap_tag" v-if="e.archive" title="What the mod ships. It is here to be browsed and borrowed, not installed beside the mod.">ships with the mod</span>',
+		'					<span class="ap_tag" :class="{ ap_warn: tooNew(e) }" v-if="e.requires" :title="tooNew(e) ? \'This toolkit is Armor Pieces \' + mod + \'; the pack needs \' + e.requires + \'.\' : \'Needs Armor Pieces \' + e.requires + \' or later.\'">needs {{ e.requires }}</span>',
 		'					<span class="ap_tag" v-for="t in e.tags || []" :key="t">{{ t }}</span>',
 		'				</div>',
 		'				<div class="ap_body"><span class="ap_dim">{{ e.description }}</span></div>',
@@ -993,7 +995,7 @@
 		'						<template v-if="e.packs.length > 1"> - {{ e.packs.length }} zips</template></span>',
 		'					<a v-if="e.homepage" href="#" @click.prevent="open(e.homepage)">details</a>',
 		'					<span class="ap_spacer"></span>',
-		'					<button type="button" @click="pick(e)">Install</button>',
+		'					<button type="button" @click="pick(e)" :disabled="tooNew(e)" :title="tooNew(e) ? \'Needs Armor Pieces \' + e.requires + \'; this toolkit is \' + mod : \'\'">{{ e.archive ? \'Install a copy\' : \'Install\' }}</button>',
 		'				</div>',
 		'			</li>',
 		'			<li v-if="!shown.length" class="ap_dim">Nothing matches.</li>',
@@ -1026,7 +1028,7 @@
 				data: function () {
 					return { loading: true, error: '', entries: [], term: '',
 						url: options.url || libraryUrl(), home: options.home || LIBRARY_HOME,
-						note: options.note || '' };
+						note: options.note || '', mod: modVersion() };
 				},
 				computed: {
 					shown: function () {
@@ -1050,9 +1052,35 @@
 				},
 				methods: {
 					open: function (url) { Blockbench.openLink(url); },
+					/* Whether the entry needs a newer mod than this toolkit is. Unknown on
+					 * either side is "no": nothing is refused for a number nobody has. */
+					tooNew: function (entry) {
+						return !!(entry.requires && this.mod && compareVersions(entry.requires, this.mod) > 0);
+					},
 					pick: function (entry) {
-						dialog.hide();
-						onPick(entry);
+						if (!entry.archive) {
+							dialog.hide();
+							onPick(entry);
+							return;
+						}
+						// Every pack is additive: installing what the mod ships makes a second
+						// copy of every one of its ids, which the game resolves to whichever
+						// loads last and check_additive reports. It is still the way to fork a
+						// piece of the mod's into a pack of your own, so it is a question, not a
+						// refusal.
+						Blockbench.showMessageBox({
+							title: 'This is what the mod ships',
+							message: entry.name + ' is the mod\'s own content, under the mod\'s own ids. Installed ' +
+								'as a pack beside the mod it defines every piece a second time, and the additive ' +
+								'check will say so. Install a copy only to fork pieces into a pack of your own - ' +
+								'and rename what you keep.',
+							buttons: ['Install a copy', 'Cancel'],
+							confirm: 0, cancel: 1,
+						}, function (answer) {
+							if (answer !== 0) return;
+							dialog.hide();
+							onPick(entry);
+						});
 					},
 				},
 				template: LIBRARY_DIALOG_TEMPLATE,
@@ -3240,9 +3268,7 @@
 			fs.mkdirSync(dir, { recursive: true });
 			// A real pack, because everything downstream reads one: the tools here, and the site's
 			// ingest, which refuses a zip with no pack.mcmeta in it.
-			writeJson(path.join(dir, 'pack.mcmeta'), {
-				pack: { description: namespace + ':' + name, pack_format: packFormats().datapack },
-			});
+			writeJson(path.join(dir, 'pack.mcmeta'), newPackMeta(namespace + ':' + name, packFormats().datapack));
 			dataPack = dir;
 			assetPack = dir;
 		}
@@ -3328,6 +3354,49 @@
 			console.error(err);
 		}
 		return formats;
+	}
+
+	/*
+	 * The mod version this toolkit is, read out of the same file - `mod_version` - so a pack made
+	 * here can say which mod it needs and the library dialog can say which entries this mod can
+	 * use. Null for a repository without the line, which is then "unknown" everywhere: nothing is
+	 * refused for a number nobody has.
+	 */
+	function modVersion() {
+		const root = repoRoot();
+		if (!root) return null;
+		try {
+			const text = fs.readFileSync(path.join(root, 'gradle.properties'), 'utf8');
+			const found = /^mod_version\s*=\s*(\d+(?:\.\d+)*)/m.exec(text);
+			return found ? found[1] : null;
+		} catch (err) {
+			console.error(err);
+			return null;
+		}
+	}
+
+	/* "0.4.0" against "0.10.0": negative, zero or positive, numeric per part. */
+	function compareVersions(a, b) {
+		const as = String(a).split('.').map(function (n) { return parseInt(n, 10) || 0; });
+		const bs = String(b).split('.').map(function (n) { return parseInt(n, 10) || 0; });
+		for (let i = 0; i < Math.max(as.length, bs.length); i++) {
+			const d = (as[i] || 0) - (bs[i] || 0);
+			if (d) return d;
+		}
+		return 0;
+	}
+
+	/*
+	 * The pack.mcmeta a pack made here starts with: the game's section, and beside it the mod's
+	 * own - a section the game ignores and the library, the editor and pack_manifest.py read to
+	 * say which mod the pack needs. A pack that only adds still has to say what it adds to
+	 * (tools/check_additive.py holds the packs in the repository to it).
+	 */
+	function newPackMeta(description, format) {
+		const meta = { pack: { description: description, pack_format: format } };
+		const version = modVersion();
+		if (version) meta.armorpieces = { requires: version };
+		return meta;
 	}
 
 	/*
@@ -3735,9 +3804,7 @@
 				}
 				if (wantMeta) {
 					const format = result.kind === 'resourcepack' ? formats.resourcepack : formats.datapack;
-					writeJson(path.join(dir, 'pack.mcmeta'), {
-						pack: { description: result.description || name, pack_format: format },
-					});
+					writeJson(path.join(dir, 'pack.mcmeta'), newPackMeta(result.description || name, format));
 					fs.mkdirSync(path.join(dir, result.kind === 'resourcepack' ? 'assets' : 'data'), { recursive: true });
 					if (both) fs.mkdirSync(path.join(dir, 'assets'), { recursive: true });
 				} else {
