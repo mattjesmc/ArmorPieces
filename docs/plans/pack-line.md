@@ -4,7 +4,8 @@
 > (and the three built-in packs) were **walked by the owner in Blockbench and are verified** -
 > `docs/reviews/pack-walk-2026-09-14.md` has the per-piece record. Dragonslayer's claws, horns,
 > mask and wings were reworked that day (Opus/Fable from rework briefs, the wings finished by hand);
-> `dragon_tail` is still owed. Nether and Hero of the Village are built but not yet walked.
+> `dragon_tail` was reworked that evening (Opus, from the rework brief) and the owner approved
+> it: **Dragonslayer is fully approved.** Nether and Hero of the Village are built but not yet walked.
 >
 > **Where this stands (2026-09-12).** **Coral, Animals and the Hive are FINISHED** — seventeen
 > pieces built in one evening from generated briefs on qwen3.8-flash (~$11 for 20 sessions, see

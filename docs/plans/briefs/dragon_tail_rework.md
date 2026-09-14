@@ -82,7 +82,43 @@ filled in; `armorpieces_close` last. Nothing copied into `tools/decoration_maste
 
 ## Lessons from the session
 
-_(to be written by the session - the piece is NOT yet reworked)_
+- **2026-09-14, run 2: REWORKED and saved, no force.** 13 cubes: `band` on `base`, then
+  `tail_1..tail_6` as a chain of child bones, each with one square link and (1-5) one spine plate;
+  `tail_6` carries the 1.0 link plus a 0.5 `tip` cube. Envelope (Blockbench) `x -4.70..4.70,
+  y 5.07..15.82, z 2.65..12.26`, reach 14.9. Tip end at (z 11.83, y 5.15) - inside the brief's
+  `z 11..12, y 5..6`. `check_part.py` by file and `check_authoring.py` both clean; 51 `-` notes,
+  all hull OVERLAP / `near` against `back` pieces (cloak, banner, quiver, scutum...), which a tail
+  on the belt cannot avoid. Datapack file untouched, uid `ap1fm5utkfr7ftiefdhxy4q` kept.
+- **The brief's angles and its tip target disagree (LESSONS #32).** With cumulative
+  15/25/35/40/40/35 and links 2.4/2.2/2.0/2.0/1.8/2.4 the tip lands at `z 14.3, y 7.2` - past the
+  `z 12.5` budget wall. The chord (root 3.5,13.5 -> tip ~11.7,5.5) is ~11.5 over 12.8 of link, a
+  0.90 ratio, and it points 45 degrees down, so the chain must pass through 45 and keep going.
+  Used **15/28/42/55/65/72** cumulative (increments 15,13,14,13,10,7) with the last link 2.2 (1.5
+  link + 0.95 tip, lapping 0.25). Every landing matched the reply to 0.01.
+- **The root link stands proud of the `y 14.8` budget top by its own geometry.** A 2.6 square link
+  centred on the band (y 13.5) tops at 14.8 unrotated, and its 1.2 spine at ~15.8 after the 15
+  degree lean. LESSONS #7: the specific sizes beat the summary box; I lowered the root pivot from
+  the brief's `y ~13.7` to `13.5` to halve the overshoot and left the spine at full height. Nothing
+  else is up there (`back` pieces start at z 2.9+ and the check lists only hull grazes).
+- **Rotations were set at `add_group` time, not after (LESSONS #1 skipped on purpose).** Every
+  link is rotated, so none contributes a plane to the coplanar pass whether built straight or not,
+  and the only unrotated cube (the band) got its own clean check first. Six add_group calls carried
+  their increments and the straight-frame cube coordinates went into `place_cube` unchanged - the
+  cube's `from/to` is the pre-rotation frame, the bone's rotation is applied on top. Saves six
+  `element set` calls on a chain.
+- **Rotation about X preserves x, so a spine plate CAN share planes with another piece's unrotated
+  cube.** The check flagged `spine_1` (x +-0.25) on `blaze_halo`'s rod planes as a note, "inside
+  the shell, so occluded" - it is not occluded when both are worn. One `modify_cube` to +-0.275
+  removed it; the 1-texel layout did not change, so no repaint. Spines are tapered 0.55/0.45/0.40/
+  0.35/0.30 so no two share their x planes either.
+- **Leg-swing rule checked by corner, not centreline:** the lowest point before `z 6` is seg_1's
+  bottom-far corner at `y 11.62, z 5.48`; before `z 10` it is seg_4's at `y 8.38, z 9.70`; the tail
+  crosses `y 6` at `z 11.6`.
+- One contact sheet (`east`, `south`, `isometric_left`, fit, max 768) was the only picture; the
+  side view reads as a tail with a spined top at that size. The viewport shows the master preview
+  only, so the static purples were not judged by eye.
+- 26 bridge calls in all: open, part, outline, textures, remove, 3 sweeps, 13 build calls, 3 paints,
+  check, 1 nudge, save; sheet stayed 64x32 (13 small cubes fit).
 
 - **2026-09-14, run 1: stopped before opening the piece - no Blockbench window.** The session was
   pinned to `http://127.0.0.1:25803` (`ARMORPIECES_BB_URL` and `MCPTK_BLOCKBENCH`), and nothing

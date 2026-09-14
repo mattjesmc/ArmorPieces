@@ -381,3 +381,15 @@ nostril, jaw gap and teeth strip in one picture; scale the offset to the socket.
 renders the master preview (flat grey), not the static colours, so a screenshot judges shape only -
 read the saved PNGs with Pillow for the paint. A mask-only `armorpieces_paint` with `pixels` and no
 `faces` is accepted, which is what an eye-slit fitting wants.
+
+**42. A chain whose every bone is rotated can carry its rotation on `add_group` and skip the
+straight-then-aim pass.** #1 exists so the coplanar pass sees flat geometry, but a rotated cube
+contributes no planes anyway, so on a chain where every link leans there is nothing for the flat
+pass to find; only the unrotated cubes (a band, a mount) want their own clean check first. Cube
+`from/to` stay in the pre-rotation frame whatever the bone's rotation, so the same straight-build
+coordinates go into `place_cube` either way. `dragon_tail` (rework, 2026-09-14) built six links
+this way, each landing where `pivot + L·(cos θ, −sin θ)` said to 0.01, and saved six `element set`
+calls. Two things a rotated link still does: rotation about X keeps its x planes, so a plate at
+x ±0.25 shares them with any bone-mate's unrotated cube at ±0.25 (the check calls it a note,
+"inside the shell, so occluded" - it is not occluded when both are worn; widen by 0.025); and a
+`[top, bottom]` on its `up` face grades along the LINK, not down it, once it leans past 45°.
