@@ -40,6 +40,9 @@ work is five rounds by cause, not thirty-two fixes by item. Each round is:
 Estimated effort, for pacing not for promising: Round 0 an afternoon, Round 1 two sessions,
 Round 2 two sessions, Round 3 one session, Round 4 a plan first and then two or three sessions.
 
+> **All five rounds are merged and deployed (2026-09-14):** PRs #4-#8 on ArmorPiecesSite `main`, the
+> last as `5a6ed9f`. Of the review's 32 items only R26 stands, by decision 4 (ship 0.4.0).
+
 ## 1. The four root causes
 
 1. **The server knows, the page does not render it.** Verbs and states exist in the API and are

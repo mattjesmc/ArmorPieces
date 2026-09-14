@@ -1,6 +1,10 @@
 # Plan: UX round 4 — the design work
 
-> **Status (2026-09-14): BUILT**, on ArmorPiecesSite branch `ux-4` off `main` (PR #7 merged first as
+> **Status (2026-09-14): MERGED AND DEPLOYED** - PR #8 merged as `5a6ed9f` on ArmorPiecesSite
+> `main`, push run 42 built and deployed it, and the live site answered the checks below (branded
+> 404 with the nav, `/editor/` as "Make a piece", `robots.txt`, a 155-URL sitemap,
+> `/about/releases.atom`, Open Graph and canonical on the front page). Built on branch `ux-4` off
+> `main` (PR #7 merged first as
 > `ff39f01`, decision 1), ten commits `2f3775b`..`30cbb93`, one per item; the plugin half is Armor
 > Pieces `f177858` and ArmorPiecesBlockbench `6e69fc8`, both on `main` and pushed. `npm test`
 > 346/346 (three older suites updated to the new markup), the walk 111/111 at 1280 and 400 and
