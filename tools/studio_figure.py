@@ -28,12 +28,27 @@ from pathlib import Path
 from PIL import Image
 
 import bake_skin
+import decoration_paths
 import mc_humanoid
 from sync_decoration_masters import face_rects
 
 ROOT = Path(__file__).resolve().parent.parent
 STUDIO = ROOT / "tools" / "studio"
-PLATE = ROOT / "src" / "main" / "resources" / "assets" / "armorpieces" / "textures" / "entity" / "skin" / "plate"
+
+
+def plate_dir() -> Path:
+    """Where the `plate` skin's sheets are. The mod's own since 0.1.0; in packs/knightly since
+    the split of 2026-09-14, under its own namespace - so every asset root is searched, the mod's
+    first, for the one that has it."""
+    for root in decoration_paths.asset_roots():
+        assets = root / "assets"
+        if not assets.is_dir():
+            continue
+        for namespace in sorted(p.name for p in assets.iterdir() if p.is_dir()):
+            candidate = assets / namespace / "textures" / "entity" / "skin" / "plate"
+            if (candidate / "humanoid.png").is_file():
+                return candidate
+    return ROOT / "src" / "main" / "resources" / "assets" / "armorpieces" / "textures" / "entity" / "skin" / "plate"
 
 # A mannequin: one warm grey for the whole body, lit from above - the top faces a step lighter,
 # the undersides a step darker, the sides in between - and a face drawn on the head so the rig
@@ -102,8 +117,9 @@ def skin(slim: bool) -> Image.Image:
 def armor() -> dict[str, Image.Image]:
     lut = bake_skin.table("iron")
     out = {}
+    plate = plate_dir()
     for sheet in ("humanoid", "humanoid_leggings"):
-        source = PLATE / f"{sheet}.png"
+        source = plate / f"{sheet}.png"
         if not source.is_file():
             sys.exit(f"error: the plate skin is missing at {source}")
         with Image.open(source) as image:
