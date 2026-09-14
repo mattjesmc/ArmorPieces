@@ -53,11 +53,14 @@ the file. It finds the repository from its own location; if the file was copied 
 *Armor Pieces repository* in Settings to the repo root. The first piece opened extracts the
 vanilla textures the rig needs from the game jar.
 
-**Open a piece.** *Tools › Armor Pieces › Open Armor Piece…* lists every part in your packs, in
-`src/main/resources` and under `run/`, and in the game's own folders, and opens it as its own
-tab. *New Armor Piece…* asks for a datapack and a resource pack — the same folder is fine, and is
-the default — and writes the datapack entry to the one, a starter model, a blank texture and the
-language line to the other, then opens that. A piece tab shows only what a part needs: Edit
+**Open a piece.** The plugin adds an **Armor Pieces** section to Blockbench's start screen —
+*New piece…*, *Open piece…*, *Packs…*, *Open skin…* — and the same verbs under *Tools › Armor
+Pieces*. *Open Armor Piece…* lists every part in your packs, in `src/main/resources` and under
+`run/`, and in the game's own folders, as cards down the body with a search box, and opens one as
+its own tab. *New Armor Piece…* asks for a name, where it goes — a pack of yours on the site, a
+pack here, or *+ New pack…* — and its socket; the namespace follows the pack until typed. It
+writes the datapack entry, a starter model, a blank texture and the language line into that
+pack (one folder holds both halves), then opens it. A piece tab shows only what a part needs: Edit
 and Paint modes, the outliner, transform, the UV editor, colour and palette, and one
 **Armor Piece** panel with every control:
 
