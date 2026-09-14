@@ -1,0 +1,1193 @@
+[
+  {
+    "name": "home",
+    "size": "desktop",
+    "url": "/",
+    "signedIn": false,
+    "console": [
+      "[error] Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "[error] Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    ],
+    "failed": [
+      "503 GET http://127.0.0.1:4877/wardrobe/bc27bbace16eaba12df22bc8e0cb6e3bde399f9788cf8167e2d11ec1812c6cc5.png?w=256&v=a681235",
+      "503 GET http://127.0.0.1:4877/wardrobe/ee7fa30b102b519c72fb927be873da44f5d0331326a2443241d2c11b9f77b6c2.png?w=256&v=a681235"
+    ],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/",
+    "title": "Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "Armor Pieces"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\nArmor Pieces\n\nParts, skins and cloth for armor — because someone else at spawn is wearing your diamond set.\n\nMinecraft 26.2 · Fabric · Client & Server · version 0.3.0 · what 0.3.0 brought →\n\nThemed sets, every socket filled — the mod's knightly, court and wayfarer, and the pack sets beside them\nEvery armor skin on one diamond suit — the plate itself changed, not something hung on it\nSixty sets with nothing about them chosen — armor, skin, cloth, part, material and every fitting rolled\nOne circlet, seven gems — the fitting takes a second material\nThe advanced smithing table, holding the whole court suit beside it — the chestplate's sockets and their fittings as rows of icons, its own trim, skin and cloth under them, and Remove, the one way any of it comes off again\n‹\n›\nOutfits\nEvery outfit →\nKnight Errant\n\n12 pieces, a skin, a cloth\n\nby Armor Pieces · ships with the mod\n\nHigh Court\n\n12 pieces, a skin, a cloth\n\nby Armor Pieces · ships with the mod\n\nFar Road\n\n12 pieces, a skin, a cloth\n\nby Armor Pieces · ships with the mod\n\nDress a figure of your own →\n\nPacks\nThe whole gallery →\nArmor Pieces official\n\nEverything the mod ships, as the standalone datapack and resource pack of the 0.3.0 release. What is in it is counted from the packs themselves; the gallery and the wiki say how many of each.\n\nby mattjes · 91 pieces, 14 skins, 2 cloths\n\nBrowse its pieces\nDetails\nYours could be here\n\nA pack is pieces, skins an"
+  },
+  {
+    "name": "home",
+    "size": "phone",
+    "url": "/",
+    "signedIn": false,
+    "console": [
+      "[error] Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "[error] Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    ],
+    "failed": [
+      "503 GET http://127.0.0.1:4877/wardrobe/bc27bbace16eaba12df22bc8e0cb6e3bde399f9788cf8167e2d11ec1812c6cc5.png?w=256&v=a681235",
+      "503 GET http://127.0.0.1:4877/wardrobe/ee7fa30b102b519c72fb927be873da44f5d0331326a2443241d2c11b9f77b6c2.png?w=256&v=a681235"
+    ],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/",
+    "title": "Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "Armor Pieces"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\nArmor Pieces\n\nParts, skins and cloth for armor — because someone else at spawn is wearing your diamond set.\n\nMinecraft 26.2 · Fabric · Client & Server · version 0.3.0 · what 0.3.0 brought →\n\nThemed sets, every socket filled — the mod's knightly, court and wayfarer, and the pack sets beside them\nEvery armor skin on one diamond suit — the plate itself changed, not something hung on it\nSixty sets with nothing about them chosen — armor, skin, cloth, part, material and every fitting rolled\nOne circlet, seven gems — the fitting takes a second material\nThe advanced smithing table, holding the whole court suit beside it — the chestplate's sockets and their fittings as rows of icons, its own trim, skin and cloth under them, and Remove, the one way any of it comes off again\n‹\n›\nOutfits\nEvery outfit →\nKnight Errant\n\n12 pieces, a skin, a cloth\n\nby Armor Pieces · ships with the mod\n\nHigh Court\n\n12 pieces, a skin, a cloth\n\nby Armor Pieces · ships with the mod\n\nFar Road\n\n12 pieces, a skin, a cloth\n\nby Armor Pieces · ships with the mod\n\nDress a figure of your own →\n\nPacks\nThe whole gallery →\nArmor Pieces official\n\nEverything the mod ships, as the standalone datapack and resource pack of the 0.3.0 release. What is in it is counted from the packs themselves; the gallery and the wiki say how many of each.\n\nby mattjes · 91 pieces, 14 skins, 2 cloths\n\nBrowse its pieces\nDetails\nYours could be here\n\nA pack is pieces, skins an"
+  },
+  {
+    "name": "gallery",
+    "size": "desktop",
+    "url": "/gallery/",
+    "signedIn": false,
+    "console": [
+      "[error] Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "[error] Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "[error] Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ],
+    "failed": [
+      "503 GET http://127.0.0.1:4877/wardrobe/bc27bbace16eaba12df22bc8e0cb6e3bde399f9788cf8167e2d11ec1812c6cc5.png?w=256&v=a681235",
+      "503 GET http://127.0.0.1:4877/wardrobe/ee7fa30b102b519c72fb927be873da44f5d0331326a2443241d2c11b9f77b6c2.png?w=256&v=a681235",
+      "401 GET http://127.0.0.1:4877/api/me/library"
+    ],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/gallery/",
+    "title": "Gallery · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "Gallery"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\nGallery\n\nEverything published: 1 pack, 107 pieces, skins and cloths. Keep what you like in your library, wear it in the wardrobe, or pick pieces and Build a pack of exactly those, licenses included.\n\nFeatured outfits\nEvery outfit →\nKnight Errant\n\n12 pieces, a skin, a cloth\n\nby Armor Pieces · ships with the mod\n\nHigh Court\n\n12 pieces, a skin, a cloth\n\nby Armor Pieces · ships with the mod\n\nFar Road\n\n12 pieces, a skin, a cloth\n\nby Armor Pieces · ships with the mod\n\nPacks 1\nPieces 107\nArmor Pieces official\n\nEverything the mod ships, as the standalone datapack and resource pack of the 0.3.0 release. What is in it is counted from the packs themselves; the gallery and the wiki say how many of each.\n\nby mattjes · Armor Pieces License · 0.3.0 · 91 pieces, 14 skins, 2 cloths\n\nBrowse its pieces\nDetails\nSave\nThe catalogue, for the editor and for pack authors\n\nNOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.\n\nArmor Pieces is run by mattjes. Contact: contact@armorpieces.example. The mod, its pieces and this site are © 2026 mattjes under theArmor Pieces License; packs in the gallery belong to their authors under the license each names.\n\nAbout · Terms · Privacy ·Cookies · Contact ·Source"
+  },
+  {
+    "name": "gallery",
+    "size": "phone",
+    "url": "/gallery/",
+    "signedIn": false,
+    "console": [
+      "[error] Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "[error] Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "[error] Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ],
+    "failed": [
+      "503 GET http://127.0.0.1:4877/wardrobe/bc27bbace16eaba12df22bc8e0cb6e3bde399f9788cf8167e2d11ec1812c6cc5.png?w=256&v=a681235",
+      "503 GET http://127.0.0.1:4877/wardrobe/ee7fa30b102b519c72fb927be873da44f5d0331326a2443241d2c11b9f77b6c2.png?w=256&v=a681235",
+      "401 GET http://127.0.0.1:4877/api/me/library"
+    ],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/gallery/",
+    "title": "Gallery · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "Gallery"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\nGallery\n\nEverything published: 1 pack, 107 pieces, skins and cloths. Keep what you like in your library, wear it in the wardrobe, or pick pieces and Build a pack of exactly those, licenses included.\n\nFeatured outfits\nEvery outfit →\nKnight Errant\n\n12 pieces, a skin, a cloth\n\nby Armor Pieces · ships with the mod\n\nHigh Court\n\n12 pieces, a skin, a cloth\n\nby Armor Pieces · ships with the mod\n\nFar Road\n\n12 pieces, a skin, a cloth\n\nby Armor Pieces · ships with the mod\n\nPacks 1\nPieces 107\nArmor Pieces official\n\nEverything the mod ships, as the standalone datapack and resource pack of the 0.3.0 release. What is in it is counted from the packs themselves; the gallery and the wiki say how many of each.\n\nby mattjes · Armor Pieces License · 0.3.0 · 91 pieces, 14 skins, 2 cloths\n\nBrowse its pieces\nDetails\nSave\nThe catalogue, for the editor and for pack authors\n\nNOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.\n\nArmor Pieces is run by mattjes. Contact: contact@armorpieces.example. The mod, its pieces and this site are © 2026 mattjes under theArmor Pieces License; packs in the gallery belong to their authors under the license each names.\n\nAbout · Terms · Privacy ·Cookies · Contact ·Source"
+  },
+  {
+    "name": "gallery-pack",
+    "size": "desktop",
+    "url": "/gallery/packs/armorpieces/",
+    "signedIn": false,
+    "console": [],
+    "failed": [],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/gallery/packs/armorpieces/",
+    "title": "Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "Armor Pieces official"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\n\n← Gallery\n\nArmor Pieces official\n\nEverything the mod ships, as the standalone datapack and resource pack of the 0.3.0 release. What is in it is counted from the packs themselves; the gallery and the wiki say how many of each.\n\nAuthor\nmattjes\nVersion\n0.3.0\nLicense\nArmor Pieces License - downloadable as the author's pack, not composed into others\nHomepage\nhttps://github.com/mattjesmc/ArmorPieces\nAdded\n2026-09-06\nTags\nofficial\nDownload\n\nThe author's own zips, exactly as they host them. Install a datapack under a world's datapacks/ and a resource pack under resourcepacks/; a single pack zip holds both halves and goes in both places. Or open the editor, Packs… → From the library…, and pick this pack.\n\nDatapack zip (0.1 MB)\nResource pack zip (0.2 MB)\n\nThe mod's own pieces, under the Armor Pieces License: use them, play with them, compose them here for yourself and your server; do not re-upload them.\n\nWhat is in it\n\nBrowse its pieces in the gallery\n\nAerials\n\npiece · horns · All rights reserved\n\nAnklets\n\npiece · spurs · All rights reserved\n\nAntennae\n\npiece · crest · All rights reserved\n\nAntlers\n\npiece · horns · All rights reserved\n\nBandolier\n\npiece · collar · All rights reserved\n\nBangles\n\npiece · vambraces · All rights reserved\n\nBanner\n\npiece · back · All rights reserved\n\nBarbute\n\npiece · brow · All rights reserved\n\nBeast Head\n\npiece · pauldrons · All rights reserved\n\nBedroll\n\npiece · back · All rights reserve"
+  },
+  {
+    "name": "gallery-pack",
+    "size": "phone",
+    "url": "/gallery/packs/armorpieces/",
+    "signedIn": false,
+    "console": [],
+    "failed": [],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/gallery/packs/armorpieces/",
+    "title": "Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "Armor Pieces official"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\n\n← Gallery\n\nArmor Pieces official\n\nEverything the mod ships, as the standalone datapack and resource pack of the 0.3.0 release. What is in it is counted from the packs themselves; the gallery and the wiki say how many of each.\n\nAuthor\nmattjes\nVersion\n0.3.0\nLicense\nArmor Pieces License - downloadable as the author's pack, not composed into others\nHomepage\nhttps://github.com/mattjesmc/ArmorPieces\nAdded\n2026-09-06\nTags\nofficial\nDownload\n\nThe author's own zips, exactly as they host them. Install a datapack under a world's datapacks/ and a resource pack under resourcepacks/; a single pack zip holds both halves and goes in both places. Or open the editor, Packs… → From the library…, and pick this pack.\n\nDatapack zip (0.1 MB)\nResource pack zip (0.2 MB)\n\nThe mod's own pieces, under the Armor Pieces License: use them, play with them, compose them here for yourself and your server; do not re-upload them.\n\nWhat is in it\n\nBrowse its pieces in the gallery\n\nAerials\n\npiece · horns · All rights reserved\n\nAnklets\n\npiece · spurs · All rights reserved\n\nAntennae\n\npiece · crest · All rights reserved\n\nAntlers\n\npiece · horns · All rights reserved\n\nBandolier\n\npiece · collar · All rights reserved\n\nBangles\n\npiece · vambraces · All rights reserved\n\nBanner\n\npiece · back · All rights reserved\n\nBarbute\n\npiece · brow · All rights reserved\n\nBeast Head\n\npiece · pauldrons · All rights reserved\n\nBedroll\n\npiece · back · All rights reserve"
+  },
+  {
+    "name": "gallery-piece",
+    "size": "desktop",
+    "url": "/gallery/pieces/armorpieces/aerials/",
+    "signedIn": false,
+    "console": [
+      "[error] Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "[error] Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ],
+    "failed": [
+      "401 GET http://127.0.0.1:4877/api/me/library",
+      "401 GET http://127.0.0.1:4877/api/me/packs"
+    ],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/gallery/pieces/armorpieces/aerials/",
+    "title": "Aerials · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "Aerials"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\n\n← Gallery · Armor Pieces\n\nAerials\n\nA piece for the horns socket, on the helmet.\n\nKind\npiece\nSocket\nhorns (helmet)\nFittings\narmorpieces:inlay\nAuthor\nmattjes\nLicense\nAll rights reserved ARR\nPack\nArmor Pieces 0.3.0\nId\narmorpieces:aerials\nObtained\nfound in the world\nSave\nWear it\nBuild a pack from the selection\n\nThe mod's own pieces are all rights reserved, and may be composed here for your own use and your own server under the terms.\n\nSomething wrong with this piece? Report it by email.\n\nNOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.\n\nArmor Pieces is run by mattjes. Contact: contact@armorpieces.example. The mod, its pieces and this site are © 2026 mattjes under theArmor Pieces License; packs in the gallery belong to their authors under the license each names.\n\nAbout · Terms · Privacy ·Cookies · Contact ·Source"
+  },
+  {
+    "name": "gallery-piece",
+    "size": "phone",
+    "url": "/gallery/pieces/armorpieces/aerials/",
+    "signedIn": false,
+    "console": [
+      "[error] Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "[error] Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ],
+    "failed": [
+      "401 GET http://127.0.0.1:4877/api/me/library",
+      "401 GET http://127.0.0.1:4877/api/me/packs"
+    ],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/gallery/pieces/armorpieces/aerials/",
+    "title": "Aerials · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "Aerials"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\n\n← Gallery · Armor Pieces\n\nAerials\n\nA piece for the horns socket, on the helmet.\n\nKind\npiece\nSocket\nhorns (helmet)\nFittings\narmorpieces:inlay\nAuthor\nmattjes\nLicense\nAll rights reserved ARR\nPack\nArmor Pieces 0.3.0\nId\narmorpieces:aerials\nObtained\nfound in the world\nSave\nWear it\nBuild a pack from the selection\n\nThe mod's own pieces are all rights reserved, and may be composed here for your own use and your own server under the terms.\n\nSomething wrong with this piece? Report it by email.\n\nNOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.\n\nArmor Pieces is run by mattjes. Contact: contact@armorpieces.example. The mod, its pieces and this site are © 2026 mattjes under theArmor Pieces License; packs in the gallery belong to their authors under the license each names.\n\nAbout · Terms · Privacy ·Cookies · Contact ·Source"
+  },
+  {
+    "name": "gallery-pieces-view",
+    "size": "desktop",
+    "url": "/gallery/?view=pieces",
+    "signedIn": false,
+    "console": [
+      "[error] Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "[error] Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "[error] Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "[error] Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ],
+    "failed": [
+      "503 GET http://127.0.0.1:4877/wardrobe/bc27bbace16eaba12df22bc8e0cb6e3bde399f9788cf8167e2d11ec1812c6cc5.png?w=256&v=a681235",
+      "503 GET http://127.0.0.1:4877/wardrobe/ee7fa30b102b519c72fb927be873da44f5d0331326a2443241d2c11b9f77b6c2.png?w=256&v=a681235",
+      "401 GET http://127.0.0.1:4877/api/me/library",
+      "401 GET http://127.0.0.1:4877/api/me/packs"
+    ],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/gallery/?view=pieces",
+    "title": "Gallery · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "Gallery"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\nGallery\n\nEverything published: 1 pack, 107 pieces, skins and cloths. Keep what you like in your library, wear it in the wardrobe, or pick pieces and Build a pack of exactly those, licenses included.\n\nFeatured outfits\nEvery outfit →\nKnight Errant\n\n12 pieces, a skin, a cloth\n\nby Armor Pieces · ships with the mod\n\nHigh Court\n\n12 pieces, a skin, a cloth\n\nby Armor Pieces · ships with the mod\n\nFar Road\n\n12 pieces, a skin, a cloth\n\nby Armor Pieces · ships with the mod\n\nPacks 1\nPieces 107\nAny kind\npiece\nskin\ncloth\nAny socket\ncrest\nbrow\nhorns\npauldrons\nback\ncollar\nvambraces\nbelt\ntassets\nknees\nspurs\ngreaves\nAny license\nAll rights reserved\nAny pack\nArmor Pieces\nAny author\nmattjes\n107 of 107\nAerials\n\npiece · horns · inlay\n\nArmor Pieces · All rights reserved\n\nSave\nWear it\nAnklets\n\npiece · spurs · gemstone\n\nArmor Pieces · All rights reserved\n\nSave\nWear it\nAntennae\n\npiece · crest · gemstone\n\nArmor Pieces · All rights reserved\n\nSave\nWear it\nAntlers\n\npiece · horns\n\nArmor Pieces · All rights reserved\n\nSave\nWear it\nBandolier\n\npiece · collar · guard, inlay\n\nArmor Pieces · All rights reserved\n\nSave\nWear it\nBangles\n\npiece · vambraces · gemstone\n\nArmor Pieces · All rights reserved\n\nSave\nWear it\nBanner\n\npiece · back · banner\n\nArmor Pieces · All rights reserved\n\nSave\nWear it\nBarbute\n\npiece · brow · inlay\n\nArmor Pieces · All rights reserved\n\nSave\nWear it\nBeast Head\n\npiece · pauldrons · gemstone\n\nArmor Pieces · All rights reserve"
+  },
+  {
+    "name": "gallery-pieces-view",
+    "size": "phone",
+    "url": "/gallery/?view=pieces",
+    "signedIn": false,
+    "console": [
+      "[error] Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "[error] Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "[error] Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "[error] Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    ],
+    "failed": [
+      "401 GET http://127.0.0.1:4877/api/me/library",
+      "401 GET http://127.0.0.1:4877/api/me/packs",
+      "503 GET http://127.0.0.1:4877/wardrobe/bc27bbace16eaba12df22bc8e0cb6e3bde399f9788cf8167e2d11ec1812c6cc5.png?w=256&v=a681235",
+      "503 GET http://127.0.0.1:4877/wardrobe/ee7fa30b102b519c72fb927be873da44f5d0331326a2443241d2c11b9f77b6c2.png?w=256&v=a681235"
+    ],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/gallery/?view=pieces",
+    "title": "Gallery · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "Gallery"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\nGallery\n\nEverything published: 1 pack, 107 pieces, skins and cloths. Keep what you like in your library, wear it in the wardrobe, or pick pieces and Build a pack of exactly those, licenses included.\n\nFeatured outfits\nEvery outfit →\nKnight Errant\n\n12 pieces, a skin, a cloth\n\nby Armor Pieces · ships with the mod\n\nHigh Court\n\n12 pieces, a skin, a cloth\n\nby Armor Pieces · ships with the mod\n\nFar Road\n\n12 pieces, a skin, a cloth\n\nby Armor Pieces · ships with the mod\n\nPacks 1\nPieces 107\nAny kind\npiece\nskin\ncloth\nAny socket\ncrest\nbrow\nhorns\npauldrons\nback\ncollar\nvambraces\nbelt\ntassets\nknees\nspurs\ngreaves\nAny license\nAll rights reserved\nAny pack\nArmor Pieces\nAny author\nmattjes\n107 of 107\nAerials\n\npiece · horns · inlay\n\nArmor Pieces · All rights reserved\n\nSave\nWear it\nAnklets\n\npiece · spurs · gemstone\n\nArmor Pieces · All rights reserved\n\nSave\nWear it\nAntennae\n\npiece · crest · gemstone\n\nArmor Pieces · All rights reserved\n\nSave\nWear it\nAntlers\n\npiece · horns\n\nArmor Pieces · All rights reserved\n\nSave\nWear it\nBandolier\n\npiece · collar · guard, inlay\n\nArmor Pieces · All rights reserved\n\nSave\nWear it\nBangles\n\npiece · vambraces · gemstone\n\nArmor Pieces · All rights reserved\n\nSave\nWear it\nBanner\n\npiece · back · banner\n\nArmor Pieces · All rights reserved\n\nSave\nWear it\nBarbute\n\npiece · brow · inlay\n\nArmor Pieces · All rights reserved\n\nSave\nWear it\nBeast Head\n\npiece · pauldrons · gemstone\n\nArmor Pieces · All rights reserve"
+  },
+  {
+    "name": "wardrobe",
+    "size": "desktop",
+    "url": "/wardrobe/",
+    "signedIn": false,
+    "console": [
+      "[error] Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "[error] Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    ],
+    "failed": [
+      "503 GET http://127.0.0.1:4877/wardrobe/ee7fa30b102b519c72fb927be873da44f5d0331326a2443241d2c11b9f77b6c2.png?w=256&v=a681235",
+      "503 GET http://127.0.0.1:4877/wardrobe/bc27bbace16eaba12df22bc8e0cb6e3bde399f9788cf8167e2d11ec1812c6cc5.png?w=256&v=a681235"
+    ],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/wardrobe/",
+    "title": "Wardrobe · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "Wardrobe"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\nWardrobe\nCreate new\n\nOutfits: a piece in every socket, a material for each, a skin and a cloth over the armor underneath. A set names pieces rather than holding them, so opening one is a starting point, and building its pack is one click.\n\nPublished\nMine\nKnight Errant\n\n12 pieces, a skin, a cloth\n\nby Armor Pieces · ships with the mod\n\nLook\nHigh Court\n\n12 pieces, a skin, a cloth\n\nby Armor Pieces · ships with the mod\n\nLook\nFar Road\n\n12 pieces, a skin, a cloth\n\nby Armor Pieces · ships with the mod\n\nLook\n\nThe outfits you make are kept in this browser without an account. Sign in to keep them in a library instead, with a link and a picture for each.\n\nNOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.\n\nArmor Pieces is run by mattjes. Contact: contact@armorpieces.example. The mod, its pieces and this site are © 2026 mattjes under theArmor Pieces License; packs in the gallery belong to their authors under the license each names.\n\nAbout · Terms · Privacy ·Cookies · Contact ·Source"
+  },
+  {
+    "name": "wardrobe",
+    "size": "phone",
+    "url": "/wardrobe/",
+    "signedIn": false,
+    "console": [
+      "[error] Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "[error] Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    ],
+    "failed": [
+      "503 GET http://127.0.0.1:4877/wardrobe/bc27bbace16eaba12df22bc8e0cb6e3bde399f9788cf8167e2d11ec1812c6cc5.png?w=256&v=a681235",
+      "503 GET http://127.0.0.1:4877/wardrobe/ee7fa30b102b519c72fb927be873da44f5d0331326a2443241d2c11b9f77b6c2.png?w=256&v=a681235"
+    ],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/wardrobe/",
+    "title": "Wardrobe · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "Wardrobe"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\nWardrobe\nCreate new\n\nOutfits: a piece in every socket, a material for each, a skin and a cloth over the armor underneath. A set names pieces rather than holding them, so opening one is a starting point, and building its pack is one click.\n\nPublished\nMine\nKnight Errant\n\n12 pieces, a skin, a cloth\n\nby Armor Pieces · ships with the mod\n\nLook\nHigh Court\n\n12 pieces, a skin, a cloth\n\nby Armor Pieces · ships with the mod\n\nLook\nFar Road\n\n12 pieces, a skin, a cloth\n\nby Armor Pieces · ships with the mod\n\nLook\n\nThe outfits you make are kept in this browser without an account. Sign in to keep them in a library instead, with a link and a picture for each.\n\nNOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.\n\nArmor Pieces is run by mattjes. Contact: contact@armorpieces.example. The mod, its pieces and this site are © 2026 mattjes under theArmor Pieces License; packs in the gallery belong to their authors under the license each names.\n\nAbout · Terms · Privacy ·Cookies · Contact ·Source"
+  },
+  {
+    "name": "library-signed-out",
+    "size": "desktop",
+    "url": "/library/",
+    "signedIn": false,
+    "console": [
+      "[error] Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ],
+    "failed": [
+      "401 GET http://127.0.0.1:4877/api/me/library"
+    ],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/library/",
+    "title": "Library · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "Your library"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\nYour library\n\nThe gallery is everything published. Your library is your selection out of it - and it starts here, in this browser, with no account: the packs and pieces you save are kept on this machine and can be exported to a file. Signing in offers to keep exactly these in a library instead, which is what makes them follow you to another machine - and what lets you publish a pack, host one, or share a set. What a pack is is in the wiki.\n\nPacks 0\nPieces 0\n\nNothing kept in this browser yet. Every card in the gallery has a Save, whatever its license, and so does every pack.\n\nYour outfits are in the wardrobe, kept the same way. The editor keeps its packs in this browser too, and always has.\n\nThis shelf as a file\n\nBrowse the gallery Sign in\n\nNOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.\n\nArmor Pieces is run by mattjes. Contact: contact@armorpieces.example. The mod, its pieces and this site are © 2026 mattjes under theArmor Pieces License; packs in the gallery belong to their authors under the license each names.\n\nAbout · Terms · Privacy ·Cookies · Contact ·Source"
+  },
+  {
+    "name": "library-signed-out",
+    "size": "phone",
+    "url": "/library/",
+    "signedIn": false,
+    "console": [
+      "[error] Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ],
+    "failed": [
+      "401 GET http://127.0.0.1:4877/api/me/library"
+    ],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/library/",
+    "title": "Library · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "Your library"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\nYour library\n\nThe gallery is everything published. Your library is your selection out of it - and it starts here, in this browser, with no account: the packs and pieces you save are kept on this machine and can be exported to a file. Signing in offers to keep exactly these in a library instead, which is what makes them follow you to another machine - and what lets you publish a pack, host one, or share a set. What a pack is is in the wiki.\n\nPacks 0\nPieces 0\n\nNothing kept in this browser yet. Every card in the gallery has a Save, whatever its license, and so does every pack.\n\nYour outfits are in the wardrobe, kept the same way. The editor keeps its packs in this browser too, and always has.\n\nThis shelf as a file\n\nBrowse the gallery Sign in\n\nNOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.\n\nArmor Pieces is run by mattjes. Contact: contact@armorpieces.example. The mod, its pieces and this site are © 2026 mattjes under theArmor Pieces License; packs in the gallery belong to their authors under the license each names.\n\nAbout · Terms · Privacy ·Cookies · Contact ·Source"
+  },
+  {
+    "name": "editor-signed-out",
+    "size": "desktop",
+    "url": "/editor/",
+    "signedIn": false,
+    "console": [
+      "[error] Connecting to 'https://web.blockbench.net/content/news.json?_=1789243239009' violates the following Content Security Policy directive: \"connect-src 'self' https://cdn.jsdelivr.net\". The action has been blocked.",
+      "[error] Connecting to 'https://blckbn.ch/api/stats/plugins?weeks=2' violates the following Content Security Policy directive: \"connect-src 'self' https://cdn.jsdelivr.net\". The action has been blocked.",
+      "[error] Connecting to 'https://blckbn.ch/api/event/new_installation' violates the following Content Security Policy directive: \"connect-src 'self' https://cdn.jsdelivr.net\". The action has been blocked.",
+      "[error] A bad HTTP response code (404) was received when fetching the script.",
+      "[pageerror] Object",
+      "[error] Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ],
+    "failed": [
+      "FAILED GET https://web.blockbench.net/content/news.json?_=1789243239009 csp",
+      "FAILED GET https://blckbn.ch/api/stats/plugins?weeks=2 csp",
+      "FAILED POST https://blckbn.ch/api/event/new_installation csp",
+      "401 GET http://127.0.0.1:4877/api/me/pieces.json"
+    ],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/editor/",
+    "title": "Editor · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\n\nBlockbench with the Armor Pieces plugin, running in this tab. Your packs stay in this browser until you save them to your library.Armor Pieces 0.3.0 at 0.3.0-32-ga681235.\n\nHow to use it ·Full screen\n\nNOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.\n\nArmor Pieces is run by mattjes. Contact: contact@armorpieces.example. The mod, its pieces and this site are © 2026 mattjes under theArmor Pieces License; packs in the gallery belong to their authors under the license each names.\n\nAbout · Terms · Privacy ·Cookies · Contact ·Source"
+  },
+  {
+    "name": "editor-signed-out",
+    "size": "phone",
+    "url": "/editor/",
+    "signedIn": false,
+    "console": [
+      "[error] Connecting to 'https://web.blockbench.net/content/news.json?_=1789243245943' violates the following Content Security Policy directive: \"connect-src 'self' https://cdn.jsdelivr.net\". The action has been blocked.",
+      "[error] Connecting to 'https://blckbn.ch/api/stats/plugins?weeks=2' violates the following Content Security Policy directive: \"connect-src 'self' https://cdn.jsdelivr.net\". The action has been blocked.",
+      "[error] A bad HTTP response code (404) was received when fetching the script.",
+      "[pageerror] Object",
+      "[error] Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ],
+    "failed": [
+      "FAILED GET https://web.blockbench.net/content/news.json?_=1789243245943 csp",
+      "FAILED GET https://blckbn.ch/api/stats/plugins?weeks=2 csp",
+      "401 GET http://127.0.0.1:4877/api/me/pieces.json"
+    ],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/editor/",
+    "title": "Editor · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\n\nBlockbench with the Armor Pieces plugin, running in this tab. Your packs stay in this browser until you save them to your library.Armor Pieces 0.3.0 at 0.3.0-32-ga681235.\n\nHow to use it ·Full screen\n\nNOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.\n\nArmor Pieces is run by mattjes. Contact: contact@armorpieces.example. The mod, its pieces and this site are © 2026 mattjes under theArmor Pieces License; packs in the gallery belong to their authors under the license each names.\n\nAbout · Terms · Privacy ·Cookies · Contact ·Source"
+  },
+  {
+    "name": "about",
+    "size": "desktop",
+    "url": "/about/",
+    "signedIn": false,
+    "console": [],
+    "failed": [],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/about/",
+    "title": "About · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "About this site"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\nAbout this site\n\nArmor Pieces is a Minecraft mod, and this is the site around it: a wiki, a gallery of pieces and packs, the editor in your browser, and a library for the packs people make.\n\nWho runs it\n\nThe site and the mod are made and run by mattjes. The responsible party for everything published here, and the address to write to about any of it, is contact@armorpieces.example. Bug reports and feature requests are better on the issue tracker, where other people can find them too.\n\nWhat it is not\n\nNOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.\n\nArmor Pieces is a fan-made mod. It is not made by, endorsed by or associated with Mojang or Microsoft. Minecraft is a trademark of Mojang Synergies AB. The site follows the Minecraft Usage Guidelines: it does not serve the game or any of its files, it does not sell anything, it carries no advertising, and nothing about an account here changes anything in the game.\n\nWhere the money is\n\nNowhere, on purpose. The mod is downloaded from Modrinth and CurseForge, whose creator programmes pay authors per download under their own terms. That is the only income the project has, and the site costs it nothing. There are no paid tiers, no affiliate links and no ads. If a way to support the project directly is ever added, it will buy nothing that only the supporter can use.\n\nWhat the site is made of\nArmorPieces: the mod, its pieces"
+  },
+  {
+    "name": "about",
+    "size": "phone",
+    "url": "/about/",
+    "signedIn": false,
+    "console": [],
+    "failed": [],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/about/",
+    "title": "About · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "About this site"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\nAbout this site\n\nArmor Pieces is a Minecraft mod, and this is the site around it: a wiki, a gallery of pieces and packs, the editor in your browser, and a library for the packs people make.\n\nWho runs it\n\nThe site and the mod are made and run by mattjes. The responsible party for everything published here, and the address to write to about any of it, is contact@armorpieces.example. Bug reports and feature requests are better on the issue tracker, where other people can find them too.\n\nWhat it is not\n\nNOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.\n\nArmor Pieces is a fan-made mod. It is not made by, endorsed by or associated with Mojang or Microsoft. Minecraft is a trademark of Mojang Synergies AB. The site follows the Minecraft Usage Guidelines: it does not serve the game or any of its files, it does not sell anything, it carries no advertising, and nothing about an account here changes anything in the game.\n\nWhere the money is\n\nNowhere, on purpose. The mod is downloaded from Modrinth and CurseForge, whose creator programmes pay authors per download under their own terms. That is the only income the project has, and the site costs it nothing. There are no paid tiers, no affiliate links and no ads. If a way to support the project directly is ever added, it will buy nothing that only the supporter can use.\n\nWhat the site is made of\nArmorPieces: the mod, its pieces"
+  },
+  {
+    "name": "wiki",
+    "size": "desktop",
+    "url": "/wiki/",
+    "signedIn": false,
+    "console": [],
+    "failed": [],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/wiki/",
+    "title": "Armor Pieces wiki · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "Armor Pieces wiki"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\nClear\nArmor Pieces wiki\nGetting started\nPieces and sockets\nArmor skins\nCloth\nFittings\nFinding pieces\nThe editor\nPacks, the gallery and your library\nLicenses and credits\nAuthoring pieces\nQuestions\nChangelog\nArmor Pieces wiki\n\nHow the mod works, how pieces are found and applied, and how to make your own.\n\nArmor Pieces gives one piece of armor four layers of decoration, each an independent choice:\n\na piece hung on one of twelve sockets: a crest on the helmet, spaulders on the shoulders, a sash on the belt, spurs on the heels;\na skin that changes what the plate itself is made of;\na cloth worn over the chest, carrying the design of any banner;\nand vanilla’s own trim underneath them all.\n\nEvery one of them is applied at a smithing table, and none replaces another. A helmet can carry a skin, a trim, a crest, a browband and a pair of horns at once.\n\nWhere to start\nPlaying: Getting started covers installing the mod and applying your first piece; Finding pieces says where each turns up.\nMaking pieces: the editor runs in your browser at /editor/ and on the desktop in Blockbench; the authoring guide is the full reference, and Packs and the library covers sharing what you make.\nLicenses: what a piece’s license means, and which pieces can be composed into a pack of your own, is on Licenses and credits.\nA note on words\n\nThe mod’s data files call a piece an armor_decoration, and older text calls it a part. They are the"
+  },
+  {
+    "name": "wiki",
+    "size": "phone",
+    "url": "/wiki/",
+    "signedIn": false,
+    "console": [],
+    "failed": [],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/wiki/",
+    "title": "Armor Pieces wiki · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "Armor Pieces wiki"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\nClear\nArmor Pieces wiki\nGetting started\nPieces and sockets\nArmor skins\nCloth\nFittings\nFinding pieces\nThe editor\nPacks, the gallery and your library\nLicenses and credits\nAuthoring pieces\nQuestions\nChangelog\nArmor Pieces wiki\n\nHow the mod works, how pieces are found and applied, and how to make your own.\n\nArmor Pieces gives one piece of armor four layers of decoration, each an independent choice:\n\na piece hung on one of twelve sockets: a crest on the helmet, spaulders on the shoulders, a sash on the belt, spurs on the heels;\na skin that changes what the plate itself is made of;\na cloth worn over the chest, carrying the design of any banner;\nand vanilla’s own trim underneath them all.\n\nEvery one of them is applied at a smithing table, and none replaces another. A helmet can carry a skin, a trim, a crest, a browband and a pair of horns at once.\n\nWhere to start\nPlaying: Getting started covers installing the mod and applying your first piece; Finding pieces says where each turns up.\nMaking pieces: the editor runs in your browser at /editor/ and on the desktop in Blockbench; the authoring guide is the full reference, and Packs and the library covers sharing what you make.\nLicenses: what a piece’s license means, and which pieces can be composed into a pack of your own, is on Licenses and credits.\nA note on words\n\nThe mod’s data files call a piece an armor_decoration, and older text calls it a part. They are the"
+  },
+  {
+    "name": "account-signed-out",
+    "size": "desktop",
+    "url": "/account/",
+    "signedIn": false,
+    "console": [],
+    "failed": [],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/account/",
+    "title": "Account · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "Sign in"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\nSign in\n\nAn account is a sign-in through a provider. The site never sees a password, stores only the provider's id and a display name, and nothing about it changes anything in the game.\n\nNo sign-in provider is configured on this deployment yet. The operator sets the providers' client ids in the environment.\n\nSigning in you agree to the terms; what is stored is on the privacy page. You must be old enough for the provider's own terms.\n\nWhat an account is for\nYour library: the packs and pieces you keep, and the sets you save. Packs you author live there too - uploaded as zips or saved from the editor, with versions, private by default. Unlisted has a link; public goes to review and then to the gallery with a thumbnail per piece.\nThe desktop editor: sign the Blockbench plugin in with an eight-character code, and Your library appears in its pack manager.\nNothing else. No badge, no tier, no effect in the game, ever.\n\nYou do not need one to look, to keep what you like, or to dress a figure: the gallery, a shelf of your own, the wardrobe and the whole editor work in this browser without an account, and signing in offers to keep exactly what is there. What an account adds is what a browser cannot do on its own: publishing a pack, hosting one, a link to a set, and the same shelf on another machine.\n\nNOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.\n\nArmor Pieces is run by "
+  },
+  {
+    "name": "account-signed-out",
+    "size": "phone",
+    "url": "/account/",
+    "signedIn": false,
+    "console": [],
+    "failed": [],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/account/",
+    "title": "Account · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "Sign in"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\nSign in\n\nAn account is a sign-in through a provider. The site never sees a password, stores only the provider's id and a display name, and nothing about it changes anything in the game.\n\nNo sign-in provider is configured on this deployment yet. The operator sets the providers' client ids in the environment.\n\nSigning in you agree to the terms; what is stored is on the privacy page. You must be old enough for the provider's own terms.\n\nWhat an account is for\nYour library: the packs and pieces you keep, and the sets you save. Packs you author live there too - uploaded as zips or saved from the editor, with versions, private by default. Unlisted has a link; public goes to review and then to the gallery with a thumbnail per piece.\nThe desktop editor: sign the Blockbench plugin in with an eight-character code, and Your library appears in its pack manager.\nNothing else. No badge, no tier, no effect in the game, ever.\n\nYou do not need one to look, to keep what you like, or to dress a figure: the gallery, a shelf of your own, the wardrobe and the whole editor work in this browser without an account, and signing in offers to keep exactly what is there. What an account adds is what a browser cannot do on its own: publishing a pack, hosting one, a link to a set, and the same shelf on another machine.\n\nNOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.\n\nArmor Pieces is run by "
+  },
+  {
+    "name": "library",
+    "size": "desktop",
+    "url": "/library/",
+    "signedIn": true,
+    "console": [],
+    "failed": [],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/library/",
+    "title": "Library · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "Your library"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\nYour library\n\n0 packs of your own, 0 linked, 0 pieces. Storage 0.0 of 52.4 MB and 0 of 20000 files - only your own packs count. Your sets are in the wardrobe.\n\nPacks 0\nPieces 0\nCollections 0\nOutfits 0\n\nNew pack\nor make one in the editor and save it to your library, or Save to library on any pack in the gallery\n\nNo packs yet.\n\nThe editor's Packs… › From your library… reads /api/me/library.json, the same shape as the gallery's own index, so everything on this shelf - yours and linked - installs from one place. On the desktop, sign the plugin in from Connectors.\n\nNOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.\n\nArmor Pieces is run by mattjes. Contact: contact@armorpieces.example. The mod, its pieces and this site are © 2026 mattjes under theArmor Pieces License; packs in the gallery belong to their authors under the license each names.\n\nAbout · Terms · Privacy ·Cookies · Contact ·Source"
+  },
+  {
+    "name": "library",
+    "size": "phone",
+    "url": "/library/",
+    "signedIn": true,
+    "console": [],
+    "failed": [],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/library/",
+    "title": "Library · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "Your library"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\nYour library\n\n0 packs of your own, 0 linked, 0 pieces. Storage 0.0 of 52.4 MB and 0 of 20000 files - only your own packs count. Your sets are in the wardrobe.\n\nPacks 0\nPieces 0\nCollections 0\nOutfits 0\n\nNew pack\nor make one in the editor and save it to your library, or Save to library on any pack in the gallery\n\nNo packs yet.\n\nThe editor's Packs… › From your library… reads /api/me/library.json, the same shape as the gallery's own index, so everything on this shelf - yours and linked - installs from one place. On the desktop, sign the plugin in from Connectors.\n\nNOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.\n\nArmor Pieces is run by mattjes. Contact: contact@armorpieces.example. The mod, its pieces and this site are © 2026 mattjes under theArmor Pieces License; packs in the gallery belong to their authors under the license each names.\n\nAbout · Terms · Privacy ·Cookies · Contact ·Source"
+  },
+  {
+    "name": "library-packs-new",
+    "size": "desktop",
+    "url": "/library/packs/new/",
+    "signedIn": true,
+    "console": [],
+    "failed": [],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/library/packs/new/",
+    "title": "New pack · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "New pack"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\n\n← Your library\n\nNew pack\n\nA pack starts empty and is a LIST of pieces: fill it from the galleryor from your own work with Add to a pack…, or open the editor on it and save something in. Nothing is copied - a piece in two packs is stored once.\n\nSlug\nletters, digits, hyphens; in the URL\nName\nDescription\nMake the pack\n\nA pack can also be linked to a repository or a Drive file, which reads a zip from there instead of holding one here; that is set up on the pack's own page once it exists. What a pack is is in the wiki.\n\nNOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.\n\nArmor Pieces is run by mattjes. Contact: contact@armorpieces.example. The mod, its pieces and this site are © 2026 mattjes under theArmor Pieces License; packs in the gallery belong to their authors under the license each names.\n\nAbout · Terms · Privacy ·Cookies · Contact ·Source"
+  },
+  {
+    "name": "library-packs-new",
+    "size": "phone",
+    "url": "/library/packs/new/",
+    "signedIn": true,
+    "console": [],
+    "failed": [],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/library/packs/new/",
+    "title": "New pack · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "New pack"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\n\n← Your library\n\nNew pack\n\nA pack starts empty and is a LIST of pieces: fill it from the galleryor from your own work with Add to a pack…, or open the editor on it and save something in. Nothing is copied - a piece in two packs is stored once.\n\nSlug\nletters, digits, hyphens; in the URL\nName\nDescription\nMake the pack\n\nA pack can also be linked to a repository or a Drive file, which reads a zip from there instead of holding one here; that is set up on the pack's own page once it exists. What a pack is is in the wiki.\n\nNOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.\n\nArmor Pieces is run by mattjes. Contact: contact@armorpieces.example. The mod, its pieces and this site are © 2026 mattjes under theArmor Pieces License; packs in the gallery belong to their authors under the license each names.\n\nAbout · Terms · Privacy ·Cookies · Contact ·Source"
+  },
+  {
+    "name": "create-pack-flow",
+    "size": "desktop",
+    "url": "/library/packs/new/",
+    "signedIn": true,
+    "console": [
+      "[error] Pattern attribute value [a-z0-9][a-z0-9-]{1,39} is not a valid regular expression: Uncaught SyntaxError: Invalid regular expression: /[a-z0-9][a-z0-9-]{1,39}/v: Invalid character class"
+    ],
+    "failed": [],
+    "finalUrl": "http://127.0.0.1:4877/library/packs/ed4d8ecb-c789-4294-afc8-9550a662a52b/",
+    "title": "Review Pack · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "Review Pack private"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\n\n← Your library\n\nReview Pack private\n\nA pack made during the UX walk.\n\nIts pieces\nExport…\n\nDetails\nName\nDescription\nHomepage\nVisibility\nPrivate (only you)\nUnlisted (anyone with the link)\nPublic (after review, in the gallery)\nSave\nContents\n\nNothing in it yet. Add pieces from the gallery or your library, or open the editor and save something into it.\n\nPublish\n\nA pack goes to the gallery as a list of published pieces. Offering it files one review per piece of yours that is not published yet, plus one for the pack itself – so a piece is reviewed once ever, a piece already in the gallery goes in as a link, and the pack becomes public when the last of its pieces has been approved.\n\nOffer this pack to the gallery…\n\nVersions\n#\tLabel\tHolds\tContents\tCut\t\n\nA new version is the pack again, both halves: it becomes the current version, and goes back through review if the pack is public. One zip holding both data/ and assets/ goes in either box.\n\nDatapack zip\npack.mcmeta beside data/\nResource pack zip\npack.mcmeta beside assets/\nLabel\noptional, e.g. 1.1\nUpload version\nDelete\n\nDelete this pack Every version, at once. Not undone.\n\nNOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.\n\nArmor Pieces is run by mattjes. Contact: contact@armorpieces.example. The mod, its pieces and this site are © 2026 mattjes under theArmor Pieces License; packs in the gallery belong to their authors unde"
+  },
+  {
+    "name": "library-pack",
+    "size": "desktop",
+    "url": "/library/packs/ed4d8ecb-c789-4294-afc8-9550a662a52b/",
+    "signedIn": true,
+    "console": [],
+    "failed": [],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/library/packs/ed4d8ecb-c789-4294-afc8-9550a662a52b/",
+    "title": "Review Pack · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "Review Pack private"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\n\n← Your library\n\nReview Pack private\n\nA pack made during the UX walk.\n\nIts pieces\nExport…\n\nDetails\nName\nDescription\nHomepage\nVisibility\nPrivate (only you)\nUnlisted (anyone with the link)\nPublic (after review, in the gallery)\nSave\nContents\n\nNothing in it yet. Add pieces from the gallery or your library, or open the editor and save something into it.\n\nPublish\n\nA pack goes to the gallery as a list of published pieces. Offering it files one review per piece of yours that is not published yet, plus one for the pack itself – so a piece is reviewed once ever, a piece already in the gallery goes in as a link, and the pack becomes public when the last of its pieces has been approved.\n\nOffer this pack to the gallery…\n\nVersions\n#\tLabel\tHolds\tContents\tCut\t\n\nA new version is the pack again, both halves: it becomes the current version, and goes back through review if the pack is public. One zip holding both data/ and assets/ goes in either box.\n\nDatapack zip\npack.mcmeta beside data/\nResource pack zip\npack.mcmeta beside assets/\nLabel\noptional, e.g. 1.1\nUpload version\nDelete\n\nDelete this pack Every version, at once. Not undone.\n\nNOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.\n\nArmor Pieces is run by mattjes. Contact: contact@armorpieces.example. The mod, its pieces and this site are © 2026 mattjes under theArmor Pieces License; packs in the gallery belong to their authors unde"
+  },
+  {
+    "name": "library-pack",
+    "size": "phone",
+    "url": "/library/packs/ed4d8ecb-c789-4294-afc8-9550a662a52b/",
+    "signedIn": true,
+    "console": [],
+    "failed": [],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/library/packs/ed4d8ecb-c789-4294-afc8-9550a662a52b/",
+    "title": "Review Pack · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "Review Pack private"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\n\n← Your library\n\nReview Pack private\n\nA pack made during the UX walk.\n\nIts pieces\nExport…\n\nDetails\nName\nDescription\nHomepage\nVisibility\nPrivate (only you)\nUnlisted (anyone with the link)\nPublic (after review, in the gallery)\nSave\nContents\n\nNothing in it yet. Add pieces from the gallery or your library, or open the editor and save something into it.\n\nPublish\n\nA pack goes to the gallery as a list of published pieces. Offering it files one review per piece of yours that is not published yet, plus one for the pack itself – so a piece is reviewed once ever, a piece already in the gallery goes in as a link, and the pack becomes public when the last of its pieces has been approved.\n\nOffer this pack to the gallery…\n\nVersions\n#\tLabel\tHolds\tContents\tCut\t\n\nA new version is the pack again, both halves: it becomes the current version, and goes back through review if the pack is public. One zip holding both data/ and assets/ goes in either box.\n\nDatapack zip\npack.mcmeta beside data/\nResource pack zip\npack.mcmeta beside assets/\nLabel\noptional, e.g. 1.1\nUpload version\nDelete\n\nDelete this pack Every version, at once. Not undone.\n\nNOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.\n\nArmor Pieces is run by mattjes. Contact: contact@armorpieces.example. The mod, its pieces and this site are © 2026 mattjes under theArmor Pieces License; packs in the gallery belong to their authors unde"
+  },
+  {
+    "name": "library-pack-export",
+    "size": "desktop",
+    "url": "/library/packs/ed4d8ecb-c789-4294-afc8-9550a662a52b/",
+    "signedIn": true,
+    "console": [],
+    "failed": [],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/library/packs/ed4d8ecb-c789-4294-afc8-9550a662a52b/",
+    "exportOpened": true,
+    "title": "Review Pack · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "Review Pack private"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\n\n← Your library\n\nReview Pack private\n\nA pack made during the UX walk.\n\nIts pieces\nExport…\n\nDetails\nName\nDescription\nHomepage\nVisibility\nPrivate (only you)\nUnlisted (anyone with the link)\nPublic (after review, in the gallery)\nSave\nContents\n\nNothing in it yet. Add pieces from the gallery or your library, or open the editor and save something into it.\n\nPublish\n\nA pack goes to the gallery as a list of published pieces. Offering it files one review per piece of yours that is not published yet, plus one for the pack itself – so a piece is reviewed once ever, a piece already in the gallery goes in as a link, and the pack becomes public when the last of its pieces has been approved.\n\nOffer this pack to the gallery…\n\nVersions\n#\tLabel\tHolds\tContents\tCut\t\n\nA new version is the pack again, both halves: it becomes the current version, and goes back through review if the pack is public. One zip holding both data/ and assets/ goes in either box.\n\nDatapack zip\npack.mcmeta beside data/\nResource pack zip\npack.mcmeta beside assets/\nLabel\noptional, e.g. 1.1\nUpload version\nDelete\n\nDelete this pack Every version, at once. Not undone.\n\nNOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.\n\nArmor Pieces is run by mattjes. Contact: contact@armorpieces.example. The mod, its pieces and this site are © 2026 mattjes under theArmor Pieces License; packs in the gallery belong to their authors unde"
+  },
+  {
+    "name": "library-pack-export",
+    "size": "phone",
+    "url": "/library/packs/ed4d8ecb-c789-4294-afc8-9550a662a52b/",
+    "signedIn": true,
+    "console": [],
+    "failed": [],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/library/packs/ed4d8ecb-c789-4294-afc8-9550a662a52b/",
+    "exportOpened": true,
+    "title": "Review Pack · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "Review Pack private"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\n\n← Your library\n\nReview Pack private\n\nA pack made during the UX walk.\n\nIts pieces\nExport…\n\nDetails\nName\nDescription\nHomepage\nVisibility\nPrivate (only you)\nUnlisted (anyone with the link)\nPublic (after review, in the gallery)\nSave\nContents\n\nNothing in it yet. Add pieces from the gallery or your library, or open the editor and save something into it.\n\nPublish\n\nA pack goes to the gallery as a list of published pieces. Offering it files one review per piece of yours that is not published yet, plus one for the pack itself – so a piece is reviewed once ever, a piece already in the gallery goes in as a link, and the pack becomes public when the last of its pieces has been approved.\n\nOffer this pack to the gallery…\n\nVersions\n#\tLabel\tHolds\tContents\tCut\t\n\nA new version is the pack again, both halves: it becomes the current version, and goes back through review if the pack is public. One zip holding both data/ and assets/ goes in either box.\n\nDatapack zip\npack.mcmeta beside data/\nResource pack zip\npack.mcmeta beside assets/\nLabel\noptional, e.g. 1.1\nUpload version\nDelete\n\nDelete this pack Every version, at once. Not undone.\n\nNOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.\n\nArmor Pieces is run by mattjes. Contact: contact@armorpieces.example. The mod, its pieces and this site are © 2026 mattjes under theArmor Pieces License; packs in the gallery belong to their authors unde"
+  },
+  {
+    "name": "library-collections-new",
+    "size": "desktop",
+    "url": "/library/collections/new/",
+    "signedIn": true,
+    "console": [],
+    "failed": [],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/library/collections/new/",
+    "title": "New collection · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "New collection"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\n\n← Your collections\n\nNew collection\n\nA collection is a working bag: references, private, never published as such. Pieces get in from the gallery, from a pack, from the wardrobe, or from a zip you import - and out into a pack, onto the figure, into the gallery one at a time, or as an export.\n\nName\nDescription\nMake it\n\nA piece you save from the gallery lands in one called Saved, which is made for you the first time it is needed.\n\nNOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.\n\nArmor Pieces is run by mattjes. Contact: contact@armorpieces.example. The mod, its pieces and this site are © 2026 mattjes under theArmor Pieces License; packs in the gallery belong to their authors under the license each names.\n\nAbout · Terms · Privacy ·Cookies · Contact ·Source"
+  },
+  {
+    "name": "library-collections-new",
+    "size": "phone",
+    "url": "/library/collections/new/",
+    "signedIn": true,
+    "console": [],
+    "failed": [],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/library/collections/new/",
+    "title": "New collection · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "New collection"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\n\n← Your collections\n\nNew collection\n\nA collection is a working bag: references, private, never published as such. Pieces get in from the gallery, from a pack, from the wardrobe, or from a zip you import - and out into a pack, onto the figure, into the gallery one at a time, or as an export.\n\nName\nDescription\nMake it\n\nA piece you save from the gallery lands in one called Saved, which is made for you the first time it is needed.\n\nNOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.\n\nArmor Pieces is run by mattjes. Contact: contact@armorpieces.example. The mod, its pieces and this site are © 2026 mattjes under theArmor Pieces License; packs in the gallery belong to their authors under the license each names.\n\nAbout · Terms · Privacy ·Cookies · Contact ·Source"
+  },
+  {
+    "name": "account",
+    "size": "desktop",
+    "url": "/account/",
+    "signedIn": true,
+    "console": [],
+    "failed": [],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/account/",
+    "title": "Account · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "Reviewer"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\nReviewer\nProfile\nConnectors\nAccount\n\nWho you are on the site. Your packs, pieces and sets are in your library.\n\nDisplay name\nSave\n\nShown as the author of your packs. The provider's name is not read again.\n\nWhat the name is attached to\n\nNothing published under it yet. A pack made public goes to review, and appears in the gallery once a maintainer has approved it.\n\nThere is no avatar and no bio, because the site stores neither: an account is a provider id, a display name, and what you made with it.\n\nNOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.\n\nArmor Pieces is run by mattjes. Contact: contact@armorpieces.example. The mod, its pieces and this site are © 2026 mattjes under theArmor Pieces License; packs in the gallery belong to their authors under the license each names.\n\nAbout · Terms · Privacy ·Cookies · Contact ·Source"
+  },
+  {
+    "name": "account",
+    "size": "phone",
+    "url": "/account/",
+    "signedIn": true,
+    "console": [],
+    "failed": [],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/account/",
+    "title": "Account · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "Reviewer"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\nReviewer\nProfile\nConnectors\nAccount\n\nWho you are on the site. Your packs, pieces and sets are in your library.\n\nDisplay name\nSave\n\nShown as the author of your packs. The provider's name is not read again.\n\nWhat the name is attached to\n\nNothing published under it yet. A pack made public goes to review, and appears in the gallery once a maintainer has approved it.\n\nThere is no avatar and no bio, because the site stores neither: an account is a provider id, a display name, and what you made with it.\n\nNOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.\n\nArmor Pieces is run by mattjes. Contact: contact@armorpieces.example. The mod, its pieces and this site are © 2026 mattjes under theArmor Pieces License; packs in the gallery belong to their authors under the license each names.\n\nAbout · Terms · Privacy ·Cookies · Contact ·Source"
+  },
+  {
+    "name": "account-connectors",
+    "size": "desktop",
+    "url": "/account/connectors/",
+    "signedIn": true,
+    "console": [],
+    "failed": [],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/account/connectors/",
+    "title": "Connectors · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "Reviewer"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\nReviewer\nProfile\nConnectors\nAccount\n\nEverything that reaches this account from somewhere else, what it can see, and how to cut it.\n\nSign-in\n\nThe identities on this account. The site stores the provider's name and its id for you, nothing more, and never reads the provider's own profile again.\n\nProvider\tKind\tWhat it granted\ntest\toauth\tsign-in only\nLinked packs\n\nA pack can live elsewhere and be read from there: a GitHub repository the site's App is installed on (a grant for that repository, not your account), or a zip on Google Drive picked through Google's own picker (a grant for that one file). The site keeps the manifest, the thumbnails and a cleaned copy of each version it has read.\n\nGitHub\n\nThe GitHub App is not configured on this deployment.\n\nGoogle Drive\n\nDrive linking is not configured on this deployment.\n\nDevices\n\nThe desktop editor signs in with a code and keeps a token; revoking one stops it at once. Link a device · how to sign the plugin in.\n\nNo devices.\n\nNOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.\n\nArmor Pieces is run by mattjes. Contact: contact@armorpieces.example. The mod, its pieces and this site are © 2026 mattjes under theArmor Pieces License; packs in the gallery belong to their authors under the license each names.\n\nAbout · Terms · Privacy ·Cookies · Contact ·Source"
+  },
+  {
+    "name": "account-connectors",
+    "size": "phone",
+    "url": "/account/connectors/",
+    "signedIn": true,
+    "console": [],
+    "failed": [],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/account/connectors/",
+    "title": "Connectors · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "Reviewer"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\nReviewer\nProfile\nConnectors\nAccount\n\nEverything that reaches this account from somewhere else, what it can see, and how to cut it.\n\nSign-in\n\nThe identities on this account. The site stores the provider's name and its id for you, nothing more, and never reads the provider's own profile again.\n\nProvider\tKind\tWhat it granted\ntest\toauth\tsign-in only\nLinked packs\n\nA pack can live elsewhere and be read from there: a GitHub repository the site's App is installed on (a grant for that repository, not your account), or a zip on Google Drive picked through Google's own picker (a grant for that one file). The site keeps the manifest, the thumbnails and a cleaned copy of each version it has read.\n\nGitHub\n\nThe GitHub App is not configured on this deployment.\n\nGoogle Drive\n\nDrive linking is not configured on this deployment.\n\nDevices\n\nThe desktop editor signs in with a code and keeps a token; revoking one stops it at once. Link a device · how to sign the plugin in.\n\nNo devices.\n\nNOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.\n\nArmor Pieces is run by mattjes. Contact: contact@armorpieces.example. The mod, its pieces and this site are © 2026 mattjes under theArmor Pieces License; packs in the gallery belong to their authors under the license each names.\n\nAbout · Terms · Privacy ·Cookies · Contact ·Source"
+  },
+  {
+    "name": "wardrobe-new",
+    "size": "desktop",
+    "url": "/wardrobe/new/",
+    "signedIn": true,
+    "console": [],
+    "failed": [],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/wardrobe/new/",
+    "title": "New set · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "Dress a figure"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\n\n← Wardrobe\n\nDress a figure\n\nA piece in every socket, a material for each, a skin and a cloth over the armor underneath.91 pieces, 14 skins and 2 cloths to choose from. Saved sets are in your wardrobe.\n\nPick something, and it appears here.\n\nShow the real figure\nRandom\nClear\n\nThe figure is the editor itself, wearing the set on the real rig, so what is here is what the game draws. It takes a few seconds to boot; the thumbnails above are exact per piece and stand in until it does.\n\nArmor\nhelmet\nleather\nchainmail\ncopper\niron\ngolden\ndiamond\nnetherite\nchestplate\nleather\nchainmail\ncopper\niron\ngolden\ndiamond\nnetherite\nleggings\nleather\nchainmail\ncopper\niron\ngolden\ndiamond\nnetherite\nboots\nleather\nchainmail\ncopper\niron\ngolden\ndiamond\nnetherite\nskin\nnone\nBrigandine\nChainmail\nGambeson\nGothic\nHoplite\nLamellar\nLorica\nMail\nMilanese\nPlate\nRunic\nSamurai\nScale\nVarangian\ncloth\nnone\nTabard\nTunic\ncloth colour\nwhite\norange\nmagenta\nlight_blue\nyellow\nlime\npink\ngray\nlight_gray\ncyan\npurple\nblue\nbrown\ngreen\nred\nblack\nhelmet\ncrest\nempty\nChoose…\nbrow\nempty\nChoose…\nhorns\nempty\nChoose…\nchestplate\npauldrons\nempty\nChoose…\nback\nempty\nChoose…\ncollar\nempty\nChoose…\nvambraces\nempty\nChoose…\nleggings\nbelt\nempty\nChoose…\ntassets\nempty\nChoose…\nknees\nempty\nChoose…\nboots\nspurs\nempty\nChoose…\ngreaves\nempty\nChoose…\nWearing it in game\n\nFour commands, one per armor slot, built from the components the mod defines. They need the pieces installed - the pac"
+  },
+  {
+    "name": "wardrobe-new",
+    "size": "phone",
+    "url": "/wardrobe/new/",
+    "signedIn": true,
+    "console": [],
+    "failed": [],
+    "status": 200,
+    "finalUrl": "http://127.0.0.1:4877/wardrobe/new/",
+    "title": "New set · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [
+      "Dress a figure"
+    ],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\n\n← Wardrobe\n\nDress a figure\n\nA piece in every socket, a material for each, a skin and a cloth over the armor underneath.91 pieces, 14 skins and 2 cloths to choose from. Saved sets are in your wardrobe.\n\nPick something, and it appears here.\n\nShow the real figure\nRandom\nClear\n\nThe figure is the editor itself, wearing the set on the real rig, so what is here is what the game draws. It takes a few seconds to boot; the thumbnails above are exact per piece and stand in until it does.\n\nArmor\nhelmet\nleather\nchainmail\ncopper\niron\ngolden\ndiamond\nnetherite\nchestplate\nleather\nchainmail\ncopper\niron\ngolden\ndiamond\nnetherite\nleggings\nleather\nchainmail\ncopper\niron\ngolden\ndiamond\nnetherite\nboots\nleather\nchainmail\ncopper\niron\ngolden\ndiamond\nnetherite\nskin\nnone\nBrigandine\nChainmail\nGambeson\nGothic\nHoplite\nLamellar\nLorica\nMail\nMilanese\nPlate\nRunic\nSamurai\nScale\nVarangian\ncloth\nnone\nTabard\nTunic\ncloth colour\nwhite\norange\nmagenta\nlight_blue\nyellow\nlime\npink\ngray\nlight_gray\ncyan\npurple\nblue\nbrown\ngreen\nred\nblack\nhelmet\ncrest\nempty\nChoose…\nbrow\nempty\nChoose…\nhorns\nempty\nChoose…\nchestplate\npauldrons\nempty\nChoose…\nback\nempty\nChoose…\ncollar\nempty\nChoose…\nvambraces\nempty\nChoose…\nleggings\nbelt\nempty\nChoose…\ntassets\nempty\nChoose…\nknees\nempty\nChoose…\nboots\nspurs\nempty\nChoose…\ngreaves\nempty\nChoose…\nWearing it in game\n\nFour commands, one per armor slot, built from the components the mod defines. They need the pieces installed - the pac"
+  },
+  {
+    "name": "editor",
+    "size": "desktop",
+    "url": "/editor/",
+    "signedIn": true,
+    "console": [
+      "[error] Connecting to 'https://web.blockbench.net/content/news.json?_=1789243319889' violates the following Content Security Policy directive: \"connect-src 'self' https://cdn.jsdelivr.net\". The action has been blocked.",
+      "[error] Connecting to 'https://blckbn.ch/api/stats/plugins?weeks=2' violates the following Content Security Policy directive: \"connect-src 'self' https://cdn.jsdelivr.net\". The action has been blocked.",
+      "[error] Connecting to 'https://blckbn.ch/api/event/new_installation' violates the following Content Security Policy directive: \"connect-src 'self' https://cdn.jsdelivr.net\". The action has been blocked.",
+      "[error] A bad HTTP response code (404) was received when fetching the script.",
+      "[pageerror] Object"
+    ],
+    "failed": [
+      "FAILED GET https://web.blockbench.net/content/news.json?_=1789243319889 csp",
+      "FAILED GET https://blckbn.ch/api/stats/plugins?weeks=2 csp",
+      "FAILED POST https://blckbn.ch/api/event/new_installation csp"
+    ],
+    "status": 200,
+    "frameText15": "http://127.0.0.1:4877/editor/ | http://127.0.0.1:4877/editor/app/",
+    "title": "Editor · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\n\nBlockbench with the Armor Pieces plugin, running in this tab. Your packs stay in this browser until you save them to your library.Armor Pieces 0.3.0 at 0.3.0-32-ga681235.\n\nHow to use it ·Full screen\n\nNOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.\n\nArmor Pieces is run by mattjes. Contact: contact@armorpieces.example. The mod, its pieces and this site are © 2026 mattjes under theArmor Pieces License; packs in the gallery belong to their authors under the license each names.\n\nAbout · Terms · Privacy ·Cookies · Contact ·Source",
+    "frames": [
+      "http://127.0.0.1:4877/editor/",
+      "http://127.0.0.1:4877/editor/app/"
+    ],
+    "frameText": "FileEditToolsViewHelp\nBlockbench\nDownload App system_update\nhome\nNew Tab\nclear\nArmor Pieces in Blockbench\n\nThe authoring plugin for Armor Pieces, running in your browser. Pick a piece to open it on the player figure in armor: the same rig, sheets, material preview and datapack editor the desktop plugin gives you, driven by the repository's own Python under Pyodide.\n\nThe figure wears the studio set - the mod's own plate skin, in iron, on the game's exact boxes - because the game's textures are Mojang's and this page does not serve them. Use my game... points the editor at your own copy (the launcher's jar, or any resource pack); it is read into this browser and nowhere else, and from then on the figure wears real armor.\nSigned in. These are the pieces in your library on the site - 0 of them"
+  },
+  {
+    "name": "editor",
+    "size": "phone",
+    "url": "/editor/",
+    "signedIn": true,
+    "console": [
+      "[error] Connecting to 'https://web.blockbench.net/content/news.json?_=1789243381629' violates the following Content Security Policy directive: \"connect-src 'self' https://cdn.jsdelivr.net\". The action has been blocked.",
+      "[error] Connecting to 'https://blckbn.ch/api/stats/plugins?weeks=2' violates the following Content Security Policy directive: \"connect-src 'self' https://cdn.jsdelivr.net\". The action has been blocked.",
+      "[error] A bad HTTP response code (404) was received when fetching the script.",
+      "[pageerror] Object"
+    ],
+    "failed": [
+      "FAILED GET https://web.blockbench.net/content/news.json?_=1789243381629 csp",
+      "FAILED GET https://blckbn.ch/api/stats/plugins?weeks=2 csp"
+    ],
+    "status": 200,
+    "frameText15": "http://127.0.0.1:4877/editor/ | http://127.0.0.1:4877/editor/app/",
+    "title": "Editor · Armor Pieces",
+    "nav": [
+      "Armor Pieces",
+      "Wiki",
+      "Gallery",
+      "Wardrobe",
+      "Library",
+      "Editor",
+      "Account"
+    ],
+    "h1": [],
+    "overflowX": null,
+    "unlabeled": [],
+    "text": "Skip to content\nArmor Pieces\nWiki\nGallery\nWardrobe\nLibrary\nEditor\nAccount\n\nBlockbench with the Armor Pieces plugin, running in this tab. Your packs stay in this browser until you save them to your library.Armor Pieces 0.3.0 at 0.3.0-32-ga681235.\n\nHow to use it ·Full screen\n\nNOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.\n\nArmor Pieces is run by mattjes. Contact: contact@armorpieces.example. The mod, its pieces and this site are © 2026 mattjes under theArmor Pieces License; packs in the gallery belong to their authors under the license each names.\n\nAbout · Terms · Privacy ·Cookies · Contact ·Source",
+    "frames": [
+      "http://127.0.0.1:4877/editor/",
+      "http://127.0.0.1:4877/editor/app/"
+    ],
+    "frameText": "FileEditToolsViewHelp\nBlockbench\nDownload App system_update\nhome\nNew Tab\nclear\nArmor Pieces in Blockbench\n\nThe authoring plugin for Armor Pieces, running in your browser. Pick a piece to open it on the player figure in armor: the same rig, sheets, material preview and datapack editor the desktop plugin gives you, driven by the repository's own Python under Pyodide.\n\nThe figure wears the studio set - the mod's own plate skin, in iron, on the game's exact boxes - because the game's textures are Mojang's and this page does not serve them. Use my game... points the editor at your own copy (the launcher's jar, or any resource pack); it is read into this browser and nowhere else, and from then on the figure wears real armor.\nSigned in. These are the pieces in your library on the site - 0 of them"
+  }
+]

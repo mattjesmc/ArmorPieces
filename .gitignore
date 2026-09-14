@@ -73,3 +73,8 @@ tools/mcp/node_modules/
 # work the bridge at all. `build_moved_index.py`, `check_surfaces.py` and `mint_uids.py` already skip
 # it by name - a uid minted for it would sit in the append-only lock forever.
 /packs/vlm-scratch/
+
+# A UX review's screenshots (docs/reviews/<review>/shots/*.png, ~10 MB a review) stay out of the
+# repo: the review's markdown and the walks' notes beside them are the record, and every claim
+# in the review was re-verified in source, so the pictures are working material, not evidence.
+/docs/reviews/*/shots/*.png
