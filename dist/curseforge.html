@@ -21,7 +21,7 @@
 <strong>Loaders:</strong> Fabric &bull; <strong>Minecraft:</strong> 26.2 &bull; <strong>Side:</strong> Client &amp; Server</p>
 
 <p align="center">
-<a href="https://github.com/mattjesmc/ArmorPieces">GitHub</a> &bull; <a href="https://github.com/mattjesmc/ArmorPieces/issues">Issues</a> &bull; <a href="https://github.com/mattjesmc/ArmorPieces/blob/main/CHANGELOG.md">Changelog</a></p>
+<a href="https://armorpieces.com">Website</a> &bull; <a href="https://github.com/mattjesmc/ArmorPieces">GitHub</a> &bull; <a href="https://github.com/mattjesmc/ArmorPieces/issues">Issues</a> &bull; <a href="https://github.com/mattjesmc/ArmorPieces/blob/main/CHANGELOG.md">Changelog</a></p>
 
 <hr>
 <h2 id="about">About</h2>
@@ -61,11 +61,12 @@ alongside. An
 <strong>advanced smithing table</strong> shows a whole set worn by a stand and takes a piece, a fitting, a
 trim, a skin or a cloth off again, which the smithing table cannot.</p>
 <p>Every piece, skin and cloth is a datapack entry, a model and a texture, no code - and a pack adds
-its own the same way, from Blockbench, in folders of its own. Packs are how the mod grows: the
-mod itself is three themes, and the rest - the Wild Hunt, the Coral, the Hive, the Legends and
-the packs after them - is content you install because you want that look. Armor wearing a piece
-from a pack you do not have keeps it, says so, and shows it again the moment the pack is
-installed.</p>
+its own the same way, from Blockbench, in folders of its own. Packs are how the mod grows -
+even its own three themes, knightly, court and wayfarer, are packs the jar carries, on by
+default and switchable off - and the rest - the Wild Hunt, the Coral, the Hive, the Samurai,
+the Norse and the packs after them - is content you install because you want that look. Armor
+wearing a piece from a pack you do not have keeps it, says so, and shows it again the moment
+the pack is installed.</p>
 
 <hr>
 <h2 id="whats-new">New in 0.4.0</h2>
@@ -73,13 +74,15 @@ installed.</p>
 <p>The release that made the mod safe to grow around: packs beside it, servers over it, and
 nothing you saved ever lost.</p>
 <ul>
-<li><strong>Three themes, 66 pieces, and the rest in packs.</strong> Twenty-five pieces and five skins left
-  the mod for content packs — the tidal pieces to <strong>Coral</strong>, the beast pieces to <strong>The Wild
-  Hunt</strong>, the carapace to <strong>The Hive</strong>, the cultural skins to <strong>Legends</strong> — and four more packs
-  were built beside them: <strong>Animals</strong>, <strong>Dragonslayer</strong>, <strong>Nether</strong> and <strong>Hero of the Village</strong>.
-  What stays is what the mod could always dress on its own: knightly, court and wayfarer, with
-  the nine skins that say how armor is <em>made</em> rather than who wore it. You install the looks you
-  want instead of ninety-one pieces to wear twelve.</li>
+<li><strong>Everything is a pack, the mod&rsquo;s own three themes included.</strong> Twenty-five pieces and five
+  skins left the mod for content packs — the tidal pieces to <strong>Coral</strong>, the beast pieces to
+  <strong>The Wild Hunt</strong>, the carapace to <strong>The Hive</strong>, the cultural skins to <strong>Samurai</strong>, <strong>Norse</strong>
+  and <strong>Antiquity</strong> — and eight more packs were built beside them: <strong>Animals</strong>, <strong>Dragonslayer</strong>,
+  <strong>Nether</strong>, <strong>Hero of the Village</strong>, <strong>Samurai</strong>, <strong>Norse</strong>, <strong>Antiquity</strong> and <strong>Tournament</strong>.
+  What the mod could always dress on its own — <strong>knightly</strong>, <strong>court</strong> and <strong>wayfarer</strong>, 66
+  pieces and the nine skins that say how armor is <em>made</em> rather than who wore it — ships inside
+  the jar as three built-in packs, on by default and switchable off like any other. You install
+  the looks you want instead of ninety-one pieces to wear twelve.</li>
 <li><strong>Nothing you saved is ever lost.</strong> Armor wearing a piece from a pack that is not installed
   keeps it exactly as saved, shows nothing in that socket, names the id and the pack in its
   tooltip, and shows it again the moment the pack is installed — no migration, no command, no
@@ -96,6 +99,10 @@ nothing you saved ever lost.</p>
   tables the mod touched, explains what it added to one and why, and rolls a table to check the
   theory against a measurement. A loot table of any other mod can hand out a random piece of
   ours from a tag, and a pack you did not install costs it an entry rather than the table.</li>
+<li><strong>Removing content is a setting, never a pack.</strong> <code>parts.disabled</code> in the same file names the
+  pieces, skins, garments and fittings — by id or by <code>#tag</code> — that a server does not offer, and
+  <code>parts.mod_parts: false</code> switches off everything the mod ships itself. Switched off is not
+  found, not listed, not crafted; it is still worn, because a setting must never break a save.</li>
 <li><strong>Cloth past the waist.</strong> A tunic or a tabard reaches the legs now: the tunic closes five rows
   round each leg, the tabard hangs three, and the belt behind the chestplate&rsquo;s scalloped bottom
   is clothed too, so it reads as one garment. Still one template and one smithing operation.</li>
@@ -164,7 +171,7 @@ nothing you saved ever lost.</p>
 <li><strong>Twelve sockets, one piece at a time</strong> &mdash; <code>crest</code>, <code>brow</code>, <code>horns</code>, <code>pauldrons</code>, <code>back</code>, <code>collar</code>, <code>vambraces</code>, <code>belt</code>, <code>tassets</code>, <code>knees</code>, <code>spurs</code>, <code>greaves</code>. A socket holds one piece, so a new crest replaces the crest — and every socket has several to choose from. Seven of the sockets are mirrored pairs, so spaulders means both shoulders.</li>
 <li><strong>Coloured by vanilla trim materials</strong> &mdash; One grayscale master per piece is mapped onto each material&rsquo;s own palette at load time. A new trim material costs a piece no new art at all.</li>
 <li><strong>On your own hands, in first person</strong> &mdash; Vanilla draws a bare sleeve on the first-person hand and nothing else — not armor, not a trim — so the one view you spend the whole game in is the one that never showed what you were wearing. Pauldrons and vambraces show there now, on the same player model the world sees, swinging with the arm through every animation the hand already has. They are close to the camera and they are meant to be — and there is a setting to turn them off, if you would rather keep the view clear.</li>
-<li><strong>Armor skins</strong> &mdash; The one thing here that changes the armor itself rather than adding to it — plate, gothic, milanese, mail, chainmail, gambeson, brigandine, scale, lamellar: the nine that say how armor is <em>made</em>, with the ones that say who wore it in the Legends pack. One greyscale master pair on vanilla&rsquo;s own armor grid, recoloured at load through eight shades taken from <em>that armor material&rsquo;s</em> vanilla texture, with vanilla&rsquo;s own panel edges and shadows mixed back over it. A skinned iron helmet still reads as iron, gold still reads as gold, and a modded armor material is skinned for free from the texture it already ships. Applied at the advanced smithing table with the armor&rsquo;s own reforging material — re-skinning is re-forging, and it costs the metal the armor is made of.</li>
+<li><strong>Armor skins</strong> &mdash; The one thing here that changes the armor itself rather than adding to it — plate, gothic, milanese, mail, chainmail, gambeson, brigandine, scale, lamellar: the nine that say how armor is <em>made</em>, with the ones that say who wore it in the culture packs (Samurai, Norse, Antiquity). One greyscale master pair on vanilla&rsquo;s own armor grid, recoloured at load through eight shades taken from <em>that armor material&rsquo;s</em> vanilla texture, with vanilla&rsquo;s own panel edges and shadows mixed back over it. A skinned iron helmet still reads as iron, gold still reads as gold, and a modded armor material is skinned for free from the texture it already ships. Applied at the advanced smithing table with the armor&rsquo;s own reforging material — re-skinning is re-forging, and it costs the metal the armor is made of.</li>
 <li><strong>Cloth over the chest</strong> &mdash; A <strong>Tunic</strong> or a <strong>Tabard</strong>, applied with a cloth template and a banner, and the design is the banner&rsquo;s — sixteen dyes crossed with every pattern layer, made at a loom, so the heraldry is a player&rsquo;s choice rather than a list the mod keeps. It is painted into the armor&rsquo;s own texture rather than hung off it, so it moves with the armor, clips nothing, and the plate&rsquo;s rivets and edges read <em>through</em> it. It sits over the skin, under every piece and under the trim. One greyscale cut mask ships the whole feature; there is no per-material art and no per-banner art.</li>
 <li><strong>Fittings</strong> &mdash; A piece can declare places for a second material — <code>gemstone</code>, <code>guard</code>, <code>inlay</code>, <code>banner</code> — and a fitting template sets one: gems and metals by trim material, inlays by dye, banners from a banner made at a loom. There is a template per fitting, each with its own look and recipe, and the template with the third slot empty takes its fitting out again. Fittings are data too — a pack&rsquo;s new fitting gets its template from a recipe — and an effect can be gated on one.</li>
 <li><strong>Found in the world</strong> &mdash; Most pieces are found rather than crafted, each theme in the structures that suit it — knightly gear in strongholds and trial chambers, court jewellery in mansions and ancient cities, a wayfarer&rsquo;s kit on the roads and in the villages. A <strong>loot group</strong> is one file naming a category of tables and the tag of pieces found in them, so a pack adds a whole look to the world at once, or drops one piece into one chest from its own data file — the one thing a datapack cannot do for itself, since it can only replace a vanilla table whole. Armor <strong>skins</strong> are found the same way, divided over the same groups, and a <strong>fitting template</strong> turns up in every one of them. The odds belong to the table, so a chest&rsquo;s chance of holding something stays put however many pieces are added. A loot function puts a piece on the armor a table drops, gem and all. A server owner tunes all of it from one file — a theme off, a chance halved, a modded chest added — and <code>/armorpieces loot</code> says which tables the mod touched and why; a loot table of any other mod can hand out a random piece of ours from a tag, and an absent pack costs it an entry rather than the table.</li>
@@ -311,68 +318,6 @@ multiplies the whole table by about thirteen hundred again, before leather has b
 </tr>
 <tr>
 <td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__fitting_template_inlay.gif" alt="Crafting recipe for Fitting Template Inlay"><br><sub>Fitting Template Inlay</sub></td>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_brigandine.png" alt="Crafting recipe for Skin Template Brigandine"><br><sub>Skin Template Brigandine</sub></td>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_chainmail.png" alt="Crafting recipe for Skin Template Chainmail"><br><sub>Skin Template Chainmail</sub></td>
-</tr>
-<tr>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_gambeson.png" alt="Crafting recipe for Skin Template Gambeson"><br><sub>Skin Template Gambeson</sub></td>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_gothic.png" alt="Crafting recipe for Skin Template Gothic"><br><sub>Skin Template Gothic</sub></td>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_lamellar.png" alt="Crafting recipe for Skin Template Lamellar"><br><sub>Skin Template Lamellar</sub></td>
-</tr>
-<tr>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_mail.png" alt="Crafting recipe for Skin Template Mail"><br><sub>Skin Template Mail</sub></td>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_milanese.png" alt="Crafting recipe for Skin Template Milanese"><br><sub>Skin Template Milanese</sub></td>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_plate.png" alt="Crafting recipe for Skin Template Plate"><br><sub>Skin Template Plate</sub></td>
-</tr>
-<tr>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__skin_template_scale.png" alt="Crafting recipe for Skin Template Scale"><br><sub>Skin Template Scale</sub></td>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_bandolier.png" alt="Crafting recipe for Template Bandolier"><br><sub>Template Bandolier</sub></td>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_banner.png" alt="Crafting recipe for Template Banner"><br><sub>Template Banner</sub></td>
-</tr>
-<tr>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_bellows_visor.png" alt="Crafting recipe for Template Bellows Visor"><br><sub>Template Bellows Visor</sub></td>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_bells.png" alt="Crafting recipe for Template Bells"><br><sub>Template Bells</sub></td>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_brush_crest.png" alt="Crafting recipe for Template Brush Crest"><br><sub>Template Brush Crest</sub></td>
-</tr>
-<tr>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_chain_of_office.png" alt="Crafting recipe for Template Chain Of Office"><br><sub>Template Chain Of Office</sub></td>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_circlet.png" alt="Crafting recipe for Template Circlet"><br><sub>Template Circlet</sub></td>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_coronet.png" alt="Crafting recipe for Template Coronet"><br><sub>Template Coronet</sub></td>
-</tr>
-<tr>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_feathering.png" alt="Crafting recipe for Template Feathering"><br><sub>Template Feathering</sub></td>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_garters.png" alt="Crafting recipe for Template Garters"><br><sub>Template Garters</sub></td>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_gorget.png" alt="Crafting recipe for Template Gorget"><br><sub>Template Gorget</sub></td>
-</tr>
-<tr>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_great_helm.png" alt="Crafting recipe for Template Great Helm"><br><sub>Template Great Helm</sub></td>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_greaves.png" alt="Crafting recipe for Template Greaves"><br><sub>Template Greaves</sub></td>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_laurel.png" alt="Crafting recipe for Template Laurel"><br><sub>Template Laurel</sub></td>
-</tr>
-<tr>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_mittens.png" alt="Crafting recipe for Template Mittens"><br><sub>Template Mittens</sub></td>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_nasal.png" alt="Crafting recipe for Template Nasal"><br><sub>Template Nasal</sub></td>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_pendant.png" alt="Crafting recipe for Template Pendant"><br><sub>Template Pendant</sub></td>
-</tr>
-<tr>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_pinions.png" alt="Crafting recipe for Template Pinions"><br><sub>Template Pinions</sub></td>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_poleyns.png" alt="Crafting recipe for Template Poleyns"><br><sub>Template Poleyns</sub></td>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_quiver.png" alt="Crafting recipe for Template Quiver"><br><sub>Template Quiver</sub></td>
-</tr>
-<tr>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_sash.png" alt="Crafting recipe for Template Sash"><br><sub>Template Sash</sub></td>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_spaulders.png" alt="Crafting recipe for Template Spaulders"><br><sub>Template Spaulders</sub></td>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_spectacle_visor.png" alt="Crafting recipe for Template Spectacle Visor"><br><sub>Template Spectacle Visor</sub></td>
-</tr>
-<tr>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_spire.png" alt="Crafting recipe for Template Spire"><br><sub>Template Spire</sub></td>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_spurs.png" alt="Crafting recipe for Template Spurs"><br><sub>Template Spurs</sub></td>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_tassets.png" alt="Crafting recipe for Template Tassets"><br><sub>Template Tassets</sub></td>
-</tr>
-<tr>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_thigh_sheath.png" alt="Crafting recipe for Template Thigh Sheath"><br><sub>Template Thigh Sheath</sub></td>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_visor.png" alt="Crafting recipe for Template Visor"><br><sub>Template Visor</sub></td>
-<td align="center"><img src="https://raw.githubusercontent.com/mattjesmc/ArmorPieces/main/docs/assets/recipes/armorpieces__template_wing_roots.png" alt="Crafting recipe for Template Wing Roots"><br><sub>Template Wing Roots</sub></td>
 </tr>
 </table>
 
@@ -510,10 +455,11 @@ moves pixels and nothing else, so it never has to match the server&rsquo;s.</p>
 </tbody>
 </table>
 <p>A change takes effect on the next launch.</p>
-<p><strong><code>config/armorpieces-server.json</code></strong> is the server&rsquo;s, and it is about loot. Loot content is pack
-data, but <em>how much of it</em> is not, and a server owner should not have to write a datapack to say
-so. The file overrides the loot groups rather than replacing them, keyed by group id, and is
-re-read at the start of every datapack reload, so <code>/reload</code> picks up an edit.</p>
+<p><strong><code>config/armorpieces-server.json</code></strong> is the server&rsquo;s, and it is about what the world hands out:
+how much of it, and which of it. Loot content is pack data, but <em>how much of it</em> is not, and a
+server owner should not have to write a datapack to say so. The file overrides the loot groups
+rather than replacing them, keyed by group id, and is re-read at the start of every datapack
+reload, so <code>/reload</code> picks up an edit.</p>
 <table>
 <thead>
 <tr>
@@ -548,11 +494,26 @@ re-read at the start of every datapack reload, so <code>/reload</code> picks up 
 <td><code>[]</code></td>
 <td>Tables to join — a modded container needs no datapack at all — and tables to leave.</td>
 </tr>
+<tr>
+<td><code>parts.mod_parts</code></td>
+<td><code>true</code></td>
+<td><code>false</code> switches off everything the mod ships itself — every piece, skin, garment and fitting in the <code>armorpieces</code> namespace — in one line, for a server that runs on packs alone.</td>
+</tr>
+<tr>
+<td><code>parts.disabled</code></td>
+<td><code>[]</code></td>
+<td>Ids and <code>#tags</code> — parts, skins, garments or fittings, one list for all four — that this server does not offer. <code>["#armorpieces:knightly", "armorpieces_dragon:dragon_wings"]</code> takes a whole theme and one pack&rsquo;s piece out.</td>
+</tr>
 </tbody>
 </table>
 <p>What a group <em>contains</em> is deliberately not overridable: different members are a different group,
 which is content, which is a datapack. <code>/armorpieces loot groups</code> shows the groups with the file
 applied, and <code>/armorpieces loot explain &lt;table&gt;</code> says what ended up on a table and why.</p>
+<p>Switched off means <strong>not offered</strong>: not in any chest, not on the creative tab, not craftable as a
+template, and refused at both smithing tables. It does not mean uninstalled. A piece a player is
+already wearing is still read and still drawn — removing content is a setting and never a pack,
+and the setting never breaks a save. Loot and recipes move on <code>/reload</code>; the creative tab is
+rebuilt on the next join.</p>
 <p>In both files a key you leave out takes its default and is written back, so a setting added by a
 later version turns up in the file you already have — and a file that does not parse is left
 alone and the defaults used, so a typo costs a log line and nothing else.</p>
@@ -569,6 +530,7 @@ alone and the defaults used, so a typo costs a log line and nothing else.</p>
 <p><strong>I uninstalled a pack. What happens to the armor that was wearing its pieces?</strong><br>Nothing is lost. The armor keeps the piece exactly as it was saved, shows nothing in that socket, and names the missing id and its pack in the tooltip; install the pack again and it is back. <code>/armorpieces missing</code> lists what a world is waiting for, and <code>/armorpieces prune</code> is the one way a missing piece is ever dropped — on purpose, by an operator.</p>
 <p><strong>A pack I installed has a mistake in it. Will the world still open?</strong><br>Yes. A mistake costs that mistake: a piece with an unknown socket loses the socket, a file that cannot be read is left out, and everything else in the pack and every other pack loads. <code>/armorpieces packs</code> names the pack, the file and what was wrong, and operators see a line on join while the report is not empty.</p>
 <p><strong>Pieces are too common on my server. Can I change that without a datapack?</strong><br>Yes — <code>config/armorpieces-server.json</code>. <code>chance_multiplier</code> scales everything the mod puts in a table, a group can be turned off or re-tuned by id, and a table can be added to or taken from a group; <code>/reload</code> picks up the edit. See Configuration.</p>
+<p><strong>Can I turn a piece off on my server without uninstalling the pack?</strong><br>Yes — <code>parts.disabled</code> in the same file takes ids and <code>#tags</code> of parts, skins, garments and fittings, and <code>parts.mod_parts: false</code> switches off everything the mod ships itself. A switched-off piece is not found, listed or crafted, but one already worn is still drawn: the setting never breaks a save. Removing content is always a setting, never a pack.</p>
 
 <hr>
 <h2 id="bugs">Bugs and issues</h2>
