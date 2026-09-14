@@ -1,6 +1,8 @@
 # Plan: UX round 5 — the editor's own front
 
-> **Status (2026-09-14): PROPOSED, nothing built.** Written the evening the five rounds of
+> **Status (2026-09-14, later): BUILT** - plugin in the mod clone (`d307539`, `a70e614`, pushed),
+> editor ArmorPiecesBlockbench `c26c619` (pushed), site on branch `ux-5`; section 6 says how it
+> differs from the plan. Written the same day, as PROPOSED, the evening the five rounds of
 > `docs/plans/ux-rounds.md` were merged and deployed (ArmorPiecesSite `5a6ed9f`), when the user
 > opened the editor and found what the review had not looked at: the plugin's own front. Read
 > against the mod working copy (`tools/blockbench_plugin/armorpieces.js`, 7579 lines),
@@ -326,3 +328,65 @@ pack and its link.
 save to site) → 2.6 (manager + upload) → 2.5 (desktop) → 2.7 (wiki). Each step leaves the bundle
 buildable and the browser test green; the site PR opens after 2.4 lands in the bundle, because
 `New piece in it` needs `?new=` in the frame.
+
+## 6. As built (2026-09-14)
+
+All seven items, in one session, in the plan's order. Decisions 1-5 as recommended.
+
+- **Plugin** (mod clone `d307539` + `a70e614`, pushed; the working copy carries the same edits
+  beside the other session's additive-packs hunks - applied by `plugin_r5.py`, thirteen asserted
+  replacements and five fragments, then five more by `both.py`). `newPiece(options)` takes
+  `{dir}`; `pieceHomes()` drops bundled folders and checkouts; `isBundled` / `isModPack` /
+  `namespaceOf` / `slugNamespace` / `defaultTarget` are new; `newPack` gained `both: true` (one
+  folder, both trees, no Kind question). The marker is `.armorpieces-draft.json` -
+  `draftOf`, `writeDraftMark`, `draftDir`, `draftFolderOf`, `openDraft`, `saveDraft`,
+  `saveDraftNow`, `markDraftPending` - and `installFromAccount` writes it too, so every road to
+  a working copy leaves the same mark. `checkinAfterSave` pushes a marked folder as it pushes a
+  checkout, under the renamed setting *Save to the site after saving here*; with the setting
+  off it marks the folder `pending: edited here`, which the card reads. `packsComponent()` is
+  the manager (Vue 2.7, `new Vue(...).$mount`), `mountPacks(host)` the inline mount;
+  `pieceListComponent()` / `mountPieceList()` the list, `localCards()` its cards for the pieces
+  here; `pickPiece` draws it in a 760 px dialog with its search box; `startScreenSection()`
+  uses `window.addStartScreenSection` (Blockbench 5.1 exports it there, not on `Blockbench`) and
+  is deleted on unload. Uploads: `uploadToAccount(dir, 'new' | 'version' | 'draft')`,
+  `uploadNewPackDialog` marks the folder as the new pack's working copy, `uploadVersionDialog`
+  sends `x-pack-changelog`, both end in `uploadedDialog` with *Open its page on the site*;
+  `refusalText` reads the site's JSON error out of the fetch message. `publishToAccount` stays as
+  the account source's one verb and `api.submit`. The api gained `openDraft`, `saveDraft`,
+  `draftOf`, `saveDraftNow`, `packsView`, `pieceList`, `localCards`, `newPiece`,
+  `uploadToAccount`. A library setting naming `mattjesmc.github.io` reads as the default
+  (`OLD_LIBRARY_HOSTS`): a 0.3.0 install kept R1's dead URL as a saved value, which is how this
+  machine's desktop Blockbench still had it.
+- **Editor** (ArmorPiecesBlockbench `c26c619`, pushed, bundle at the clone's `d307539`).
+  `start.js` is the page around the components: `.views` segmented control, `[data-new-piece]`,
+  the figure note a `<details>`, `?new=piece` in `wanted()` and `install()`, the library view's
+  *Yours - open it under Packs* (own index by `packId`, public index by the `u-<slug>-<id8>`
+  id). The browser test waits a tick after driving a select or the search (Vue), asserts every
+  `#ap_start select` sits in `label.filter` and none is `.tab`, the three views, the Packs view
+  as the manager inline with *New piece in it* and *Upload to your library...*, and the example
+  pack's *resets*; `start-pieces.png` and `start-packs.png` are new shots. `npm test` all green
+  with `ARMORPIECES_CLONE` set.
+- **Site** (branch `ux-5`): *New piece* on Library › Pieces (`[data-new-piece]` →
+  `/editor/?new=piece`), *New piece in it* on every own pack card
+  (`/editor/?pack=<id>&new=piece`), the Make step names the button, `editor-frame.js` already
+  forwarded the whole query and now says so; `wiki/editor.md` describes the three views, the
+  working copy and the desktop section; `docs/authoring.md` (mod) the same for the desktop. Walk
+  112/112 plain and under `WALK_WIDE_FONTS=1`.
+
+**What differs from the plan.** 2.4's card puts *Its page on the site* as a link, not a button,
+and *Open again from the site* under More; the local section's *Upload to your library...* is
+the new-pack upload (a folder that is already a working copy shows *Save to site* instead), and
+*Upload as a new version of a pack on the site...* sits under More for a plain folder because it
+has to ask which pack. 2.5's desktop list is the same component as the web's, so decision 1 cost
+nothing extra. The site's `pack.js` still calls `api.saveDraft(packId, dir)` directly - the
+signature is unchanged - rather than the new action.
+
+**Traps.** `Dialog.open` in Blockbench 5.1 is not cleared synchronously by `close(0)`: a
+`while (Dialog.open) Dialog.open.close(0)` in a `risky_eval` spun the renderer forever and the
+toolkit window it ran in (mcptk-62552) had to be given up - never loop on it. An eval that
+`await`s a plugin reload answers `null`; kick the reload in a `setTimeout` and read the result
+in a second eval, with `console.error` wrapped to catch the load error (a `SyntaxError` in the
+plugin file is otherwise silent - `node --check` first, always). Blockbench 5's form select is
+not a `<select>`: read a dialog's choices from `Dialog.open.form_config.<field>.options` and its
+values from `getFormResult()`. A JSON edit file is the safe way to carry a JavaScript string
+with quotes into a Python replacement; a heredoc mangled `\'` twice.
